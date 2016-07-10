@@ -1,0 +1,16 @@
+{
+	"name": "gfx-d",
+	"authors": [
+		"Rémi Thebault"
+	],
+	"description": "D graphics rendering library",
+	"copyright": "Copyright © 2016, Rémi Thebault",
+	"license": "MIT",
+	"dependencies": {
+		"derelict-gl3" : "1.0.18",
+		"derelict-glfw3" : "3.1.0"
+	},
+	"subPackages": [
+		"./examples/triangle"
+	]
+}

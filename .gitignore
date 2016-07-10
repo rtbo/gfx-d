@@ -1,0 +1,21 @@
+# Dub files
+.dub
+docs.json
+__dummy.html
+*.o
+*.obj
+dub.selections.json
+
+# executables and libs
+__test__library__
+libgfx-d.a
+
+# examples executables
+examples/triangle/gfx-d_triangle
+examples/triangle/triangle
+
+# vscode files
+.vscode/launch.json
+
+# vim files
+*.swp
