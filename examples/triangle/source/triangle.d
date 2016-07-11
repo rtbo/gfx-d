@@ -1,8 +1,9 @@
 module triangle;
 
 import gfx.backend.gl3 : GlContext, createGlDevice;
-import gfx.core.buffer;
 import gfx.core.rc;
+import gfx.core.buffer;
+import gfx.core.program;
 
 import derelict.glfw3.glfw3;
 import derelict.opengl3.gl3;
@@ -86,6 +87,10 @@ int main()
     }
 
     auto vbuf = makeRc!(VertexBuffer!Vertex)(TRIANGLE);
+    auto prog = makeRc!(Program)(ShaderSet.vertexPixel(
+        import("130-triangle.v.glsl"),
+        import("130-triangle.f.glsl"),
+    ));
 
     auto context = new GlfwContext(window);
     auto device = createGlDevice(context);
@@ -93,6 +98,7 @@ int main()
     context.makeCurrent();
 
     vbuf.pinResources(device.context);
+    prog.pinResources(device.context);
 
     glClearColor(CLEAR_COLOR[0], CLEAR_COLOR[1],
             CLEAR_COLOR[2], CLEAR_COLOR[3]);
@@ -109,7 +115,9 @@ int main()
         glfwPollEvents();
     }
 
+    // resources must be released before context is done.
     vbuf.nullify();
+    prog.nullify();
 
     context.doneCurrent();
     glfwTerminate();
