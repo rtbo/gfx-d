@@ -138,6 +138,47 @@ struct ProgramVars {
 }
 
 
+struct ShaderSet {
+    private enum Type {
+        VertexPixel,
+        VertexGeometryPixel,
+    }
+    private Type type;
+    private Shader[] shaders;
+    
+    this(Type type, Shader[] shaders) {
+        this.type = type;
+        this.shaders = shaders;
+
+        import std.algorithm : each;
+        this.shaders.each!(s => s.addRef());
+    }
+
+    this(this) {
+        import std.algorithm: each;
+        this.shaders.each!(s => s.addRef());
+    }
+
+    ~this() {
+        import std.algorithm : each;
+        this.shaders.each!(s => s.release());
+    }
+
+    static ShaderSet vertexPixel(string vertexCode, string pixelCode) {
+        auto vs = new Shader(ShaderStage.Vertex, vertexCode);
+        auto ps = new Shader(ShaderStage.Pixel, pixelCode);
+        return ShaderSet(Type.VertexPixel, [vs, ps]);
+    }
+
+    static ShaderSet vertexGeometryPixel(string vertexCode, string geomCode, string pixelCode) {
+        auto vs = new Shader(ShaderStage.Vertex, vertexCode);
+        auto gs = new Shader(ShaderStage.Geometry, geomCode);
+        auto ps = new Shader(ShaderStage.Pixel, pixelCode);
+        return ShaderSet(Type.VertexGeometryPixel, [vs, gs, ps]);
+    }
+}
+
+
 interface ShaderRes : Resource {
     @property ShaderStage stage() const;
 }
@@ -185,6 +226,11 @@ class Program : ResourceHolder {
         _shaders.each!(s => s.addRef());
     }
 
+    this(ShaderSet shaderSet) {
+        import std.algorithm : each;
+        _shaders = shaderSet.shaders;
+        _shaders.each!(s => s.addRef());
+    }
 
     @property const(AttributeVar)[] attributes() const {
         return _vars.attributes;
