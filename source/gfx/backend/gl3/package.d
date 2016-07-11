@@ -72,7 +72,7 @@ class GlDeviceContext : Context {
     }
 
     TextureRes makeTexture(TextureCreationDesc desc, const(ubyte)[][] data) {
-        return makeTextureImpl(desc, _caps.textureStorage, data);
+        return makeTextureImpl(_caps.textureStorage, desc, data);
     }
     BufferRes makeBuffer(BufferCreationDesc desc, const(ubyte)[] data) {
         return new GlBuffer(desc, data);

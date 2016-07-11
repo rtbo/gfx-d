@@ -13,7 +13,7 @@ import derelict.opengl3.gl3;
 import std.typecons : Tuple;
 
 
-package TextureRes makeTextureImpl(Context.TextureCreationDesc desc, bool hasStorage, const(ubyte)[][] data) {
+package TextureRes makeTextureImpl(in bool hasStorage, Context.TextureCreationDesc desc, const(ubyte)[][] data) {
 
     GlTexture makeHasStorage(alias GlTexType, Args...)(Args args) {
         if(hasStorage) return new GlTexType!true(desc.type, desc.format, args);
@@ -61,6 +61,7 @@ package TextureRes makeTextureImpl(Context.TextureCreationDesc desc, bool hasSto
             break;
         default: break;
         }
+        // TODO initialize texture data here
     }
 
     return res;
