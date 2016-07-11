@@ -2,12 +2,13 @@ module gfx.backend.gl3;
 
 import gfx.backend.gl3.buffer : GlBuffer;
 import gfx.backend.gl3.texture;
+import gfx.backend.gl3.program;
 
 import gfx.core : Device;
 import gfx.core.context : Context;
 import gfx.core.buffer : BufferRes;
 import gfx.core.texture : TextureRes;
-import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, ProgramInfo;
+import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, ProgramVars;
 
 import derelict.opengl3.gl3;
 
@@ -52,9 +53,9 @@ class GlDeviceContext : Context {
         return new GlBuffer(desc, data);
     }
     ShaderRes makeShader(ShaderStage stage, string code) {
-        return null;
+        return new GlShader(stage, code);
     }
-    ProgramRes makeProgram(ShaderRes[] shaders, out ProgramInfo) {
-        return null;
+    ProgramRes makeProgram(ShaderRes[] shaders, out ProgramVars vars) {
+        return new GlProgram(false, shaders, vars);
     }
 }

@@ -1,6 +1,6 @@
 module gfx.core.texture;
 
-import gfx.core : Resource, ResourceHolder;
+import gfx.core : Resource, ResourceHolder, untypeSlices;
 import gfx.core.rc : RefCounted, RcCode;
 import gfx.core.context : Context;
 import gfx.core.format;

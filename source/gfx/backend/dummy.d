@@ -26,7 +26,7 @@ class DummyContext : Context {
     ShaderRes makeShader(ShaderStage, string) {
         return new DummyShader();
     }
-    ProgramRes makeProgram(ShaderRes[], out ProgramInfo) {
+    ProgramRes makeProgram(ShaderRes[], out ProgramVars) {
         return new DummyProgram();
     }
 }
@@ -49,6 +49,7 @@ class DummyBuffer : BufferRes {
 class DummyShader : ShaderRes {
     mixin RcCode!();
     void drop() {}
+    @property ShaderStage stage() const { return ShaderStage.Vertex; }
 }
 
 class DummyProgram : ProgramRes {

@@ -26,5 +26,5 @@ interface Context {
 
     ShaderRes makeShader(ShaderStage stage, string code);
 
-    ProgramRes makeProgram(ShaderRes[] shaders, out ProgramInfo info);
+    ProgramRes makeProgram(ShaderRes[] shaders, out ProgramVars info);
 }
