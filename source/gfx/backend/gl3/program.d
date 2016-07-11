@@ -54,7 +54,7 @@ GLint getProgramInt(in GLuint name, in GLenum pname) {
 }
 
 bool getProgramLinkStatus(in GLuint name) {
-    return getProgramInt(name, GL_COMPILE_STATUS) != GL_FALSE;
+    return getProgramInt(name, GL_LINK_STATUS) != GL_FALSE;
 }
 
 
