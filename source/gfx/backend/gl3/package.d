@@ -1,5 +1,6 @@
 module gfx.backend.gl3;
 
+import gfx.backend.gl3.info : ContextInfo;
 import gfx.backend.gl3.buffer : GlBuffer;
 import gfx.backend.gl3.texture;
 import gfx.backend.gl3.program;
@@ -11,6 +12,8 @@ import gfx.core.texture : TextureRes;
 import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, ProgramVars;
 
 import derelict.opengl3.gl3;
+
+import std.experimental.logger;
 
 
 interface GlContext {
@@ -26,25 +29,46 @@ Device createGlDevice(GlContext context) {
 
 
 class GlDevice : Device {
-    GlContext context_;
-    GlDeviceContext deviceContext_;
+    GlContext _context;
+    GlDeviceContext _deviceContext;
+    ContextInfo _info;
 
     this(GlContext context) {
         DerelictGL3.load();
-        context_ = context;
-        deviceContext_ = new GlDeviceContext();
-        context_.makeCurrent();
+        _context = context;
+        _context.makeCurrent();
         DerelictGL3.reload();
+        _info = ContextInfo.fetch();
+        _deviceContext = new GlDeviceContext(_info);
+
+        log(_info.infoString);
     }
 
     @property Context context() {
-        return deviceContext_;
+        return _deviceContext;
     }
 }
 
+struct GlCaps {
+    import std.bitmanip : bitfields;
+
+    mixin(bitfields!(
+        bool, "interfaceQuery", 1,
+        bool, "samplerObject", 1,
+        bool, "textureStorage", 1,
+        bool, "attribBinding", 1,
+        byte, "", 4,
+    ));
+}
 
 
 class GlDeviceContext : Context {
+
+    ContextInfo _info;
+
+    this(ContextInfo info) {
+        _info = info;
+    }
 
     TextureRes makeTexture(TextureCreationDesc desc, const(ubyte)[][] data) {
         return makeTextureImpl(desc, false, data);
