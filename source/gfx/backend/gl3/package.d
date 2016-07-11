@@ -39,7 +39,7 @@ class GlDevice : Device {
         _context.makeCurrent();
         DerelictGL3.reload();
         _info = ContextInfo.fetch();
-        _deviceContext = new GlDeviceContext(_info);
+        _deviceContext = new GlDeviceContext(_info.caps);
 
         log(_info.infoString);
     }
@@ -57,21 +57,22 @@ struct GlCaps {
         bool, "samplerObject", 1,
         bool, "textureStorage", 1,
         bool, "attribBinding", 1,
-        byte, "", 4,
+        bool, "ubo", 1,
+        byte, "", 3,
     ));
 }
 
 
 class GlDeviceContext : Context {
 
-    ContextInfo _info;
+    GlCaps _caps;
 
-    this(ContextInfo info) {
-        _info = info;
+    this(GlCaps caps) {
+        _caps = caps;
     }
 
     TextureRes makeTexture(TextureCreationDesc desc, const(ubyte)[][] data) {
-        return makeTextureImpl(desc, false, data);
+        return makeTextureImpl(desc, _caps.textureStorage, data);
     }
     BufferRes makeBuffer(BufferCreationDesc desc, const(ubyte)[] data) {
         return new GlBuffer(desc, data);
@@ -80,6 +81,6 @@ class GlDeviceContext : Context {
         return new GlShader(stage, code);
     }
     ProgramRes makeProgram(ShaderRes[] shaders, out ProgramVars vars) {
-        return new GlProgram(false, shaders, vars);
+        return new GlProgram(_caps.ubo, shaders, vars);
     }
 }
