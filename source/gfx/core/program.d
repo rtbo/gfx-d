@@ -5,6 +5,7 @@ import gfx.core.rc : RefCounted, Rc, RcCode;
 import gfx.core.context : Context;
 
 import std.typecons : BitFlags, Flag;
+import std.experimental.logger;
 
 enum ShaderStage {
     Vertex, Geometry, Pixel,
@@ -75,14 +76,13 @@ struct ConstVar {
     ubyte loc;
     ubyte count;
     VarType type;
-    ShaderUsageFlags usage;
 }
 
 struct ConstBufferVar {
     string name;
     ubyte loc;
     size_t size;
-    ShaderUsageFlags usage;
+    ConstVar[] vars;
 }
 
 enum TextureVarType {
@@ -112,7 +112,7 @@ struct TextureVar {
     ubyte loc;
     BaseType baseType;
     TextureVarType type;
-    ShaderUsageFlags usage;
+    //ShaderUsageFlags usage;
 }
 
 /// Sampler shader parameter.
@@ -125,8 +125,14 @@ struct SamplerVar {
     Flag!"rect" isRect;
     /// Is it a compare sampler?
     Flag!"compare" isCompare;
-    /// What program stage this texture is used in.
-    ShaderUsageFlags usage;
+    // What program stage this texture is used in.
+    //ShaderUsageFlags usage;
+}
+
+struct OutputVar {
+    string name;
+    ubyte index;
+    VarType type;
 }
 
 struct ProgramVars {
@@ -135,6 +141,7 @@ struct ProgramVars {
     ConstBufferVar[] constBuffers;
     TextureVar[] textures;
     SamplerVar[] samplers;
+    OutputVar[] outputs;
 }
 
 
@@ -244,6 +251,12 @@ class Program : ResourceHolder {
     @property const(TextureVar)[] textures() const {
         return _vars.textures;
     }
+    @property const(SamplerVar)[] samplers() const {
+        return _vars.samplers;
+    }
+    @property const(OutputVar)[] outputs() const {
+        return _vars.outputs;
+    }
 
     @property bool pinned() const {
         return _res.assigned;
@@ -257,6 +270,20 @@ class Program : ResourceHolder {
         _res = context.makeProgram(resArr, _vars);
         _shaders.each!(s => s.release());
         _shaders = [];
+
+        logf("built program with following info:\n%s", infoString);
+    }
+
+    @property string infoString() const {
+        import std.format : format;
+        import std.conv : to;
+        string res;
+        res ~= format("Attributes: %s\n", attributes.to!string);
+        res ~= format("Consts: %s\n", consts.to!string);
+        res ~= format("Textures: %s\n", textures.to!string);
+        res ~= format("Samplers: %s\n", samplers.to!string);
+        res ~= format("Outputs: %s\n", outputs.to!string);
+        return res;
     }
 
     void drop() {

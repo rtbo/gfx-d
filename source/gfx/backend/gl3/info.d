@@ -38,6 +38,10 @@ struct Version {
 
         return Version(major, minor, rev, vendorInfo);
     }
+
+    @property int decimal() const {
+        return 100*major + minor;
+    }
 }
 
 struct PlatformName {

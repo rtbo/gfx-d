@@ -39,9 +39,15 @@ class GlDevice : Device {
         _context.makeCurrent();
         DerelictGL3.reload();
         _info = ContextInfo.fetch();
-        _deviceContext = new GlDeviceContext(_info.caps);
 
-        log(_info.infoString);
+        import std.exception : enforce;
+
+        enforce(_info.glVersion.major >= 3, "Open GL 3.0 is requested by gfx-d");
+        enforce(_info.glslVersion.decimal >= 130, "GLSL v1.30 is requested by gfx-d");
+        enforce(_info.caps.interfaceQuery, "GL_ARB_program_interface_query is requested by gfx-d");
+        
+        _deviceContext = new GlDeviceContext(_info.caps);
+        logf("built open gl context:\n%s", _info.infoString);
     }
 
     @property Context context() {

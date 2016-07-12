@@ -10,6 +10,7 @@ import derelict.opengl3.gl3;
 
 import std.experimental.logger;
 import std.typecons : Flag, Yes, No;
+import std.exception : enforce, assumeUnique;
 
 
 GLenum stageToGlType(in ShaderStage stage) {
@@ -75,6 +76,29 @@ GLint getBlockInt(in GLuint prog, in GLuint ind, in GLenum pname) {
     GLint res;
     glGetActiveUniformBlockiv(prog, ind, pname, &res);
     return res;
+}
+
+GLint getProgramInterfaceInt(in GLuint prog, in GLenum interf, in GLenum pname) {
+    GLint res;
+    glGetProgramInterfaceiv(prog, interf, pname, &res);
+    return res;
+}
+
+GLint getProgramResourceInt(in GLuint prog, in GLenum interf, in GLuint index, in GLenum prop) {
+    GLint res;
+    GLsizei numWritten;
+    glGetProgramResourceiv(prog, interf, index, 1, &prop, 1, &numWritten, &res);
+    enforce(numWritten == 1);
+    return res;
+}
+
+immutable(GLint)[] getProgramResourceInts(in GLuint prog, in GLenum interf, in GLuint index, in GLenum[] props) {
+    auto res = new GLint[props.length];
+    GLsizei numWritten;
+    glGetProgramResourceiv(prog, interf, index, cast(GLsizei)props.length,
+            props.ptr, cast(GLsizei)res.length, &numWritten, res.ptr);
+    enforce(numWritten == props.length);
+    return assumeUnique(res);
 }
 
 
@@ -204,139 +228,124 @@ Storage glTypeToStorage(in GLenum type) {
     }
 }
 
+AttributeVar[] queryAttributes(in GLuint prog) {
+    immutable bufLen = cast(GLsizei)getProgramInterfaceInt(prog, GL_PROGRAM_INPUT, GL_MAX_NAME_LENGTH);
+    immutable numAttribs = getProgramInterfaceInt(prog, GL_PROGRAM_INPUT, GL_ACTIVE_RESOURCES);
 
-void queryUniforms(in bool uboSupport, in GLuint program, in ShaderUsageFlags usage,
-        out ConstVar[] consts, out TextureVar[] textures,
-        out SamplerVar[] samplers) {
+    auto nameBuf = new char[bufLen];
+    auto res = new AttributeVar[numAttribs];
 
-    import std.algorithm : filter, startsWith;
-    import std.array : array;
-    import std.range : iota, repeat, take;
+    foreach(i; 0..numAttribs) {
+        GLsizei nameLen;
+        glGetProgramResourceName(prog, GL_PROGRAM_INPUT, i, bufLen, &nameLen, nameBuf.ptr);
+        string name = nameBuf[0 .. nameLen].idup;
 
-    immutable numUniforms = getProgramInt(program, GL_ACTIVE_UNIFORMS);
-    immutable inds = array(iota(cast(GLuint)numUniforms));
+        immutable locType = getProgramResourceInts(prog, GL_PROGRAM_INPUT, i, [GL_LOCATION, GL_TYPE]);
+        immutable storage = glTypeToStorage(locType[1]);
+        enforce(storage.type == StorageType.Var);
 
-    auto blockInds = array(repeat(-1).take(numUniforms));
-    if (uboSupport) {
-        glGetActiveUniformsiv(program, numUniforms, inds.ptr,
-                GL_UNIFORM_BLOCK_INDEX, blockInds.ptr);
+        res[i] = AttributeVar(name, cast(ubyte)locType[0], storage.varType);
     }
 
-    immutable maxNameLen = getProgramInt(program, GL_ACTIVE_UNIFORM_MAX_LENGTH);
-    auto nameBuf = new char[maxNameLen];
+    return res;
+}
 
-    glUseProgram(program); // necessary for glUniform
-    int texSlot = 0;
 
-    foreach(i; inds.filter!(i => blockInds[i] < 0)) {
-        GLint size;
-        GLenum type;
+void queryUniforms(in GLuint prog, in bool supportsUbo,
+out ConstVar[] consts, out ConstVar[][] blockVars, out TextureVar[] textures, out SamplerVar[] samplers) {
+
+    immutable bufLen = cast(GLsizei)getProgramInterfaceInt(prog, GL_UNIFORM, GL_MAX_NAME_LENGTH);
+    immutable numVars = getProgramInterfaceInt(prog, GL_UNIFORM, GL_ACTIVE_RESOURCES);
+    if(supportsUbo) {
+        immutable numUbos = getProgramInterfaceInt(prog, GL_UNIFORM_BLOCK, GL_ACTIVE_RESOURCES);
+        blockVars.length = numUbos;
+    }
+
+    auto nameBuf = new char[bufLen];
+    
+    ubyte texSlot = 0;
+    glUseProgram(prog);
+
+    foreach(i; 0 .. numVars) {
         GLsizei nameLen;
-        glGetActiveUniform(program, i, maxNameLen, &nameLen, &size, &type, nameBuf.ptr);
-        auto loc = glGetUniformLocation(program, nameBuf.ptr);
+        glGetProgramResourceName(prog, GL_UNIFORM, i, bufLen, &nameLen, nameBuf.ptr);
+        string name = nameBuf[0 .. nameLen].idup;
 
-        auto name = nameBuf[0 .. nameLen].idup;
-        if(name.startsWith("gl_")) continue;
+        immutable location = getProgramResourceInt(prog, GL_UNIFORM, i, GL_LOCATION);
+        immutable type = getProgramResourceInt(prog, GL_UNIFORM, i, GL_TYPE);
+        immutable arraySize = getProgramResourceInt(prog, GL_UNIFORM, i, GL_ARRAY_SIZE);
 
-
-        auto storage = glTypeToStorage(type);
-        final switch(storage.type) {
-            case StorageType.Var:
-                consts ~= ConstVar(name, cast(ubyte)loc, cast(ubyte)size, storage.varType);
-                infof("Uniform[%s] = %s\t%s", loc, name, storage.varType);
-                break;
-
-            case StorageType.Sampler:
-                // affect a slot to each sampler
-                auto slot = texSlot;
-                texSlot += 1;
-                glUniform1i(loc, slot);
-                textures ~= TextureVar(name, cast(ubyte)slot, storage.baseType, storage.texType, usage);
-                infof("Sampler[%s] = %s\t%s\t%s", slot, name, storage.baseType, storage.texType);
-                if (storage.texType.canSample())
-                    samplers ~= SamplerVar(name, cast(ubyte)slot,
-                        storage.rectSampler, storage.compareSampler, usage);
-                break;
-
-            case StorageType.Unknown:
-                break;
+        immutable storage = glTypeToStorage(type);
+        if(storage.type == StorageType.Var) {
+            auto var = ConstVar(name, cast(ubyte)location, cast(ubyte)arraySize, storage.varType);
+            immutable index = getProgramResourceInt(prog, GL_UNIFORM, i, GL_BLOCK_INDEX);
+            if(supportsUbo && index != -1) {
+                blockVars[index] ~= var;
+            }
+            else {
+                consts ~= var;
+            }
+        }
+        else {
+            immutable slot = texSlot;
+            texSlot += 1;
+            glUniform1i(location, slot);
+            auto tex = TextureVar(name, slot, storage.baseType, storage.texType);
+            auto sampler = SamplerVar(name, slot, storage.rectSampler, storage.compareSampler);
+            textures ~= tex;
+            samplers ~= sampler;
         }
     }
 }
 
-AttributeVar[] queryAttributes(in GLuint prog) {
-    import std.algorithm : startsWith;
-    import std.exception : enforce;
 
-    immutable numAttrs = getProgramInt(prog, GL_ACTIVE_ATTRIBUTES);
-    immutable maxNameLen = getProgramInt(prog, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH);
-    auto nameBuf = new char[maxNameLen];
-    AttributeVar[] res;
-    foreach(GLuint i; 0 .. numAttrs) {
-        GLsizei len;
-        GLint size;
-        GLenum type;
-        glGetActiveAttrib(prog, i, maxNameLen, &len, &size, &type, nameBuf.ptr);
-        auto loc = glGetAttribLocation(prog, nameBuf.ptr);
+ConstBufferVar[] queryUniformBlocks(GLuint prog, ConstVar[][] blockVars) {
 
-        string name = nameBuf[0 .. len].idup;
-        if (name.startsWith("gl_")) continue;
+    immutable bufLen = cast(GLsizei)getProgramInterfaceInt(prog, GL_UNIFORM_BLOCK, GL_MAX_NAME_LENGTH);
+
+    auto nameBuf = new char[bufLen];
+    auto res = new ConstBufferVar[blockVars.length];
+
+    foreach(i; 0 .. cast(GLsizei)res.length) {
+        GLsizei nameLen;
+        glGetProgramResourceName(prog, GL_UNIFORM_BLOCK, i, bufLen, &nameLen, nameBuf.ptr);
+        string name = nameBuf[0 .. nameLen].idup;
+
+        immutable size = getProgramResourceInt(prog, GL_UNIFORM_BLOCK, i, GL_BUFFER_DATA_SIZE);
+        immutable loc = getProgramResourceInt(prog, GL_UNIFORM_BLOCK, i, GL_BUFFER_BINDING);
+        immutable numVars = getProgramResourceInt(prog, GL_UNIFORM_BLOCK, i, GL_NUM_ACTIVE_VARIABLES);
+
+        enforce(numVars == blockVars[i].length);
+
+        res[i] = ConstBufferVar(name, cast(ubyte)loc, size, blockVars[i]);  
+    }
+
+    return res;
+}
+
+OutputVar[] queryOutputs(GLuint prog) {
+    immutable bufLen = cast(GLsizei)getProgramInterfaceInt(prog, GL_PROGRAM_OUTPUT, GL_MAX_NAME_LENGTH);
+    immutable numOutputs = getProgramInterfaceInt(prog, GL_PROGRAM_OUTPUT, GL_ACTIVE_RESOURCES);
+
+    auto nameBuf = new char[bufLen];
+    auto res = new OutputVar[numOutputs];
+
+    foreach(i; 0 .. numOutputs) {
+        GLsizei nameLen;
+        glGetProgramResourceName(prog, GL_PROGRAM_OUTPUT, i, bufLen, &nameLen, nameBuf.ptr);
+        string name = nameBuf[0 .. nameLen].idup;
+
+        immutable type = getProgramResourceInt(prog, GL_PROGRAM_OUTPUT, i, GL_TYPE);
+        immutable location = getProgramResourceInt(prog, GL_PROGRAM_OUTPUT, i, GL_LOCATION);
 
         immutable storage = glTypeToStorage(type);
         enforce(storage.type == StorageType.Var);
 
-        res ~= AttributeVar(name, cast(ubyte)loc, storage.varType);
+        res[i] = OutputVar(name, cast(ubyte)location, storage.varType);
     }
 
     return res;
 }
-
-ConstBufferVar[] queryBlocks(in GLuint prog) {
-
-    import std.algorithm : map, any;
-    import std.array : array;
-    import std.exception : assumeUnique;
-    import std.range : iota;
-    import std.typecons : BitFlags;
-
-    immutable numBlocks = getProgramInt(prog, GL_ACTIVE_UNIFORM_BLOCKS);
-    immutable bindings = assumeUnique(array(iota(numBlocks).map!(
-        (idx) {
-            return cast(GLuint)getBlockInt(prog, idx, GL_UNIFORM_BLOCK_BINDING);
-        }
-    )));
-    immutable explicitBindings = bindings.any!(b => b>0);
-    ConstBufferVar[] res;
-
-    foreach(GLuint idx, bind; bindings) {
-        immutable nameSize = cast(GLsizei)getBlockInt(prog, idx, GL_UNIFORM_BLOCK_NAME_LENGTH);
-        auto nameBuf = new char[nameSize];
-        GLsizei nameLen;
-        glGetActiveUniformBlockName(prog, idx, nameSize, &nameLen, nameBuf.ptr);
-        string name = nameBuf[0 .. nameLen].idup;
-
-        ShaderUsageFlags usage;
-        if (getBlockInt(prog, idx, GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER))
-            usage |= ShaderUsage.Vertex;
-        if (getBlockInt(prog, idx, GL_UNIFORM_BLOCK_REFERENCED_BY_GEOMETRY_SHADER))
-            usage |= ShaderUsage.Geometry;
-        if (getBlockInt(prog, idx, GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER))
-            usage |= ShaderUsage.Pixel;
-
-        immutable size = cast(size_t)getBlockInt(prog, idx, GL_UNIFORM_BLOCK_DATA_SIZE);
-        ubyte slot;
-        if (explicitBindings) {
-            slot = cast(ubyte)bind;
-        } else {
-            glUniformBlockBinding(prog, idx, idx);
-            slot = cast(ubyte)idx;
-        }
-
-        res ~= ConstBufferVar(name, slot, size, usage);
-    }
-    return res;
-}
-
 
 
 class GlShader : ShaderRes {
@@ -402,9 +411,12 @@ class GlProgram : ProgramRes {
         ShaderUsageFlags usage = shaders.map!(s => s.stage)
             .fold!((u, s) => u | s.toUsage())(ShaderUsage.None);
 
+        ConstVar[][] blockVars;
+
         vars.attributes = queryAttributes(_name);
-        queryUniforms(uboSupport, _name, usage, vars.consts, vars.textures, vars.samplers);
-        if(uboSupport) vars.constBuffers = queryBlocks(_name);
+        queryUniforms(_name, uboSupport, vars.consts,  blockVars, vars.textures, vars.samplers);
+        if(uboSupport) vars.constBuffers = queryUniformBlocks(_name, blockVars);
+        vars.outputs = queryOutputs(_name);
     }
 
     void drop() {
