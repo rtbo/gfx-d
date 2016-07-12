@@ -14,6 +14,11 @@ enum TextureType {
     D3, Cube, CubeArray
 }
 
+bool isCube(in TextureType tt) {
+    return tt == TextureType.Cube || tt == TextureType.CubeArray;
+}
+
+
 enum TextureUsage {
     None = 0,
     RenderTarget = 1,
@@ -25,9 +30,17 @@ alias TexUsageFlags = BitFlags!TextureUsage;
 
 enum CubeFace {
     None,
-    PosX, PosY, PosZ,
-    NegX, NegY, NegZ,
+    PosX, NegX,
+    PosY, NegY,
+    PosZ, NegZ,
 }
+
+/// an array of faces in the order that is expected during cube initialization
+immutable CUBE_FACES = [
+    CubeFace.PosX, CubeFace.NegX,
+    CubeFace.PosY, CubeFace.NegY,
+    CubeFace.PosZ, CubeFace.NegZ,
+];
 
 struct ImageSliceInfo {
     ushort xoffset;
@@ -46,12 +59,30 @@ struct ImageInfo {
     ushort depth;
     ushort numSlices;
     ubyte levels;
+
+    ImageSliceInfo levelSliceInfo(in ubyte level) const {
+        import std.algorithm : max;
+
+        ushort mapdim(in ushort dim) {
+            return cast(ushort)max(1, dim >> level);
+        }
+
+        immutable w = mapdim(width);
+        immutable h = mapdim(height);
+        immutable d = mapdim(depth);
+        return ImageSliceInfo(
+            0, 0, 0,
+            w, h, d,
+            level, CubeFace.None,
+        );
+    }
+
 }
 
 
 interface TextureRes : Resource {
     void bind();
-    void update(ImageSliceInfo slice, const(ubyte)[] data);
+    void update(in ImageSliceInfo slice, const(ubyte)[] data);
 }
 
 

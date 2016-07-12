@@ -11,9 +11,12 @@ import gfx.core.error;
 import derelict.opengl3.gl3;
 
 import std.typecons : Tuple;
+import std.experimental.logger;
 
 
 package TextureRes makeTextureImpl(in bool hasStorage, Context.TextureCreationDesc desc, const(ubyte)[][] data) {
+
+    import std.exception : enforce;
 
     GlTexture makeHasStorage(alias GlTexType, Args...)(Args args) {
         if(hasStorage) return new GlTexType!true(desc.type, desc.format, args);
@@ -43,25 +46,46 @@ package TextureRes makeTextureImpl(in bool hasStorage, Context.TextureCreationDe
                 return new GlTextureCube!false(desc.format, desc.imgInfo.levels, desc.imgInfo.width);
             }
         case TextureType.CubeArray:
-            import std.exception : enforce;
             enforce(hasStorage, "opengl backend needs GL_ARB_texture_storage extension to instantiate cube arrays");
             return new GlTextureCubeArray(desc.format, desc.imgInfo.levels, desc.imgInfo.width, desc.imgInfo.numSlices);
         }
     }
     auto res = makeType();
 
+    // data initialization
     if (data.length != 0) {
-        int numSlices = 1;
-        switch(desc.type) {
-        case TextureType.D1Array: 
-            numSlices = desc.imgInfo.height;
-            break;
-        case TextureType.D2Array:
-            numSlices = desc.imgInfo.depth;
-            break;
-        default: break;
+        immutable slices = desc.imgInfo.numSlices;
+        immutable mips = desc.imgInfo.levels;
+        immutable cube = desc.type.isCube();
+        immutable faces = cube ? 6 : 1;
+
+        enforce(data.length == slices * mips * faces, "incorrect texture initialization data");
+
+        foreach(sl; 0..slices) {
+            foreach(ubyte f; 0..faces) {
+                foreach(ubyte m; 0..mips) {
+                    auto imgData = data[(sl * faces + f) * mips + m];
+                    auto sliceInfo = desc.imgInfo.levelSliceInfo(m);
+                    switch(desc.type) {
+                    case TextureType.D1Array:
+                        assert(sliceInfo.height == 1);
+                        sliceInfo.yoffset = cast(ushort)sl;
+                        break;
+                    case TextureType.D2Array:
+                    case TextureType.CubeArray:
+                        assert(sliceInfo.depth == 1);
+                        sliceInfo.zoffset = cast(ushort)sl;
+                        break;
+                    default:
+                        break;
+                    }
+                    if(cube) {
+                        sliceInfo.face = CUBE_FACES[f];
+                    }
+                    res.update(sliceInfo, imgData);
+                }
+            }
         }
-        // TODO initialize texture data here
     }
 
     return res;
@@ -90,8 +114,6 @@ abstract class GlTexture : TextureRes {
     void bind() {
         glBindTexture(_target, _name);
     }
-
-    void update(ImageSliceInfo slice, const(ubyte)[] data) {}
 }
 
 
@@ -113,6 +135,11 @@ class GlTexture1D(bool UseStorage) : GlTexture {
         else {
             glTexImage1D(_target, 0, _internalFormat, _dim, 0, _format, _type, null);
         }
+    }
+
+    void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+        glTexSubImage1D(_target, slice.level, slice.xoffset, slice.width,
+                _format, _type, cast(const(GLvoid)*)data.ptr);
     }
 }
 
@@ -136,6 +163,13 @@ class GlTexture2D(bool UseStorage) : GlTexture {
         else {
             glTexImage2D(_target, 0, _internalFormat, _dims[0], _dims[1], 0, _format, _type, null);
         }
+    }
+
+    void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+        glTexSubImage2D(_target, slice.level,
+                slice.xoffset, slice.yoffset,
+                slice.width, slice.height,
+                _format, _type, cast(const(GLvoid)*)data.ptr);
     }
 }
 
@@ -161,6 +195,10 @@ class GlTexture2DMultisample(bool UseStorage) : GlTexture {
                     _dims[0], _dims[1], fixedLoc);
         }
     }
+
+    void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+        warningf("ignoring attempt to upload data to Multisample Texture");
+    }
 }
 
 
@@ -184,6 +222,13 @@ class GlTexture3D(bool UseStorage) : GlTexture {
         else {
             glTexImage3D(_target, 0, _internalFormat, _dims[0], _dims[1], _dims[2], 0, _format, _type, null);
         }
+    }
+
+    void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+        glTexSubImage3D(_target, slice.level,
+                slice.xoffset, slice.yoffset, slice.zoffset,
+                slice.width, slice.height, slice.depth,
+                _format, _type, cast(const(GLvoid)*)data.ptr);
     }
 }
 
@@ -210,7 +255,50 @@ class GlTexture3DMultisample(bool UseStorage) : GlTexture {
                     _dims[0], _dims[1], _dims[2], fixedLoc);
         }
     }
+
+    void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+        warningf("ignoring attempt to upload data to Multisample Texture");
+    }
 }
+
+
+
+
+immutable GL_CUBE_FACES = [
+    GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+];
+
+GLenum faceToGl(in CubeFace face) {
+    final switch(face) {
+    case CubeFace.None: assert(false);
+    case CubeFace.PosX: return GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+    case CubeFace.NegX: return GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
+    case CubeFace.PosY: return GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
+    case CubeFace.NegY: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
+    case CubeFace.PosZ: return GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
+    case CubeFace.NegZ: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+    }
+}
+
+/// translate a face into the gl cube map array face index
+int faceIndex(in CubeFace face)
+in { assert(face != CubeFace.None); }
+body { return cast(int)face -1; }
+
+unittest {
+    assert(faceIndex(CubeFace.PosX) == 0);
+    assert(faceIndex(CubeFace.NegX) == 1);
+    assert(faceIndex(CubeFace.PosY) == 2);
+    assert(faceIndex(CubeFace.NegY) == 3);
+    assert(faceIndex(CubeFace.PosZ) == 4);
+    assert(faceIndex(CubeFace.NegZ) == 5);
+}
+
 
 class GlTextureCube(bool UseStorage) : GlTexture {
     GLsizei _dim;
@@ -228,16 +316,18 @@ class GlTextureCube(bool UseStorage) : GlTexture {
             glTexStorage2D(_target, _levels, _internalFormat, _dim, _dim);
         }
         else {
-            void doFace(GLenum face) {
+            foreach(face; GL_CUBE_FACES) {
                 glTexImage2D(face, 0, _internalFormat, _dim, _dim, 0, _format, _type, null);
             }
-            doFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X);
-            doFace(GL_TEXTURE_CUBE_MAP_POSITIVE_Y);
-            doFace(GL_TEXTURE_CUBE_MAP_POSITIVE_Z);
-            doFace(GL_TEXTURE_CUBE_MAP_NEGATIVE_X);
-            doFace(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y);
-            doFace(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z);
         }
+    }
+
+    void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+        immutable face = faceToGl(slice.face);
+        glTexSubImage2D(face, slice.level,
+                slice.xoffset, slice.yoffset,
+                slice.width, slice.height,
+                _format, _type, cast(const(GLvoid)*)data.ptr);
     }
 }
 
@@ -257,6 +347,15 @@ class GlTextureCubeArray : GlTexture {
 
         glTexStorage3D(_target, _levels, _internalFormat, _dim, _dim, _slices);
         
+    }
+
+    void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+        immutable face = faceToGl(slice.face);
+        immutable zoffset = slice.zoffset*6 + faceIndex(slice.face);
+        glTexSubImage3D(face, slice.level,
+                slice.xoffset, slice.yoffset, zoffset,
+                slice.width, slice.height, slice.depth,
+                _format, _type, cast(const(GLvoid)*)data.ptr);
     }
 }
 

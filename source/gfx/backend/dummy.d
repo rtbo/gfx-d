@@ -36,7 +36,7 @@ class DummyTexture : TextureRes {
     mixin RcCode!();
     void drop() {}
     void bind() {}
-    void update(ImageSliceInfo slice, const(ubyte)[] data) {}
+    void update(in ImageSliceInfo slice, const(ubyte)[] data) {}
 }
 
 class DummyBuffer : BufferRes {
