@@ -20,6 +20,11 @@ import std.meta;
 
 
 
+enum VertexInput;
+enum ConstantInput;
+
+
+
 /// UDA struct to associate vertex struct member name to vertex input attrib name
 /// it is to be applied on the vertex structure fields directly
 /// if a vertex structure field has no AttribName attribute, the member name is
@@ -76,14 +81,15 @@ template VertexAttribs(VT) if(is(VT == struct)) {
 
 
 version(unittest) {
-    struct VertexAttribTest {
+    
+    struct Vertex {
         @AttribName("a_Pos")
         float[4] position;
 
         float[4] color;
     }
 
-    alias attribs = VertexAttribs!VertexAttribTest;
+    alias attribs = VertexAttribs!Vertex;
 
     static assert(attribs.length == 2);
     static assert(attribs[0].member == "position");
@@ -93,10 +99,16 @@ version(unittest) {
 }
 
 
+
+
+
 template PipelineState(VT) {
 
     class PipelineState {
         alias VertexType = VT;
+        alias Attribs = VertexAttribs!VertexType;
+
+
     }
 
 }
