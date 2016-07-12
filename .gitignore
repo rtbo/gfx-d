@@ -16,6 +16,7 @@ examples/triangle/triangle
 
 # vscode files
 .vscode/launch.json
+.vscode/*
 
 # vim files
 *.swp
