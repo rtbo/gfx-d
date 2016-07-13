@@ -4,6 +4,7 @@ import gfx.backend.gl3 : GlContext, createGlDevice;
 import gfx.core.rc;
 import gfx.core.buffer;
 import gfx.core.program;
+import gfx.core.pipeline_state;
 
 import derelict.glfw3.glfw3;
 import derelict.opengl3.gl3;
@@ -13,9 +14,11 @@ import std.string;
 
 
 struct Vertex {
-    float[2] pos;
-    float[3] color;
+    @AttribName("a_Pos")    float[2] pos;
+    @AttribName("a_Color")  float[3] color;
 }
+
+
 
 
 immutable TRIANGLE = [
@@ -25,13 +28,6 @@ immutable TRIANGLE = [
 ];
 
 immutable float[4] CLEAR_COLOR = [0.1, 0.2, 0.3, 1.0];
-
-
-void printGlInfo(in GLenum name, string desc) {
-    writeln(desc, ":");
-    writeln(fromStringz(glGetString(name)));
-    writeln();
-}
 
 
 class GlfwContext : GlContext {
