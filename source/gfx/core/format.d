@@ -17,6 +17,7 @@ enum isChannel(T) = isTextureChannel!T || isRenderChannel!T || isBlendChannel!T;
 
 static assert(isChannel!Srgb);
 static assert(!isChannel!short);
+static assert(is(Float.ShaderType == float));
 
 unittest {
     assert(Int.channelType == ChannelType.Int);
@@ -186,53 +187,64 @@ Swizzle newSwizzle() {
 }
 
 
-private mixin template FormatCode(size_t numComps, T, Ch, Surf)
-        if (isChannel!Ch && isSurface!Surf) {
-    template Formatted(T : T[numComps]) {
-        alias Surface = Surf;
-        alias Channel = Ch;
-        alias View = Channel.ShaderType[numComps];
-    }
+
+private string formatCode(size_t numComps, T, Ch, Surf)() 
+        if(isChannel!Ch && isSurface!Surf) {
+    import std.format : format;
+    string res;
+    res ~= format("template Formatted(T : %s[%s]) {\n", T.stringof, numComps);
+    res ~= format("    alias Surface = %s;\n", Surf.stringof);
+    res ~= format("    alias Channel = %s;\n", Ch.stringof);
+    res ~= format("    alias View = Channel.ShaderType[%s];\n", numComps);
+    res ~= format("}\n");
+    return res;
 }
 
-private mixin template FormatCode_8bit (T, Ch)
-        if (isChannel!Ch) {
-    mixin FormatCode!(1, T, Ch, R8);
-    mixin FormatCode!(2, T, Ch, R8_G8);
-    mixin FormatCode!(4, T, Ch, R8_G8_B8_A8);
+private string formatCode_8bit(T, Ch)() {
+    string res;
+    res ~= formatCode!(1, T, Ch, R8);
+    res ~= formatCode!(2, T, Ch, R8_G8);
+    res ~= formatCode!(4, T, Ch, R8_G8_B8_A8);
+    return res;
 }
 
-private mixin template FormatCode_16bit (T, Ch)
-        if (isChannel!Ch) {
-    mixin FormatCode!(1, T, Ch, R16);
-    mixin FormatCode!(2, T, Ch, R16_G16);
-    mixin FormatCode!(3, T, Ch, R16_G16_B16);
-    mixin FormatCode!(4, T, Ch, R16_G16_B16_A16);
+private string formatCode_16bit(T, Ch)() {
+    string res;
+    res ~= formatCode!(1, T, Ch, R16);
+    res ~= formatCode!(2, T, Ch, R16_G16);
+    res ~= formatCode!(3, T, Ch, R16_G16_B16);
+    res ~= formatCode!(4, T, Ch, R16_G16_B16_A16);
+    return res;
 }
 
-private mixin template FormatCode_32bit (T, Ch)
-        if (isChannel!Ch) {
-    mixin FormatCode!(1, T, Ch, R32);
-    mixin FormatCode!(2, T, Ch, R32_G32);
-    mixin FormatCode!(3, T, Ch, R32_G32_B32);
-    mixin FormatCode!(4, T, Ch, R32_G32_B32_A32);
+private string formatCode_32bit(T, Ch)() {
+    string res;
+    res ~= formatCode!(1, T, Ch, R32);
+    res ~= formatCode!(2, T, Ch, R32_G32);
+    res ~= formatCode!(3, T, Ch, R32_G32_B32);
+    res ~= formatCode!(4, T, Ch, R32_G32_B32_A32);
+    return res;
 }
 
+mixin(formatCode_8bit!(ubyte, Uint)());
+mixin(formatCode_8bit!(byte, Int)());
+mixin(formatCode_8bit!(U8Norm, Unorm)());
+mixin(formatCode_8bit!(I8Norm, Inorm)());
+mixin(formatCode_16bit!(ushort, Uint)());
+mixin(formatCode_16bit!(short, Int)());
+mixin(formatCode_16bit!(U16Norm, Unorm)());
+mixin(formatCode_16bit!(I16Norm, Inorm)());
+mixin(formatCode_16bit!(Half, Float)());
+mixin(formatCode_32bit!(uint, Uint)());
+mixin(formatCode_32bit!(int, Int)());
+mixin(formatCode_32bit!(float, Float)());
 
-mixin FormatCode_8bit!(ubyte, Uint);
-mixin FormatCode_8bit!(byte, Int);
-mixin FormatCode_8bit!(U8Norm, Unorm);
-mixin FormatCode_8bit!(I8Norm, Inorm);
-
-mixin FormatCode_16bit!(ushort, Uint);
-mixin FormatCode_16bit!(short, Int);
-mixin FormatCode_16bit!(U16Norm, Unorm);
-mixin FormatCode_16bit!(I16Norm, Inorm);
-mixin FormatCode_16bit!(Half, Float);
-
-mixin FormatCode_32bit!(uint, Uint);
-mixin FormatCode_32bit!(int, Int);
-mixin FormatCode_32bit!(float, Float);
+version(unittest) {
+    alias Fmt = Formatted!(float[4]);
+    static assert(is(Fmt.Surface == R32_G32_B32_A32));
+    static assert(is(Fmt.Channel == Float));
+    static assert(is(Fmt.View == float[4]));
+}
 
 
 private:
