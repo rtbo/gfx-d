@@ -169,12 +169,8 @@ unittest {
 /// Source channel in a swizzle configuration. Some may redirect onto
 /// different physical channels, some may be hardcoded to 0 or 1.
 enum ChannelSource {
-    Zero,
-    One,
-    X,
-    Y,
-    Z,
-    W,
+    Zero, One,
+    X, Y, Z, W,
 }
 
 /// Channel swizzle configuration for the resource views.
@@ -248,13 +244,12 @@ version(unittest) {
 }
 
 
+
 private:
 
 mixin template ChannelCode(Specs...) {
 
-
     mixin(channelCodeInject());
-
 
     private string channelCodeInject(bool genProto=false)() {
 
