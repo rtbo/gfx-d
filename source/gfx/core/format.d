@@ -191,11 +191,12 @@ Swizzle newSwizzle() {
 private string formatCode(size_t numComps, T, Ch, Surf)() 
         if(isChannel!Ch && isSurface!Surf) {
     import std.format : format;
+    string sizeSpec = numComps > 1 ? format("[%s]", numComps) : "";
     string res;
-    res ~= format("template Formatted(T : %s[%s]) {\n", T.stringof, numComps);
+    res ~= format("template Formatted(T : %s%s) {\n", T.stringof, sizeSpec);
     res ~= format("    alias Surface = %s;\n", Surf.stringof);
     res ~= format("    alias Channel = %s;\n", Ch.stringof);
-    res ~= format("    alias View = Channel.ShaderType[%s];\n", numComps);
+    res ~= format("    alias View = Channel.ShaderType%s;\n", sizeSpec);
     res ~= format("}\n");
     return res;
 }
