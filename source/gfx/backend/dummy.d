@@ -7,6 +7,7 @@ import gfx.core.format : Format;
 import gfx.core.buffer;
 import gfx.core.texture;
 import gfx.core.program;
+import gfx.core.shader_resource;
 
 
 class DummyDevice : Device {
@@ -28,6 +29,12 @@ class DummyContext : Context {
     }
     ProgramRes makeProgram(ShaderRes[], out ProgramVars) {
         return new DummyProgram();
+    }
+    ShaderResourceViewRes viewAsShaderResource(RawBuffer) {
+        return null;
+    }
+    ShaderResourceViewRes viewAsShaderResource(RawTexture, TexSRVCreationDesc desc) {
+        return null;
     }
 }
 

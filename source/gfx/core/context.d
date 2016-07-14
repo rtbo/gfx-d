@@ -4,6 +4,7 @@ import gfx.core.buffer;
 import gfx.core.format;
 import gfx.core.texture;
 import gfx.core.program;
+import gfx.core.shader_resource;
 
 interface Context {
 
@@ -27,4 +28,14 @@ interface Context {
     ShaderRes makeShader(ShaderStage stage, string code);
 
     ProgramRes makeProgram(ShaderRes[] shaders, out ProgramVars info);
+
+    ShaderResourceViewRes viewAsShaderResource(RawBuffer buf);
+
+    struct TexSRVCreationDesc {
+        ChannelType channel;
+        ubyte minLevel;
+        ubyte maxLevel;
+        Swizzle swizzle;
+    }
+    ShaderResourceViewRes viewAsShaderResource(RawTexture tex, TexSRVCreationDesc desc);
 }
