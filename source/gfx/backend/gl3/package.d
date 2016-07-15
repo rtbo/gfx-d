@@ -2,12 +2,12 @@ module gfx.backend.gl3;
 
 import gfx.backend.gl3.info : ContextInfo;
 import gfx.backend.gl3.buffer : GlBuffer;
-import gfx.backend.gl3.texture :    makeTextureImpl,
-                                    GlBufferShaderResourceView,
-                                    GlTextureShaderResourceView,
-                                    GlRenderTargetView,
-                                    GlDepthStencilView;
-import gfx.backend.gl3.program;
+import gfx.backend.gl3.texture : makeTextureImpl;
+import gfx.backend.gl3.view :   GlBufferShaderResourceView,
+                                GlTextureShaderResourceView,
+                                GlRenderTargetView,
+                                GlDepthStencilView;
+import gfx.backend.gl3.program : GlShader, GlProgram;
 
 import gfx.core : Device;
 import gfx.core.context : Context;
@@ -15,8 +15,7 @@ import gfx.core.format : Format;
 import gfx.core.buffer : BufferRes, RawBuffer;
 import gfx.core.texture : TextureRes, RawTexture;
 import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, ProgramVars;
-import gfx.core.shader_resource : ShaderResourceViewRes;
-import gfx.core.render_target : RenderTargetViewRes, DepthStencilViewRes;
+import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes;
 
 import derelict.opengl3.gl3;
 

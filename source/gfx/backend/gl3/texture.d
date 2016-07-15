@@ -7,8 +7,6 @@ import gfx.core.format : Format, SurfaceType, ChannelType;
 import gfx.core.texture;
 import gfx.core.buffer : RawBuffer;
 import gfx.core.context : Context;
-import gfx.core.shader_resource : ShaderResourceViewRes;
-import gfx.core.render_target : RenderTargetViewRes, DepthStencilViewRes;
 import gfx.core.error;
 
 
@@ -16,77 +14,6 @@ import derelict.opengl3.gl3;
 
 import std.typecons : Tuple;
 import std.experimental.logger;
-
-
-
-class GlBufferShaderResourceView : ShaderResourceViewRes {
-    mixin(rcCode);
-
-    GLuint _texName;
-    GLenum _internalFormat;
-    Rc!GlBuffer _buf;
-
-    this(RawBuffer buf, Format fmt) {
-        assert(buf.pinned);
-        _buf = unsafeCast!GlBuffer(buf.res);
-
-        _internalFormat = formatToGlInternalFormat(fmt);
-        glGenTextures(1, &_texName);
-        glBindTexture(GL_TEXTURE_BUFFER, _texName);
-        glTextureBuffer(GL_TEXTURE_BUFFER, _internalFormat, _buf.name);
-    }
-
-    void drop() {
-        _buf.nullify();
-        glDeleteBuffers(1, &_texName);
-    }
-}
-
-class GlTextureShaderResourceView : ShaderResourceViewRes {
-    mixin(rcCode);
-
-    Rc!GlTexture _tex;
-
-    this(RawTexture tex, Context.TexSRVCreationDesc desc) {
-        assert(tex.pinned);
-        _tex = unsafeCast!GlTexture(tex.res);
-    }
-
-    void drop() {
-        _tex.nullify();
-    }
-}
-
-
-class GlRenderTargetView : RenderTargetViewRes {
-    mixin(rcCode);
-
-    Rc!GlTexture _tex;
-
-    this(RawTexture tex, Context.TexRTVCreationDesc desc) {
-        assert(tex.pinned);
-        _tex = unsafeCast!GlTexture(tex.res);
-    }
-
-    void drop() {
-        _tex.nullify();
-    }
-}
-
-class GlDepthStencilView : DepthStencilViewRes {
-    mixin(rcCode);
-
-    Rc!GlTexture _tex;
-
-    this(RawTexture tex, Context.TexDSVCreationDesc desc) {
-        assert(tex.pinned);
-        _tex = unsafeCast!GlTexture(tex.res);
-    }
-
-    void drop() {
-        _tex.nullify();
-    }
-}
 
 
 
@@ -454,7 +381,7 @@ GLsizei mipmaps(GLsizei w, GLsizei h, GLsizei d) {
 
 
 
-private GLenum textureTypeToGlTarget(in TextureType type) {
+package GLenum textureTypeToGlTarget(in TextureType type) {
     final switch(type) {
     case TextureType.D1:                    return GL_TEXTURE_1D;
     case TextureType.D1Array:               return GL_TEXTURE_1D_ARRAY;
@@ -468,7 +395,7 @@ private GLenum textureTypeToGlTarget(in TextureType type) {
     }
 }
 
-private GLenum formatToGlInternalFormat(in Format format) {
+package GLenum formatToGlInternalFormat(in Format format) {
     import std.typecons : tuple;
     alias S = SurfaceType;
     alias C = ChannelType;
@@ -599,7 +526,7 @@ private GLenum formatToGlInternalFormat(in Format format) {
 }
 
 
-private GLenum formatToGlFormat(in Format format) {
+package GLenum formatToGlFormat(in Format format) {
     GLenum r() {
         switch(format.channel) {
         case ChannelType.Int:
@@ -668,7 +595,7 @@ private GLenum formatToGlFormat(in Format format) {
     }
 }
 
-private GLenum formatToGlType(in Format format) {
+package GLenum formatToGlType(in Format format) {
     GLenum t8() {
         switch(format.channel) {
             case ChannelType.Int:

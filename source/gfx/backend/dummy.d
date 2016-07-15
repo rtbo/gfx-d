@@ -7,8 +7,7 @@ import gfx.core.format : Format;
 import gfx.core.buffer : BufferRes, RawBuffer, BufferSliceInfo;
 import gfx.core.texture : TextureRes, RawTexture, ImageSliceInfo;
 import gfx.core.program : ShaderRes, ProgramRes, ProgramVars, ShaderStage;
-import gfx.core.shader_resource : ShaderResourceViewRes;
-import gfx.core.render_target : RenderTargetViewRes, DepthStencilViewRes;
+import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes;
 
 
 class DummyDevice : Device {
