@@ -23,11 +23,8 @@ enum ConstantInput;
 
 
 
-/// UDA struct to associate vertex struct member name to vertex input attrib name
-/// it is to be applied on the vertex structure fields directly
-/// if a vertex structure field has no AttribName attribute, the member name is
-/// assumed as attribute name in the vertex shader
-struct AttribName {
+/// UDA struct to associate names of shader symbols
+struct Name {
     string attrib;
 }
 
@@ -46,18 +43,18 @@ template VertexAttribs(VT) if(is(VT == struct)) {
     enum FCount = FNames.length;
     static assert(FNames.length == FTypes.length);
 
-    alias AttribNameUDAs = getSymbolsByUDA!(VT, AttribName);
+    alias NameUDAs = getSymbolsByUDA!(VT, Name);
 
-    template ResolveAttribName(string memberName, size_t n) {
-        static if (n == AttribNameUDAs.length) {
-            enum ResolveAttribName = memberName; // defaults to member name
+    template ResolveName(string memberName, size_t n) {
+        static if (n == NameUDAs.length) {
+            enum ResolveName = memberName; // defaults to member name
         }
         else {
-            static if (AttribNameUDAs[n].stringof == memberName) {
-                enum ResolveAttribName = getUDAs!(AttribNameUDAs[n], AttribName)[0].attrib;
+            static if (NameUDAs[n].stringof == memberName) {
+                enum ResolveName = getUDAs!(NameUDAs[n], Name)[0].attrib;
             }
             else {
-                enum ResolveAttribName = ResolveAttribName!(memberName, n+1);
+                enum ResolveName = ResolveName!(memberName, n+1);
             }
         }
     }
@@ -68,7 +65,7 @@ template VertexAttribs(VT) if(is(VT == struct)) {
         }
         else {
             alias ParseAttribs = AliasSeq!(
-                VertexAttrib!(FTypes[n], FNames[n], ResolveAttribName!(FNames[n], 0)),
+                VertexAttrib!(FTypes[n], FNames[n], ResolveName!(FNames[n], 0)),
                 ParseAttribs!(n+1)
             );
         }
@@ -81,7 +78,7 @@ template VertexAttribs(VT) if(is(VT == struct)) {
 version(unittest) {
 
     struct Vertex {
-        @AttribName("a_Pos")
+        @Name("a_Pos")
         float[4] position;
 
         float[4] color;

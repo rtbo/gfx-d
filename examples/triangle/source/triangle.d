@@ -11,8 +11,8 @@ import derelict.opengl3.gl3;
 
 
 struct Vertex {
-    @AttribName("a_Pos")    float[2] pos;
-    @AttribName("a_Color")  float[3] color;
+    @Name("a_Pos")    float[2] pos;
+    @Name("a_Color")  float[3] color;
 }
 
 
