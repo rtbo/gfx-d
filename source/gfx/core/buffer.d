@@ -29,6 +29,27 @@ struct BufferSliceInfo {
     size_t size;
 }
 
+
+/// determines if T is valid for index buffers
+template isIndexType(T) {
+    enum isIndexType = is(T == ushort) || is(T == uint);
+}
+
+
+Buffer!T createVertexBuffer(T)(const(T)[] data) {
+    return new Buffer!T(BufferRole.Vertex, BufferUsage.Const, MapAccess.None, data);
+}
+
+Buffer!T createIndexBuffer(T)(const(T)[] data) if (isIndexType!T) {
+    return new Buffer!T(BufferRole.Index, BufferUsage.Const, MapAccess.None, data);
+}
+
+Buffer!T createConstBuffer(T)(size_t num=1) {
+    return new Buffer!T(BufferRole.Constant, BufferUsage.Dynamic, MapAccess.None, num);
+}
+
+
+
 interface BufferRes : Resource {
     void bind();
     void update(BufferSliceInfo slice, const(ubyte)[] data);
@@ -103,47 +124,7 @@ class Buffer(T) : RawPlainBuffer {
 }
 
 
-class VertexBuffer(T) : Buffer!T {
-    this(size_t count) {
-        super(BufferRole.Vertex, BufferUsage.Const, MapAccess.None, count);
-    }
-    this(const(T)[] data) {
-        super(BufferRole.Vertex, BufferUsage.Const, MapAccess.None, data);
-    }
-}
 
-/// determines if T is valid for index buffers
-template isIndexType(T) {
-    enum isIndexType = is(T == ushort) || is(T == uint);
-}
-
-
-class IndexBuffer(T) : Buffer!T if (isIndexType!T) {
-    this(size_t count) {
-        super(BufferRole.Index, BufferUsage.Const, MapAccess.None, count);
-    }
-    this(const(T)[] data) {
-        super(BufferRole.Index, BufferUsage.Const, MapAccess.None, data);
-    }
-}
-
-
-class ConstBuffer(T) : RawPlainBuffer {
-    alias ElType = T;
-
-    this() {
-        super(BufferRole.Constant, BufferUsage.Const, MapAccess.None,
-                1, ElType.sizeof, []);
-    }
-
-    this(in T value) {
-        auto buf = new ubyte[T.sizeof];
-        auto ptr = cast(T*)buf.ptr;
-        *ptr = value;
-        super(BufferRole.Constant, BufferUsage.Const, MapAccess.None,
-                1, ElType.sizeof, buf);
-    }
-}
 
 
 

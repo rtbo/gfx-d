@@ -84,8 +84,8 @@ int main()
 
     auto context = new GlfwContext(window);
     {
-        auto vbuf = makeRc!(VertexBuffer!Vertex)(TRIANGLE);
-        auto prog = makeRc!(Program)(ShaderSet.vertexPixel(
+        auto vbuf = rc(createVertexBuffer!Vertex(TRIANGLE));
+        auto prog = makeRc!Program(ShaderSet.vertexPixel(
             import("130-triangle.v.glsl"),
             import("130-triangle.f.glsl"),
         ));
