@@ -24,7 +24,7 @@ GLenum usageToGl(in BufferUsage usage) {
 }
 
 class GlBuffer : BufferRes {
-    mixin RcCode!();
+    mixin(rcCode);
 
     GLuint _name;
     GLenum _target;

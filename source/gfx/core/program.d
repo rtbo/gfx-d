@@ -1,7 +1,7 @@
 module gfx.core.program;
 
 import gfx.core : Resource, ResourceHolder;
-import gfx.core.rc : RefCounted, Rc, RcCode;
+import gfx.core.rc : RefCounted, Rc, rcCode;
 import gfx.core.context : Context;
 
 import std.typecons : BitFlags, Flag;
@@ -194,7 +194,7 @@ interface ProgramRes : Resource {
 }
 
 class Shader : ResourceHolder {
-    mixin RcCode!();
+    mixin(rcCode);
 
     Rc!ShaderRes _res;
     ShaderStage _stage;
@@ -221,7 +221,7 @@ class Shader : ResourceHolder {
 }
 
 class Program : ResourceHolder {
-    mixin RcCode!();
+    mixin(rcCode);
 
     Rc!ProgramRes _res;
     Shader[] _shaders;

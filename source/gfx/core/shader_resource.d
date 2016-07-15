@@ -10,8 +10,8 @@ import gfx.core.texture;
 
 interface ShaderResourceViewRes : Resource {}
 
-abstract class RawShaderResourceView: ResourceHolder {
-    mixin RcCode!();
+abstract class RawShaderResourceView : ResourceHolder {
+    mixin(rcCode);
 
     private Rc!ShaderResourceViewRes _res;
 

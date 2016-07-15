@@ -22,8 +22,7 @@ interface RefCounted {
 }
 
 
-
-mixin template RcCode() {
+enum rcCode = "
     private int rc_=0;
 
     public @property int rc() const { return rc_; }
@@ -37,9 +36,7 @@ mixin template RcCode() {
         if (!rc_) {
             drop();
         }
-    }
-}
-
+    }";
 
 
 Rc!T makeRc (T, Args...)(Args args) if (is(T:RefCounted)) {

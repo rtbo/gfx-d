@@ -2,7 +2,7 @@ module gfx.backend.dummy;
 
 import gfx.core : Device;
 import gfx.core.context : Context;
-import gfx.core.rc : RcCode;
+import gfx.core.rc : rcCode;
 import gfx.core.format : Format;
 import gfx.core.buffer;
 import gfx.core.texture;
@@ -40,27 +40,27 @@ class DummyContext : Context {
 
 
 class DummyTexture : TextureRes {
-    mixin RcCode!();
+    mixin(rcCode);
     void drop() {}
     void bind() {}
     void update(in ImageSliceInfo slice, const(ubyte)[] data) {}
 }
 
 class DummyBuffer : BufferRes {
-    mixin RcCode!();
+    mixin(rcCode);
     void drop() {}
     void bind() {}
     void update(BufferSliceInfo slice, const(ubyte)[] data) {}
 }
 
 class DummyShader : ShaderRes {
-    mixin RcCode!();
+    mixin(rcCode);
     void drop() {}
     @property ShaderStage stage() const { return ShaderStage.Vertex; }
 }
 
 class DummyProgram : ProgramRes {
-    mixin RcCode!();
+    mixin(rcCode);
     void drop() {}
     void bind() {}
 }

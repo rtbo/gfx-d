@@ -1,7 +1,7 @@
 module gfx.core.texture;
 
 import gfx.core : Resource, ResourceHolder, untypeSlices;
-import gfx.core.rc : RefCounted, RcCode;
+import gfx.core.rc : RefCounted, rcCode;
 import gfx.core.context : Context;
 import gfx.core.format;
 
@@ -88,7 +88,7 @@ interface TextureRes : Resource {
 /// untyped texture class
 /// instanciate directly typed ones such as Texture2D!Rgba8
 abstract class RawTexture : ResourceHolder {
-    mixin RcCode!();
+    mixin(rcCode);
 
     private TextureRes _res;
     private TextureType _type;

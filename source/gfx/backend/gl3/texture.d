@@ -20,7 +20,7 @@ import std.experimental.logger;
 
 
 class GlBufferShaderResourceView : ShaderResourceViewRes {
-    mixin RcCode!();
+    mixin(rcCode);
 
     GLuint _texName;
     GLenum _internalFormat;
@@ -43,7 +43,7 @@ class GlBufferShaderResourceView : ShaderResourceViewRes {
 }
 
 class GlTextureShaderResourceView : ShaderResourceViewRes {
-    mixin RcCode!();
+    mixin(rcCode);
 
     Rc!GlTexture _tex;
 
@@ -136,7 +136,7 @@ package TextureRes makeTextureImpl(in bool hasStorage, Context.TextureCreationDe
 }
 
 abstract class GlTexture : TextureRes {
-    mixin RcCode!();
+    mixin(rcCode);
 
     GLuint _name;
     GLenum _target;

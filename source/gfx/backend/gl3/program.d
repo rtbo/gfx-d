@@ -349,7 +349,7 @@ OutputVar[] queryOutputs(GLuint prog) {
 
 
 class GlShader : ShaderRes {
-    mixin RcCode!();
+    mixin(rcCode);
 
     GLuint _name;
     ShaderStage _stage;
@@ -385,7 +385,7 @@ class GlShader : ShaderRes {
 
 
 class GlProgram : ProgramRes {
-    mixin RcCode!();
+    mixin(rcCode);
 
     GLuint _name;
 

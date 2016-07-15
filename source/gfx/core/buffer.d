@@ -1,7 +1,7 @@
 module gfx.core.buffer;
 
 import gfx.core : Resource, ResourceHolder, untypeSlice;
-import gfx.core.rc : RefCounted, Rc, RcCode;
+import gfx.core.rc : RefCounted, Rc, rcCode;
 import gfx.core.context : Context;
 
 enum BufferRole {
@@ -35,7 +35,7 @@ interface BufferRes : Resource {
 }
 
 abstract class RawBuffer : ResourceHolder {
-    mixin RcCode!();
+    mixin(rcCode);
 
     private Rc!BufferRes _res;
     private BufferRole _role;
