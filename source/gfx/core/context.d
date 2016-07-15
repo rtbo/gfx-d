@@ -29,7 +29,7 @@ interface Context {
 
     ProgramRes makeProgram(ShaderRes[] shaders, out ProgramVars info);
 
-    ShaderResourceViewRes viewAsShaderResource(RawBuffer buf);
+    ShaderResourceViewRes viewAsShaderResource(RawBuffer buf, Format fmt);
 
     struct TexSRVCreationDesc {
         ChannelType channel;

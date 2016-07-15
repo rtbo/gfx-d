@@ -25,7 +25,8 @@ abstract class RawShaderResourceView: ResourceHolder {
 }
 
 
-class BufferShaderResourceView(T) : RawShaderResourceView {
+class BufferShaderResourceView(T) : RawShaderResourceView if(isFormatted!T) {
+    private alias Fmt = Formatted!T;
     private Rc!(Buffer!T) _buf;
 
     void drop() {
@@ -34,15 +35,15 @@ class BufferShaderResourceView(T) : RawShaderResourceView {
     }
 
     void pinResources(Context context) {
+        import gfx.core.format : format;
         if(!_buf.pinned) _buf.pinResources(context);
-        _res = context.viewAsShaderResource(_buf);
+        immutable fmt = format!T;
+        _res = context.viewAsShaderResource(_buf, fmt);
     }
-    
 }
 
 
 class TextureShaderResourceView(T) : RawShaderResourceView if(isFormatted!T) {
-
     private alias Fmt = Formatted!T;
     private Rc!(Texture!T) _tex;
     private ubyte _minLevel;

@@ -7,6 +7,7 @@ import gfx.backend.gl3.program;
 
 import gfx.core : Device;
 import gfx.core.context : Context;
+import gfx.core.format : Format;
 import gfx.core.buffer : BufferRes, RawBuffer;
 import gfx.core.texture : TextureRes, RawTexture;
 import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, ProgramVars;
@@ -90,7 +91,7 @@ class GlDeviceContext : Context {
     ProgramRes makeProgram(ShaderRes[] shaders, out ProgramVars vars) {
         return new GlProgram(_caps.ubo, shaders, vars);
     }
-    ShaderResourceViewRes viewAsShaderResource(RawBuffer buf) {
+    ShaderResourceViewRes viewAsShaderResource(RawBuffer buf, Format fmt) {
         return null;
     }
     ShaderResourceViewRes viewAsShaderResource(RawTexture tex, TexSRVCreationDesc desc) {

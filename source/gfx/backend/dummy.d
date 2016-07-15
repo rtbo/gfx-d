@@ -30,7 +30,7 @@ class DummyContext : Context {
     ProgramRes makeProgram(ShaderRes[], out ProgramVars) {
         return new DummyProgram();
     }
-    ShaderResourceViewRes viewAsShaderResource(RawBuffer) {
+    ShaderResourceViewRes viewAsShaderResource(RawBuffer, Format fmt) {
         return null;
     }
     ShaderResourceViewRes viewAsShaderResource(RawTexture, TexSRVCreationDesc desc) {
