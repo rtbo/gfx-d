@@ -184,7 +184,7 @@ Swizzle newSwizzle() {
 
 
 
-private string formatCode(size_t numComps, T, Ch, Surf)() 
+private string formatCode(size_t numComps, T, Ch, Surf)()
         if(isChannel!Ch && isSurface!Surf) {
     import std.format : format;
     string sizeSpec = numComps > 1 ? format("[%s]", numComps) : "";

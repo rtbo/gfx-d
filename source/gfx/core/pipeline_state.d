@@ -9,7 +9,7 @@ import std.meta;
 /// pipeline state objects (pso) embed a part of the pipeline state
 /// in order to allow fast rendering context switches.
 /// PSOs have a layout part and a data part.
-/// the layout part is defined at compile time. when data is filled into a PSO, 
+/// the layout part is defined at compile time. when data is filled into a PSO,
 /// it is checked at runtime that the data fits the layout.
 /// pso embed the following layout:
 ///    program layout (inputs, uniforms, outputs)
@@ -81,7 +81,7 @@ template VertexAttribs(VT) if(is(VT == struct)) {
 
 
 version(unittest) {
-    
+
     struct Vertex {
         @AttribName("a_Pos")
         float[4] position;

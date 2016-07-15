@@ -86,8 +86,8 @@ struct ConstBufferVar {
 }
 
 enum TextureVarType {
-    Buffer, D1, D1Array, 
-    D2, D2Array, D2Multisample, D2ArrayMultisample, 
+    Buffer, D1, D1Array,
+    D2, D2Array, D2Multisample, D2ArrayMultisample,
     D3, Cube, CubeArray
 }
 bool canSample(in TextureVarType tt) {
@@ -152,7 +152,7 @@ struct ShaderSet {
     }
     private Type type;
     private Shader[] shaders;
-    
+
     this(Type type, Shader[] shaders) {
         this.type = type;
         this.shaders = shaders;
@@ -226,7 +226,7 @@ class Program : ResourceHolder {
     Rc!ProgramRes _res;
     Shader[] _shaders;
     ProgramVars _vars;
-    
+
     this(Shader[] shaders) {
         import std.algorithm : each;
         _shaders = shaders;
@@ -285,7 +285,7 @@ class Program : ResourceHolder {
         res ~= format("Samplers:     %s\n", samplers.to!string);
         res ~= format("Outputs:      %s\n", outputs.to!string);
         return res;
-    }   
+    }
 
     void drop() {
         import std.algorithm : each;

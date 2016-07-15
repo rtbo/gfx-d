@@ -14,7 +14,7 @@ interface Context {
         size_t size;
     }
     BufferRes makeBuffer(BufferCreationDesc desc, const(ubyte)[] data);
-    
+
 
     struct TextureCreationDesc {
         TextureType type = TextureType.D1;

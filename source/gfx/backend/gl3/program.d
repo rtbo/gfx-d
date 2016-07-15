@@ -164,16 +164,16 @@ Storage glTypeToStorage(in GLenum type) {
         case GL_UNSIGNED_INT_VEC2            : return Storage.makeVar(VarType(BaseType.U32,  2, 1));
         case GL_UNSIGNED_INT_VEC3            : return Storage.makeVar(VarType(BaseType.U32,  3, 1));
         case GL_UNSIGNED_INT_VEC4            : return Storage.makeVar(VarType(BaseType.U32,  4, 1));
-        
+
         case GL_BOOL                         : return Storage.makeVar(VarType(BaseType.Bool, 1, 1));
         case GL_BOOL_VEC2                    : return Storage.makeVar(VarType(BaseType.Bool, 2, 1));
         case GL_BOOL_VEC3                    : return Storage.makeVar(VarType(BaseType.Bool, 3, 1));
         case GL_BOOL_VEC4                    : return Storage.makeVar(VarType(BaseType.Bool, 4, 1));
-        
+
         case GL_FLOAT_MAT2                   : return Storage.makeVar(VarType(BaseType.F32,  2, 2));
         case GL_FLOAT_MAT3                   : return Storage.makeVar(VarType(BaseType.F32,  3, 3));
         case GL_FLOAT_MAT4                   : return Storage.makeVar(VarType(BaseType.F32,  4, 4));
-        
+
         case GL_FLOAT_MAT2x3                 : return Storage.makeVar(VarType(BaseType.F32,  2, 3));
         case GL_FLOAT_MAT2x4                 : return Storage.makeVar(VarType(BaseType.F32,  2, 4));
         case GL_FLOAT_MAT3x2                 : return Storage.makeVar(VarType(BaseType.F32,  3, 2));
@@ -183,45 +183,45 @@ Storage glTypeToStorage(in GLenum type) {
 
         // TODO: double matrices
 
-        case GL_SAMPLER_1D                   : return Storage.makeSampler(BaseType.F32, TextureVarType.D1,                 
+        case GL_SAMPLER_1D                   : return Storage.makeSampler(BaseType.F32, TextureVarType.D1,
                                                                             No.compare,     No.rect);
-        case GL_SAMPLER_1D_ARRAY             : return Storage.makeSampler(BaseType.F32, TextureVarType.D1Array,            
+        case GL_SAMPLER_1D_ARRAY             : return Storage.makeSampler(BaseType.F32, TextureVarType.D1Array,
                                                                             No.compare,     No.rect);
-        case GL_SAMPLER_1D_SHADOW            : return Storage.makeSampler(BaseType.F32, TextureVarType.D1,                 
+        case GL_SAMPLER_1D_SHADOW            : return Storage.makeSampler(BaseType.F32, TextureVarType.D1,
                                                                             Yes.compare,    No.rect);
-        case GL_SAMPLER_1D_ARRAY_SHADOW      : return Storage.makeSampler(BaseType.F32, TextureVarType.D1Array,            
+        case GL_SAMPLER_1D_ARRAY_SHADOW      : return Storage.makeSampler(BaseType.F32, TextureVarType.D1Array,
                                                                             Yes.compare,    No.rect);
 
-        case GL_SAMPLER_2D                   : return Storage.makeSampler(BaseType.F32, TextureVarType.D2,                 
+        case GL_SAMPLER_2D                   : return Storage.makeSampler(BaseType.F32, TextureVarType.D2,
                                                                             No.compare,     No.rect);
-        case GL_SAMPLER_2D_ARRAY             : return Storage.makeSampler(BaseType.F32, TextureVarType.D2Array,            
+        case GL_SAMPLER_2D_ARRAY             : return Storage.makeSampler(BaseType.F32, TextureVarType.D2Array,
                                                                             No.compare,     No.rect);
-        case GL_SAMPLER_2D_SHADOW            : return Storage.makeSampler(BaseType.F32, TextureVarType.D2,                 
+        case GL_SAMPLER_2D_SHADOW            : return Storage.makeSampler(BaseType.F32, TextureVarType.D2,
                                                                             Yes.compare,    No.rect);
-        case GL_SAMPLER_2D_MULTISAMPLE       : return Storage.makeSampler(BaseType.F32, TextureVarType.D2Multisample,      
+        case GL_SAMPLER_2D_MULTISAMPLE       : return Storage.makeSampler(BaseType.F32, TextureVarType.D2Multisample,
                                                                             No.compare,     No.rect);
-        case GL_SAMPLER_2D_RECT              : return Storage.makeSampler(BaseType.F32, TextureVarType.D2,                 
+        case GL_SAMPLER_2D_RECT              : return Storage.makeSampler(BaseType.F32, TextureVarType.D2,
                                                                             No.compare,     Yes.rect);
-        case GL_SAMPLER_2D_ARRAY_SHADOW      : return Storage.makeSampler(BaseType.F32, TextureVarType.D2Array,            
+        case GL_SAMPLER_2D_ARRAY_SHADOW      : return Storage.makeSampler(BaseType.F32, TextureVarType.D2Array,
                                                                             Yes.compare,    No.rect);
-        case GL_SAMPLER_2D_MULTISAMPLE_ARRAY : return Storage.makeSampler(BaseType.F32, TextureVarType.D2ArrayMultisample, 
+        case GL_SAMPLER_2D_MULTISAMPLE_ARRAY : return Storage.makeSampler(BaseType.F32, TextureVarType.D2ArrayMultisample,
                                                                             No.compare,     No.rect);
-        case GL_SAMPLER_2D_RECT_SHADOW       : return Storage.makeSampler(BaseType.F32, TextureVarType.D2,                 
+        case GL_SAMPLER_2D_RECT_SHADOW       : return Storage.makeSampler(BaseType.F32, TextureVarType.D2,
                                                                             Yes.compare,    Yes.rect);
 
-        case GL_SAMPLER_3D                   : return Storage.makeSampler(BaseType.F32, TextureVarType.D3,                 
+        case GL_SAMPLER_3D                   : return Storage.makeSampler(BaseType.F32, TextureVarType.D3,
                                                                             No.compare,     No.rect);
 
-        case GL_SAMPLER_CUBE                 : return Storage.makeSampler(BaseType.F32, TextureVarType.Cube,               
+        case GL_SAMPLER_CUBE                 : return Storage.makeSampler(BaseType.F32, TextureVarType.Cube,
                                                                             No.compare,     No.rect);
-        case GL_SAMPLER_CUBE_MAP_ARRAY       : return Storage.makeSampler(BaseType.F32, TextureVarType.CubeArray,          
+        case GL_SAMPLER_CUBE_MAP_ARRAY       : return Storage.makeSampler(BaseType.F32, TextureVarType.CubeArray,
                                                                             No.compare,     No.rect);
-        case GL_SAMPLER_CUBE_SHADOW          : return Storage.makeSampler(BaseType.F32, TextureVarType.Cube,               
+        case GL_SAMPLER_CUBE_SHADOW          : return Storage.makeSampler(BaseType.F32, TextureVarType.Cube,
                                                                             Yes.compare,    No.rect);
-        case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW: return Storage.makeSampler(BaseType.F32, TextureVarType.CubeArray,          
+        case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW: return Storage.makeSampler(BaseType.F32, TextureVarType.CubeArray,
                                                                             Yes.compare,    No.rect);
-                                                                            
-        case GL_INT_SAMPLER_BUFFER           : return Storage.makeSampler(BaseType.I32, TextureVarType.Buffer,             
+
+        case GL_INT_SAMPLER_BUFFER           : return Storage.makeSampler(BaseType.I32, TextureVarType.Buffer,
                                                                             No.compare,     No.rect);
         default:
             return Storage.init;
@@ -262,7 +262,7 @@ out ConstVar[] consts, out ConstVar[][] blockVars, out TextureVar[] textures, ou
     }
 
     auto nameBuf = new char[bufLen];
-    
+
     ubyte texSlot = 0;
     glUseProgram(prog);
 
@@ -317,7 +317,7 @@ ConstBufferVar[] queryUniformBlocks(GLuint prog, ConstVar[][] blockVars) {
 
         enforce(numVars == blockVars[i].length);
 
-        res[i] = ConstBufferVar(name, cast(ubyte)loc, size, blockVars[i]);  
+        res[i] = ConstBufferVar(name, cast(ubyte)loc, size, blockVars[i]);
     }
 
     return res;
@@ -391,7 +391,7 @@ class GlProgram : ProgramRes {
 
     this(in bool uboSupport, ShaderRes[] shaders, out ProgramVars vars) {
         import std.algorithm : map, each, fold;
-         
+
         _name = glCreateProgram();
 
         shaders
@@ -403,7 +403,7 @@ class GlProgram : ProgramRes {
         if (!getProgramLinkStatus(_name)) {
             throw new ProgramLinkError(log);
         }
- 
+
         if (log.length != 0) {
             warningf("link error of shader program:\n%s", log);
         }

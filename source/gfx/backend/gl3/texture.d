@@ -68,7 +68,7 @@ package TextureRes makeTextureImpl(in bool hasStorage, Context.TextureCreationDe
     }
     GlTexture makeType() {
         final switch(desc.type) {
-        case TextureType.D1: 
+        case TextureType.D1:
             return makeHasStorage!GlTexture1D(desc.imgInfo.levels, desc.imgInfo.width);
         case TextureType.D1Array:
             return makeHasStorage!GlTexture2D(desc.imgInfo.levels, desc.imgInfo.width, desc.imgInfo.numSlices);
@@ -390,7 +390,7 @@ class GlTextureCubeArray : GlTexture {
         _levels = min(levels, mipmaps(_dim, _dim));
 
         glTexStorage3D(_target, _levels, _internalFormat, _dim, _dim, _slices);
-        
+
     }
 
     void update(in ImageSliceInfo slice, const(ubyte)[] data) {
@@ -441,7 +441,7 @@ private GLenum formatToGlInternalFormat(in Format format) {
     alias S = SurfaceType;
     alias C = ChannelType;
     enum GL_RGB565 = 0x8D62; // apparently not defined in derelict
-    
+
     immutable ch = format.channel;
 
     switch(format.surface) {

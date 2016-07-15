@@ -9,7 +9,7 @@ import std.typecons : BitFlags;
 
 enum TextureType {
     D1, D1Array,
-    D2, D2Array, 
+    D2, D2Array,
     D2Multisample, D2ArrayMultisample,
     D3, Cube, CubeArray
 }
@@ -86,7 +86,7 @@ interface TextureRes : Resource {
 
 
 /// untyped texture class
-/// instanciate directly typed ones such as Texture2D!Rgba8 
+/// instanciate directly typed ones such as Texture2D!Rgba8
 abstract class RawTexture : ResourceHolder {
     mixin RcCode!();
 
