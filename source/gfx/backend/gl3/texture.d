@@ -157,7 +157,7 @@ package TextureRes makeTextureImpl(in bool hasStorage, Context.TextureCreationDe
                         break;
                     }
                     if(cube) {
-                        sliceInfo.face = CUBE_FACES[f];
+                        sliceInfo.face = cubeFaces[f];
                     }
                     res.update(sliceInfo, imgData);
                 }
@@ -341,7 +341,7 @@ class GlTexture3DMultisample(bool UseStorage) : GlTexture {
 
 
 
-immutable GL_CUBE_FACES = [
+immutable glCubeFaces = [
     GL_TEXTURE_CUBE_MAP_POSITIVE_X,
     GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
     GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
@@ -393,7 +393,7 @@ class GlTextureCube(bool UseStorage) : GlTexture {
             glTexStorage2D(_target, _levels, _internalFormat, _dim, _dim);
         }
         else {
-            foreach(face; GL_CUBE_FACES) {
+            foreach(face; glCubeFaces) {
                 glTexImage2D(face, 0, _internalFormat, _dim, _dim, 0, _format, _type, null);
             }
         }

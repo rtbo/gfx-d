@@ -36,7 +36,7 @@ enum CubeFace {
 }
 
 /// an array of faces in the order that is expected during cube initialization
-immutable CUBE_FACES = [
+immutable cubeFaces = [
     CubeFace.PosX, CubeFace.NegX,
     CubeFace.PosY, CubeFace.NegY,
     CubeFace.PosZ, CubeFace.NegZ,

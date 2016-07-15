@@ -19,15 +19,13 @@ struct Vertex {
 }
 
 
-
-
-immutable TRIANGLE = [
+immutable triangle = [
     Vertex([-0.5, -0.5], [1.0, 0.0, 0.0]),
     Vertex([ 0.5, -0.5], [0.0, 1.0, 0.0]),
     Vertex([ 0.0,  0.5], [0.0, 0.0, 1.0]),
 ];
 
-immutable float[4] CLEAR_COLOR = [0.1, 0.2, 0.3, 1.0];
+immutable float[4] clearColor = [0.1, 0.2, 0.3, 1.0];
 
 
 class GlfwContext : GlContext {
@@ -84,7 +82,7 @@ int main()
 
     auto context = new GlfwContext(window);
     {
-        auto vbuf = rc(createVertexBuffer!Vertex(TRIANGLE));
+        auto vbuf = rc(createVertexBuffer!Vertex(triangle));
         auto prog = makeRc!Program(ShaderSet.vertexPixel(
             import("130-triangle.v.glsl"),
             import("130-triangle.f.glsl"),
@@ -97,8 +95,8 @@ int main()
         vbuf.pinResources(device.context);
         prog.pinResources(device.context);
 
-        glClearColor(CLEAR_COLOR[0], CLEAR_COLOR[1],
-                CLEAR_COLOR[2], CLEAR_COLOR[3]);
+        glClearColor(clearColor[0], clearColor[1],
+                clearColor[2], clearColor[3]);
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window)) {
