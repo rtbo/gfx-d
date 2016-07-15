@@ -66,6 +66,7 @@ abstract class RawBuffer : ResourceHolder {
         _initData = [];
     }
 
+    final @property inout(BufferRes) res() inout { return _res.obj; }
     final @property BufferRole role() const { return _role; }
     final @property BufferUsage usage() const { return _usage; }
     final @property MapAccess access() const { return _access; }

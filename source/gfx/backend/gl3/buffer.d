@@ -53,4 +53,6 @@ class GlBuffer : BufferRes {
         assert(_size >= slice.offset+slice.size);
         glBufferSubData(_target, slice.offset, slice.size, cast(const(GLvoid*))data.ptr);
     }
+
+    @property GLuint name() const { return _name; }
 }

@@ -76,7 +76,6 @@ struct ImageInfo {
             level, CubeFace.None,
         );
     }
-
 }
 
 
@@ -115,6 +114,7 @@ abstract class RawTexture : ResourceHolder {
         }
     }
 
+    final @property inout(TextureRes) res() inout { return _res; }
     final @property TextureType type() const { return _type; }
     final @property ImageInfo imgInfo() const { return _imgInfo; }
     final @property ushort width() const { return _imgInfo.width; }
