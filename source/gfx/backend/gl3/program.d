@@ -1,8 +1,8 @@
 module gfx.backend.gl3.program;
 
-import gfx.backend;
-import gfx.core.context;
-import gfx.core.rc;
+import gfx.backend : unsafeCast;
+import gfx.core.context : Context;
+import gfx.core.rc : rcCode;
 import gfx.core.program;
 import gfx.core.error;
 
@@ -204,7 +204,8 @@ Storage glTypeToStorage(in GLenum type) {
                                                                             No.compare,     Yes.rect);
         case GL_SAMPLER_2D_ARRAY_SHADOW      : return Storage.makeSampler(BaseType.F32, TextureVarType.D2Array,
                                                                             Yes.compare,    No.rect);
-        case GL_SAMPLER_2D_MULTISAMPLE_ARRAY : return Storage.makeSampler(BaseType.F32, TextureVarType.D2ArrayMultisample,
+        case GL_SAMPLER_2D_MULTISAMPLE_ARRAY : return Storage.makeSampler(BaseType.F32,
+                                                                            TextureVarType.D2ArrayMultisample,
                                                                             No.compare,     No.rect);
         case GL_SAMPLER_2D_RECT_SHADOW       : return Storage.makeSampler(BaseType.F32, TextureVarType.D2,
                                                                             Yes.compare,    Yes.rect);

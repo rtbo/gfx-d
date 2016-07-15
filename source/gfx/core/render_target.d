@@ -1,10 +1,10 @@
 module gfx.core.render_target;
 
-import gfx.core;
-import gfx.core.rc;
-import gfx.core.context;
-import gfx.core.format;
-import gfx.core.texture;
+import gfx.core : Resource, ResourceHolder;
+import gfx.core.rc : Rc, rcCode;
+import gfx.core.context : Context;
+import gfx.core.format : isFormatted, Formatted;
+import gfx.core.texture : Texture;
 
 import std.typecons : BitFlags;
 

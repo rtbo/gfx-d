@@ -1,10 +1,8 @@
 module gfx.core.pipeline_state;
 
-import gfx.core.rc;
-import gfx.core.context;
 
-import std.traits;
-import std.meta;
+import std.traits : FieldNameTuple, Fields, getSymbolsByUDA, getUDAs;
+import std.meta : AliasSeq;
 
 /// pipeline state objects (pso) embed a part of the pipeline state
 /// in order to allow fast rendering context switches.

@@ -1,16 +1,13 @@
 module triangle;
 
 import gfx.backend.gl3 : GlContext, createGlDevice;
-import gfx.core.rc;
-import gfx.core.buffer;
-import gfx.core.program;
-import gfx.core.pipeline_state;
+import gfx.core.rc : rc, makeRc;
+import gfx.core.buffer : createVertexBuffer;
+import gfx.core.program : ShaderSet, Program;
+import gfx.core.pipeline_state : AttribName;
 
 import derelict.glfw3.glfw3;
 import derelict.opengl3.gl3;
-
-import std.stdio;
-import std.string;
 
 
 struct Vertex {
@@ -51,6 +48,8 @@ class GlfwContext : GlContext {
 extern(C)
 void handleError(int code, const(char)*str) nothrow {
     try {
+        import std.stdio : writeln;
+        import std.string : fromStringz;
         writeln("GLFW error: ", code, ":\n - ", fromStringz(str), "\n");
     }
     catch(Throwable th) {}
@@ -89,7 +88,6 @@ int main()
         ));
 
         auto device = createGlDevice(context);
-        //writeln(device.infoString);
         context.makeCurrent();
 
         vbuf.pinResources(device.context);

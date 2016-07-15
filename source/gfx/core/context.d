@@ -1,11 +1,11 @@
 module gfx.core.context;
 
-import gfx.core.buffer;
-import gfx.core.format;
-import gfx.core.texture;
-import gfx.core.program;
-import gfx.core.shader_resource;
-import gfx.core.render_target;
+import gfx.core.buffer : BufferRes, RawBuffer, BufferRole, BufferUsage;
+import gfx.core.format : Format, ChannelType, Swizzle;
+import gfx.core.texture : TextureRes, RawTexture, TextureType, TexUsageFlags, ImageInfo;
+import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, ProgramVars;
+import gfx.core.shader_resource : ShaderResourceViewRes;
+import gfx.core.render_target : RenderTargetViewRes, DepthStencilViewRes, DSVReadOnlyFlags;
 
 import std.typecons : Nullable;
 

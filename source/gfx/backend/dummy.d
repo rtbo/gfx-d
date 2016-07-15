@@ -4,11 +4,11 @@ import gfx.core : Device;
 import gfx.core.context : Context;
 import gfx.core.rc : rcCode;
 import gfx.core.format : Format;
-import gfx.core.buffer;
-import gfx.core.texture;
-import gfx.core.program;
-import gfx.core.shader_resource;
-import gfx.core.render_target;
+import gfx.core.buffer : BufferRes, RawBuffer, BufferSliceInfo;
+import gfx.core.texture : TextureRes, RawTexture, ImageSliceInfo;
+import gfx.core.program : ShaderRes, ProgramRes, ProgramVars, ShaderStage;
+import gfx.core.shader_resource : ShaderResourceViewRes;
+import gfx.core.render_target : RenderTargetViewRes, DepthStencilViewRes;
 
 
 class DummyDevice : Device {

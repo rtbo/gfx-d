@@ -1,8 +1,8 @@
 module gfx.backend.gl3.buffer;
 
-import gfx.core.rc;
-import gfx.core.context;
-import gfx.core.buffer;
+import gfx.core.rc : rcCode;
+import gfx.core.context : Context;
+import gfx.core.buffer : BufferRes, BufferRole, BufferUsage, BufferSliceInfo;
 
 import derelict.opengl3.gl3;
 

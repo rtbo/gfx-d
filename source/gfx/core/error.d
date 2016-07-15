@@ -1,8 +1,7 @@
 module gfx.core.error;
 
-import gfx.core.program;
-import gfx.core.format;
-import gfx.core.texture;
+import gfx.core.program : ShaderStage;
+import gfx.core.format : SurfaceType, ChannelType;
 
 import std.typecons;
 

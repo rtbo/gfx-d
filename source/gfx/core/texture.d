@@ -3,7 +3,7 @@ module gfx.core.texture;
 import gfx.core : Resource, ResourceHolder, untypeSlices;
 import gfx.core.rc : RefCounted, rcCode;
 import gfx.core.context : Context;
-import gfx.core.format;
+import gfx.core.format : isFormatted, Formatted, Format, Swizzle;
 
 import std.typecons : BitFlags;
 
@@ -239,6 +239,7 @@ class TextureCubeArray(TexelF) : Texture!TexelF {
 }
 unittest {
     import gfx.backend.dummy;
+    import gfx.core.format : Rgba8;
     auto ctx = new DummyContext;
     TexUsageFlags usage = TextureUsage.ShaderResource;
     auto tex = new TextureCube!Rgba8(usage, 3, 1);

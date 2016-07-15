@@ -1,15 +1,14 @@
 module gfx.backend.gl3.texture;
 
-import gfx.backend;
-import gfx.backend.gl3;
-import gfx.backend.gl3.buffer;
-import gfx.core.rc;
-import gfx.core.format;
+import gfx.backend : unsafeCast;
+import gfx.backend.gl3.buffer : GlBuffer;
+import gfx.core.rc : Rc, rcCode;
+import gfx.core.format : Format, SurfaceType, ChannelType;
 import gfx.core.texture;
-import gfx.core.buffer;
-import gfx.core.context;
-import gfx.core.shader_resource;
-import gfx.core.render_target;
+import gfx.core.buffer : RawBuffer;
+import gfx.core.context : Context;
+import gfx.core.shader_resource : ShaderResourceViewRes;
+import gfx.core.render_target : RenderTargetViewRes, DepthStencilViewRes;
 import gfx.core.error;
 
 
