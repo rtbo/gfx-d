@@ -2,7 +2,9 @@ module gfx.backend.gl3;
 
 import gfx.backend.gl3.info : ContextInfo;
 import gfx.backend.gl3.buffer : GlBuffer;
-import gfx.backend.gl3.texture;
+import gfx.backend.gl3.texture :    makeTextureImpl,
+                                    GlBufferShaderResourceView,
+                                    GlTextureShaderResourceView;
 import gfx.backend.gl3.program;
 
 import gfx.core : Device;
@@ -92,9 +94,9 @@ class GlDeviceContext : Context {
         return new GlProgram(_caps.ubo, shaders, vars);
     }
     ShaderResourceViewRes viewAsShaderResource(RawBuffer buf, Format fmt) {
-        return null;
+        return new GlBufferShaderResourceView(buf, fmt);
     }
     ShaderResourceViewRes viewAsShaderResource(RawTexture tex, TexSRVCreationDesc desc) {
-        return null;
+        return new GlTextureShaderResourceView(tex, desc);
     }
 }

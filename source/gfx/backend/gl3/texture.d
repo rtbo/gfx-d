@@ -1,10 +1,14 @@
 module gfx.backend.gl3.texture;
 
+import gfx.backend;
 import gfx.backend.gl3;
+import gfx.backend.gl3.buffer;
 import gfx.core.rc;
 import gfx.core.format;
 import gfx.core.texture;
+import gfx.core.buffer;
 import gfx.core.context;
+import gfx.core.shader_resource;
 import gfx.core.error;
 
 
@@ -12,6 +16,46 @@ import derelict.opengl3.gl3;
 
 import std.typecons : Tuple;
 import std.experimental.logger;
+
+
+
+class GlBufferShaderResourceView : ShaderResourceViewRes {
+    mixin RcCode!();
+
+    GLuint _texName;
+    GLenum _internalFormat;
+    Rc!GlBuffer _buf;
+
+    this(RawBuffer buf, Format fmt) {
+        assert(buf.pinned);
+        _buf = unsafeCast!GlBuffer(buf.res);
+
+        _internalFormat = formatToGlInternalFormat(fmt);
+        glGenTextures(1, &_texName);
+        glBindTexture(GL_TEXTURE_BUFFER, _texName);
+        glTextureBuffer(GL_TEXTURE_BUFFER, _internalFormat, _buf.name);
+    }
+
+    void drop() {
+        _buf.nullify();
+        glDeleteBuffers(1, &_texName);
+    }
+}
+
+class GlTextureShaderResourceView : ShaderResourceViewRes {
+    mixin RcCode!();
+
+    Rc!GlTexture _tex;
+
+    this(RawTexture tex, Context.TexSRVCreationDesc desc) {
+        assert(tex.pinned);
+        _tex = unsafeCast!GlTexture(tex.res);
+    }
+
+    void drop() {
+        _tex.nullify();
+    }
+}
 
 
 package TextureRes makeTextureImpl(in bool hasStorage, Context.TextureCreationDesc desc, const(ubyte)[][] data) {
