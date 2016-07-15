@@ -8,6 +8,7 @@ import gfx.core.buffer;
 import gfx.core.texture;
 import gfx.core.program;
 import gfx.core.shader_resource;
+import gfx.core.render_target;
 
 
 class DummyDevice : Device {
@@ -34,6 +35,12 @@ class DummyContext : Context {
         return null;
     }
     ShaderResourceViewRes viewAsShaderResource(RawTexture, TexSRVCreationDesc desc) {
+        return null;
+    }
+    RenderTargetViewRes viewAsRenderTarget(RawTexture tex, TexRTVCreationDesc desc) {
+        return null;
+    }
+    DepthStencilViewRes viewAsDepthStencil(RawTexture tex, TexDSVCreationDesc desc) {
         return null;
     }
 }

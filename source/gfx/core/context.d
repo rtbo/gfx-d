@@ -5,6 +5,9 @@ import gfx.core.format;
 import gfx.core.texture;
 import gfx.core.program;
 import gfx.core.shader_resource;
+import gfx.core.render_target;
+
+import std.typecons : Nullable;
 
 interface Context {
 
@@ -38,4 +41,18 @@ interface Context {
         Swizzle swizzle;
     }
     ShaderResourceViewRes viewAsShaderResource(RawTexture tex, TexSRVCreationDesc desc);
+
+    struct TexRTVCreationDesc {
+        ChannelType channel;
+        ubyte level;
+        Nullable!ubyte layer;
+    }
+    RenderTargetViewRes viewAsRenderTarget(RawTexture tex, TexRTVCreationDesc desc);
+
+    struct TexDSVCreationDesc {
+        ubyte level;
+        Nullable!ubyte layer;
+        DSVReadOnlyFlags flags;
+    }
+    DepthStencilViewRes viewAsDepthStencil(RawTexture tex, TexDSVCreationDesc desc);
 }

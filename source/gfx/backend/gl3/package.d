@@ -4,7 +4,9 @@ import gfx.backend.gl3.info : ContextInfo;
 import gfx.backend.gl3.buffer : GlBuffer;
 import gfx.backend.gl3.texture :    makeTextureImpl,
                                     GlBufferShaderResourceView,
-                                    GlTextureShaderResourceView;
+                                    GlTextureShaderResourceView,
+                                    GlRenderTargetView,
+                                    GlDepthStencilView;
 import gfx.backend.gl3.program;
 
 import gfx.core : Device;
@@ -14,6 +16,7 @@ import gfx.core.buffer : BufferRes, RawBuffer;
 import gfx.core.texture : TextureRes, RawTexture;
 import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, ProgramVars;
 import gfx.core.shader_resource : ShaderResourceViewRes;
+import gfx.core.render_target : RenderTargetViewRes, DepthStencilViewRes;
 
 import derelict.opengl3.gl3;
 
@@ -98,5 +101,11 @@ class GlDeviceContext : Context {
     }
     ShaderResourceViewRes viewAsShaderResource(RawTexture tex, TexSRVCreationDesc desc) {
         return new GlTextureShaderResourceView(tex, desc);
+    }
+    RenderTargetViewRes viewAsRenderTarget(RawTexture tex, TexRTVCreationDesc desc) {
+        return new GlRenderTargetView(tex, desc);
+    }
+    DepthStencilViewRes viewAsDepthStencil(RawTexture tex, TexDSVCreationDesc desc) {
+        return new GlDepthStencilView(tex, desc);
     }
 }

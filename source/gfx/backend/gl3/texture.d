@@ -9,6 +9,7 @@ import gfx.core.texture;
 import gfx.core.buffer;
 import gfx.core.context;
 import gfx.core.shader_resource;
+import gfx.core.render_target;
 import gfx.core.error;
 
 
@@ -56,6 +57,38 @@ class GlTextureShaderResourceView : ShaderResourceViewRes {
         _tex.nullify();
     }
 }
+
+
+class GlRenderTargetView : RenderTargetViewRes {
+    mixin(rcCode);
+
+    Rc!GlTexture _tex;
+
+    this(RawTexture tex, Context.TexRTVCreationDesc desc) {
+        assert(tex.pinned);
+        _tex = unsafeCast!GlTexture(tex.res);
+    }
+
+    void drop() {
+        _tex.nullify();
+    }
+}
+
+class GlDepthStencilView : DepthStencilViewRes {
+    mixin(rcCode);
+
+    Rc!GlTexture _tex;
+
+    this(RawTexture tex, Context.TexDSVCreationDesc desc) {
+        assert(tex.pinned);
+        _tex = unsafeCast!GlTexture(tex.res);
+    }
+
+    void drop() {
+        _tex.nullify();
+    }
+}
+
 
 
 package TextureRes makeTextureImpl(in bool hasStorage, Context.TextureCreationDesc desc, const(ubyte)[][] data) {
