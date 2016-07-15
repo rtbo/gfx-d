@@ -287,6 +287,9 @@ class Program : ResourceHolder {
     }
 
     void drop() {
+        import std.algorithm : each;
+        _shaders.each!(s => s.release()); // in case pinResources was not called
+        _shaders = [];
         _res.nullify();
     }
 }
