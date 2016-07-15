@@ -18,10 +18,10 @@ interface Context {
 
     struct TextureCreationDesc {
         TextureType type = TextureType.D1;
+        TexUsageFlags usage;
         Format format;
         ImageInfo imgInfo;
         ubyte samples;
-        TexUsageFlags usage;
     }
     TextureRes makeTexture(TextureCreationDesc desc, const(ubyte)[][] data);
 
