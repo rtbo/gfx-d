@@ -240,6 +240,7 @@ class TextureCubeArray(TexelF) : Texture!TexelF {
 unittest {
     import gfx.backend.dummy;
     auto ctx = new DummyContext;
-    auto tex = new TextureCube!Rgba8(3, 1);
+    TexUsageFlags usage = TextureUsage.ShaderResource;
+    auto tex = new TextureCube!Rgba8(usage, 3, 1);
 }
 
