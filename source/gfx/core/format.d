@@ -32,8 +32,23 @@ alias U16Norm = Typedef!ushort;
 alias I16Norm = Typedef!short;
 alias Half = Typedef!(short, short.init, "half");
 
-
+/// template to be specialized to provide
+/// alias type definitions of Surface, Channel and View
 template Formatted(T) {}
+
+/// tests if a type actually provides the correct
+/// Formatted specialization
+template isFormatted(T) {
+    alias Fmtted = Formatted!T;
+    static if (is(Fmtted.Surface) && is(Fmtted.Channel) && is(Fmtted.View)) {
+        enum isFormatted =
+            isSurface!(Fmtted.Surface) &&
+            isChannel!(Fmtted.Channel);
+    }
+    else {
+        enum isFormatted = false;
+    }
+}
 
 
 mixin SurfaceCode!(
@@ -123,19 +138,6 @@ template Formatted(T: Tuple!(S, C), S, C)
     alias Surface = S;
     alias Channel = C;
     alias View = Channel.ShaderType[S.numComponents];
-}
-
-
-template isFormatted(T) {
-    alias Fmtted = Formatted!T;
-    static if (is(Fmtted.Surface) && is(Fmtted.Channel) && is(Fmtted.View)) {
-        enum isFormatted =
-            isSurface!(Fmtted.Surface) &&
-            isChannel!(Fmtted.Channel);
-    }
-    else {
-        enum isFormatted = false;
-    }
 }
 
 static assert(is(Formatted!(Rgba8).Surface));
