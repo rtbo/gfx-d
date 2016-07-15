@@ -82,39 +82,36 @@ int main()
         return -1;
     }
 
-    auto vbuf = makeRc!(VertexBuffer!Vertex)(TRIANGLE);
-    auto prog = makeRc!(Program)(ShaderSet.vertexPixel(
-        import("130-triangle.v.glsl"),
-        import("130-triangle.f.glsl"),
-    ));
-
     auto context = new GlfwContext(window);
-    auto device = createGlDevice(context);
-    //writeln(device.infoString);
-    context.makeCurrent();
+    {
+        auto vbuf = makeRc!(VertexBuffer!Vertex)(TRIANGLE);
+        auto prog = makeRc!(Program)(ShaderSet.vertexPixel(
+            import("130-triangle.v.glsl"),
+            import("130-triangle.f.glsl"),
+        ));
 
-    vbuf.pinResources(device.context);
-    prog.pinResources(device.context);
+        auto device = createGlDevice(context);
+        //writeln(device.infoString);
+        context.makeCurrent();
 
-    glClearColor(CLEAR_COLOR[0], CLEAR_COLOR[1],
-            CLEAR_COLOR[2], CLEAR_COLOR[3]);
+        vbuf.pinResources(device.context);
+        prog.pinResources(device.context);
 
-    /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(window)) {
-        /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(CLEAR_COLOR[0], CLEAR_COLOR[1],
+                CLEAR_COLOR[2], CLEAR_COLOR[3]);
 
-        /* Swap front and back buffers */
-        context.swapBuffers();
+        /* Loop until the user closes the window */
+        while (!glfwWindowShouldClose(window)) {
+            /* Render here */
+            glClear(GL_COLOR_BUFFER_BIT);
 
-        /* Poll for and process events */
-        glfwPollEvents();
+            /* Swap front and back buffers */
+            context.swapBuffers();
+
+            /* Poll for and process events */
+            glfwPollEvents();
+        }
     }
-
-    // resources must be released before context is done.
-    vbuf.nullify();
-    prog.nullify();
-
     context.doneCurrent();
     glfwTerminate();
     return 0;
