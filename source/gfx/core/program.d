@@ -278,13 +278,14 @@ class Program : ResourceHolder {
         import std.format : format;
         import std.conv : to;
         string res;
-        res ~= format("Attributes: %s\n", attributes.to!string);
-        res ~= format("Consts: %s\n", consts.to!string);
-        res ~= format("Textures: %s\n", textures.to!string);
-        res ~= format("Samplers: %s\n", samplers.to!string);
-        res ~= format("Outputs: %s\n", outputs.to!string);
+        res ~= format("Attributes:   %s\n", attributes.to!string);
+        res ~= format("Consts:       %s\n", consts.to!string);
+        res ~= format("ConstBuffers: %s\n", constBuffers.to!string);
+        res ~= format("Textures:     %s\n", textures.to!string);
+        res ~= format("Samplers:     %s\n", samplers.to!string);
+        res ~= format("Outputs:      %s\n", outputs.to!string);
         return res;
-    }
+    }   
 
     void drop() {
         import std.algorithm : each;
