@@ -5,6 +5,11 @@ import gfx.core.context : Context;
 
 import std.traits;
 
+
+immutable size_t maxVertexAttribs = 16;
+immutable size_t maxColorTargets = 4;
+
+
 interface Resource : RefCounted {}
 
 interface ResourceHolder : RefCounted {

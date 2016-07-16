@@ -1,19 +1,34 @@
 module triangle;
 
 import gfx.backend.gl3 : GlContext, createGlDevice;
-import gfx.core.rc : rc, makeRc;
+import gfx.core.rc : Rc, rc, makeRc;
+import gfx.core.format : Rgba8;
 import gfx.core.buffer : createVertexBuffer;
 import gfx.core.program : ShaderSet, Program;
-import gfx.core.pipeline_state : AttribName;
+import gfx.core.pso.meta;
 
 import derelict.glfw3.glfw3;
 import derelict.opengl3.gl3;
 
 
 struct Vertex {
-    @Name("a_Pos")    float[2] pos;
-    @Name("a_Color")  float[3] color;
+    @GfxName("a_Pos")   float[2] pos;
+    @GfxName("a_Color") float[3] color;
 }
+
+struct PipeMeta {
+                        VertexBuffer!Vertex input;
+    @GfxName("o_Color") RenderTarget!Rgba8 output;
+}
+
+static assert(isMetaStruct!PipeMeta);
+
+alias PipeInit = PipelineInit!PipeMeta;
+alias PipeData = PipelineData!PipeMeta;
+pragma(msg, typeof(PipeInit.input).stringof);
+pragma(msg, typeof(PipeData.input).stringof);
+pragma(msg, PipeInit.defValue);
+
 
 
 immutable triangle = [

@@ -46,7 +46,7 @@ class BufferShaderResourceView(T) : RawShaderResourceView if(isFormatted!T) {
     private alias Fmt = Formatted!T;
     private Rc!(Buffer!T) _buf;
 
-    void drop() {
+    override void drop() {
         _buf.nullify();
         super.drop();
     }
@@ -74,7 +74,7 @@ class TextureShaderResourceView(T) : RawShaderResourceView if(isFormatted!T) {
         _swizzle = swizzle;
     }
 
-    void drop() {
+    override void drop() {
         _tex.nullify();
         super.drop();
     }
@@ -127,7 +127,7 @@ class RenderTargetView(T) : RawRenderTargetView if(isFormatted!T) {
         _res = context.viewAsRenderTarget(_tex.obj, desc);
     }
 
-    void drop() {
+    override void drop() {
         _tex.nullify();
         super.drop();
     }
