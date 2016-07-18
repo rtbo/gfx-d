@@ -8,14 +8,16 @@ import gfx.backend.gl3.view :   GlBufferShaderResourceView,
                                 GlRenderTargetView,
                                 GlDepthStencilView;
 import gfx.backend.gl3.program : GlShader, GlProgram;
+import gfx.backend.gl3.pso : GlPipelineState;
 
 import gfx.core : Device;
 import gfx.core.context : Context;
 import gfx.core.format : Format;
 import gfx.core.buffer : BufferRes, RawBuffer;
 import gfx.core.texture : TextureRes, RawTexture;
-import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, ProgramVars;
+import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, ProgramVars, Program;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes;
+import gfx.core.pso : PipelineStateRes, PipelineDescriptor;
 
 import derelict.opengl3.gl3;
 
@@ -53,7 +55,7 @@ class GlDevice : Device {
         enforce(_info.caps.interfaceQuery, "GL_ARB_program_interface_query is requested by gfx-d");
 
         _deviceContext = new GlDeviceContext(_info.caps);
-        logf("built open gl context:\n%s", _info.infoString);
+        logf("built opengl context:\n%s", _info.infoString);
     }
 
     @property Context context() {
@@ -86,6 +88,9 @@ class GlDeviceContext : Context {
     @property bool hasIntrospection() const {
         return _caps.interfaceQuery;
     }
+    @property string name() const {
+        return "OpenGl 3";
+    }
 
     TextureRes makeTexture(TextureCreationDesc desc, const(ubyte)[][] data) {
         return makeTextureImpl(_caps.textureStorage, desc, data);
@@ -110,5 +115,8 @@ class GlDeviceContext : Context {
     }
     DepthStencilViewRes viewAsDepthStencil(RawTexture tex, TexDSVCreationDesc desc) {
         return new GlDepthStencilView(tex, desc);
+    }
+    PipelineStateRes makePipeline(Program prog, PipelineDescriptor descriptor) {
+        return new GlPipelineState(prog, descriptor);
     }
 }

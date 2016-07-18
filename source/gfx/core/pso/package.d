@@ -152,7 +152,7 @@ abstract class RawPipelineState : ResourceHolder {
             enforce(!_descriptor.needsToFetchSlots);
         }
 
-
+        _res = context.makePipeline(_prog.obj, _descriptor);
     }
 
     void drop() {
