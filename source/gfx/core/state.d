@@ -202,36 +202,14 @@ enum BlendValue {
     ConstAlpha,
 }
 
-class Factor {
-    enum Type {
-        Zero,
-        One,
-        SourceAlphaSaturated,
-        ZeroPlus,
-        OneMinus,
-    }
-    Type type;
 
-    this(Type type) {
-        this.type = type;
-    }
-}
-
-class ZeroPlusFactor : Factor {
-    this(BlendValue blend) {
-        super(Type.ZeroPlus);
-        this.blend = blend;
-    }
-    BlendValue blend;
-}
-
-class OneMinusFactor : Factor {
-    this(BlendValue blend) {
-        super(Type.OneMinus);
-        this.blend = blend;
-    }
-    BlendValue blend;
-}
+alias Factor = SafeUnion!(
+    "Zero",
+    "One",
+    "SourceAlphaSaturated",
+    "ZeroPlus", BlendValue,
+    "OneMinus", BlendValue,
+);
 
 struct BlendChannel {
     Equation equation;
@@ -240,8 +218,7 @@ struct BlendChannel {
 
     static BlendChannel makeDefault() {
         return BlendChannel(Equation.Add,
-            new Factor(Factor.Type.One),
-            new Factor(Factor.Type.One));
+            Factor.makeOne(), Factor.makeOne());
     }
 }
 
