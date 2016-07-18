@@ -3,12 +3,14 @@ module gfx.core.context;
 import gfx.core.buffer : BufferRes, RawBuffer, BufferRole, BufferUsage;
 import gfx.core.format : Format, ChannelType, Swizzle;
 import gfx.core.texture : TextureRes, RawTexture, TextureType, TexUsageFlags, ImageInfo;
-import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, ProgramVars;
+import gfx.core.program : ShaderStage, ShaderRes, ProgramRes;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes, DSVReadOnlyFlags;
 
 import std.typecons : Nullable;
 
 interface Context {
+
+    @property bool hasIntrospection() const;
 
     struct BufferCreationDesc {
         BufferRole role;
@@ -29,7 +31,7 @@ interface Context {
 
     ShaderRes makeShader(ShaderStage stage, string code);
 
-    ProgramRes makeProgram(ShaderRes[] shaders, out ProgramVars info);
+    ProgramRes makeProgram(ShaderRes[] shaders);
 
     ShaderResourceViewRes viewAsShaderResource(RawBuffer buf, Format fmt);
 

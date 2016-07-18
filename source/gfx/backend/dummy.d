@@ -18,6 +18,9 @@ class DummyDevice : Device {
 
 
 class DummyContext : Context {
+
+    @property bool hasIntrospection() const { return false; }
+
     TextureRes makeTexture(TextureCreationDesc, const(ubyte)[][]) {
         return new DummyTexture();
     }
@@ -27,7 +30,7 @@ class DummyContext : Context {
     ShaderRes makeShader(ShaderStage, string) {
         return new DummyShader();
     }
-    ProgramRes makeProgram(ShaderRes[], out ProgramVars) {
+    ProgramRes makeProgram(ShaderRes[]) {
         return new DummyProgram();
     }
     ShaderResourceViewRes viewAsShaderResource(RawBuffer, Format fmt) {
@@ -69,4 +72,7 @@ class DummyProgram : ProgramRes {
     mixin(rcCode);
     void drop() {}
     void bind() {}
+    ProgramVars fetchVars() const {
+        return ProgramVars.init;
+    }
 }

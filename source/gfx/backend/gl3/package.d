@@ -83,6 +83,10 @@ class GlDeviceContext : Context {
         _caps = caps;
     }
 
+    @property bool hasIntrospection() const {
+        return _caps.interfaceQuery;
+    }
+
     TextureRes makeTexture(TextureCreationDesc desc, const(ubyte)[][] data) {
         return makeTextureImpl(_caps.textureStorage, desc, data);
     }
@@ -92,8 +96,8 @@ class GlDeviceContext : Context {
     ShaderRes makeShader(ShaderStage stage, string code) {
         return new GlShader(stage, code);
     }
-    ProgramRes makeProgram(ShaderRes[] shaders, out ProgramVars vars) {
-        return new GlProgram(_caps.ubo, shaders, vars);
+    ProgramRes makeProgram(ShaderRes[] shaders) {
+        return new GlProgram(_caps.ubo, shaders);
     }
     ShaderResourceViewRes viewAsShaderResource(RawBuffer buf, Format fmt) {
         return new GlBufferShaderResourceView(buf, fmt);

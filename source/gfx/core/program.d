@@ -142,6 +142,19 @@ struct ProgramVars {
     TextureVar[] textures;
     SamplerVar[] samplers;
     OutputVar[] outputs;
+
+    @property string infoString() const {
+        import std.format : format;
+        import std.conv : to;
+        string res;
+        res ~= format("Attributes:   %s\n", attributes.to!string);
+        res ~= format("Consts:       %s\n", consts.to!string);
+        res ~= format("ConstBuffers: %s\n", constBuffers.to!string);
+        res ~= format("Textures:     %s\n", textures.to!string);
+        res ~= format("Samplers:     %s\n", samplers.to!string);
+        res ~= format("Outputs:      %s\n", outputs.to!string);
+        return res;
+    }
 }
 
 
@@ -191,6 +204,7 @@ interface ShaderRes : Resource {
 }
 interface ProgramRes : Resource {
     void bind();
+    ProgramVars fetchVars() const;
 }
 
 class Shader : ResourceHolder {
@@ -225,7 +239,6 @@ class Program : ResourceHolder {
 
     Rc!ProgramRes _res;
     Shader[] _shaders;
-    ProgramVars _vars;
 
     this(Shader[] shaders) {
         import std.algorithm : each;
@@ -239,25 +252,6 @@ class Program : ResourceHolder {
         _shaders.each!(s => s.addRef());
     }
 
-    @property const(AttributeVar)[] attributes() const {
-        return _vars.attributes;
-    }
-    @property const(ConstVar)[] consts() const {
-        return _vars.consts;
-    }
-    @property const(ConstBufferVar)[] constBuffers() const {
-        return _vars.constBuffers;
-    }
-    @property const(TextureVar)[] textures() const {
-        return _vars.textures;
-    }
-    @property const(SamplerVar)[] samplers() const {
-        return _vars.samplers;
-    }
-    @property const(OutputVar)[] outputs() const {
-        return _vars.outputs;
-    }
-
     @property bool pinned() const {
         return _res.assigned;
     }
@@ -267,25 +261,16 @@ class Program : ResourceHolder {
         import std.array : array;
         _shaders.each!((s) { if(!s.pinned) s.pinResources(context); });
         auto resArr = _shaders.map!(s => s._res.obj).array();
-        _res = context.makeProgram(resArr, _vars);
+        _res = context.makeProgram(resArr);
         _shaders.each!(s => s.release());
         _shaders = [];
-
-        logf("built program with following info:\n%s", infoString);
     }
 
-    @property string infoString() const {
-        import std.format : format;
-        import std.conv : to;
-        string res;
-        res ~= format("Attributes:   %s\n", attributes.to!string);
-        res ~= format("Consts:       %s\n", consts.to!string);
-        res ~= format("ConstBuffers: %s\n", constBuffers.to!string);
-        res ~= format("Textures:     %s\n", textures.to!string);
-        res ~= format("Samplers:     %s\n", samplers.to!string);
-        res ~= format("Outputs:      %s\n", outputs.to!string);
-        return res;
+    ProgramVars fetchVars() const {
+        assert(pinned);
+        return _res.fetchVars();
     }
+
 
     void drop() {
         import std.algorithm : each;

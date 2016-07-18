@@ -389,10 +389,13 @@ class GlProgram : ProgramRes {
     mixin(rcCode);
 
     GLuint _name;
+    bool _uboSupport;
+    ShaderUsageFlags _usage;
 
-    this(in bool uboSupport, ShaderRes[] shaders, out ProgramVars vars) {
+    this(in bool uboSupport, ShaderRes[] shaders) {
         import std.algorithm : map, each, fold;
 
+        _uboSupport = uboSupport;
         _name = glCreateProgram();
 
         shaders
@@ -409,15 +412,8 @@ class GlProgram : ProgramRes {
             warningf("link error of shader program:\n%s", log);
         }
 
-        ShaderUsageFlags usage = shaders.map!(s => s.stage)
+        _usage = shaders.map!(s => s.stage)
             .fold!((u, s) => u | s.toUsage())(ShaderUsage.None);
-
-        ConstVar[][] blockVars;
-
-        vars.attributes = queryAttributes(_name);
-        queryUniforms(_name, uboSupport, vars.consts,  blockVars, vars.textures, vars.samplers);
-        if(uboSupport) vars.constBuffers = queryUniformBlocks(_name, blockVars);
-        vars.outputs = queryOutputs(_name);
     }
 
     void drop() {
@@ -426,5 +422,17 @@ class GlProgram : ProgramRes {
 
     void bind() {
         glUseProgram(_name);
+    }
+
+    ProgramVars fetchVars() const {
+        ProgramVars vars;
+        ConstVar[][] blockVars;
+
+        vars.attributes = queryAttributes(_name);
+        queryUniforms(_name, _uboSupport, vars.consts,  blockVars, vars.textures, vars.samplers);
+        if(_uboSupport) vars.constBuffers = queryUniformBlocks(_name, blockVars);
+        vars.outputs = queryOutputs(_name);
+
+        return vars;
     }
 }
