@@ -9,6 +9,13 @@ import std.traits;
 immutable size_t maxVertexAttribs = 16;
 immutable size_t maxColorTargets = 4;
 
+enum Primitive {
+    Points,
+    LineStrip,
+    Triangles,
+    TriangleStrip,
+}
+
 
 interface Resource : RefCounted {}
 
