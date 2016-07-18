@@ -29,8 +29,8 @@ template SafeUnion(Specs...) {
         mixin("union Data_ {" ~ unionContentInject() ~ "}");
         mixin("enum Tag_ {" ~ tagContentInject() ~ "}");
 
-        Data_ data_;
-        Tag_ tag_;
+        Data_ data_ = mixin(unionInitInject());
+        Tag_ tag_ = mixin(tagInitInject());
 
         this(Data_ d, Tag_ t) {
             data_ = d;
@@ -38,8 +38,6 @@ template SafeUnion(Specs...) {
         }
 
     public:
-
-        @disable this();
 
         mixin(tagAliasesInject());
 
@@ -262,6 +260,12 @@ template SafeUnion(Specs...) {
         return s;
     }
 
+    string tagInitInject() {
+        import std.format : format;
+        alias spec = FieldSpecs[0];
+        return format("Tag_.%s", spec.name);
+    }
+
     string tagAliasesInject() {
         import std.format : format;
         string s;
@@ -276,6 +280,19 @@ template SafeUnion(Specs...) {
         string s;
         foreach(spec; TypedFieldSpecs) {
             s ~= format("%s memb%s;\n", fieldType!spec(), spec.name);
+        }
+        return s;
+    }
+
+    string unionInitInject() {
+        import std.format : format;
+        string s;
+        alias spec = FieldSpecs[0];
+        static if (spec.Types.length > 0) {
+            s ~= format("Data_ { memb%s : %s.init }", spec.name, fieldType!spec());
+        }
+        else {
+            s ~= "Data_.init";
         }
         return s;
     }
