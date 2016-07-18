@@ -1,11 +1,14 @@
 module triangle;
 
 import gfx.backend.gl3 : GlContext, createGlDevice;
+import gfx.core : Primitive;
 import gfx.core.rc : Rc, rc, makeRc;
 import gfx.core.format : Rgba8;
 import gfx.core.buffer : createVertexBuffer;
 import gfx.core.program : ShaderSet, Program;
 import gfx.core.pso.meta;
+import gfx.core.pso : PipelineDescriptor, PipelineState;
+import gfx.core.state : Rasterizer;
 
 import derelict.glfw3.glfw3;
 import derelict.opengl3.gl3;
@@ -20,6 +23,8 @@ struct PipeMeta {
                         VertexBuffer!Vertex input;
     @GfxName("o_Color") RenderTarget!Rgba8 output;
 }
+
+alias PipeState = PipelineState!PipeMeta;
 
 static assert(isMetaStruct!PipeMeta);
 
@@ -101,12 +106,14 @@ int main()
             import("130-triangle.v.glsl"),
             import("130-triangle.f.glsl"),
         ));
+        auto pipe = makeRc!PipeState(prog.obj, Primitive.Triangles, Rasterizer.newFill());
 
         auto device = createGlDevice(context);
         context.makeCurrent();
 
         vbuf.pinResources(device.context);
         prog.pinResources(device.context);
+        pipe.pinResources(device.context);
 
         glClearColor(clearColor[0], clearColor[1],
                 clearColor[2], clearColor[3]);

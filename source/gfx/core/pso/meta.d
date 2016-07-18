@@ -3,22 +3,21 @@ module gfx.core.pso.meta;
 import gfx.core.format : SurfaceType, ChannelType, Format, Formatted, isFormatted;
 import gfx.core.buffer : Buffer;
 import gfx.core.view : RenderTargetView;
+import gfx.core.pso : VertexAttribDesc, ColorTargetDesc, StructField, PipelineDescriptor, ColorInfo;
+import gfx.core.state : ColorFlags, ColorMask;
 
 
 
 /// UDA struct to associate names of shader symbols at compile time
 struct GfxName {
-    string name;
+    string value;
 }
 
-
-struct StructField {
-    string name;
-    Format format;
-    size_t offset;
-    size_t size;
-    size_t alignment;
+/// UDA struct to associate slots of shader symbols at compile time
+struct GfxSlot {
+    ubyte value;
 }
+
 
 struct VertexBuffer(T) {}
 
@@ -43,10 +42,10 @@ template InitType(MF) if (isMetaField!MF) {
     import std.traits : Fields;
 
     static if (is(MF == VertexBuffer!T, T)) {
-        alias InitType = StructField[(Fields!T).length];
+        alias InitType = VertexAttribDesc[(Fields!T).length];
     }
     else static if (is(MF == RenderTarget!T, T)) {
-        alias InitType = string;
+        alias InitType = ColorTargetDesc;
     }
     else {
         static assert(false, "Unsupported pipeline meta type: "~MF.stringof);
@@ -65,8 +64,9 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
         string initCode() {
             string res = "[";
             foreach(f; gfxFields) {
-                res ~= format("StructField(\"%s\", Format(SurfaceType.%s, ChannelType.%s), %s, %s, %s),\n",
-                    f.gfxName, f.Fmt.Surface.surfaceType, f.Fmt.Channel.channelType,
+                res ~= format("VertexAttribDesc(\"%s\", %s, " ~
+                            "StructField(Format(SurfaceType.%s, ChannelType.%s), %s, %s, %s), 0),\n",
+                    f.gfxName, f.gfxSlot, f.Fmt.Surface.surfaceType, f.Fmt.Channel.channelType,
                     f.offset, f.size, f.alignment);
             }
             return res ~ "]";
@@ -74,9 +74,18 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
         enum InitValue = mixin(initCode());
     }
     else static if (is(MF == RenderTarget!T, T)) {
-        enum InitValue = ResolveGfxName!(MS, field);
+        string initCode() {
+            alias Fmt = Formatted!T;
+            return format("ColorTargetDesc(\"%s\", %s, " ~
+                    "Format(SurfaceType.%s, ChannelType.%s), " ~
+                    "ColorInfo.from(cast(ColorMask)ColorFlags.All))",
+                    resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
+                    Fmt.Surface.surfaceType, Fmt.Channel.channelType);
+        }
+        enum InitValue = mixin(initCode());
     }
 }
+
 
 template DataType(MF) if (isMetaField!MF) {
     static if (is(MF == VertexBuffer!T, T)) {
@@ -90,6 +99,7 @@ template DataType(MF) if (isMetaField!MF) {
     }
 }
 
+
 template InitTrait(MS, string field) if (isMetaStruct!MS) {
     alias Type = InitType!(FieldType!(MS, field));
     enum defValue = InitValue!(MS, field);
@@ -98,7 +108,6 @@ template InitTrait(MS, string field) if (isMetaStruct!MS) {
 template DataTrait(MS, string field) if (isMetaStruct!MS) {
     alias Type = DataType!(FieldType!(MS, field));
 }
-
 
 
 template isMetaStruct(M) {
@@ -182,30 +191,64 @@ version(unittest) {
 }
 
 
-template ResolveGfxName(StructT, string field) {
-    import std.traits : getSymbolsByUDA, getUDAs;
+template isValueUDA(UDA) {
+    import std.traits : FieldNameTuple;
 
-    alias GfxNameUDAs = getSymbolsByUDA!(StructT, GfxName);
+    enum isValueUDA = FieldNameTuple!UDA.length == 1 && FieldNameTuple!UDA[0] == "value";
+}
 
-    template Resolver(size_t n) {
-        static if (n == GfxNameUDAs.length) {
-            enum Resolver = field;
+template UDAValueType(UDA) if (isValueUDA!UDA) {
+    import std.traits : Fields;
+
+    alias UDAValueType = Fields!UDA[0];
+}
+
+template resolveUDAValue(UDA, StructT, string field, DefType, DefType def)
+        if (isValueUDA!UDA && is(DefType == UDAValueType!UDA)) {
+    import std.traits :/+ getSymbolsByUDA,+/ getUDAs;
+
+    alias UDAs = getSymbolsByUDA!(StructT, UDA);
+
+    template resolve(size_t n) {
+        static if (n == UDAs.length) {
+            enum resolve = def;
         }
-        else static if (GfxNameUDAs[n].stringof == field) {
-            enum Resolver = getUDAs!(GfxNameUDAs[n], GfxName)[0].name;
+        else static if (UDAs[n].stringof == field) {
+            enum resolve = getUDAs!(UDAs[n], UDA)[0].value;
         }
         else {
-            enum Resolver = Resolver!(n+1);
+            enum resolve = resolve!(n+1);
         }
-
     }
 
-    enum ResolveGfxName = Resolver!0;
+    enum resolveUDAValue = resolve!0;
 }
 
 
+alias resolveGfxName(StructT, string field) = resolveUDAValue!(GfxName, StructT, field, string, field);
+alias resolveGfxSlot(StructT, string field) = resolveUDAValue!(GfxSlot, StructT, field, ubyte, ubyte.max);
+
+
+version(unittest) {
+    struct TestNoUDA {
+        float[2] pos;
+        float[3] col;
+    }
+    struct TestMixedUDA {
+        @GfxName("a_Pos")   float[2] pos;
+        @GfxSlot(1)         float[3] col;
+    }
+
+    static assert(resolveGfxName!(TestNoUDA,	"pos") == "pos");
+    static assert(resolveGfxSlot!(TestNoUDA,	"col") == ubyte.max);
+    static assert(resolveGfxName!(TestMixedUDA, "pos") == "a_Pos");
+    static assert(resolveGfxSlot!(TestMixedUDA,	"col") == 1);
+}
+
+
+
 /// template representing a struct field (such as vertex or constant block) at compile time
-template GfxStructField(T, size_t o, string f, string g) {
+template GfxStructField(T, size_t o, string f, string g, ubyte s) {
     alias Field = T;
     alias Fmt = Formatted!T;
     enum offset = o;
@@ -213,6 +256,7 @@ template GfxStructField(T, size_t o, string f, string g) {
     enum alignment = T.alignof;
     enum field = f;
     enum gfxName = g;
+    enum gfxSlot = s;
 }
 
 template GfxStructFields(T) {
@@ -228,11 +272,50 @@ template GfxStructFields(T) {
         }
         else {
             alias parseFields = AliasSeq!(
-                GfxStructField!(Types[n], off, Names[n], ResolveGfxName!(T, Names[n])),
+                GfxStructField!(Types[n], off, Names[n], resolveGfxName!(T, Names[n]), resolveGfxSlot!(T, Names[n])),
                 parseFields!(n+1, off+Types[n].alignof)
             );
         }
     }
 
     alias GfxStructFields = parseFields!(0, 0);
+}
+
+private:
+
+/// phobos #15874 and PR #4164 are merged into master but not into stable
+/// here is the fixed version of getSymbolsByUDA
+template getSymbolsByUDA(alias symbol, alias attribute) {
+    import std.format : format;
+    import std.meta : AliasSeq, Filter;
+    import std.traits : hasUDA;
+
+    // translate a list of strings into symbols. mixing in the entire alias
+    // avoids trying to access the symbol, which could cause a privacy violation
+    template toSymbols(names...) {
+        static if (names.length == 0)
+            alias toSymbols = AliasSeq!();
+        else
+            mixin("alias toSymbols = AliasSeq!(symbol.%s, toSymbols!(names[1..$]));"
+                  .format(names[0]));
+    }
+
+    enum hasSpecificUDA(string name) = mixin("hasUDA!(symbol.%s, attribute)".format(name));
+
+    alias membersWithUDA = toSymbols!(Filter!(hasSpecificUDA, __traits(allMembers, symbol)));
+
+    // if the symbol itself has the UDA, tack it on to the front of the list
+    static if (hasUDA!(symbol, attribute))
+        alias getSymbolsByUDA = AliasSeq!(symbol, membersWithUDA);
+    else
+        alias getSymbolsByUDA = membersWithUDA;
+}
+
+version(unittest) {
+    enum Attr;
+    struct Test {
+        int field1;
+        int field2;
+    }
+    static assert(getSymbolsByUDA!(Test, Attr).length == 0);
 }
