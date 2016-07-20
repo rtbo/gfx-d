@@ -72,7 +72,8 @@ struct GlCaps {
         bool, "textureStorage", 1,
         bool, "attribBinding", 1,
         bool, "ubo", 1,
-        byte, "", 3,
+        bool, "instanceRate", 1,
+        byte, "", 2,
     ));
 }
 

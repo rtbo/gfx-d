@@ -109,6 +109,7 @@ struct ContextInfo {
                     res.versionOrExtensionSupported(4, 3, "GL_ARB_texture_storage_multisample");
         res.caps.attribBinding = res.versionOrExtensionSupported(4, 3, "GL_ARB_vertex_attrib_binding");
         res.caps.ubo = res.versionOrExtensionSupported(3, 1, "GL_ARB_uniform_buffer_object");
+        res.caps.instanceRate = res.versionOrExtensionSupported(3, 3, "GL_ARB_instanced_arrays");
 
         return res;
     }
