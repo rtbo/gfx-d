@@ -1,5 +1,97 @@
 module gfx.core.typecons;
 
+/// template that resolves to true if an object of type T can be assigned to null
+template isNullAssignable(T) {
+    enum isNullAssignable =
+        is(typeof((inout int = 0) {
+            T t = T.init;
+            t = null;
+        }));
+}
+
+/// constructs an option from at value
+Option!T some(T)(T val) {
+    return Option!T(val);
+}
+
+/// symbolic value that constructs an Option in none state
+enum none(T) = Option!(T).init;
+
+
+struct Option(T) if (!isNullAssignable!T)
+{
+    private T _val          = T.init;
+    private bool _isSome    = false;
+
+    this(inout T val) inout {
+        _val = val;
+        _isSome = true;
+    }
+
+    @property bool isSome() const {
+        return _isSome;
+    }
+
+    @property bool isNone() const {
+        return !_isSome;
+    }
+
+    void setNone() {
+        .destroy(_val);
+        _isSome = false;
+    }
+
+    void opAssign()(T val) {
+        _val = val;
+        _isSome = true;
+    }
+
+    // casting to type that have implicit cast available (e.g Option!int to Option!uint)
+    auto opCast(V : Option!U, U)() if (is(T : U)) {
+        return Option!U(val_);
+    }
+
+    @property ref inout(T) get() inout @safe pure nothrow
+    {
+        enum message = "Called `get' on none Option!" ~ T.stringof ~ ".";
+        assert(isSome, message);
+        return _val;
+    }
+
+    alias get this;
+
+    template toString()
+    {
+        import std.format : FormatSpec, formatValue;
+        // Needs to be a template because of DMD @@BUG@@ 13737.
+        void toString()(scope void delegate(const(char)[]) sink, FormatSpec!char fmt)
+        {
+            if (isNull)
+            {
+                sink.formatValue("Option.none", fmt);
+            }
+            else
+            {
+                sink.formatValue(_value, fmt);
+            }
+        }
+
+        // Issue 14940
+        void toString()(scope void delegate(const(char)[]) @safe sink, FormatSpec!char fmt)
+        {
+            if (isNull)
+            {
+                sink.formatValue("Option.none", fmt);
+            }
+            else
+            {
+                sink.formatValue(_value, fmt);
+            }
+        }
+    }
+}
+
+
 
 template SafeUnion(Specs...) {
 
