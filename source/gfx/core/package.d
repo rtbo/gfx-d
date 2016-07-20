@@ -16,6 +16,10 @@ enum Primitive {
     TriangleStrip,
 }
 
+enum IndexType {
+    U16, U32,
+}
+
 
 interface Resource : RefCounted {}
 
