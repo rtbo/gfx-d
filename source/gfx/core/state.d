@@ -212,23 +212,14 @@ alias Factor = SafeUnion!(
 );
 
 struct BlendChannel {
-    Equation equation;
-    Factor source;
-    Factor destination;
-
-    static BlendChannel makeDefault() {
-        return BlendChannel(Equation.Add,
-            Factor.makeOne(), Factor.makeOne());
-    }
+    Equation equation   = Equation.Add;
+    Factor source       = Factor.makeOne();
+    Factor destination  = Factor.makeOne();
 }
 
 struct Blend {
     BlendChannel color;
     BlendChannel alpha;
-
-    static Blend makeDefault() {
-        return Blend(BlendChannel.makeDefault(), BlendChannel.makeDefault());
-    }
 
     this(BlendChannel color, BlendChannel alpha) {
         this.color = color;
