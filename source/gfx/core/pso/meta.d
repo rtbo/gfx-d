@@ -65,9 +65,9 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
             string res = "[";
             foreach(f; gfxFields) {
                 res ~= format("VertexAttribDesc(\"%s\", %s, " ~
-                            "StructField(Format(SurfaceType.%s, ChannelType.%s), %s, %s, %s), 0),\n",
+                            "StructField(Format(SurfaceType.%s, ChannelType.%s), %s, %s, %s, %s), 0),\n",
                     f.gfxName, f.gfxSlot, f.Fmt.Surface.surfaceType, f.Fmt.Channel.channelType,
-                    f.offset, f.size, f.alignment);
+                    f.offset, f.size, f.alignment, T.sizeof);
             }
             return res ~ "]";
         }
