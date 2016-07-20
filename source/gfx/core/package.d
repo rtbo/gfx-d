@@ -31,6 +31,11 @@ interface Device {
     @property Context context();
 }
 
+/// a rectangle of screen
+struct Rect {
+    ushort x; ushort y; ushort w; ushort h;
+}
+
 /// cast a typed slice into a blob of bytes
 /// (same representation; no copy is made)
 ubyte[] untypeSlice(T)(T[] slice) if(!is(T == const)) {
