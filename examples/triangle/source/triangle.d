@@ -7,11 +7,15 @@ import gfx.core.format : Rgba8;
 import gfx.core.buffer : createVertexBuffer;
 import gfx.core.program : ShaderSet, Program;
 import gfx.core.pso.meta;
-import gfx.core.pso : PipelineDescriptor, PipelineState;
+import gfx.core.pso : PipelineDescriptor, PipelineState, VertexBufferSet;
 import gfx.core.state : Rasterizer;
+import gfx.core.command : clearColor, Instance;
 
 import derelict.glfw3.glfw3;
 import derelict.opengl3.gl3;
+
+import std.typecons : Nullable;
+import std.stdio : writeln;
 
 
 struct Vertex {
@@ -30,9 +34,6 @@ static assert(isMetaStruct!PipeMeta);
 
 alias PipeInit = PipelineInit!PipeMeta;
 alias PipeData = PipelineData!PipeMeta;
-pragma(msg, typeof(PipeInit.input).stringof);
-pragma(msg, typeof(PipeData.input).stringof);
-pragma(msg, PipeInit.defValue);
 
 
 
@@ -42,7 +43,7 @@ immutable triangle = [
     Vertex([ 0.0,  0.5], [0.0, 0.0, 1.0]),
 ];
 
-immutable float[4] clearColor = [0.1, 0.2, 0.3, 1.0];
+immutable float[4] backColor = [0.1, 0.2, 0.3, 1.0];
 
 
 class GlfwContext : GlContext {
@@ -108,27 +109,46 @@ int main()
         ));
         auto pipe = makeRc!PipeState(prog.obj, Primitive.Triangles, Rasterizer.newFill());
 
-        auto device = createGlDevice(context);
         context.makeCurrent();
+        DerelictGL3.reload();
+        auto device = createGlDevice(context);
+        auto cmdBuf = rc(device.context.makeCommandBuffer());
+
 
         vbuf.pinResources(device.context);
         prog.pinResources(device.context);
         pipe.pinResources(device.context);
 
-        glClearColor(clearColor[0], clearColor[1],
-                clearColor[2], clearColor[3]);
+        VertexBufferSet vbs;
+        vbs.entries[0] = VertexBufferSet.Entry(rc(vbuf.res), 0);
+        vbs.entries[1] = VertexBufferSet.Entry(rc(vbuf.res), 0);
+
+        import std.datetime : StopWatch;
+
+        size_t frameCount;
+        StopWatch sw;
+        sw.start();
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window)) {
-            /* Render here */
-            glClear(GL_COLOR_BUFFER_BIT);
+
+            cmdBuf.clearColor(null, clearColor(backColor));
+            cmdBuf.bindPipelineState(pipe.obj);
+            cmdBuf.bindVertexBuffers(vbs);
+            cmdBuf.callDraw(0, cast(uint)vbuf.count, Nullable!(Instance).init);
+
+            device.context.submit(cmdBuf);
 
             /* Swap front and back buffers */
             context.swapBuffers();
 
             /* Poll for and process events */
             glfwPollEvents();
+            frameCount += 1;
         }
+
+        auto ms = sw.peek().msecs();
+        writeln("FPS: ", 1000.0f*frameCount / ms);
     }
     context.doneCurrent();
     glfwTerminate();
