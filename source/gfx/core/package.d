@@ -11,6 +11,7 @@ immutable size_t maxColorTargets = 4;
 
 enum Primitive {
     Points,
+    Lines,
     LineStrip,
     Triangles,
     TriangleStrip,
