@@ -1,5 +1,6 @@
 module gfx.backend.gl3;
 
+import gfx.backend : unsafeCast;
 import gfx.backend.gl3.info : ContextInfo;
 import gfx.backend.gl3.buffer : GlBuffer;
 import gfx.backend.gl3.texture : makeTextureImpl;
@@ -9,6 +10,7 @@ import gfx.backend.gl3.view :   GlBufferShaderResourceView,
                                 GlDepthStencilView;
 import gfx.backend.gl3.program : GlShader, GlProgram;
 import gfx.backend.gl3.pso : GlPipelineState;
+import gfx.backend.gl3.command : GlCommandBuffer;
 
 import gfx.core : Device;
 import gfx.core.context : Context;
@@ -18,6 +20,7 @@ import gfx.core.texture : TextureRes, RawTexture;
 import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, ProgramVars, Program;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes;
 import gfx.core.pso : PipelineStateRes, PipelineDescriptor;
+import gfx.core.command : CommandBuffer;
 
 import derelict.opengl3.gl3;
 
@@ -121,5 +124,16 @@ class GlDeviceContext : Context {
     }
     PipelineStateRes makePipeline(Program prog, PipelineDescriptor descriptor) {
         return new GlPipelineState(prog, descriptor);
+    }
+
+    CommandBuffer makeCommandBuffer() {
+        return new GlCommandBuffer();
+    }
+
+    void submit(CommandBuffer buffer) {
+        auto cmds = unsafeCast!GlCommandBuffer(buffer).retrieve();
+        foreach (cmd; cmds) {
+            cmd.execute(this);
+        }
     }
 }

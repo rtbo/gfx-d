@@ -9,6 +9,7 @@ import gfx.core.texture : TextureRes, RawTexture, ImageSliceInfo;
 import gfx.core.program : ShaderRes, ProgramRes, ProgramVars, ShaderStage, Program;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes;
 import gfx.core.pso : PipelineStateRes, PipelineDescriptor;
+import gfx.core.command : CommandBuffer;
 
 
 class DummyDevice : Device {
@@ -50,6 +51,12 @@ class DummyContext : Context {
     PipelineStateRes makePipeline(Program, PipelineDescriptor) {
         return null;
     }
+
+    CommandBuffer makeCommandBuffer() {
+        return null;
+    }
+
+    void submit(CommandBuffer buffer) {}
 }
 
 
