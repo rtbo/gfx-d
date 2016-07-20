@@ -1,4 +1,4 @@
-module gfx.core.safe_union;
+module gfx.core.typecons;
 
 
 template SafeUnion(Specs...) {

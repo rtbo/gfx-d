@@ -1,6 +1,6 @@
 module gfx.core.state;
 
-import gfx.core.safe_union : SafeUnion;
+import gfx.core.typecons : SafeUnion;
 
 import std.typecons : Nullable, BitFlags, Yes;
 

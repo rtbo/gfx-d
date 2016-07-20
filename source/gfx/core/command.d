@@ -1,7 +1,7 @@
 module gfx.core.command;
 
 import gfx.core.rc : RefCounted;
-import gfx.core.safe_union : SafeUnion;
+import gfx.core.typecons : SafeUnion;
 import gfx.core.pso : RawPipelineState, VertexBufferSet, PixelTargetSet;
 import gfx.core.view : RawRenderTargetView;
 
