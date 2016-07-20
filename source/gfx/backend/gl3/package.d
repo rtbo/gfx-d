@@ -85,6 +85,9 @@ class GlDeviceContext : Context {
         _caps = caps;
     }
 
+    @property GlCaps caps() const { return _caps; }
+
+
     @property bool hasIntrospection() const {
         return _caps.interfaceQuery;
     }
