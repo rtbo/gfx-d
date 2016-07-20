@@ -55,7 +55,6 @@ class GlDevice : Device {
         enforce(_info.caps.interfaceQuery, "GL_ARB_program_interface_query is requested by gfx-d");
 
         _deviceContext = new GlDeviceContext(_info.caps);
-        logf("built opengl context:\n%s", _info.infoString);
     }
 
     @property Context context() {
