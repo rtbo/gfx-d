@@ -18,6 +18,7 @@ import gfx.core.state : Rasterizer, ColorMask, ColorFlags, BlendChannel, Blend;
 import gfx.core.format : Format;
 import gfx.core.buffer : BufferRes;
 import gfx.core.program : Program, VarType, ProgramVars;
+import gfx.core.view : RawRenderTargetView, RawDepthStencilView;
 import gfx.core.pso.meta : isMetaStruct, PipelineInit, PipelineData, VertexBuffer, RenderTarget;
 
 import std.typecons : Nullable;
@@ -92,11 +93,55 @@ struct PipelineDescriptor {
 // data structs
 
 struct VertexBufferSet {
-    Rc!BufferRes[maxVertexAttribs] buffers;
+    struct Entry {
+        Rc!BufferRes buffer;
+        size_t offset;
+    }
+    Entry[maxVertexAttribs] entries;
 }
+
+/// A complete set of render targets to be used for pixel export in PSO.
+struct PixelTargetSet {
+
+    /// Array of color target views
+    Rc!RawRenderTargetView[maxColorTargets] colors;
+    /// Depth target view
+    Rc!RawDepthStencilView depth;
+    /// Stencil target view
+    Rc!RawDepthStencilView stencil;
+    /// Rendering dimensions
+    ushort width;
+    /// ditto
+    ushort height;
+
+
+    /// Add a color view to the specified slot
+    void addColor(ubyte slot, RawRenderTargetView view, ushort w, ushort h) {
+        import std.algorithm : max;
+
+        colors[slot] = view;
+        height = max(h, height);
+    }
+
+    /// Add a depth or stencil view to the specified slot
+    void addDepthStencil(RawDepthStencilView view, bool hasDepth, bool hasStencil, ushort w, ushort h) {
+        import std.algorithm : max;
+
+        if(hasDepth) {
+            depth = view;
+        }
+        if(hasStencil) {
+            stencil = view;
+        }
+        width = max(w, width);
+        height = max(h, height);
+    }
+}
+
 
 struct RawDataSet {
     VertexBufferSet vertexBuffers;
+    PixelTargetSet pixelTargets;
 }
 
 
@@ -118,6 +163,15 @@ abstract class RawPipelineState : ResourceHolder {
         _descriptor.primitive = primitive;
         _descriptor.rasterizer = rasterizer;
     }
+
+    @property inout(PipelineStateRes) res() inout { return _res.obj; }
+
+    @property inout(Program) program() inout { return _prog.obj; }
+
+    @property Primitive primitive() const { return _descriptor.primitive; }
+    @property Rasterizer rasterizer() const { return _descriptor.rasterizer; }
+    @property bool scissors() const { return _descriptor.scissors; }
+    @property inout(VertexAttribDesc)[] vertexAttribs() inout { return _descriptor.vertexAttribs; }
 
     @property bool pinned() const {
         return _res.assigned;

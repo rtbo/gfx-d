@@ -6,6 +6,7 @@ import gfx.core.texture : TextureRes, RawTexture, TextureType, TexUsageFlags, Im
 import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, Program;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes, DSVReadOnlyFlags;
 import gfx.core.pso : PipelineStateRes, PipelineDescriptor;
+import gfx.core.command : CommandBuffer;
 
 import std.typecons : Nullable;
 
@@ -60,4 +61,9 @@ interface Context {
     DepthStencilViewRes viewAsDepthStencil(RawTexture tex, TexDSVCreationDesc desc);
 
     PipelineStateRes makePipeline(Program prog, PipelineDescriptor descriptor);
+
+
+    CommandBuffer makeCommandBuffer();
+
+    void submit(CommandBuffer buffer);
 }
