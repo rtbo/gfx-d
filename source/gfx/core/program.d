@@ -252,6 +252,8 @@ class Program : ResourceHolder {
         _shaders.each!(s => s.addRef());
     }
 
+    @property inout(ProgramRes) res() inout { return _res; }
+
     @property bool pinned() const {
         return _res.assigned;
     }
