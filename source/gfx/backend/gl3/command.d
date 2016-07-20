@@ -7,6 +7,7 @@ import gfx.backend.gl3.buffer : GlBuffer;
 import gfx.backend.gl3.program : GlProgram;
 import gfx.backend.gl3.pso : GlPipelineState, OutputMerger;
 import gfx.core : maxVertexAttribs, maxColorTargets, AttribMask, ColorTargetMask, Rect, Primitive;
+import gfx.core.typecons : Option, some, none;
 import gfx.core.command : CommandBuffer, ClearColor, Instance;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.program : ProgramRes;
@@ -18,7 +19,6 @@ import gfx.core.format : ChannelType, SurfaceType;
 
 import derelict.opengl3.gl3;
 
-import std.typecons : Nullable;
 import std.experimental.logger;
 
 
@@ -77,10 +77,10 @@ class SetViewportCommand : Command {
 }
 
 class SetScissorsCommand : Command {
-    Nullable!Rect rect;
-    this(Nullable!Rect rect) { this.rect = rect; }
+    Option!Rect rect;
+    this(Option!Rect rect) { this.rect = rect; }
     void execute(GlDeviceContext context) {
-        if (!rect.isNull) {
+        if (rect.isSome) {
             auto r = rect.get();
             glEnable(GL_SCISSOR_TEST);
             glScissor(r.x, r.y, r.w, r.h);
@@ -210,16 +210,16 @@ class BindPixelTargetsCommand : Command {
 }
 
 class ClearCommand : Command {
-    Nullable!ClearColor color;
-    Nullable!float depth;
-    Nullable!ubyte stencil;
+    Option!ClearColor color;
+    Option!float depth;
+    Option!ubyte stencil;
 
-    this(Nullable!ClearColor color, Nullable!float depth, Nullable!ubyte stencil) {
+    this(Option!ClearColor color, Option!float depth, Option!ubyte stencil) {
         this.color = color; this.depth = depth; this.stencil = stencil;
     }
 
     void execute(GlDeviceContext context) {
-        if (!color.isNull) {
+        if (color.isSome) {
             auto col = color.get();
             glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
             final switch (col.tag) {
@@ -237,12 +237,12 @@ class ClearCommand : Command {
                     break;
             }
         }
-        if (!depth.isNull) {
+        if (depth.isSome) {
             auto d = depth.get();
             glDepthMask(GL_TRUE);
             glClearBufferfv(GL_DEPTH, 0, &d);
         }
-        if (!stencil.isNull) {
+        if (stencil.isSome) {
             GLint s = stencil.get();
             glStencilMask(GLuint.max);
             glClearBufferiv(GL_STENCIL, 0, &s);
@@ -273,7 +273,7 @@ struct GlCommandCache {
     AttribMask attribMask;
     VertexAttribDesc[maxVertexAttribs] attribs;
     bool scissors;
-    Nullable!Stencil stencil;
+    Option!Stencil stencil;
     CullFace cullFace;
 }
 
@@ -348,10 +348,10 @@ class GlCommandBuffer : CommandBuffer {
         PixelTargetSet targets;
         targets.colors[0] = view;
         bindPixelTargets(targets);
-        _commands ~= new ClearCommand(Nullable!(ClearColor)(color), Nullable!(float).init, Nullable!(ubyte).init);
+        _commands ~= new ClearCommand(some(color), none!float, none!ubyte);
     }
 
-    void callDraw(uint start, uint count, Nullable!Instance) {
+    void callDraw(uint start, uint count, Option!Instance) {
         // TODO instanced drawings
         _commands ~= new DrawCommand(_cache.primitive, start, count);
     }

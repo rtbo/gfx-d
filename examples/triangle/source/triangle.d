@@ -3,6 +3,7 @@ module triangle;
 import gfx.backend.gl3 : GlContext, createGlDevice;
 import gfx.core : Primitive;
 import gfx.core.rc : Rc, rc, makeRc;
+import gfx.core.typecons : Option, none, some;
 import gfx.core.format : Rgba8;
 import gfx.core.buffer : createVertexBuffer;
 import gfx.core.program : ShaderSet, Program;
@@ -14,7 +15,6 @@ import gfx.core.command : clearColor, Instance;
 import derelict.glfw3.glfw3;
 import derelict.opengl3.gl3;
 
-import std.typecons : Nullable;
 import std.stdio : writeln;
 
 
@@ -135,7 +135,7 @@ int main()
             cmdBuf.clearColor(null, clearColor(backColor));
             cmdBuf.bindPipelineState(pipe.obj);
             cmdBuf.bindVertexBuffers(vbs);
-            cmdBuf.callDraw(0, cast(uint)vbuf.count, Nullable!(Instance).init);
+            cmdBuf.callDraw(0, cast(uint)vbuf.count, none!Instance);
 
             device.context.submit(cmdBuf);
 

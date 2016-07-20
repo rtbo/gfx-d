@@ -1,10 +1,10 @@
 module gfx.backend.gl3.info;
 
 import gfx.backend.gl3 : GlCaps;
+import gfx.core.typecons : Option, none, some;
 
 import derelict.opengl3.gl3;
 
-import std.typecons : Nullable;
 import std.string : empty, fromStringz;
 
 
@@ -12,7 +12,7 @@ import std.string : empty, fromStringz;
 struct Version {
     int major;
     int minor;
-    Nullable!int revision;
+    Option!int revision;
     string vendorInfo;
 
     static Version parse(string glVersion) {
@@ -30,10 +30,7 @@ struct Version {
 
         int major = v1[0].to!int;
         int minor = v2[0].to!int;
-        Nullable!int rev;
-        if (!v2[2].empty) {
-            rev = v2[2].to!int;
-        }
+        Option!int rev = v2[2].empty ? none!int : some(v2[2].to!int);
         string vendorInfo = glv[2];
 
         return Version(major, minor, rev, vendorInfo);
@@ -126,7 +123,7 @@ struct ContextInfo {
         res ~= "    },\n";
         res ~= format("    version: %s.%s%s%s\n",
             glVersion.major, glVersion.minor,
-                glVersion.revision.isNull()?"":"."~glVersion.revision.to!string,
+                glVersion.revision.isNone?"":"."~glVersion.revision.to!string,
                 glVersion.vendorInfo.empty?"":" "~ glVersion.vendorInfo);
         res ~= format("    glslVersion: %s.%s\n", glslVersion.major, glslVersion.minor);
         res ~= "    Caps: {\n";

@@ -13,6 +13,7 @@ module gfx.core.pso;
 
 import gfx.core : Resource, ResourceHolder, Primitive, maxVertexAttribs, maxColorTargets;
 import gfx.core.rc : Rc, rcCode;
+import gfx.core.typecons : Option, none;
 import gfx.core.context : Context;
 import gfx.core.state : Rasterizer, ColorMask, ColorFlags, BlendChannel, Blend;
 import gfx.core.format : Format;
@@ -20,8 +21,6 @@ import gfx.core.buffer : BufferRes;
 import gfx.core.program : Program, VarType, ProgramVars;
 import gfx.core.view : RawRenderTargetView, RawDepthStencilView;
 import gfx.core.pso.meta : isMetaStruct, PipelineInit, PipelineData, VertexBuffer, RenderTarget;
-
-import std.typecons : Nullable;
 
 
 
@@ -46,11 +45,11 @@ struct VertexAttribDesc {
 
 struct ColorInfo {
     ColorMask mask;
-    Nullable!BlendChannel color;
-    Nullable!BlendChannel alpha;
+    Option!BlendChannel color;
+    Option!BlendChannel alpha;
 
     static ColorInfo from(ColorMask mask) {
-        return ColorInfo(mask, Nullable!(BlendChannel).init, Nullable!(BlendChannel).init);
+        return ColorInfo(mask, none!BlendChannel, none!BlendChannel);
     }
 
     static ColorInfo from(Blend blend) {

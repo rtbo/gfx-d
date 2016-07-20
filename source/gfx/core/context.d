@@ -1,5 +1,6 @@
 module gfx.core.context;
 
+import gfx.core.typecons : Option;
 import gfx.core.buffer : BufferRes, RawBuffer, BufferRole, BufferUsage;
 import gfx.core.format : Format, ChannelType, Swizzle;
 import gfx.core.texture : TextureRes, RawTexture, TextureType, TexUsageFlags, ImageInfo;
@@ -7,8 +8,6 @@ import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, Program;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes, DSVReadOnlyFlags;
 import gfx.core.pso : PipelineStateRes, PipelineDescriptor;
 import gfx.core.command : CommandBuffer;
-
-import std.typecons : Nullable;
 
 interface Context {
 
@@ -49,13 +48,13 @@ interface Context {
     struct TexRTVCreationDesc {
         ChannelType channel;
         ubyte level;
-        Nullable!ubyte layer;
+        Option!ubyte layer;
     }
     RenderTargetViewRes viewAsRenderTarget(RawTexture tex, TexRTVCreationDesc desc);
 
     struct TexDSVCreationDesc {
         ubyte level;
-        Nullable!ubyte layer;
+        Option!ubyte layer;
         DSVReadOnlyFlags flags;
     }
     DepthStencilViewRes viewAsDepthStencil(RawTexture tex, TexDSVCreationDesc desc);

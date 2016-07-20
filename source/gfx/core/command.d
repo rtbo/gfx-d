@@ -1,11 +1,10 @@
 module gfx.core.command;
 
 import gfx.core.rc : RefCounted;
-import gfx.core.typecons : SafeUnion;
+import gfx.core.typecons : SafeUnion, Option;
 import gfx.core.pso : RawPipelineState, VertexBufferSet, PixelTargetSet;
 import gfx.core.view : RawRenderTargetView;
 
-import std.typecons : Nullable;
 import std.traits : isStaticArray;
 
 /// A universal clear color supporting integet formats
@@ -74,18 +73,18 @@ interface CommandBuffer : RefCounted {
     /// Update a vertex/index/uniform buffer
     void updateBuffer(RawBuffer, ubyte[] data, size_t offset);
     /// Update a texture
-    void updateTexture(RawTexture, tex.Kind, Nullable!(tex.CubeFace), ubyte[] data, tex.RawImageInfo);
+    void updateTexture(RawTexture, tex.Kind, Option!(tex.CubeFace), ubyte[] data, tex.RawImageInfo);
     void generateMipmap(RawShaderResourceView);
     +/
     /// Clear color target
     void clearColor(RawRenderTargetView, ClearColor);
     /+
-    void clearDepthStencil(RawDepthStencilView, Nullable!(target.Depth), Nullable!(target.Stencil));
+    void clearDepthStencil(RawDepthStencilView, Option!(target.Depth), Option!(target.Stencil));
     +/
     /// Draw a primitive
-    void callDraw(uint start, uint count, Nullable!Instance);
+    void callDraw(uint start, uint count, Option!Instance);
     /+/// Draw a primitive with index buffer
-    void callDrawIndexed(uint start, uint count, uint base, Nullable!Instance);
+    void callDrawIndexed(uint start, uint count, uint base, Option!Instance);
     +/
 }
 

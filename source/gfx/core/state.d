@@ -1,8 +1,8 @@
 module gfx.core.state;
 
-import gfx.core.typecons : SafeUnion;
+import gfx.core.typecons : SafeUnion, Option, none;
 
-import std.typecons : Nullable, BitFlags, Yes;
+import std.typecons : BitFlags, Yes;
 
 
 enum FrontFace {
@@ -41,7 +41,7 @@ struct Rasterizer {
     FrontFace frontFace;
     CullFace cullFace;
     RasterMethod method;
-    Nullable!Offset offset;
+    Option!Offset offset;
     bool samples;
 
     static Rasterizer newFill() {
@@ -49,7 +49,7 @@ struct Rasterizer {
             FrontFace.CounterClockWise,
             CullFace.None,
             RasterMethod.makeFill(),
-            Nullable!Offset.init,
+            none!Offset,
             false
         );
     }
@@ -253,10 +253,10 @@ struct Color {
     /// Color mask to use.
     ColorMask mask;
     /// Optional blending.
-    Nullable!Blend blend;
+    Option!Blend blend;
 
     static Color makeDefault() {
-        return Color(cast(ColorMask)ColorFlags.All, Nullable!Blend.init);
+        return Color(cast(ColorMask)ColorFlags.All, none!Blend);
     }
 }
 

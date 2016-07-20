@@ -2,18 +2,17 @@ module gfx.backend.gl3.pso;
 
 import gfx.core : maxVertexAttribs, maxColorTargets, AttribMask, ColorTargetMask;
 import gfx.core.rc : Rc, rcCode;
+import gfx.core.typecons : Option;
 import gfx.core.state : Stencil, Depth, Color, Blend;
 import gfx.core.pso : PipelineStateRes, PipelineDescriptor, VertexAttribDesc;
 import gfx.core.program : Program;
 
 import derelict.opengl3.gl3;
 
-import std.typecons : Nullable;
-
 
 struct OutputMerger {
-    Nullable!Stencil stencil;
-    Nullable!Depth depth;
+    Option!Stencil stencil;
+    Option!Depth depth;
     ColorTargetMask mask;
     Color[maxColorTargets] colors;
 }
@@ -38,10 +37,10 @@ class GlPipelineState : PipelineStateRes {
         foreach(ct; descriptor.colorTargets) {
             _output.mask |= 1 << ct.slot;
             _output.colors[ct.slot].mask = ct.info.mask;
-            if (!ct.info.color.isNull || !ct.info.alpha.isNull) {
+            if (ct.info.color.isSome || ct.info.alpha.isSome) {
                 Blend blend;
-                if (!ct.info.color.isNull) blend.color = ct.info.color.get();
-                if (!ct.info.alpha.isNull) blend.color = ct.info.alpha.get();
+                if (ct.info.color.isSome) blend.color = ct.info.color.get();
+                if (ct.info.alpha.isSome) blend.color = ct.info.alpha.get();
                 _output.colors[ct.slot].blend = blend;
             }
         }

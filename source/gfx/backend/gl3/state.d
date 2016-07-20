@@ -1,10 +1,9 @@
 module gfx.backend.gl3.state;
 
+import gfx.core.typecons : Option;
 import gfx.core.state : Rasterizer, FrontFace, CullFace, RasterMethod, Offset;
 
 import derelict.opengl3.gl3;
-
-import std.typecons : Nullable;
 
 
 GLenum frontFaceToGl(in FrontFace ff) {
@@ -14,10 +13,10 @@ GLenum frontFaceToGl(in FrontFace ff) {
     }
 }
 
-void setRasterMethod(in RasterMethod method, in Nullable!Offset offset) {
+void setRasterMethod(in RasterMethod method, in Option!Offset offset) {
     void doit(GLenum polygonMode, GLenum glOffset) {
         glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
-        if (offset.isNull) {
+        if (offset.isNone) {
             glDisable(glOffset);
         }
         else {

@@ -1,9 +1,8 @@
 module gfx.core.error;
 
+import gfx.core.typecons : Option;
 import gfx.core.program : ShaderStage;
 import gfx.core.format : SurfaceType, ChannelType;
-
-import std.typecons;
 
 
 string prependLineNumbers(string code) {
@@ -110,7 +109,7 @@ class FormatTextureCreationError : TextureCreationError {
     import std.conv : to;
 
     SurfaceType format;
-    Nullable!ChannelType channel;
+    Option!ChannelType channel;
 
     this(SurfaceType format) {
         import std.conv : to;
