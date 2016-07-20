@@ -55,4 +55,5 @@ class GlBuffer : BufferRes {
     }
 
     @property GLuint name() const { return _name; }
+    @property GLenum target() const { return _target; }
 }
