@@ -119,9 +119,9 @@ int main()
         prog.pinResources(device.context);
         pipe.pinResources(device.context);
 
-        VertexBufferSet vbs;
-        vbs.entries[0] = VertexBufferSet.Entry(rc(vbuf.res), 0);
-        vbs.entries[1] = VertexBufferSet.Entry(rc(vbuf.res), 0);
+        auto data = PipeState.Data.init;
+        data.input = vbuf;
+        auto dataSet = pipe.makeDataSet(data);
 
         import std.datetime : StopWatch;
 
@@ -134,7 +134,7 @@ int main()
 
             cmdBuf.clearColor(null, clearColor(backColor));
             cmdBuf.bindPipelineState(pipe.obj);
-            cmdBuf.bindVertexBuffers(vbs);
+            cmdBuf.bindVertexBuffers(dataSet.vertexBuffers);
             cmdBuf.callDraw(0, cast(uint)vbuf.count, none!Instance);
 
             device.context.submit(cmdBuf);

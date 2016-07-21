@@ -29,10 +29,9 @@ class GlPipelineState : PipelineStateRes {
     this(Program prog, PipelineDescriptor descriptor) {
         _prog = prog;
 
-        foreach(at; descriptor.vertexAttribs) {
-            _inputMask |= 1<<at.slot;
-            _input[at.slot] = at;
-        }
+        _input = descriptor.vertexAttribs;
+        _inputMask = descriptor.attribMask;
+
         // TODO fill in depth and stencil
         foreach(ct; descriptor.colorTargets) {
             _output.mask |= 1 << ct.slot;

@@ -113,6 +113,7 @@ class BindAttributeCommand : Command {
 
     void execute(GlDeviceContext context) {
         buf.bindWithAttrib(desc, context.caps.instanceRate);
+        buf.nullify();
     }
 }
 
@@ -247,16 +248,14 @@ class GlCommandBuffer : CommandBuffer {
     void bindVertexBuffers(VertexBufferSet set) {
         foreach (slot; 0 .. maxVertexAttribs) {
             if (_cache.attribMask & (1<<slot)) {
-                if (!set.entries[slot].buffer.assigned) {
+                if (!set.buffers[slot].assigned) {
                     errorf("No vertex input provided for slot %s and attrib %s", slot, _cache.attribs[slot]);
                 }
                 else {
                     VertexAttribDesc attrib = _cache.attribs[slot];
-                    attrib.field.offset += set.entries[slot].offset;
-                    assert(attrib.slot == slot);
                     _commands ~= new BindAttributeCommand(
-                            unsafeCast!GlVertexBuffer(set.entries[slot].buffer.obj),
-                            attrib
+                            unsafeCast!GlVertexBuffer(set.buffers[slot].obj),
+                            _cache.attribs[slot]
                     );
                 }
             }
