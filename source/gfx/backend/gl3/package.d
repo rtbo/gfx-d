@@ -131,9 +131,8 @@ class GlDeviceContext : Context {
     }
 
     void submit(CommandBuffer buffer) {
+        import std.algorithm : each;
         auto cmds = unsafeCast!GlCommandBuffer(buffer).retrieve();
-        foreach (cmd; cmds) {
-            cmd.execute(this);
-        }
+        cmds.each!(cmd => cmd.execute(this));
     }
 }
