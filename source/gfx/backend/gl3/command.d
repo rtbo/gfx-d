@@ -3,7 +3,7 @@ module gfx.backend.gl3.command;
 import gfx.backend : unsafeCast;
 import gfx.backend.gl3 : GlDeviceContext;
 import gfx.backend.gl3.state : setRasterizer;
-import gfx.backend.gl3.buffer : GlBuffer;
+import gfx.backend.gl3.buffer : GlBuffer, GlVertexBuffer;
 import gfx.backend.gl3.program : GlProgram;
 import gfx.backend.gl3.pso : GlPipelineState, OutputMerger;
 import gfx.core : maxVertexAttribs, maxColorTargets, AttribMask, ColorTargetMask, Rect, Primitive;
@@ -103,95 +103,16 @@ class BindProgramCommand : Command {
 }
 
 class BindAttributeCommand : Command {
-    Rc!GlBuffer buf;
+    Rc!GlVertexBuffer buf;
     VertexAttribDesc desc;
 
-    this(GlBuffer buf, VertexAttribDesc desc) {
+    this(GlVertexBuffer buf, VertexAttribDesc desc) {
         this.buf = buf;
         this.desc = desc;
     }
 
     void execute(GlDeviceContext context) {
-        void doit(int count, GLenum glType) {
-            assert(buf.target == GL_ARRAY_BUFFER);
-            buf.bind();
-            /// TODO: place this logic in a GlVertexBuffer type
-            auto offset = cast(const(GLvoid)*)desc.field.offset;
-            immutable stride = cast(GLint)desc.field.stride;
-            switch (desc.field.format.channel) {
-                case ChannelType.Int:
-                case ChannelType.Uint:
-                    glVertexAttribIPointer(desc.slot, count, glType, stride, offset);
-                    break;
-                case ChannelType.Inorm:
-                case ChannelType.Unorm:
-                    glVertexAttribPointer(desc.slot, count, glType, GL_TRUE, stride, offset);
-                    break;
-                case ChannelType.Float:
-                    glVertexAttribPointer(desc.slot, count, glType, GL_FALSE, stride, offset);
-                    break;
-                default:
-                    errorf("bind vertex: unsupported channel type: %s", desc.field.format.channel);
-                    break;
-            }
-            glEnableVertexAttribArray(desc.slot);
-            if (context.caps.instanceRate) {
-                glVertexAttribDivisor(desc.slot, desc.instanceRate);
-            }
-            else if (desc.instanceRate != 0) {
-                error("bind vertex: instanceRate unsupported");
-            }
-            buf.nullify();
-        }
-        void doit8(int count) {
-            final switch(desc.field.format.channel) {
-                case ChannelType.Int:
-                case ChannelType.Inorm: doit(count, GL_BYTE); break;
-                case ChannelType.Uint:
-                case ChannelType.Unorm: doit(count, GL_UNSIGNED_BYTE); break;
-                case ChannelType.Float: doit(count, GL_ZERO); break;
-                case ChannelType.Srgb:
-                    error("bind vertex: unsupported Srgb channel");
-            }
-        }
-        void doit16(int count) {
-            final switch(desc.field.format.channel) {
-                case ChannelType.Int:
-                case ChannelType.Inorm: doit(count, GL_SHORT); break;
-                case ChannelType.Uint:
-                case ChannelType.Unorm: doit(count, GL_UNSIGNED_SHORT); break;
-                case ChannelType.Float: doit(count, GL_HALF_FLOAT); break;
-                case ChannelType.Srgb:
-                    error("bind vertex: unsupported Srgb channel");
-            }
-        }
-        void doit32(int count) {
-            final switch(desc.field.format.channel) {
-                case ChannelType.Int:
-                case ChannelType.Inorm: doit(count, GL_INT); break;
-                case ChannelType.Uint:
-                case ChannelType.Unorm: doit(count, GL_UNSIGNED_INT); break;
-                case ChannelType.Float: doit(count, GL_FLOAT); break;
-                case ChannelType.Srgb:
-                    error("bind vertex: unsupported Srgb channel");
-            }
-        }
-
-        switch (desc.field.format.surface) {
-            case SurfaceType.R8:                doit8(1); break;
-            case SurfaceType.R8_G8:             doit8(2); break;
-            case SurfaceType.R8_G8_B8_A8:       doit8(4); break;
-            case SurfaceType.R16:               doit16(1); break;
-            case SurfaceType.R16_G16:           doit16(2); break;
-            case SurfaceType.R16_G16_B16:       doit16(3); break;
-            case SurfaceType.R16_G16_B16_A16:   doit16(4); break;
-            case SurfaceType.R32:               doit32(1); break;
-            case SurfaceType.R32_G32:           doit32(2); break;
-            case SurfaceType.R32_G32_B32:       doit32(3); break;
-            case SurfaceType.R32_G32_B32_A32:   doit32(4); break;
-            default:
-                error("bind vertex: unsupported channel type");
-        }
+        buf.bindWithAttrib(desc, context.caps.instanceRate);
     }
 }
 
@@ -333,7 +254,10 @@ class GlCommandBuffer : CommandBuffer {
                     VertexAttribDesc attrib = _cache.attribs[slot];
                     attrib.field.offset += set.entries[slot].offset;
                     assert(attrib.slot == slot);
-                    _commands ~= new BindAttributeCommand(unsafeCast!GlBuffer(set.entries[slot].buffer.obj), attrib);
+                    _commands ~= new BindAttributeCommand(
+                            unsafeCast!GlVertexBuffer(set.entries[slot].buffer.obj),
+                            attrib
+                    );
                 }
             }
         }

@@ -2,7 +2,7 @@ module gfx.backend.gl3;
 
 import gfx.backend : unsafeCast;
 import gfx.backend.gl3.info : ContextInfo;
-import gfx.backend.gl3.buffer : GlBuffer;
+import gfx.backend.gl3.buffer : makeBufferImpl;
 import gfx.backend.gl3.texture : makeTextureImpl;
 import gfx.backend.gl3.view :   GlBufferShaderResourceView,
                                 GlTextureShaderResourceView,
@@ -102,7 +102,7 @@ class GlDeviceContext : Context {
         return makeTextureImpl(_caps.textureStorage, desc, data);
     }
     BufferRes makeBuffer(BufferCreationDesc desc, const(ubyte)[] data) {
-        return new GlBuffer(desc, data);
+        return makeBufferImpl(desc, data);
     }
     ShaderRes makeShader(ShaderStage stage, string code) {
         return new GlShader(stage, code);
