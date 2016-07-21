@@ -53,14 +53,20 @@ class GlTextureShaderResourceView : ShaderResourceViewRes {
 }
 
 
-class GlRenderTargetView : RenderTargetViewRes {
-    mixin(rcCode);
 
-    Rc!GlTexture _tex;
+abstract class GlTargetView : RenderTargetViewRes, DepthStencilViewRes {
+    mixin(rcCode);
+}
+
+class GlTextureTargetView : GlTargetView {
+    Rc!RawTexture _tex;
 
     this(RawTexture tex, Context.TexRTVCreationDesc desc) {
-        assert(tex.pinned);
-        _tex = unsafeCast!GlTexture(tex.res);
+        _tex = tex;
+    }
+
+    this(RawTexture tex, Context.TexDSVCreationDesc desc) {
+        _tex = tex;
     }
 
     void drop() {
@@ -68,17 +74,6 @@ class GlRenderTargetView : RenderTargetViewRes {
     }
 }
 
-class GlDepthStencilView : DepthStencilViewRes {
-    mixin(rcCode);
 
-    Rc!GlTexture _tex;
-
-    this(RawTexture tex, Context.TexDSVCreationDesc desc) {
-        assert(tex.pinned);
-        _tex = unsafeCast!GlTexture(tex.res);
-    }
-
-    void drop() {
-        _tex.nullify();
-    }
+class GlSurfaceTargetView {
 }

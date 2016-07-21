@@ -4,6 +4,7 @@ import gfx.core.typecons : Option;
 import gfx.core.buffer : BufferRes, RawBuffer, BufferRole, BufferUsage;
 import gfx.core.format : Format, ChannelType, Swizzle;
 import gfx.core.texture : TextureRes, RawTexture, TextureType, TexUsageFlags, ImageInfo;
+import gfx.core.surface : SurfaceRes, SurfUsageFlags;
 import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, Program;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes, DSVReadOnlyFlags;
 import gfx.core.pso : PipelineStateRes, PipelineDescriptor;
@@ -30,6 +31,15 @@ interface Context {
         ubyte samples;
     }
     TextureRes makeTexture(TextureCreationDesc desc, const(ubyte)[][] data);
+
+    struct SurfaceCreationDesc {
+        SurfUsageFlags usage;
+        Format format;
+        ushort width;
+        ushort height;
+        ubyte samples;
+    }
+    SurfaceRes makeSurface(SurfaceCreationDesc desc);
 
     ShaderRes makeShader(ShaderStage stage, string code);
 

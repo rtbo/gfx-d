@@ -6,6 +6,7 @@ import gfx.core.rc : rcCode;
 import gfx.core.format : Format;
 import gfx.core.buffer : BufferRes, RawBuffer, BufferSliceInfo;
 import gfx.core.texture : TextureRes, RawTexture, ImageSliceInfo;
+import gfx.core.surface : SurfaceRes;
 import gfx.core.program : ShaderRes, ProgramRes, ProgramVars, ShaderStage, Program;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes;
 import gfx.core.pso : PipelineStateRes, PipelineDescriptor;
@@ -26,6 +27,9 @@ class DummyContext : Context {
 
     TextureRes makeTexture(TextureCreationDesc, const(ubyte)[][]) {
         return new DummyTexture();
+    }
+    SurfaceRes makeSurface(SurfaceCreationDesc desc) {
+        return null;
     }
     BufferRes makeBuffer(BufferCreationDesc, const(ubyte)[]) {
         return new DummyBuffer();

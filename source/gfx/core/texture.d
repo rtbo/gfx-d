@@ -6,6 +6,7 @@ import gfx.core.context : Context;
 import gfx.core.format : isFormatted, Formatted, Format, Swizzle;
 
 import std.typecons : BitFlags;
+import std.experimental.logger;
 
 enum TextureType {
     D1, D1Array,
@@ -107,6 +108,9 @@ abstract class RawTexture : ResourceHolder {
         _format = format;
         _texelSize = texelSize;
         _initData = initData;
+        if (!(_usage & (TextureUsage.ShaderResource | TextureUsage.UnorderedAccess))) {
+            warningf("Building texture without need for sampling. A surface may be more efficient.");
+        }
     }
 
     void drop() {
