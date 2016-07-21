@@ -9,7 +9,17 @@ template isNullAssignable(T) {
         }));
 }
 
-/// constructs an option from at value
+version(unittest) {
+    interface   ITest {}
+    class       CTest {}
+    struct      STest {}
+    static assert( isNullAssignable!ITest);
+    static assert( isNullAssignable!CTest);
+    static assert(!isNullAssignable!STest);
+    static assert( isNullAssignable!(STest*));
+}
+
+/// constructs an option from a value
 Option!T some(T)(T val) {
     return Option!T(val);
 }
