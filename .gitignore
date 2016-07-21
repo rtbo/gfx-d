@@ -8,6 +8,8 @@ dub.selections.json
 
 # executables and libs
 __test__library__
+*.exe
+*.lib
 libgfx-d.a
 
 # examples executables
