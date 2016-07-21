@@ -3,7 +3,7 @@ module gfx.backend.gl3;
 import gfx.backend : unsafeCast;
 import gfx.backend.gl3.info : ContextInfo;
 import gfx.backend.gl3.buffer : makeBufferImpl;
-import gfx.backend.gl3.texture : makeTextureImpl;
+import gfx.backend.gl3.texture : makeTextureImpl, makeSurfaceImpl;
 import gfx.backend.gl3.view :   GlBufferShaderResourceView,
                                 GlTextureShaderResourceView,
                                 GlRenderTargetView,
@@ -16,7 +16,7 @@ import gfx.core : Device;
 import gfx.core.context : Context;
 import gfx.core.format : Format;
 import gfx.core.buffer : BufferRes, RawBuffer;
-import gfx.core.texture : TextureRes, RawTexture;
+import gfx.core.texture : TextureRes, RawTexture, TextureUsage;
 import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, ProgramVars, Program;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes;
 import gfx.core.pso : PipelineStateRes, PipelineDescriptor;
@@ -99,7 +99,15 @@ class GlDeviceContext : Context {
     }
 
     TextureRes makeTexture(TextureCreationDesc desc, const(ubyte)[][] data) {
-        return makeTextureImpl(_caps.textureStorage, desc, data);
+        if (desc.usage & (TextureUsage.ShaderResource | TextureUsage.RenderTarget)) {
+            return makeTextureImpl(_caps.textureStorage, desc, data);
+        }
+        else {
+            if (data.length != 0) {
+                warningf("Surfaces content cannot be initialized. Ignoring data");
+            }
+            return makeSurfaceImpl(desc);
+        }
     }
     BufferRes makeBuffer(BufferCreationDesc desc, const(ubyte)[] data) {
         return makeBufferImpl(desc, data);

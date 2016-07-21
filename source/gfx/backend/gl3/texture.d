@@ -16,6 +16,23 @@ import std.typecons : Tuple;
 import std.experimental.logger;
 
 
+package TextureRes makeSurfaceImpl(Context.TextureCreationDesc desc) {
+    assert(!(desc.usage & (TextureUsage.ShaderResource|TextureUsage.UnorderedAccess)));
+    switch (desc.type) {
+        case TextureType.D1:
+        case TextureType.D1Array:
+        case TextureType.D2Array:
+        case TextureType.D2ArrayMultisample:
+        case TextureType.D3:
+        case TextureType.Cube:
+        case TextureType.CubeArray:
+            warningf("Texture type %s is not compatible with render buffers. Assuming D2 instead", desc.type);
+            break;
+        default: break;
+    }
+
+    return new GlSurface(desc.format, desc.imgInfo.width, desc.imgInfo.height, desc.samples);
+}
 
 package TextureRes makeTextureImpl(in bool hasStorage, Context.TextureCreationDesc desc, const(ubyte)[][] data) {
 
@@ -92,6 +109,45 @@ package TextureRes makeTextureImpl(in bool hasStorage, Context.TextureCreationDe
     }
 
     return res;
+}
+
+
+class GlSurface : TextureRes {
+    mixin(rcCode);
+
+    GLuint _name;
+    GLenum _internalFormat;
+    ushort _width;
+    ushort _height;
+    ubyte _samples;
+
+    this(Format format, ushort w, ushort h, ubyte samples=1) {
+        _internalFormat = formatToGlInternalFormat(format);
+        _width = w;
+        _height = h;
+        _samples = samples;
+
+        glGenRenderbuffers(1, &_name);
+        glBindRenderbuffer(GL_RENDERBUFFER, _name);
+        if (samples <= 1) {
+            glRenderbufferStorage(GL_RENDERBUFFER, _internalFormat, w, h);
+        }
+        else {
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, _internalFormat, w, h);
+        }
+    }
+
+    void drop() {
+        glDeleteRenderbuffers(1, &_name);
+    }
+
+    void bind() {
+        glBindRenderbuffer(GL_RENDERBUFFER, _name);
+    }
+
+    void update(in ImageSliceInfo, const(ubyte)[]) {
+        assert(false, "surfaces cannot be updated by application code, only by rendering operations");
+    }
 }
 
 abstract class GlTexture : TextureRes {
