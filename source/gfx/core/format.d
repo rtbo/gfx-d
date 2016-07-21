@@ -85,6 +85,8 @@ enum isSurface(T) =
         isDepthSurface!T ||
         isStencilSurface!T;
 
+enum isDepthStencilSurface(T) = isDepthSurface!T || isStencilSurface!T;
+
 static assert(isSurface!R8_G8 && isSurface!D24_S8);
 static assert(!isSurface!uint);
 
