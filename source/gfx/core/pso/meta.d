@@ -25,17 +25,66 @@ struct RenderTarget(T) if (isFormatted!T) {}
 
 
 
-template isMetaField(M) {
-    static if (is(M == VertexBuffer!T, T)) {
+template isMetaField(MF) {
+    static if (is(MF == VertexBuffer!T, T)) {
         enum isMetaField = true;
     }
-    else static if (is(M == RenderTarget!T, T)) {
+    else static if (is(MF == RenderTarget!T, T)) {
         enum isMetaField = true;
     }
     else {
         enum isMetaField = false;
     }
 }
+
+template isMetaStruct(M) {
+    import std.meta : allSatisfy;
+    import std.traits : Fields;
+
+    enum isMetaStruct = allSatisfy!(isMetaField, Fields!M);
+}
+
+
+template isMetaVertexBufferField(MF) {
+    enum isMetaVertexBufferField = is(MF == VertexBuffer!T, T);
+}
+
+template metaVertexBufferFields(MS) if (isMetaStruct!MS) {
+    import std.traits : Fields, FieldNameTuple;
+    import std.meta : AliasSeq;
+
+    template VBF(size_t n) {
+        static if (n == Fields!(MS).length) {
+            alias VBF = AliasSeq!();
+        }
+        else static if (isMetaVertexBufferField!(Fields!MS[n])) {
+            alias VBF = AliasSeq!(
+                MetaVertexBufferField!(MS, FieldNameTuple!MS[n]),
+                VBF!(n+1)
+            );
+        }
+        else {
+            alias VBF = VBF!(n+1);
+        }
+    }
+
+    alias metaVertexBufferFields = VBF!0;
+}
+
+
+template MetaVertexBufferField(MS, string f) if (isMetaStruct!MS) {
+    alias MF = FieldType!(MS, f);
+    enum name = f;
+
+    static if (is(MF == VertexBuffer!T, T)) {
+        alias VertexType = T;
+    }
+    else {
+        static assert(false, T.stringof ~ " is not a vertex buffer meta field");
+    }
+}
+
+
 
 
 template InitType(MF) if (isMetaField!MF) {
@@ -107,14 +156,6 @@ template InitTrait(MS, string field) if (isMetaStruct!MS) {
 
 template DataTrait(MS, string field) if (isMetaStruct!MS) {
     alias Type = DataType!(FieldType!(MS, field));
-}
-
-
-template isMetaStruct(M) {
-    import std.meta : allSatisfy;
-    import std.traits : Fields;
-
-    enum isMetaStruct = allSatisfy!(isMetaField, Fields!M);
 }
 
 
