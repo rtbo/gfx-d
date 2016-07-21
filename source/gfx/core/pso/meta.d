@@ -314,7 +314,7 @@ template GfxStructFields(T) {
         else {
             alias parseFields = AliasSeq!(
                 GfxStructField!(Types[n], off, Names[n], resolveGfxName!(T, Names[n]), resolveGfxSlot!(T, Names[n])),
-                parseFields!(n+1, off+Types[n].alignof)
+                parseFields!(n+1, off+fieldAlignment!(Types[n]))
             );
         }
     }
@@ -323,6 +323,14 @@ template GfxStructFields(T) {
 }
 
 private:
+
+
+size_t fieldAlignment(T)() {
+    size_t n=0;
+    while(n*T.alignof < T.sizeof) ++n;
+    return n*T.alignof;
+}
+
 
 /// phobos #15874 and PR #4164 are merged into master but not into stable
 /// here is the fixed version of getSymbolsByUDA
