@@ -145,6 +145,15 @@ int main()
             /* Poll for and process events */
             glfwPollEvents();
             frameCount += 1;
+
+
+            version(Windows) {
+                // glfw vsync is not always enabled
+                // adding a sleep to limit frame rate to < 100 FPS
+                import core.thread : Thread;
+                import core.time : dur;
+                Thread.sleep( dur!"msecs"(10) );
+            }
         }
 
         auto ms = sw.peek().msecs();
