@@ -91,19 +91,6 @@ class SetScissorsCommand : Command {
     }
 }
 
-class PinPipelineCommand : Command {
-    Rc!RawPipelineState pso;
-
-    this(RawPipelineState pso) { this.pso = pso; }
-
-    void execute(GlDeviceContext context) {
-        assert(pso.assigned);
-        assert(pso.rc > 1); // in this case, if the pso is not held somewhere else, this is useless
-        if (!pso.pinned) pso.pinResources(context);
-        pso.nullify();
-    }
-}
-
 class BindProgramCommand : Command {
     Rc!Program prog;
 
@@ -119,18 +106,23 @@ class BindProgramCommand : Command {
 
 class BindAttributeCommand : Command {
     Rc!RawBuffer buf;
-    VertexAttribDesc desc;
+    Rc!RawPipelineState pso;
+    size_t attribIndex;
 
-    this(RawBuffer buf, VertexAttribDesc desc) {
+    this(RawBuffer buf, RawPipelineState pso, size_t attribIndex) {
         this.buf = buf;
-        this.desc = desc;
+        this.pso = pso;
+        this.attribIndex = attribIndex;
     }
 
     void execute(GlDeviceContext context) {
         assert(buf.assigned);
+        assert(pso.assigned);
         if (!buf.pinned) buf.pinResources(context);
-        unsafeCast!GlVertexBuffer(buf.res).bindWithAttrib(desc, context.caps.instanceRate);
+        if (!pso.pinned) pso.pinResources(context);
+        unsafeCast!GlVertexBuffer(buf.res).bindWithAttrib(pso.vertexAttribs[attribIndex], context.caps.instanceRate);
         buf.nullify();
+        pso.nullify();
     }
 }
 
@@ -207,12 +199,7 @@ class DrawCommand : Command {
 
 
 struct GlCommandCache {
-    GLenum primitive;
-    GLenum indexType;
-    VertexAttribDesc[] attribs;
-    bool scissors;
-    Option!Stencil stencil;
-    CullFace cullFace;
+    Rc!RawPipelineState pso;
 }
 
 
@@ -243,30 +230,15 @@ class GlCommandBuffer : CommandBuffer {
     }
 
     void bindPipelineState(RawPipelineState pso) {
-        // cannot access resources here because not pinned
-        // will find something to get around
-        //auto glPso = unsafeCast!GlPipelineState(pso.res);
-        //auto output = glPso.output;
-        //_cache.stencil =  output.stencil;
-        _cache.primitive = primitiveToGl(pso.primitive);
-        _cache.attribs = pso.vertexAttribs;
-        _cache.cullFace = pso.rasterizer.cullFace;
-        _cache.scissors = pso.scissors;
-        _commands ~= new PinPipelineCommand(pso);
+        _cache.pso = pso;
         _commands ~= new BindProgramCommand(pso.program);
         _commands ~= new SetRasterizerCommand(pso.rasterizer);
-        // TODO depth stencil
-        // foreach(i; 0 .. maxColorTargets) {
-        //     if ((output.mask & (1<<i)) != 0) {
-        //         // TODO: set blend state
-        //     }
-        // }
     }
 
     void bindVertexBuffers(VertexBufferSet set) {
-        assert(set.buffers.length == _cache.attribs.length);
-        foreach (i, at; _cache.attribs) {
-            _commands ~= new BindAttributeCommand(set.buffers[i].obj, at);
+        assert(_cache.pso.assigned, "must bind pso before vertex buffers");
+        foreach (i;  0 .. set.buffers.length) {
+            _commands ~= new BindAttributeCommand(set.buffers[i].obj, _cache.pso.obj, i);
         }
     }
 
@@ -284,6 +256,7 @@ class GlCommandBuffer : CommandBuffer {
 
     void callDraw(uint start, uint count, Option!Instance) {
         // TODO instanced drawings
-        _commands ~= new DrawCommand(_cache.primitive, start, count);
+        assert(_cache.pso.assigned, "must bind pso before draw calls");
+        _commands ~= new DrawCommand(primitiveToGl(_cache.pso.primitive), start, count);
     }
 }
