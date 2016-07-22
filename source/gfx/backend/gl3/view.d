@@ -28,7 +28,7 @@ class GlBufferShaderResourceView : ShaderResourceViewRes {
         _internalFormat = formatToGlInternalFormat(fmt);
         glGenTextures(1, &_texName);
         glBindTexture(GL_TEXTURE_BUFFER, _texName);
-        glTextureBuffer(GL_TEXTURE_BUFFER, _internalFormat, _buf.name);
+        glTexBuffer(GL_TEXTURE_BUFFER, _internalFormat, _buf.name);
     }
 
     void drop() {
