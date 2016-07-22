@@ -4,14 +4,14 @@ import gfx.backend : unsafeCast;
 import gfx.backend.gl3 : GlDeviceContext;
 import gfx.backend.gl3.state : setRasterizer;
 import gfx.backend.gl3.buffer : GlBuffer, GlVertexBuffer;
-import gfx.backend.gl3.program : GlProgram;
+import gfx.backend.gl3.program;
 import gfx.backend.gl3.pso : GlPipelineState, OutputMerger;
 import gfx.core : maxVertexAttribs, maxColorTargets, AttribMask, ColorTargetMask, Rect, Primitive;
 import gfx.core.typecons : Option, some, none;
 import gfx.core.command : CommandBuffer, ClearColor, Instance;
 import gfx.core.rc : Rc, rcCode;
-import gfx.core.program : ProgramRes;
-import gfx.core.buffer : BufferRes;
+import gfx.core.program : Program;
+import gfx.core.buffer : RawBuffer;
 import gfx.core.pso : RawPipelineState, VertexBufferSet, PixelTargetSet, VertexAttribDesc;
 import gfx.core.state : Rasterizer, Stencil, CullFace;
 import gfx.core.view : RawRenderTargetView;
@@ -91,28 +91,45 @@ class SetScissorsCommand : Command {
     }
 }
 
-class BindProgramCommand : Command {
-    Rc!GlProgram prog;
+class PinPipelineCommand : Command {
+    Rc!RawPipelineState pso;
 
-    this(GlProgram prog) { this.prog = prog; }
+    this(RawPipelineState pso) { this.pso = pso; }
 
     void execute(GlDeviceContext context) {
-        prog.bind();
+        assert(pso.assigned);
+        assert(pso.rc > 1); // in this case, if the pso is not held somewhere else, this is useless
+        if (!pso.pinned) pso.pinResources(context);
+        pso.nullify();
+    }
+}
+
+class BindProgramCommand : Command {
+    Rc!Program prog;
+
+    this(Program prog) { this.prog = prog; }
+
+    void execute(GlDeviceContext context) {
+        assert(prog.assigned);
+        if (!prog.pinned) prog.pinResources(context);
+        prog.res.bind();
         prog.nullify();
     }
 }
 
 class BindAttributeCommand : Command {
-    Rc!GlVertexBuffer buf;
+    Rc!RawBuffer buf;
     VertexAttribDesc desc;
 
-    this(GlVertexBuffer buf, VertexAttribDesc desc) {
+    this(RawBuffer buf, VertexAttribDesc desc) {
         this.buf = buf;
         this.desc = desc;
     }
 
     void execute(GlDeviceContext context) {
-        buf.bindWithAttrib(desc, context.caps.instanceRate);
+        assert(buf.assigned);
+        if (!buf.pinned) buf.pinResources(context);
+        unsafeCast!GlVertexBuffer(buf.res).bindWithAttrib(desc, context.caps.instanceRate);
         buf.nullify();
     }
 }
@@ -235,7 +252,8 @@ class GlCommandBuffer : CommandBuffer {
         _cache.cullFace = pso.rasterizer.cullFace;
         _cache.stencil =  output.stencil;
         _cache.scissors = pso.scissors;
-        _commands ~= new BindProgramCommand(unsafeCast!GlProgram(pso.program.res));
+        _commands ~= new PinPipelineCommand(pso);
+        _commands ~= new BindProgramCommand(pso.program);
         _commands ~= new SetRasterizerCommand(pso.rasterizer);
         // TODO depth stencil
         foreach(i; 0 .. maxColorTargets) {
@@ -254,7 +272,7 @@ class GlCommandBuffer : CommandBuffer {
                 else {
                     VertexAttribDesc attrib = _cache.attribs[slot];
                     _commands ~= new BindAttributeCommand(
-                            unsafeCast!GlVertexBuffer(set.buffers[slot].obj),
+                            set.buffers[slot].obj,
                             _cache.attribs[slot]
                     );
                 }

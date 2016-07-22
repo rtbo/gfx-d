@@ -17,7 +17,7 @@ import gfx.core.typecons : Option, none;
 import gfx.core.context : Context;
 import gfx.core.state : Rasterizer, ColorMask, ColorFlags, BlendChannel, Blend;
 import gfx.core.format : Format;
-import gfx.core.buffer : BufferRes;
+import gfx.core.buffer : RawBuffer;
 import gfx.core.program : Program, VarType, ProgramVars;
 import gfx.core.view : RawRenderTargetView, RawDepthStencilView;
 import gfx.core.pso.meta : isMetaStruct, PipelineInit, PipelineData, VertexBuffer, RenderTarget;
@@ -86,7 +86,7 @@ struct PipelineDescriptor {
 // data structs
 
 struct VertexBufferSet {
-    Rc!BufferRes[maxVertexAttribs] buffers;
+    Rc!RawBuffer[maxVertexAttribs] buffers;
 }
 
 /// A complete set of render targets to be used for pixel export in PSO.
@@ -279,7 +279,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS) {
         foreach (vbf; metaVertexBufferFields!MS) {
             foreach (i, va; Fields!(vbf.VertexType)) {
                 auto at = mixin(format("_initStruct.%s[%s]", vbf.name, i));
-                res.vertexBuffers.buffers[at.slot] = mixin(format("dataStruct.%s.res", vbf.name));
+                res.vertexBuffers.buffers[at.slot] = mixin(format("dataStruct.%s", vbf.name));
             }
         }
 
