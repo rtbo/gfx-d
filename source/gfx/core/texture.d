@@ -1,9 +1,11 @@
 module gfx.core.texture;
 
 import gfx.core : Resource, ResourceHolder, untypeSlices;
+import gfx.core.typecons : Option;
 import gfx.core.rc : RefCounted, rcCode;
 import gfx.core.context : Context;
 import gfx.core.format : isFormatted, Formatted, Format, Swizzle;
+import gfx.core.view : ShaderResourceView, RenderTargetView, DepthStencilView, DSVReadOnlyFlags;
 
 import std.typecons : BitFlags;
 import std.experimental.logger;
@@ -185,6 +187,21 @@ abstract class Texture(TexelF) : RawTexture if (isFormatted!TexelF) {
     /// update part of the texture described by slice with the provided texels.
     final void update(ImageSliceInfo slice, const(Texel)[] texels) {
         updateRaw(slice, cast(ubyte[])texels);
+    }
+
+    ShaderResourceView!T viewAsShaderResource(ubyte minLevel, ubyte maxLevel, Swizzle swizzle) {
+        import gfx.core.view : TextureShaderResourceView;
+        return new TextureShaderResourceView!T(this, minLevel, maxLevel, swizzle);
+    }
+
+    RenderTargetView!T viewAsRenderTarget(ubyte level, Option!ubyte layer) {
+        import gfx.core.view : TextureRenderTargetView;
+        return new TextureRenderTargetView!T(this, level, layer);
+    }
+
+    DepthStencilView!T viewAsDepthStencil(ubyte level, Option!ubyte layer, DSVReadOnlyFlags flags) {
+        import gfx.core.view : TextureDepthStencilView;
+        return new TextureDepthStencilView!T(this, level, layer, flags);
     }
 }
 

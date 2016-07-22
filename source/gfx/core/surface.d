@@ -4,6 +4,7 @@ import gfx.core : Resource, ResourceHolder, untypeSlices;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.context : Context;
 import gfx.core.format : isFormatted, Formatted, Format, Swizzle, isRenderSurface, isDepthStencilSurface;
+import gfx.core.view : RenderTargetView;
 
 import std.typecons : BitFlags;
 
@@ -78,5 +79,13 @@ class Surface(T) : RawSurface if (isFormatted!T) {
         super(usage, width, height, format!T(), samples);
     }
 
+    RenderTargetView!T viewAsRenderTarget() {
+        import gfx.core.view : SurfaceRenderTargetView;
+        return new SurfaceRenderTargetView!T(this);
+    }
 
+    DepthStencilView!T viewAsDepthStencil() {
+        import gfx.core.view : SurfaceDepthStencilView;
+        return new SurfaceDepthStencilView!T(this);
+    }
 }

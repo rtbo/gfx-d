@@ -8,6 +8,7 @@ import gfx.core.context : Context;
 import gfx.core.format : Format;
 import gfx.core.buffer : RawBuffer;
 import gfx.core.texture : RawTexture;
+import gfx.core.surface : RawSurface;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes;
 
 import derelict.opengl3.gl3;
@@ -75,5 +76,14 @@ class GlTextureTargetView : GlTargetView {
 }
 
 
-class GlSurfaceTargetView {
+class GlSurfaceTargetView : GlTargetView {
+    Rc!RawSurface _surf;
+
+    this(RawSurface surf) {
+        _surf = surf;
+    }
+
+    void drop() {
+        _surf.nullify();
+    }
 }

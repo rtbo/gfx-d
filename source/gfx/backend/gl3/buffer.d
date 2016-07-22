@@ -16,6 +16,7 @@ GLenum roleToGlTarget(in BufferRole role) {
         case BufferRole.Vertex: return GL_ARRAY_BUFFER;
         case BufferRole.Index: return GL_ELEMENT_ARRAY_BUFFER;
         case BufferRole.Constant: return GL_UNIFORM_BUFFER;
+        case BufferRole.ShaderResource: return GL_TEXTURE_BUFFER;
     }
 }
 

@@ -6,7 +6,8 @@ import gfx.backend.gl3.buffer : makeBufferImpl;
 import gfx.backend.gl3.texture : makeTextureImpl, GlSurface;
 import gfx.backend.gl3.view :   GlBufferShaderResourceView,
                                 GlTextureShaderResourceView,
-                                GlTextureTargetView;
+                                GlTextureTargetView,
+                                GlSurfaceTargetView;
 import gfx.backend.gl3.program : GlShader, GlProgram;
 import gfx.backend.gl3.pso : GlPipelineState;
 import gfx.backend.gl3.command : GlCommandBuffer;
@@ -16,7 +17,7 @@ import gfx.core.context : Context;
 import gfx.core.format : Format;
 import gfx.core.buffer : BufferRes, RawBuffer;
 import gfx.core.texture : TextureRes, RawTexture, TextureUsage;
-import gfx.core.surface : SurfaceRes;
+import gfx.core.surface : SurfaceRes, RawSurface;
 import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, ProgramVars, Program;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes;
 import gfx.core.pso : PipelineStateRes, PipelineDescriptor;
@@ -113,17 +114,23 @@ class GlDeviceContext : Context {
     ProgramRes makeProgram(ShaderRes[] shaders) {
         return new GlProgram(_caps.ubo, shaders);
     }
-    ShaderResourceViewRes viewAsShaderResource(RawBuffer buf, Format fmt) {
-        return new GlBufferShaderResourceView(buf, fmt);
-    }
-    ShaderResourceViewRes viewAsShaderResource(RawTexture tex, TexSRVCreationDesc desc) {
+    ShaderResourceViewRes makeShaderResourceView(RawTexture tex, TexSRVCreationDesc desc) {
         return new GlTextureShaderResourceView(tex, desc);
     }
-    RenderTargetViewRes viewAsRenderTarget(RawTexture tex, TexRTVCreationDesc desc) {
+    ShaderResourceViewRes makeShaderResourceView(RawBuffer buf, Format fmt) {
+        return new GlBufferShaderResourceView(buf, fmt);
+    }
+    RenderTargetViewRes makeRenderTargetView(RawTexture tex, TexRTVCreationDesc desc) {
         return new GlTextureTargetView(tex, desc);
     }
-    DepthStencilViewRes viewAsDepthStencil(RawTexture tex, TexDSVCreationDesc desc) {
+    RenderTargetViewRes makeRenderTargetView(RawSurface surf) {
+        return new GlSurfaceTargetView(surf);
+    }
+    DepthStencilViewRes makeDepthStencilView(RawTexture tex, TexDSVCreationDesc desc) {
         return new GlTextureTargetView(tex, desc);
+    }
+    DepthStencilViewRes makeDepthStencilView(RawSurface surf) {
+        return new GlSurfaceTargetView(surf);
     }
     PipelineStateRes makePipeline(Program prog, PipelineDescriptor descriptor) {
         return new GlPipelineState(prog, descriptor);

@@ -4,7 +4,7 @@ import gfx.core.typecons : Option;
 import gfx.core.buffer : BufferRes, RawBuffer, BufferRole, BufferUsage;
 import gfx.core.format : Format, ChannelType, Swizzle;
 import gfx.core.texture : TextureRes, RawTexture, TextureType, TexUsageFlags, ImageInfo;
-import gfx.core.surface : SurfaceRes, SurfUsageFlags;
+import gfx.core.surface : SurfaceRes, SurfUsageFlags, RawSurface;
 import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, Program;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes, DSVReadOnlyFlags;
 import gfx.core.pso : PipelineStateRes, PipelineDescriptor;
@@ -45,29 +45,36 @@ interface Context {
 
     ProgramRes makeProgram(ShaderRes[] shaders);
 
-    ShaderResourceViewRes viewAsShaderResource(RawBuffer buf, Format fmt);
-
     struct TexSRVCreationDesc {
         ChannelType channel;
         ubyte minLevel;
         ubyte maxLevel;
         Swizzle swizzle;
     }
-    ShaderResourceViewRes viewAsShaderResource(RawTexture tex, TexSRVCreationDesc desc);
+    ShaderResourceViewRes makeShaderResourceView(RawTexture tex, TexSRVCreationDesc desc);
+
+    ShaderResourceViewRes makeShaderResourceView(RawBuffer buf, Format fmt);
 
     struct TexRTVCreationDesc {
         ChannelType channel;
         ubyte level;
         Option!ubyte layer;
     }
-    RenderTargetViewRes viewAsRenderTarget(RawTexture tex, TexRTVCreationDesc desc);
+    RenderTargetViewRes makeRenderTargetView(RawTexture tex, TexRTVCreationDesc desc);
+
+    RenderTargetViewRes makeRenderTargetView(RawSurface surf);
 
     struct TexDSVCreationDesc {
         ubyte level;
         Option!ubyte layer;
         DSVReadOnlyFlags flags;
     }
-    DepthStencilViewRes viewAsDepthStencil(RawTexture tex, TexDSVCreationDesc desc);
+    DepthStencilViewRes makeDepthStencilView(RawTexture tex, TexDSVCreationDesc desc);
+
+    DepthStencilViewRes makeDepthStencilView(RawSurface surf);
+
+
+
 
     PipelineStateRes makePipeline(Program prog, PipelineDescriptor descriptor);
 

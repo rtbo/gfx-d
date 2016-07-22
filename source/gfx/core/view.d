@@ -1,10 +1,11 @@
 module gfx.core.view;
 
 import gfx.core : Resource, ResourceHolder;
+import gfx.core.typecons : Option;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.context : Context;
 import gfx.core.format : isFormatted, Formatted;
-import gfx.core.buffer : Buffer;
+import gfx.core.buffer : ShaderResourceBuffer;
 import gfx.core.texture : Texture;
 
 import std.typecons : BitFlags;
@@ -41,10 +42,17 @@ abstract class RawShaderResourceView : ResourceHolder {
     }
 }
 
-
-class BufferShaderResourceView(T) : RawShaderResourceView if(isFormatted!T) {
+abstract class ShaderResourceView(T) : RawShaderResourceView {
     private alias Fmt = Formatted!T;
-    private Rc!(Buffer!T) _buf;
+}
+
+
+class BufferShaderResourceView(T) : ShaderResourceView!T if (isFormatted!T) {
+    private Rc!(ShaderResourceBuffer!T) _buf;
+
+    this(ShaderResourceBuffer!T buf) {
+        _buf = buf;
+    }
 
     override void drop() {
         _buf.nullify();
@@ -60,8 +68,7 @@ class BufferShaderResourceView(T) : RawShaderResourceView if(isFormatted!T) {
 }
 
 
-class TextureShaderResourceView(T) : RawShaderResourceView if(isFormatted!T) {
-    private alias Fmt = Formatted!T;
+class TextureShaderResourceView(T) : ShaderResourceView!T if(isFormatted!T) {
     private Rc!(Texture!T) _tex;
     private ubyte _minLevel;
     private ubyte _maxLevel;
@@ -96,23 +103,22 @@ abstract class RawRenderTargetView : ResourceHolder {
 
     Rc!RenderTargetViewRes _res;
 
-    void drop() {
-        _res.nullify();
-    }
-
     @property bool pinned() const {
         return _res.assigned;
     }
 }
 
-class RenderTargetView(T) : RawRenderTargetView if(isFormatted!T) {
+abstract class RenderTargetView(T) : RawRenderTargetView if (isFormatted!T) {
     alias Fmt = Formatted!T;
+}
+
+class TextureRenderTargetView(T) : RenderTargetView!T {
 
     Rc!(Texture!T) _tex;
     ubyte _level;
-    ubyte _layer;
+    Option!ubyte _layer;
 
-    this(Texture!T tex, ubyte level, ubyte layer=ubyte.max) {
+    this(Texture!T tex, ubyte level, Option!ubyte layer) {
         _tex = tex;
         _level = level;
         _layer = layer;
@@ -123,15 +129,33 @@ class RenderTargetView(T) : RawRenderTargetView if(isFormatted!T) {
         Context.TexRTVCreationDesc desc;
         desc.channel = Fmt.Channel.channelType;
         desc.level = _level;
-        if(_layer != ubyte.max) desc.layer = _layer;
+        desc.layer = _layer;
         _res = context.viewAsRenderTarget(_tex.obj, desc);
     }
 
-    override void drop() {
+    void drop() {
         _tex.nullify();
-        super.drop();
+        _res.nullify();
     }
 
+}
+
+class SurfaceRenderTargetView(T) : RenderTargetView!T {
+    Rc!(Surface!T) _surf;
+
+    this(Surface!T surf) {
+        _surf = surf;
+    }
+
+    void pinResources(Context context) {
+        if(!_surf.pinned) _surf.pinResources(context);
+        _res = context.viewAsRenderTarget(_surf.obj);
+    }
+
+    void drop() {
+        _surf.nullify();
+        _res.nullify();
+    }
 }
 
 
@@ -140,40 +164,59 @@ abstract class RawDepthStencilView : ResourceHolder {
 
     Rc!DepthStencilViewRes _res;
 
-    void drop() {
-        _res.nullify();
-    }
-
     @property bool pinned() const {
         return _res.assigned;
     }
 }
 
-class DepthStencilView(T) : RawDepthStencilView if(isFormatted!T) {
+abstract class DepthStencilView(T) : RawDepthStencilView if (isFormatted!T) {
     alias Fmt = Formatted!T;
+}
+
+class TextureDepthStencilView(T) : DepthStencilView!T {
 
     Rc!(Texture!T) _tex;
     ubyte _level;
-    ubyte _layer;
+    Option!ubyte _layer;
+    DSVReadOnlyFlags _flags;
 
-    this(Texture!T tex, ubyte level, ubyte layer=ubyte.max) {
+    this(Texture!T tex, ubyte level, Option!ubyte layer, DSVReadOnlyFlags flags) {
         _tex = tex;
         _level = level;
         _layer = layer;
+        _flags = flags;
     }
 
     void pinResources(Context context) {
         if(!_tex.pinned) _tex.pinResources(context);
-        Context.TexRTVCreationDesc desc;
-        desc.channel = Fmt.Channel.channelType;
+        Context.TexDSVCreationDesc desc;
         desc.level = _level;
-        if(_layer != ubyte.max) desc.layer = _layer;
+        desc.layer = _layer;
+        desc.flags = _flags;
         _res = context.viewAsDepthStencil(_tex.obj, desc);
     }
 
     void drop() {
         _tex.nullify();
-        super.drop();
+        _res.nullify();
     }
 
+}
+
+class SurfaceDepthStencilView(T) : DepthStencilView!T {
+    Rc!(Surface!T) _surf;
+
+    this(Surface!T surf) {
+        _surf = surf;
+    }
+
+    void pinResources(Context context) {
+        if(!_surf.pinned) _surf.pinResources(context);
+        _res = context.viewAsDepthStencil(_surf.obj);
+    }
+
+    void drop() {
+        _surf.nullify();
+        _res.nullify();
+    }
 }

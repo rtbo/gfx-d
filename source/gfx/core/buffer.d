@@ -3,11 +3,15 @@ module gfx.core.buffer;
 import gfx.core : Resource, ResourceHolder, untypeSlice;
 import gfx.core.rc : RefCounted, Rc, rcCode;
 import gfx.core.context : Context;
+import gfx.core.format : Formatted;
+import gfx.core.view : ShaderResourceView, BufferShaderResourceView;
+
 
 enum BufferRole {
     Vertex,
     Index,
-    Constant, // uniform blocks
+    Constant,        // uniform blocks
+    ShaderResource,  // storage for texture
 }
 
 enum BufferUsage {
@@ -124,6 +128,15 @@ class Buffer(T) : RawPlainBuffer {
 }
 
 
+class ShaderResourceBuffer(T) : Buffer!T if (isFormatted!T) {
+    this(in BufferUsage usage, in MapAccess access, in const(T)[] data) {
+        super(BufferRole.ShaderResource, usage, access, data);
+    }
+
+    ShaderResourceView!T viewAsShaderResource() {
+        return new BufferShaderResourceView!T(this);
+    }
+}
 
 
 

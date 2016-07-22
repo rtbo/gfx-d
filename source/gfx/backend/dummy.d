@@ -6,7 +6,7 @@ import gfx.core.rc : rcCode;
 import gfx.core.format : Format;
 import gfx.core.buffer : BufferRes, RawBuffer, BufferSliceInfo;
 import gfx.core.texture : TextureRes, RawTexture, ImageSliceInfo;
-import gfx.core.surface : SurfaceRes;
+import gfx.core.surface : SurfaceRes, RawSurface;
 import gfx.core.program : ShaderRes, ProgramRes, ProgramVars, ShaderStage, Program;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes;
 import gfx.core.pso : PipelineStateRes, PipelineDescriptor;
@@ -40,16 +40,22 @@ class DummyContext : Context {
     ProgramRes makeProgram(ShaderRes[]) {
         return new DummyProgram();
     }
-    ShaderResourceViewRes viewAsShaderResource(RawBuffer, Format fmt) {
+    ShaderResourceViewRes makeShaderResourceView(RawTexture, TexSRVCreationDesc) {
         return null;
     }
-    ShaderResourceViewRes viewAsShaderResource(RawTexture, TexSRVCreationDesc desc) {
+    ShaderResourceViewRes makeShaderResourceView(RawBuffer, Format) {
         return null;
     }
-    RenderTargetViewRes viewAsRenderTarget(RawTexture tex, TexRTVCreationDesc desc) {
+    RenderTargetViewRes makeRenderTargetView(RawTexture, TexRTVCreationDesc) {
         return null;
     }
-    DepthStencilViewRes viewAsDepthStencil(RawTexture tex, TexDSVCreationDesc desc) {
+    RenderTargetViewRes makeRenderTargetView(RawSurface) {
+        return null;
+    }
+    DepthStencilViewRes makeDepthStencilView(RawTexture, TexDSVCreationDesc) {
+        return null;
+    }
+    DepthStencilViewRes makeDepthStencilView(RawSurface) {
         return null;
     }
     PipelineStateRes makePipeline(Program, PipelineDescriptor) {
