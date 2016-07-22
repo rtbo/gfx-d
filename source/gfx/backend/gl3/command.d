@@ -35,6 +35,7 @@ GLenum primitiveToGl(in Primitive primitive) {
 
 interface Command {
     void execute(GlDeviceContext context);
+    void unload();
 }
 
 
@@ -43,9 +44,12 @@ class SetRasterizerCommand : Command {
     this(Rasterizer rasterizer) {
         this.rasterizer = rasterizer;
     }
-    void execute(GlDeviceContext context) {
+
+    final void execute(GlDeviceContext context) {
         setRasterizer(rasterizer);
     }
+
+    final void unload() {}
 }
 
 class SetDrawColorBuffers : Command {
@@ -56,7 +60,8 @@ class SetDrawColorBuffers : Command {
     this(ubyte mask) {
         this.mask = mask;
     }
-    void execute(GlDeviceContext context) {
+
+    final void execute(GlDeviceContext context) {
         GLenum[maxColorTargets] targets;
         GLsizei count=0;
         foreach(i; 0..maxColorTargets) {
@@ -66,20 +71,23 @@ class SetDrawColorBuffers : Command {
         }
         glDrawBuffers(count, &targets[0]);
     }
+    final void unload() {}
 }
 
 class SetViewportCommand : Command {
     Rect rect;
     this(Rect rect) { this.rect = rect; }
-    void execute(GlDeviceContext context) {
+    final void execute(GlDeviceContext context) {
         glViewport(rect.x, rect.y, rect.w, rect.h);
     }
+    final void unload() {}
 }
 
 class SetScissorsCommand : Command {
     Option!Rect rect;
     this(Option!Rect rect) { this.rect = rect; }
-    void execute(GlDeviceContext context) {
+
+    final void execute(GlDeviceContext context) {
         if (rect.isSome) {
             auto r = rect.get();
             glEnable(GL_SCISSOR_TEST);
@@ -89,6 +97,7 @@ class SetScissorsCommand : Command {
             glDisable(GL_SCISSOR_TEST);
         }
     }
+    final void unload() {}
 }
 
 class BindProgramCommand : Command {
@@ -96,10 +105,15 @@ class BindProgramCommand : Command {
 
     this(Program prog) { this.prog = prog; }
 
-    void execute(GlDeviceContext context) {
+    final void execute(GlDeviceContext context) {
         assert(prog.loaded);
         if (!prog.pinned) prog.pinResources(context);
         prog.res.bind();
+
+        unload();
+    }
+
+    final void unload() {
         prog.unload();
     }
 }
@@ -115,12 +129,17 @@ class BindAttributeCommand : Command {
         this.attribIndex = attribIndex;
     }
 
-    void execute(GlDeviceContext context) {
+    final void execute(GlDeviceContext context) {
         assert(buf.loaded);
         assert(pso.loaded);
         if (!buf.pinned) buf.pinResources(context);
         if (!pso.pinned) pso.pinResources(context);
         unsafeCast!GlVertexBuffer(buf.res).bindWithAttrib(pso.vertexAttribs[attribIndex], context.caps.instanceRate);
+
+        unload();
+    }
+
+    final void unload() {
         buf.unload();
         pso.unload();
     }
@@ -135,8 +154,14 @@ class BindPixelTargetsCommand : Command {
         this.fbo = fbo;
     }
 
-    void execute(GlDeviceContext context) {
+    final void execute(GlDeviceContext context) {
         info("impl bind targets");
+
+        unload();
+    }
+
+    final void unload() {
+        targets = PixelTargetSet.init;
     }
 }
 
@@ -149,7 +174,7 @@ class ClearCommand : Command {
         this.color = color; this.depth = depth; this.stencil = stencil;
     }
 
-    void execute(GlDeviceContext context) {
+    final void execute(GlDeviceContext context) {
         if (color.isSome) {
             auto col = color.get();
             glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -179,6 +204,8 @@ class ClearCommand : Command {
             glClearBufferiv(GL_STENCIL, 0, &s);
         }
     }
+
+    final void unload() {}
 }
 
 
@@ -194,6 +221,8 @@ class DrawCommand : Command {
     void execute(GlDeviceContext context) {
         glDrawArrays(primitive, start, count);
     }
+
+    void unload() {}
 }
 
 
@@ -220,6 +249,9 @@ class GlCommandBuffer : CommandBuffer {
     void drop() {
         glDeleteFramebuffers(1, &_fbo);
         glDeleteVertexArrays(1, &_vao);
+        _cache = GlCommandCache.init;
+        import std.algorithm : each;
+        _commands.each!(cmd => cmd.unload());
     }
 
     Command[] retrieve() {
