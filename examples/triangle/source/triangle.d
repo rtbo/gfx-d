@@ -1,6 +1,6 @@
 module triangle;
 
-import gfx.backend.gl3 : GlContext, createGlDevice;
+import gfx.backend.gl3 : createGlDevice;
 import gfx.core : Primitive;
 import gfx.core.rc : Rc, rc, makeRc;
 import gfx.core.typecons : Option, none, some;
@@ -46,26 +46,6 @@ immutable triangle = [
 immutable float[4] backColor = [0.1, 0.2, 0.3, 1.0];
 
 
-class GlfwContext : GlContext {
-    private GLFWwindow* window;
-
-    this(GLFWwindow *window) {
-        this.window = window;
-    }
-
-    void makeCurrent() {
-        glfwMakeContextCurrent(window);
-    }
-
-    void doneCurrent() {
-        glfwMakeContextCurrent(null);
-    }
-
-    void swapBuffers() {
-        glfwSwapBuffers(window);
-    }
-}
-
 extern(C)
 void handleError(int code, const(char)*str) nothrow {
     try {
@@ -79,11 +59,9 @@ void handleError(int code, const(char)*str) nothrow {
 
 int main()
 {
-
     DerelictGLFW3.load();
     DerelictGL3.load();
 
-    /* Initialize the library */
     if (!glfwInit())
         return -1;
 
@@ -93,14 +71,12 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    /* Create a windowed mode window and its OpenGL context */
     auto window = glfwCreateWindow(640, 480, "gfx-d - Triangle", null, null);
     if (!window) {
         glfwTerminate();
         return -1;
     }
 
-    auto context = new GlfwContext(window);
     {
         auto vbuf = rc(createVertexBuffer!Vertex(triangle));
         auto prog = makeRc!Program(ShaderSet.vertexPixel(
@@ -113,9 +89,10 @@ int main()
         data.input = vbuf;
         auto dataSet = pipe.makeDataSet(data);
 
-        context.makeCurrent();
+        glfwMakeContextCurrent(window);
+
         DerelictGL3.reload();
-        auto device = createGlDevice(context);
+        auto device = createGlDevice();
         auto cmdBuf = rc(device.context.makeCommandBuffer());
 
         import std.datetime : StopWatch;
@@ -135,7 +112,7 @@ int main()
             device.context.submit(cmdBuf);
 
             /* Swap front and back buffers */
-            context.swapBuffers();
+            glfwSwapBuffers(window);
 
             /* Poll for and process events */
             glfwPollEvents();
@@ -154,7 +131,8 @@ int main()
         auto ms = sw.peek().msecs();
         writeln("FPS: ", 1000.0f*frameCount / ms);
     }
-    context.doneCurrent();
+
+    glfwMakeContextCurrent(null);
     glfwTerminate();
     return 0;
 }

@@ -28,28 +28,16 @@ import derelict.opengl3.gl3;
 import std.experimental.logger;
 
 
-interface GlContext {
-    void makeCurrent();
-    void doneCurrent();
-    void swapBuffers();
-}
-
-
-Device createGlDevice(GlContext context) {
-    return new GlDevice(context);
+Device createGlDevice() {
+    return new GlDevice();
 }
 
 
 class GlDevice : Device {
-    GlContext _context;
-    GlDeviceContext _deviceContext;
+    GlDeviceContext _context;
     ContextInfo _info;
 
-    this(GlContext context) {
-        DerelictGL3.load();
-        _context = context;
-        _context.makeCurrent();
-        DerelictGL3.reload();
+    this() {
         _info = ContextInfo.fetch();
 
         import std.exception : enforce;
@@ -58,11 +46,11 @@ class GlDevice : Device {
         enforce(_info.glslVersion.decimal >= 130, "GLSL v1.30 is requested by gfx-d");
         enforce(_info.caps.interfaceQuery, "GL_ARB_program_interface_query is requested by gfx-d");
 
-        _deviceContext = new GlDeviceContext(_info.caps);
+        _context = new GlDeviceContext(_info.caps);
     }
 
     @property Context context() {
-        return _deviceContext;
+        return _context;
     }
 }
 
