@@ -156,6 +156,5 @@ int main()
     }
     context.doneCurrent();
     glfwTerminate();
-    writeln("term");
     return 0;
 }
