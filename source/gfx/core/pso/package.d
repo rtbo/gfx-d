@@ -93,7 +93,14 @@ struct PipelineDescriptor {
 // data structs
 
 struct VertexBufferSet {
-    Rc!RawBuffer[] buffers;
+    private RawBuffer[] _buffers;
+
+    @property inout(RawBuffer)[] buffers() inout { return _buffers; }
+
+    void addBuf(RawBuffer buf) {
+        buf.addRef();
+        _buffers ~= buf;
+    }
 }
 
 /// A complete set of render targets to be used for pixel export in PSO.
@@ -139,11 +146,14 @@ struct RawDataSet {
     VertexBufferSet vertexBuffers;
     PixelTargetSet pixelTargets;
 
+    this(this) {
+        import std.algorithm : each;
+        vertexBuffers.buffers.each!(b => b.addRef());
+    }
+
     ~this() {
-        foreach (ref b; vertexBuffers.buffers) {
-            b.nullify();
-        }
-        vertexBuffers.buffers = [];
+        import std.algorithm : each;
+        vertexBuffers.buffers.each!(b => b.release());
     }
 }
 
@@ -260,7 +270,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS) {
                 // offset is handled by VertexAttribDesc
                 // slot information is not given here, also handled by the descriptor
                 // it is important that buffers are kept in the correct order
-                res.vertexBuffers.buffers ~= Rc!RawBuffer(mixin(format("dataStruct.%s", vbf.name)));
+                res.vertexBuffers.addBuf(Rc!RawBuffer(mixin(format("dataStruct.%s", vbf.name))));
             }
         }
 

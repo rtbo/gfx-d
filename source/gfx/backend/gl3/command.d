@@ -238,7 +238,7 @@ class GlCommandBuffer : CommandBuffer {
     void bindVertexBuffers(VertexBufferSet set) {
         assert(_cache.pso.assigned, "must bind pso before vertex buffers");
         foreach (i;  0 .. set.buffers.length) {
-            _commands ~= new BindAttributeCommand(set.buffers[i].obj, _cache.pso.obj, i);
+            _commands ~= new BindAttributeCommand(set.buffers[i], _cache.pso.obj, i);
         }
     }
 
