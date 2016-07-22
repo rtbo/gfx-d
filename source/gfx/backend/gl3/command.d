@@ -209,8 +209,7 @@ class DrawCommand : Command {
 struct GlCommandCache {
     GLenum primitive;
     GLenum indexType;
-    AttribMask attribMask;
-    VertexAttribDesc[maxVertexAttribs] attribs;
+    VertexAttribDesc[] attribs;
     bool scissors;
     Option!Stencil stencil;
     CullFace cullFace;
@@ -244,39 +243,30 @@ class GlCommandBuffer : CommandBuffer {
     }
 
     void bindPipelineState(RawPipelineState pso) {
-        auto glPso = unsafeCast!GlPipelineState(pso.res);
-        auto output = glPso.output;
+        // cannot access resources here because not pinned
+        // will find something to get around
+        //auto glPso = unsafeCast!GlPipelineState(pso.res);
+        //auto output = glPso.output;
+        //_cache.stencil =  output.stencil;
         _cache.primitive = primitiveToGl(pso.primitive);
-        _cache.attribMask = glPso.inputMask;
-        _cache.attribs = glPso.input;
+        _cache.attribs = pso.vertexAttribs;
         _cache.cullFace = pso.rasterizer.cullFace;
-        _cache.stencil =  output.stencil;
         _cache.scissors = pso.scissors;
         _commands ~= new PinPipelineCommand(pso);
         _commands ~= new BindProgramCommand(pso.program);
         _commands ~= new SetRasterizerCommand(pso.rasterizer);
         // TODO depth stencil
-        foreach(i; 0 .. maxColorTargets) {
-            if ((output.mask & (1<<i)) != 0) {
-                // TODO: set blend state
-            }
-        }
+        // foreach(i; 0 .. maxColorTargets) {
+        //     if ((output.mask & (1<<i)) != 0) {
+        //         // TODO: set blend state
+        //     }
+        // }
     }
 
     void bindVertexBuffers(VertexBufferSet set) {
-        foreach (slot; 0 .. maxVertexAttribs) {
-            if (_cache.attribMask & (1<<slot)) {
-                if (!set.buffers[slot].assigned) {
-                    errorf("No vertex input provided for slot %s and attrib %s", slot, _cache.attribs[slot]);
-                }
-                else {
-                    VertexAttribDesc attrib = _cache.attribs[slot];
-                    _commands ~= new BindAttributeCommand(
-                            set.buffers[slot].obj,
-                            _cache.attribs[slot]
-                    );
-                }
-            }
+        assert(set.buffers.length == _cache.attribs.length);
+        foreach (i, at; _cache.attribs) {
+            _commands ~= new BindAttributeCommand(set.buffers[i].obj, at);
         }
     }
 

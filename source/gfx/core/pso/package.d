@@ -75,18 +75,25 @@ struct PipelineDescriptor {
     Rasterizer rasterizer;
     bool scissors;
 
-    AttribMask attribMask;
-    VertexAttribDesc[maxVertexAttribs] vertexAttribs;
+    VertexAttribDesc[] vertexAttribs;
+    ColorTargetDesc[] colorTargets;
 
-    ColorTargetMask colorTargetMask;
-    ColorTargetDesc[maxColorTargets] colorTargets;
+    @property bool needsToFetchSlots() const {
+        foreach(at; vertexAttribs) {
+            if (at.slot == ubyte.max) return true;
+        }
+        foreach(ct; colorTargets) {
+            if (ct.slot == ubyte.max) return true;
+        }
+        return false;
+    }
 }
 
 
 // data structs
 
 struct VertexBufferSet {
-    Rc!RawBuffer[maxVertexAttribs] buffers;
+    Rc!RawBuffer[] buffers;
 }
 
 /// A complete set of render targets to be used for pixel export in PSO.
@@ -131,6 +138,13 @@ struct PixelTargetSet {
 struct RawDataSet {
     VertexBufferSet vertexBuffers;
     PixelTargetSet pixelTargets;
+
+    ~this() {
+        foreach (ref b; vertexBuffers.buffers) {
+            b.nullify();
+        }
+        vertexBuffers.buffers = [];
+    }
 }
 
 
@@ -175,111 +189,78 @@ abstract class RawPipelineState : ResourceHolder {
 
 
 class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS) {
+    import std.traits : Fields, FieldNameTuple;
     alias Init = PipelineInit!MS;
     alias Data = PipelineData!MS;
 
-    Init _initStruct;
-
     this(Program prog, Primitive primitive, Rasterizer rasterizer) {
         super(prog, primitive, rasterizer);
-        _initStruct = Init.defValue;
+        initDescriptor(Init.defValue);
     }
 
     this(Program prog, Primitive primitive, Rasterizer rasterizer, Init initStruct) {
         super(prog, primitive, rasterizer);
-        _initStruct = initStruct;
+        initDescriptor(initStruct);
     }
 
-    private static bool needsToFetchSlots(in Init initStruct) {
-        import std.traits : Fields, FieldNameTuple;
+    private void initDescriptor(in Init initStruct) {
         import std.format : format;
-        foreach (i, MF; Fields!MS) {
-            alias field = FieldNameTuple!MS[i];
-            static if (is(MF == VertexBuffer!T, T)) {
-                foreach(at; mixin(format("initStruct.%s[]", field))) {
-                    if (at.slot == ubyte.max) return true;
-                }
-            }
-            static if (is(MF == RenderTarget!T, T)) {
-                if (mixin(format("initStruct.%s.slot", field)) == ubyte.max) return true;
-            }
-        }
-        return false;
-    }
-
-    void pinResources(Context context) {
-        import std.traits : Fields, FieldNameTuple;
-        import std.format : format;
-
-        if (!_prog.pinned) _prog.pinResources(context);
-
-        if (needsToFetchSlots(_initStruct)) {
-            import std.exception : enforce;
-            import std.algorithm : find;
-            import std.range : takeOne, empty, front;
-
-            enforce(context.hasIntrospection);
-            ProgramVars vars = _prog.fetchVars();
-
-            foreach (i, MF; Fields!MS) {
-                alias field = FieldNameTuple!MS[i];
-                static if (is(MF == VertexBuffer!T, T)) {
-                    foreach(ref at; mixin(format("_initStruct.%s[]", field))) {
-                        if (at.slot != ubyte.max) continue;
-                        auto var = vars.attributes
-                                .find!(v => v.name == at.name)
-                                .takeOne();
-                        enforce(!var.empty, format("cannot find attribute %s in pipeline", at.name));
-                        at.slot = var.front.loc;
-                        enforce(at.slot < maxVertexAttribs);
-                    }
-                }
-                static if (is(MF == RenderTarget!T, T)) {
-                    auto ct = mixin(format("_initStruct.%s", field));
-                    if (ct.slot != ubyte.max) continue;
-                    auto var = vars.outputs
-                            .find!(v => v.name == ct.name)
-                            .takeOne();
-                    enforce(!var.empty, format("cannot find color target %s in pipeline", ct.name));
-                    ct.slot = var.front.index;
-                    enforce(ct.slot < maxColorTargets);
-                    mixin(format("_initStruct.%s = ct;", field));
-                }
-            }
-
-            enforce(!needsToFetchSlots(_initStruct));
-        }
-
         foreach(i, MF; Fields!MS) {
             alias field = FieldNameTuple!MS[i];
             static if (is(MF == VertexBuffer!T, T)) {
-                foreach(at; mixin(format("_initStruct.%s[]", field))) {
-                    _descriptor.vertexAttribs[at.slot] = at;
-                    _descriptor.attribMask |= (1 << at.slot);
-                }
+                _descriptor.vertexAttribs ~= mixin(format("initStruct.%s[]", field));
             }
             static if (is(MF == RenderTarget!T, T)) {
-                auto ct = mixin(format("_initStruct.%s", field));
-                _descriptor.colorTargets[ct.slot] = ct;
-                _descriptor.colorTargetMask |= (1 << ct.slot);
+                _descriptor.colorTargets ~= mixin(format("initStruct.%s", field));
             }
         }
+    }
 
+    void pinResources(Context context) {
+        if (!_prog.pinned) _prog.pinResources(context);
+        if (_descriptor.needsToFetchSlots) {
+            import std.exception : enforce;
+            import std.algorithm : find;
+            import std.range : takeOne, empty, front;
+            import std.format : format;
+            enforce(context.hasIntrospection);
+            ProgramVars vars = _prog.fetchVars();
+            foreach(ref at; _descriptor.vertexAttribs) {
+                if (at.slot != ubyte.max) continue;
+                auto var = vars.attributes
+                        .find!(v => v.name == at.name)
+                        .takeOne();
+                enforce(!var.empty, format("cannot find attribute %s in pipeline", at.name));
+                at.slot = var.front.loc;
+            }
+            foreach(ref ct; _descriptor.colorTargets) {
+                if (ct.slot != ubyte.max) continue;
+                auto var = vars.outputs
+                        .find!(v => v.name == ct.name)
+                        .takeOne();
+                enforce(!var.empty, format("cannot find color target %s in pipeline", ct.name));
+                ct.slot = var.front.index;
+            }
+            enforce(!_descriptor.needsToFetchSlots);
+        }
         _res = context.makePipeline(_prog.obj, _descriptor);
     }
+
 
     RawDataSet makeDataSet(Data dataStruct) {
         import gfx.core.pso.meta : metaVertexBufferFields;
         import std.format : format;
         import std.traits : Fields;
 
-        assert(pinned);
         RawDataSet res;
 
         foreach (vbf; metaVertexBufferFields!MS) {
             foreach (i, va; Fields!(vbf.VertexType)) {
-                auto at = mixin(format("_initStruct.%s[%s]", vbf.name, i));
-                res.vertexBuffers.buffers[at.slot] = mixin(format("dataStruct.%s", vbf.name));
+                // adding the same buffer for each field
+                // offset is handled by VertexAttribDesc
+                // slot information is not given here, also handled by the descriptor
+                // it is important that buffers are kept in the correct order
+                res.vertexBuffers.buffers ~= Rc!RawBuffer(mixin(format("dataStruct.%s", vbf.name)));
             }
         }
 

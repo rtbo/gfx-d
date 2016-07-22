@@ -22,15 +22,13 @@ class GlPipelineState : PipelineStateRes {
 
     Rc!Program _prog;
 
-    AttribMask _inputMask;
-    VertexAttribDesc[maxVertexAttribs] _input;
+    VertexAttribDesc[] _input;
     OutputMerger _output;
 
     this(Program prog, PipelineDescriptor descriptor) {
         _prog = prog;
 
         _input = descriptor.vertexAttribs;
-        _inputMask = descriptor.attribMask;
 
         // TODO fill in depth and stencil
         foreach(ct; descriptor.colorTargets) {
@@ -45,8 +43,7 @@ class GlPipelineState : PipelineStateRes {
         }
     }
 
-    @property AttribMask inputMask() const { return _inputMask; }
-    @property ref const(VertexAttribDesc[maxVertexAttribs]) input() const { return _input; }
+    @property ref const(VertexAttribDesc[]) input() const { return _input; }
     @property ref const(OutputMerger) output() const { return _output; }
 
     void drop() {

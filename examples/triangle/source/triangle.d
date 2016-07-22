@@ -109,16 +109,14 @@ int main()
         ));
         auto pipe = makeRc!PipeState(prog.obj, Primitive.Triangles, Rasterizer.newFill());
 
+        auto data = PipeState.Data.init;
+        data.input = vbuf;
+        auto dataSet = pipe.makeDataSet(data);
+
         context.makeCurrent();
         DerelictGL3.reload();
         auto device = createGlDevice(context);
         auto cmdBuf = rc(device.context.makeCommandBuffer());
-
-        pipe.pinResources(device.context);
-
-        auto data = PipeState.Data.init;
-        data.input = vbuf;
-        auto dataSet = pipe.makeDataSet(data);
 
         import std.datetime : StopWatch;
 
@@ -158,5 +156,6 @@ int main()
     }
     context.doneCurrent();
     glfwTerminate();
+    writeln("term");
     return 0;
 }
