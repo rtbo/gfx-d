@@ -114,9 +114,6 @@ int main()
         auto device = createGlDevice(context);
         auto cmdBuf = rc(device.context.makeCommandBuffer());
 
-
-        vbuf.pinResources(device.context);
-        prog.pinResources(device.context);
         pipe.pinResources(device.context);
 
         auto data = PipeState.Data.init;
