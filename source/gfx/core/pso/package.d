@@ -186,12 +186,12 @@ abstract class RawPipelineState : ResourceHolder {
     @property inout(VertexAttribDesc)[] vertexAttribs() inout { return _descriptor.vertexAttribs; }
 
     @property bool pinned() const {
-        return _res.assigned;
+        return _res.loaded;
     }
 
     void drop() {
-        _prog.nullify();
-        _res.nullify();
+        _prog.unload();
+        _res.unload();
     }
 
     void validate() {}

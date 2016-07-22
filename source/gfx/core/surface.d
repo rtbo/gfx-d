@@ -42,7 +42,7 @@ abstract class RawSurface : ResourceHolder {
     @property inout(SurfaceRes) res() inout { return _res.obj; }
 
     @property bool pinned() const {
-        return _res.assigned;
+        return _res.loaded;
     }
 
     void pinResources(Context context) {
@@ -56,7 +56,7 @@ abstract class RawSurface : ResourceHolder {
     }
 
     void drop() {
-        _res.nullify();
+        _res.unload();
     }
 }
 

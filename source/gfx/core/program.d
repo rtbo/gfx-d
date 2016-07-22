@@ -222,7 +222,7 @@ class Shader : ResourceHolder {
     @property ShaderStage stage() const { return _stage; }
 
     @property bool pinned() const {
-        return _res.assigned;
+        return _res.loaded;
     }
 
     void pinResources(Context context) {
@@ -230,7 +230,7 @@ class Shader : ResourceHolder {
     }
 
     void drop() {
-        _res.nullify();
+        _res.unload();
     }
 }
 
@@ -255,7 +255,7 @@ class Program : ResourceHolder {
     @property inout(ProgramRes) res() inout { return _res; }
 
     @property bool pinned() const {
-        return _res.assigned;
+        return _res.loaded;
     }
 
     void pinResources(Context context) {
@@ -278,6 +278,6 @@ class Program : ResourceHolder {
         import std.algorithm : each;
         _shaders.each!(s => s.release()); // in case pinResources was not called
         _shaders = [];
-        _res.nullify();
+        _res.unload();
     }
 }

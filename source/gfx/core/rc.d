@@ -73,19 +73,19 @@ template Rc(T) if (is(T:RefCounted)) {
             if(_obj) _obj.addRef();
         }
 
-        void nullify() {
+        bool opCast(T : bool)() const {
+            return loaded;
+        }
+
+        @property bool loaded() const {
+            return _obj !is null;
+        }
+
+        void unload() {
             if(_obj) {
                 _obj.release();
                 _obj = null;
             }
-        }
-
-        bool opCast(T : bool)() const {
-            return assigned;
-        }
-
-        @property bool assigned() const {
-            return _obj !is null;
         }
 
         @property inout(T) obj() inout { return _obj; }

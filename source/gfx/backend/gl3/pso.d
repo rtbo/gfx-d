@@ -47,7 +47,7 @@ class GlPipelineState : PipelineStateRes {
     @property ref const(OutputMerger) output() const { return _output; }
 
     void drop() {
-        _prog.nullify();
+        _prog.unload();
     }
 
     void bind() {

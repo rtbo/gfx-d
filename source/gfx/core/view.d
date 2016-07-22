@@ -34,11 +34,11 @@ abstract class RawShaderResourceView : ResourceHolder {
     private Rc!ShaderResourceViewRes _res;
 
     void drop() {
-        _res.nullify();
+        _res.unload();
     }
 
     @property bool pinned() const {
-        return _res.assigned;
+        return _res.loaded;
     }
 }
 
@@ -55,7 +55,7 @@ class BufferShaderResourceView(T) : ShaderResourceView!T if (isFormatted!T) {
     }
 
     override void drop() {
-        _buf.nullify();
+        _buf.unload();
         super.drop();
     }
 
@@ -82,7 +82,7 @@ class TextureShaderResourceView(T) : ShaderResourceView!T if(isFormatted!T) {
     }
 
     override void drop() {
-        _tex.nullify();
+        _tex.unload();
         super.drop();
     }
 
@@ -104,7 +104,7 @@ abstract class RawRenderTargetView : ResourceHolder {
     Rc!RenderTargetViewRes _res;
 
     @property bool pinned() const {
-        return _res.assigned;
+        return _res.loaded;
     }
 }
 
@@ -134,8 +134,8 @@ class TextureRenderTargetView(T) : RenderTargetView!T {
     }
 
     void drop() {
-        _tex.nullify();
-        _res.nullify();
+        _tex.unload();
+        _res.unload();
     }
 
 }
@@ -153,8 +153,8 @@ class SurfaceRenderTargetView(T) : RenderTargetView!T {
     }
 
     void drop() {
-        _surf.nullify();
-        _res.nullify();
+        _surf.unload();
+        _res.unload();
     }
 }
 
@@ -165,7 +165,7 @@ abstract class RawDepthStencilView : ResourceHolder {
     Rc!DepthStencilViewRes _res;
 
     @property bool pinned() const {
-        return _res.assigned;
+        return _res.loaded;
     }
 }
 
@@ -197,8 +197,8 @@ class TextureDepthStencilView(T) : DepthStencilView!T {
     }
 
     void drop() {
-        _tex.nullify();
-        _res.nullify();
+        _tex.unload();
+        _res.unload();
     }
 
 }
@@ -216,7 +216,7 @@ class SurfaceDepthStencilView(T) : DepthStencilView!T {
     }
 
     void drop() {
-        _surf.nullify();
-        _res.nullify();
+        _surf.unload();
+        _res.unload();
     }
 }

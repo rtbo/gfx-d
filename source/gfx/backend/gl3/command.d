@@ -97,10 +97,10 @@ class BindProgramCommand : Command {
     this(Program prog) { this.prog = prog; }
 
     void execute(GlDeviceContext context) {
-        assert(prog.assigned);
+        assert(prog.loaded);
         if (!prog.pinned) prog.pinResources(context);
         prog.res.bind();
-        prog.nullify();
+        prog.unload();
     }
 }
 
@@ -116,13 +116,13 @@ class BindAttributeCommand : Command {
     }
 
     void execute(GlDeviceContext context) {
-        assert(buf.assigned);
-        assert(pso.assigned);
+        assert(buf.loaded);
+        assert(pso.loaded);
         if (!buf.pinned) buf.pinResources(context);
         if (!pso.pinned) pso.pinResources(context);
         unsafeCast!GlVertexBuffer(buf.res).bindWithAttrib(pso.vertexAttribs[attribIndex], context.caps.instanceRate);
-        buf.nullify();
-        pso.nullify();
+        buf.unload();
+        pso.unload();
     }
 }
 
@@ -236,7 +236,7 @@ class GlCommandBuffer : CommandBuffer {
     }
 
     void bindVertexBuffers(VertexBufferSet set) {
-        assert(_cache.pso.assigned, "must bind pso before vertex buffers");
+        assert(_cache.pso.loaded, "must bind pso before vertex buffers");
         foreach (i;  0 .. set.buffers.length) {
             _commands ~= new BindAttributeCommand(set.buffers[i], _cache.pso.obj, i);
         }
@@ -256,7 +256,7 @@ class GlCommandBuffer : CommandBuffer {
 
     void callDraw(uint start, uint count, Option!Instance) {
         // TODO instanced drawings
-        assert(_cache.pso.assigned, "must bind pso before draw calls");
+        assert(_cache.pso.loaded, "must bind pso before draw calls");
         _commands ~= new DrawCommand(primitiveToGl(_cache.pso.primitive), start, count);
     }
 }

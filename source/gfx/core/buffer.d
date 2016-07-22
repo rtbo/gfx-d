@@ -76,11 +76,11 @@ abstract class RawBuffer : ResourceHolder {
     }
 
     final void drop() {
-        _res.nullify();
+        _res.unload();
     }
 
     final @property bool pinned() const {
-        return _res.assigned;
+        return _res.loaded;
     }
     void pinResources(Context context) {
         Context.BufferCreationDesc desc;

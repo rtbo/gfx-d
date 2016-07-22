@@ -33,7 +33,7 @@ class GlBufferShaderResourceView : ShaderResourceViewRes {
     }
 
     void drop() {
-        _buf.nullify();
+        _buf.unload();
         glDeleteBuffers(1, &_texName);
     }
 }
@@ -49,7 +49,7 @@ class GlTextureShaderResourceView : ShaderResourceViewRes {
     }
 
     void drop() {
-        _tex.nullify();
+        _tex.unload();
     }
 }
 
@@ -71,7 +71,7 @@ class GlTextureTargetView : GlTargetView {
     }
 
     void drop() {
-        _tex.nullify();
+        _tex.unload();
     }
 }
 
@@ -84,6 +84,6 @@ class GlSurfaceTargetView : GlTargetView {
     }
 
     void drop() {
-        _surf.nullify();
+        _surf.unload();
     }
 }
