@@ -87,6 +87,10 @@ enum isSurface(T) =
 
 enum isDepthStencilSurface(T) = isDepthSurface!T || isStencilSurface!T;
 
+@property bool isDepthStencil(in SurfaceType st) {
+    return isDepth(st) || isStencil(st);
+}
+
 static assert(isSurface!R8_G8 && isSurface!D24_S8);
 static assert(!isSurface!uint);
 
@@ -387,6 +391,23 @@ mixin template SurfaceCode(Specs...) {
         switchProperty!("depthBits")();
         switchProperty!("stencilBits")();
 
+        void switchNature (string name)() {
+            proto("@property bool is%s (in SurfaceType st);\n\n", name);
+            code("@property bool is%s (in SurfaceType st) {\n", name);
+            code("    final switch(st) {\n");
+            foreach(ss; SurfSpecs) {
+                import std.algorithm : canFind;
+                code("        case SurfaceType.%s: return %s;\n", ss.name, ss.surf.canFind(name));
+            }
+            code("    }\n");
+            code("}\n\n");
+        }
+
+        switchNature!("Buffer")();
+        switchNature!("Texture")();
+        switchNature!("Render")();
+        switchNature!("Depth")();
+        switchNature!("Stencil")();
 
         // trait structs
 
