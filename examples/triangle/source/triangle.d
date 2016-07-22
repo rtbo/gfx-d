@@ -143,7 +143,7 @@ int main()
 
 
             version(Windows) {
-                // glfw vsync is not always enabled
+                // vsync is not always enabled with glfw on windows
                 // adding a sleep to limit frame rate to < 100 FPS
                 import core.thread : Thread;
                 import core.time : dur;
