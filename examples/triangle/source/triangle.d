@@ -47,7 +47,8 @@ immutable float[4] backColor = [0.1, 0.2, 0.3, 1.0];
 
 int main()
 {
-    auto window = gfxGlfwWindow!(Rgba8, Depth32F)("gfx-d - Triangle", 640, 480);
+    /// window with a color buffer and no depth/stencil buffer
+    auto window = gfxGlfwWindow!Rgba8("gfx-d - Triangle", 640, 480);
     {
         auto vbuf = rc(createVertexBuffer!Vertex(triangle));
         auto prog = makeRc!Program(ShaderSet.vertexPixel(
