@@ -4,7 +4,7 @@ import gfx.backend.gl3 :    GlDevice, createGlDevice;
 import gfx.core :           Device;
 import gfx.core.rc :        RefCounted, Rc, rcCode;
 import gfx.core.format :    isFormatted, Formatted, SurfaceType, ChannelType,
-                            isRender, isDepth, isStencil, isDepthStencil,
+                            isRender, isDepth, isStencil, isDepthStencil, hasDepthStencilSurface,
                             redBits, greenBits, blueBits, alphaBits, depthBits, stencilBits,
                             hasChannel;
 
@@ -29,6 +29,31 @@ class RawWindow : RefCounted {
 
     private GLFWwindow *_window;
     private Rc!GlDevice _device;
+
+    private void preInit(SurfaceType colorSurf, ubyte samples) {
+        import std.exception : enforce;
+
+        assert(isRender(colorSurf));
+
+        DerelictGLFW3.load();
+        DerelictGL3.load();
+
+        enforce(glfwInit());
+
+        glfwSetErrorCallback(&handleError);
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+        glfwWindowHint(GLFW_RED_BITS,       colorSurf.redBits);
+        glfwWindowHint(GLFW_GREEN_BITS,     colorSurf.greenBits);
+        glfwWindowHint(GLFW_BLUE_BITS,      colorSurf.blueBits);
+        glfwWindowHint(GLFW_ALPHA_BITS,     colorSurf.alphaBits);
+        glfwWindowHint(GLFW_SRGB_CAPABLE,   colorSurf.hasChannel(ChannelType.Srgb));
+        glfwWindowHint(GLFW_SAMPLES,        samples);
+        glfwWindowHint(GLFW_DOUBLEBUFFER,   1);
+    }
 
     /// constructor without depth/stencil buffer
     this(string title, ushort width, ushort height, ubyte samples, SurfaceType colorSurf)
@@ -60,32 +85,6 @@ class RawWindow : RefCounted {
         assert(isDepthStencil(dsSurf));
         if (dsSurf.isDepth) glfwWindowHint(GLFW_DEPTH_BITS, dsSurf.depthBits);
         if (dsSurf.isStencil) glfwWindowHint(GLFW_STENCIL_BITS, dsSurf.stencilBits);
-    }
-
-    private void preInit(SurfaceType colorSurf, ubyte samples) {
-        import std.exception : enforce;
-
-        assert(isRender(colorSurf));
-
-        DerelictGLFW3.load();
-        DerelictGL3.load();
-
-        enforce(glfwInit());
-
-        glfwSetErrorCallback(&handleError);
-
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-        glfwWindowHint(GLFW_RED_BITS,       colorSurf.redBits);
-        glfwWindowHint(GLFW_GREEN_BITS,     colorSurf.greenBits);
-        glfwWindowHint(GLFW_BLUE_BITS,      colorSurf.blueBits);
-        glfwWindowHint(GLFW_ALPHA_BITS,     colorSurf.alphaBits);
-        glfwWindowHint(GLFW_SRGB_CAPABLE,   colorSurf.hasChannel(ChannelType.Srgb));
-        glfwWindowHint(GLFW_SAMPLES,        samples);
-        glfwWindowHint(GLFW_DOUBLEBUFFER,   1);
-
     }
 
     private void postInit(string title, ushort width, ushort height) {
@@ -135,25 +134,12 @@ class RawWindow : RefCounted {
     }
 }
 
-template hasDepthStencilSurface(Fmt) if (isFormatted!Fmt) {
-    import gfx.core.format : isDepthStencilSurface;
-    enum hasDepthStencilSurface = isDepthStencilSurface!(Formatted!Fmt.Surface);
-}
-
-template hasRenderSurface(Fmt) if (isFormatted!Fmt) {
-    import gfx.core.format : isRenderSurface;
-    enum hasRenderSurface = isRenderSurface!(Formatted!Fmt.Surface);
-}
-
 
 class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthStencilSurface, DepSten)) {
 
-    import gfx.core.format : isFormatted, Formatted, isRenderSurface;
+    import gfx.core.format : hasRenderSurface;
 
-    static assert(isFormatted!Col,
-                    Col.stringof~" is not a valid color format");
-    static assert(isRenderSurface!(Formatted!Col.Surface),
-                    Col.stringof~" is not a valid color format");
+    static assert(hasRenderSurface!Col, Col.stringof~" is not a valid color format");
 
     this(string title, ushort width, ushort height, ubyte samples=1) {
         import gfx.core.format : format;
@@ -169,6 +155,9 @@ class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthStencilSurface
             immutable dsF1 = format!(DepSten[0]);
             immutable dsF2 = format!(DepSten[1]);
             super(title, width, height, samples, colF.surface, dsF1.surface, dsF2.surface);
+        }
+        else {
+            static assert(false, "supplied to many buffer configurations");
         }
     }
 }
