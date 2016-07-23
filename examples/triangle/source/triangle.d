@@ -1,10 +1,9 @@
 module triangle;
 
-import gfx.backend.gl3 : createGlDevice;
 import gfx.core : Primitive;
 import gfx.core.rc : Rc, rc, makeRc;
 import gfx.core.typecons : Option, none, some;
-import gfx.core.format : Rgba8;
+import gfx.core.format : Rgba8, Depth32F;
 import gfx.core.buffer : createVertexBuffer;
 import gfx.core.program : ShaderSet, Program;
 import gfx.core.pso.meta;
@@ -12,8 +11,7 @@ import gfx.core.pso : PipelineDescriptor, PipelineState, VertexBufferSet;
 import gfx.core.state : Rasterizer;
 import gfx.core.command : clearColor, Instance;
 
-import derelict.glfw3.glfw3;
-import derelict.opengl3.gl3;
+import gfx.window.glfw : gfxGlfwWindow;
 
 import std.stdio : writeln;
 
@@ -46,37 +44,10 @@ immutable triangle = [
 immutable float[4] backColor = [0.1, 0.2, 0.3, 1.0];
 
 
-extern(C)
-void handleError(int code, const(char)*str) nothrow {
-    try {
-        import std.stdio : writeln;
-        import std.string : fromStringz;
-        writeln("GLFW error: ", code, ":\n - ", fromStringz(str), "\n");
-    }
-    catch(Throwable th) {}
-}
-
 
 int main()
 {
-    DerelictGLFW3.load();
-    DerelictGL3.load();
-
-    if (!glfwInit())
-        return -1;
-
-    glfwSetErrorCallback(&handleError);
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    auto window = glfwCreateWindow(640, 480, "gfx-d - Triangle", null, null);
-    if (!window) {
-        glfwTerminate();
-        return -1;
-    }
-
+    auto window = gfxGlfwWindow!(Rgba8, Depth32F)("gfx-d - Triangle", 640, 480);
     {
         auto vbuf = rc(createVertexBuffer!Vertex(triangle));
         auto prog = makeRc!Program(ShaderSet.vertexPixel(
@@ -89,11 +60,8 @@ int main()
         data.input = vbuf;
         auto dataSet = pipe.makeDataSet(data);
 
-        glfwMakeContextCurrent(window);
 
-        DerelictGL3.reload();
-        auto device = rc(createGlDevice());
-        auto cmdBuf = rc(device.factory.makeCommandBuffer());
+        auto cmdBuf = rc(window.device.factory.makeCommandBuffer());
 
         import std.datetime : StopWatch;
 
@@ -102,20 +70,20 @@ int main()
         sw.start();
 
         /* Loop until the user closes the window */
-        while (!glfwWindowShouldClose(window)) {
+        while (!window.shouldClose) {
 
             cmdBuf.clearColor(null, clearColor(backColor));
             cmdBuf.bindPipelineState(pipe.obj);
             cmdBuf.bindVertexBuffers(dataSet.vertexBuffers);
             cmdBuf.callDraw(0, cast(uint)vbuf.count, none!Instance);
 
-            device.submit(cmdBuf);
+            window.device.submit(cmdBuf);
 
             /* Swap front and back buffers */
-            glfwSwapBuffers(window);
+            window.swapBuffers();
 
             /* Poll for and process events */
-            glfwPollEvents();
+            window.pollEvents();
             frameCount += 1;
 
 
@@ -132,7 +100,5 @@ int main()
         writeln("FPS: ", 1000.0f*frameCount / ms);
     }
 
-    glfwMakeContextCurrent(null);
-    glfwTerminate();
     return 0;
 }
