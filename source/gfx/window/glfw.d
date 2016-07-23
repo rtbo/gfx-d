@@ -4,7 +4,6 @@ import gfx.backend.gl3 :    GlDevice, createGlDevice;
 import gfx.core :           Device;
 import gfx.core.rc :        RefCounted, Rc, rcCode;
 import gfx.core.format :    Formatted, SurfaceType, ChannelType, isRender, isDepthStencil,
-                            isRenderSurface, isDepthStencilSurface,
                             redBits, greenBits, blueBits, alphaBits, depthBits, stencilBits,
                             hasChannel;
 
@@ -30,7 +29,8 @@ class RawWindow : RefCounted {
     private Rc!GlDevice _device;
 
     this(string title, ushort width, ushort height,
-            SurfaceType colorSurf, SurfaceType depthStencilSurf, ubyte samples=1) {
+            SurfaceType colorSurf, SurfaceType depthStencilSurf, ubyte samples=1)
+    {
         import std.string : toStringz;
         import std.exception : enforce;
         assert(isRender(colorSurf) && isDepthStencil(depthStencilSurf));
@@ -99,21 +99,30 @@ class RawWindow : RefCounted {
 }
 
 
-class Window(ColSurf, DepStenSurf) : RawWindow {
+class Window(Col, DepSten) : RawWindow {
+
+    import gfx.core.format : isFormatted, Formatted, isRenderSurface, isDepthStencilSurface;
+
+    static assert(isFormatted!Col,
+                    Col.stringof~" is not a valid color format");
+    static assert(isRenderSurface!(Formatted!Col.Surface),
+                    Col.stringof~" is not a valid color format");
+    static assert(isFormatted!DepSten,
+                    DepSten.stringof~" is not a valid depth-stencil format");
+    static assert(isDepthStencilSurface!(Formatted!DepSten.Surface),
+                    DepSten.stringof~" is not a valid depth-stencil format");
+
     this(string title, ushort width, ushort height, ubyte samples=1) {
-        super(title, width, height, ColSurf.surfaceType, DepStenSurf.surfaceType, samples);
+        import gfx.core.format : format;
+        immutable colF = format!Col;
+        immutable dsF = format!DepSten;
+        super(title, width, height, colF.surface, dsF.surface, samples);
     }
 }
 
 
 
-auto gfxGlfwWindow(Col, DepSten)(string title,
-            ushort width, ushort height, ubyte samples=1)
-    //if (isRenderSurface!ColSurf && isDepthStencilSurface!DepStenSurf)
+auto gfxGlfwWindow(Col, DepSten)(string title, ushort width, ushort height, ubyte samples=1)
 {
-    import std.exception : enforce;
-    import gfx.core.format : Formatted;
-
-    return new Window!(Formatted!Col.Surface, Formatted!DepSten.Surface)
-            (title, width, height, samples);
+    return new Window!(Col, DepSten)(title, width, height, samples);
 }
