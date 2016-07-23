@@ -150,6 +150,26 @@ static assert(is(Formatted!(Rgba8).Surface));
 static assert(isFormatted!Rgba8);
 
 
+
+template hasTextureSurface(Fmt) if (isFormatted!Fmt) {
+    enum hasTextureSurface = isTextureSurface!(Formatted!Fmt.Surface);
+}
+template hasRenderSurface(Fmt) if (isFormatted!Fmt) {
+    enum hasRenderSurface = isRenderSurface!(Formatted!Fmt.Surface);
+}
+template hasBufferSurface(Fmt) if (isFormatted!Fmt) {
+    enum hasBufferSurface = isBufferSurface!(Formatted!Fmt.Surface);
+}
+template hasDepthSurface(Fmt) if (isFormatted!Fmt) {
+    enum hasDepthSurface = isDepthSurface!(Formatted!Fmt.Surface);
+}
+template hasStencilSurface(Fmt) if (isFormatted!Fmt) {
+    enum hasStencilSurface = isStencilSurface!(Formatted!Fmt.Surface);
+}
+template hasDepthStencilSurface(Fmt) if (isFormatted!Fmt) {
+    enum hasDepthStencilSurface = isDepthStencilSurface!(Formatted!Fmt.Surface);
+}
+
 struct Format {
     SurfaceType surface;
     ChannelType channel;
