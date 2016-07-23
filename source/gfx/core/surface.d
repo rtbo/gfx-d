@@ -1,8 +1,8 @@
 module gfx.core.surface;
 
-import gfx.core : Resource, ResourceHolder, untypeSlices;
+import gfx.core : Device, Resource, ResourceHolder, untypeSlices;
 import gfx.core.rc : Rc, rcCode;
-import gfx.core.context : Context;
+import gfx.core.factory : Factory;
 import gfx.core.format : isFormatted, Formatted, Format, Swizzle, isRenderSurface, isDepthStencilSurface;
 import gfx.core.view : RenderTargetView;
 
@@ -45,14 +45,14 @@ abstract class RawSurface : ResourceHolder {
         return _res.loaded;
     }
 
-    void pinResources(Context context) {
-        Context.SurfaceCreationDesc desc;
+    void pinResources(Device device) {
+        Factory.SurfaceCreationDesc desc;
         desc.usage = _usage;
         desc.width = _width;
         desc.height = _height;
         desc.format = _format;
         desc.samples = _samples;
-        _res = context.makeSurface(desc);
+        _res = device.factory.makeSurface(desc);
     }
 
     void drop() {

@@ -1,9 +1,9 @@
 module gfx.core.texture;
 
-import gfx.core : Resource, ResourceHolder, untypeSlices;
+import gfx.core : Device, Resource, ResourceHolder, untypeSlices;
 import gfx.core.typecons : Option;
 import gfx.core.rc : RefCounted, rcCode;
-import gfx.core.context : Context;
+import gfx.core.factory : Factory;
 import gfx.core.format : isFormatted, Formatted, Format, Swizzle;
 import gfx.core.view : ShaderResourceView, RenderTargetView, DepthStencilView, DSVReadOnlyFlags;
 
@@ -137,14 +137,14 @@ abstract class RawTexture : ResourceHolder {
 
     final @property bool pinned() const { return _res !is null; }
 
-    final void pinResources(Context context) {
-        Context.TextureCreationDesc desc;
+    final void pinResources(Device device) {
+        Factory.TextureCreationDesc desc;
         desc.type = type;
         desc.usage = usage;
         desc.format = format;
         desc.imgInfo = imgInfo;
         desc.samples = _samples;
-        _res = context.makeTexture(desc, _initData);
+        _res = device.factory.makeTexture(desc, _initData);
         _res.addRef();
         _initData = [];
     }
@@ -261,7 +261,7 @@ class TextureCubeArray(TexelF) : Texture!TexelF {
 unittest {
     import gfx.backend.dummy;
     import gfx.core.format : Rgba8;
-    auto ctx = new DummyContext;
+    auto ctx = new DummyFactory;
     TexUsageFlags usage = TextureUsage.ShaderResource;
     auto tex = new TextureCube!Rgba8(usage, 3, 1);
 }

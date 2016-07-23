@@ -1,7 +1,8 @@
 module gfx.core;
 
 import gfx.core.rc : RefCounted;
-import gfx.core.context : Context;
+import gfx.core.factory : Factory;
+import gfx.core.command : CommandBuffer;
 
 import std.traits;
 
@@ -31,15 +32,25 @@ enum IndexType {
 interface Resource : RefCounted {}
 
 interface ResourceHolder : RefCounted {
+
     @property bool pinned() const;
-    void pinResources(Context context)
+
+    void pinResources(Device device)
     in { assert(!pinned); }
     out { assert(pinned); }
+
 }
 
 
-interface Device {
-    @property Context context();
+interface Device : RefCounted {
+
+    @property bool hasIntrospection() const;
+
+    @property string name() const;
+
+    @property Factory factory();
+
+    void submit(CommandBuffer buffer);
 }
 
 /// a rectangle of screen

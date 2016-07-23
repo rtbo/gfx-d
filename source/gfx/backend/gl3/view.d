@@ -4,7 +4,7 @@ import gfx.backend : unsafeCast;
 import gfx.backend.gl3.buffer : GlBuffer;
 import gfx.backend.gl3.texture : GlTexture, formatToGlInternalFormat;
 import gfx.core.rc : Rc, rcCode;
-import gfx.core.context : Context;
+import gfx.core.factory : Factory;
 import gfx.core.format : Format;
 import gfx.core.buffer : RawBuffer;
 import gfx.core.texture : RawTexture;
@@ -43,7 +43,7 @@ class GlTextureShaderResourceView : ShaderResourceViewRes {
 
     Rc!GlTexture _tex;
 
-    this(RawTexture tex, Context.TexSRVCreationDesc desc) {
+    this(RawTexture tex, Factory.TexSRVCreationDesc desc) {
         assert(tex.pinned);
         _tex = unsafeCast!GlTexture(tex.res);
     }
@@ -62,11 +62,11 @@ abstract class GlTargetView : RenderTargetViewRes, DepthStencilViewRes {
 class GlTextureTargetView : GlTargetView {
     Rc!RawTexture _tex;
 
-    this(RawTexture tex, Context.TexRTVCreationDesc desc) {
+    this(RawTexture tex, Factory.TexRTVCreationDesc desc) {
         _tex = tex;
     }
 
-    this(RawTexture tex, Context.TexDSVCreationDesc desc) {
+    this(RawTexture tex, Factory.TexDSVCreationDesc desc) {
         _tex = tex;
     }
 

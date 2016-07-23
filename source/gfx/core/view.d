@@ -1,9 +1,9 @@
 module gfx.core.view;
 
-import gfx.core : Resource, ResourceHolder;
+import gfx.core : Device, Resource, ResourceHolder;
 import gfx.core.typecons : Option;
 import gfx.core.rc : Rc, rcCode;
-import gfx.core.context : Context;
+import gfx.core.factory : Factory;
 import gfx.core.format : isFormatted, Formatted;
 import gfx.core.buffer : ShaderResourceBuffer;
 import gfx.core.texture : Texture;
@@ -59,11 +59,11 @@ class BufferShaderResourceView(T) : ShaderResourceView!T if (isFormatted!T) {
         super.drop();
     }
 
-    void pinResources(Context context) {
+    void pinResources(Device device) {
         import gfx.core.format : format;
-        if(!_buf.pinned) _buf.pinResources(context);
+        if(!_buf.pinned) _buf.pinResources(device);
         immutable fmt = format!T;
-        _res = context.viewAsShaderResource(_buf, fmt);
+        _res = device.factory.viewAsShaderResource(_buf, fmt);
     }
 }
 
@@ -86,14 +86,14 @@ class TextureShaderResourceView(T) : ShaderResourceView!T if(isFormatted!T) {
         super.drop();
     }
 
-    void pinResources(Context context) {
-        if(!_tex.pinned) _tex.pinResources(context);
-        Context.TexSRVCreationDesc desc;
+    void pinResources(Device device) {
+        if(!_tex.pinned) _tex.pinResources(device);
+        Factory.TexSRVCreationDesc desc;
         desc.channel = Fmt.Surface;
         desc.minLevel = _minLevel;
         desc.maxLevel = _maxLevel;
         desc.swizzle = _swizzle;
-        _tex = context.viewAsShaderResource(_tex, desc);
+        _tex = device.factory.viewAsShaderResource(_tex, desc);
     }
 }
 
@@ -124,13 +124,13 @@ class TextureRenderTargetView(T) : RenderTargetView!T {
         _layer = layer;
     }
 
-    void pinResources(Context context) {
-        if(!_tex.pinned) _tex.pinResources(context);
-        Context.TexRTVCreationDesc desc;
+    void pinResources(Device device) {
+        if(!_tex.pinned) _tex.pinResources(device);
+        Factory.TexRTVCreationDesc desc;
         desc.channel = Fmt.Channel.channelType;
         desc.level = _level;
         desc.layer = _layer;
-        _res = context.viewAsRenderTarget(_tex.obj, desc);
+        _res = device.factory.viewAsRenderTarget(_tex.obj, desc);
     }
 
     void drop() {
@@ -147,9 +147,9 @@ class SurfaceRenderTargetView(T) : RenderTargetView!T {
         _surf = surf;
     }
 
-    void pinResources(Context context) {
-        if(!_surf.pinned) _surf.pinResources(context);
-        _res = context.viewAsRenderTarget(_surf.obj);
+    void pinResources(Device device) {
+        if(!_surf.pinned) _surf.pinResources(device);
+        _res = device.factory.viewAsRenderTarget(_surf.obj);
     }
 
     void drop() {
@@ -187,13 +187,13 @@ class TextureDepthStencilView(T) : DepthStencilView!T {
         _flags = flags;
     }
 
-    void pinResources(Context context) {
-        if(!_tex.pinned) _tex.pinResources(context);
-        Context.TexDSVCreationDesc desc;
+    void pinResources(Device device) {
+        if(!_tex.pinned) _tex.pinResources(device);
+        Factory.TexDSVCreationDesc desc;
         desc.level = _level;
         desc.layer = _layer;
         desc.flags = _flags;
-        _res = context.viewAsDepthStencil(_tex.obj, desc);
+        _res = device.factory.viewAsDepthStencil(_tex.obj, desc);
     }
 
     void drop() {
@@ -210,9 +210,9 @@ class SurfaceDepthStencilView(T) : DepthStencilView!T {
         _surf = surf;
     }
 
-    void pinResources(Context context) {
-        if(!_surf.pinned) _surf.pinResources(context);
-        _res = context.viewAsDepthStencil(_surf.obj);
+    void pinResources(Device device) {
+        if(!_surf.pinned) _surf.pinResources(device);
+        _res = device.factory.viewAsDepthStencil(_surf.obj);
     }
 
     void drop() {

@@ -7,7 +7,7 @@ import gfx.core.format : Format, SurfaceType, ChannelType;
 import gfx.core.texture;
 import gfx.core.surface : SurfaceRes;
 import gfx.core.buffer : RawBuffer;
-import gfx.core.context : Context;
+import gfx.core.factory : Factory;
 import gfx.core.error;
 
 
@@ -17,7 +17,7 @@ import std.typecons : Tuple;
 import std.experimental.logger;
 
 
-package TextureRes makeTextureImpl(in bool hasStorage, Context.TextureCreationDesc desc, const(ubyte)[][] data) {
+package TextureRes makeTextureImpl(in bool hasStorage, Factory.TextureCreationDesc desc, const(ubyte)[][] data) {
 
     import std.exception : enforce;
 
@@ -104,7 +104,7 @@ class GlSurface : SurfaceRes {
     ushort _height;
     ubyte _samples;
 
-    this(Context.SurfaceCreationDesc desc) {
+    this(Factory.SurfaceCreationDesc desc) {
         _internalFormat = formatToGlInternalFormat(desc.format);
         _width = desc.width;
         _height = desc.height;

@@ -1,7 +1,7 @@
 module gfx.backend.gl3.program;
 
 import gfx.backend : unsafeCast;
-import gfx.core.context : Context;
+import gfx.core.factory : Factory;
 import gfx.core.rc : rcCode;
 import gfx.core.program;
 import gfx.core.error;

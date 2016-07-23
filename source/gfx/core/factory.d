@@ -1,4 +1,4 @@
-module gfx.core.context;
+module gfx.core.factory;
 
 import gfx.core.typecons : Option;
 import gfx.core.buffer : BufferRes, RawBuffer, BufferRole, BufferUsage;
@@ -10,10 +10,7 @@ import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilV
 import gfx.core.pso : PipelineStateRes, PipelineDescriptor;
 import gfx.core.command : CommandBuffer;
 
-interface Context {
-
-    @property bool hasIntrospection() const;
-    @property string name() const;
+interface Factory {
 
     struct BufferCreationDesc {
         BufferRole role;
@@ -80,6 +77,4 @@ interface Context {
 
 
     CommandBuffer makeCommandBuffer();
-
-    void submit(CommandBuffer buffer);
 }

@@ -1,8 +1,8 @@
 module gfx.core.buffer;
 
-import gfx.core : Resource, ResourceHolder, untypeSlice;
+import gfx.core : Device, Resource, ResourceHolder, untypeSlice;
 import gfx.core.rc : RefCounted, Rc, rcCode;
-import gfx.core.context : Context;
+import gfx.core.factory : Factory;
 import gfx.core.format : Formatted;
 import gfx.core.view : ShaderResourceView, BufferShaderResourceView;
 
@@ -82,12 +82,12 @@ abstract class RawBuffer : ResourceHolder {
     final @property bool pinned() const {
         return _res.loaded;
     }
-    void pinResources(Context context) {
-        Context.BufferCreationDesc desc;
+    void pinResources(Device device) {
+        Factory.BufferCreationDesc desc;
         desc.role = _role;
         desc.usage = _usage;
         desc.size = _size;
-        _res = context.makeBuffer(desc, _initData);
+        _res = device.factory.makeBuffer(desc, _initData);
         _initData = [];
     }
 
@@ -138,72 +138,3 @@ class ShaderResourceBuffer(T) : Buffer!T if (isFormatted!T) {
     }
 }
 
-
-
-
-// class ComposedBuffer : RawBuffer {
-//     RawBufferSlice[] _slices;
-//     bool _needUpdateAtResPin;
-
-//     this(BufferUsage usage, MapAccess access, RawBufferSlice[] slices) {
-//         import std.algorithm : map, sum, all;
-//         _slices = slices;
-//         ubyte[] data;
-//         immutable size = _slices.map!(s => s.size).sum();
-//         immutable makeInitData = slices.all!(s => s._initData.length != 0);
-//         if (makeInitData) {
-//             data.reserve(size);
-//             size_t offset = 0;
-//             foreach(s; slices) {
-//                 s._info.offset = offset;
-//                 data ~= s._initData;
-//                 offset += s._initData.length;
-//                 s._initData = [];
-//             }
-//             assert(data.length == size);
-//         }
-//         super(BufferRole.Vertex, usage, access, size, data);
-//         _needUpdateAtResPin = !makeInitData;
-//     }
-
-//     override void pinResources(Context context) {
-//         import std.algorithm : filter, each;
-//         super.pinResources(context);
-//         if(_needUpdateAtResPin) {
-//             _slices.filter!(s => s._initData.length != 0).each!(s => {
-//                 _res.update(s.info, s._initData);
-//             });
-//         }
-//     }
-// }
-
-
-// abstract class RawBufferSlice {
-//     private BufferSliceInfo _info;
-//     private ubyte[] _initData;
-
-//     this(size_t size, ubyte[] data) {
-//         _info.size = size;
-//         _initData = data;
-//     }
-
-//     final @property size_t offset() const { return _info.offset; }
-//     final @property size_t size() const { return _info.size; }
-//     final @property BufferSliceInfo info() const { return _info; }
-// }
-
-// class BufferSlice(T) : RawBufferSlice {
-//     alias ElType = T;
-//     private size_t _count;
-
-//     this(size_t count) {
-//         super(count*T.sizeof, []);
-//         _count = count;
-//     }
-//     this(T[] data) {
-//         super(data.length*T.sizeof, untypeSlice(data));
-//         _count = data.length;
-//     }
-
-//     final @property size_t count() const { return _count; }
-// }

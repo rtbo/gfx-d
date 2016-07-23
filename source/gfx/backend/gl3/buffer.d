@@ -2,7 +2,7 @@ module gfx.backend.gl3.buffer;
 
 import gfx.core.rc : rcCode;
 import gfx.core.format : ChannelType, SurfaceType;
-import gfx.core.context : Context;
+import gfx.core.factory : Factory;
 import gfx.core.buffer : BufferRes, BufferRole, BufferUsage, BufferSliceInfo;
 import gfx.core.pso : VertexAttribDesc;
 
@@ -30,7 +30,7 @@ GLenum usageToGl(in BufferUsage usage) {
 }
 
 
-GlBuffer makeBufferImpl(in Context.BufferCreationDesc desc, const(ubyte)[] data) {
+GlBuffer makeBufferImpl(in Factory.BufferCreationDesc desc, const(ubyte)[] data) {
     if (desc.role == BufferRole.Vertex) {
         return new GlVertexBuffer(desc, data);
     }
@@ -49,7 +49,7 @@ class GlBuffer : BufferRes {
     GLsizeiptr _size;
 
 
-    this(in Context.BufferCreationDesc desc, const(ubyte)[] data) {
+    this(in Factory.BufferCreationDesc desc, const(ubyte)[] data) {
         glGenBuffers(1, &_name);
         _target = roleToGlTarget(desc.role);
         _usage = usageToGl(desc.usage);
@@ -78,7 +78,7 @@ class GlBuffer : BufferRes {
 
 class GlVertexBuffer : GlBuffer {
 
-    this(in Context.BufferCreationDesc desc, const(ubyte)[] data) {
+    this(in Factory.BufferCreationDesc desc, const(ubyte)[] data) {
         assert(desc.role == BufferRole.Vertex);
         super(desc, data);
     }

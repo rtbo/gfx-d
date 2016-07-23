@@ -11,10 +11,10 @@
 /// for other backends, the pipeline switch is emulated
 module gfx.core.pso;
 
-import gfx.core : Resource, ResourceHolder, Primitive, maxVertexAttribs, maxColorTargets, AttribMask, ColorTargetMask;
+import gfx.core :   Device, Resource, ResourceHolder, Primitive,
+                    maxVertexAttribs, maxColorTargets, AttribMask, ColorTargetMask;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.typecons : Option, none;
-import gfx.core.context : Context;
 import gfx.core.state : Rasterizer, ColorMask, ColorFlags, BlendChannel, Blend;
 import gfx.core.format : Format;
 import gfx.core.buffer : RawBuffer;
@@ -226,14 +226,14 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS) {
         }
     }
 
-    void pinResources(Context context) {
-        if (!_prog.pinned) _prog.pinResources(context);
+    void pinResources(Device device) {
+        if (!_prog.pinned) _prog.pinResources(device);
         if (_descriptor.needsToFetchSlots) {
             import std.exception : enforce;
             import std.algorithm : find;
             import std.range : takeOne, empty, front;
             import std.format : format;
-            enforce(context.hasIntrospection);
+            enforce(device.hasIntrospection);
             ProgramVars vars = _prog.fetchVars();
             foreach(ref at; _descriptor.vertexAttribs) {
                 if (at.slot != ubyte.max) continue;
@@ -253,7 +253,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS) {
             }
             enforce(!_descriptor.needsToFetchSlots);
         }
-        _res = context.makePipeline(_prog.obj, _descriptor);
+        _res = device.factory.makePipeline(_prog.obj, _descriptor);
     }
 
 

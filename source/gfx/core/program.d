@@ -1,8 +1,7 @@
 module gfx.core.program;
 
-import gfx.core : Resource, ResourceHolder;
+import gfx.core : Device, Resource, ResourceHolder;
 import gfx.core.rc : RefCounted, Rc, rcCode;
-import gfx.core.context : Context;
 
 import std.typecons : BitFlags, Flag;
 import std.experimental.logger;
@@ -225,8 +224,8 @@ class Shader : ResourceHolder {
         return _res.loaded;
     }
 
-    void pinResources(Context context) {
-        _res = context.makeShader(_stage, _code);
+    void pinResources(Device device) {
+        _res = device.factory.makeShader(_stage, _code);
     }
 
     void drop() {
@@ -258,12 +257,12 @@ class Program : ResourceHolder {
         return _res.loaded;
     }
 
-    void pinResources(Context context) {
+    void pinResources(Device device) {
         import std.algorithm : map, each;
         import std.array : array;
-        _shaders.each!((s) { if(!s.pinned) s.pinResources(context); });
+        _shaders.each!((s) { if(!s.pinned) s.pinResources(device); });
         auto resArr = _shaders.map!(s => s._res.obj).array();
-        _res = context.makeProgram(resArr);
+        _res = device.factory.makeProgram(resArr);
         _shaders.each!(s => s.release());
         _shaders = [];
     }

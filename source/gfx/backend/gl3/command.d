@@ -1,7 +1,7 @@
 module gfx.backend.gl3.command;
 
 import gfx.backend : unsafeCast;
-import gfx.backend.gl3 : GlDeviceContext;
+import gfx.backend.gl3 : GlDevice;
 import gfx.backend.gl3.state : setRasterizer;
 import gfx.backend.gl3.buffer : GlBuffer, GlVertexBuffer;
 import gfx.backend.gl3.program;
@@ -34,7 +34,7 @@ GLenum primitiveToGl(in Primitive primitive) {
 
 
 interface Command {
-    void execute(GlDeviceContext context);
+    void execute(GlDevice device);
     void unload();
 }
 
@@ -45,7 +45,7 @@ class SetRasterizerCommand : Command {
         this.rasterizer = rasterizer;
     }
 
-    final void execute(GlDeviceContext context) {
+    final void execute(GlDevice device) {
         setRasterizer(rasterizer);
     }
 
@@ -61,7 +61,7 @@ class SetDrawColorBuffers : Command {
         this.mask = mask;
     }
 
-    final void execute(GlDeviceContext context) {
+    final void execute(GlDevice device) {
         GLenum[maxColorTargets] targets;
         GLsizei count=0;
         foreach(i; 0..maxColorTargets) {
@@ -77,7 +77,7 @@ class SetDrawColorBuffers : Command {
 class SetViewportCommand : Command {
     Rect rect;
     this(Rect rect) { this.rect = rect; }
-    final void execute(GlDeviceContext context) {
+    final void execute(GlDevice device) {
         glViewport(rect.x, rect.y, rect.w, rect.h);
     }
     final void unload() {}
@@ -87,7 +87,7 @@ class SetScissorsCommand : Command {
     Option!Rect rect;
     this(Option!Rect rect) { this.rect = rect; }
 
-    final void execute(GlDeviceContext context) {
+    final void execute(GlDevice device) {
         if (rect.isSome) {
             auto r = rect.get();
             glEnable(GL_SCISSOR_TEST);
@@ -105,9 +105,9 @@ class BindProgramCommand : Command {
 
     this(Program prog) { this.prog = prog; }
 
-    final void execute(GlDeviceContext context) {
+    final void execute(GlDevice device) {
         assert(prog.loaded);
-        if (!prog.pinned) prog.pinResources(context);
+        if (!prog.pinned) prog.pinResources(device);
         prog.res.bind();
 
         unload();
@@ -129,12 +129,12 @@ class BindAttributeCommand : Command {
         this.attribIndex = attribIndex;
     }
 
-    final void execute(GlDeviceContext context) {
+    final void execute(GlDevice device) {
         assert(buf.loaded);
         assert(pso.loaded);
-        if (!buf.pinned) buf.pinResources(context);
-        if (!pso.pinned) pso.pinResources(context);
-        unsafeCast!GlVertexBuffer(buf.res).bindWithAttrib(pso.vertexAttribs[attribIndex], context.caps.instanceRate);
+        if (!buf.pinned) buf.pinResources(device);
+        if (!pso.pinned) pso.pinResources(device);
+        unsafeCast!GlVertexBuffer(buf.res).bindWithAttrib(pso.vertexAttribs[attribIndex], device.caps.instanceRate);
 
         unload();
     }
@@ -154,7 +154,7 @@ class BindPixelTargetsCommand : Command {
         this.fbo = fbo;
     }
 
-    final void execute(GlDeviceContext context) {
+    final void execute(GlDevice device) {
         info("impl bind targets");
 
         unload();
@@ -174,7 +174,7 @@ class ClearCommand : Command {
         this.color = color; this.depth = depth; this.stencil = stencil;
     }
 
-    final void execute(GlDeviceContext context) {
+    final void execute(GlDevice device) {
         if (color.isSome) {
             auto col = color.get();
             glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -218,7 +218,7 @@ class DrawCommand : Command {
         this.primitive = primitive; this.start = start; this.count = count;
     }
 
-    void execute(GlDeviceContext context) {
+    void execute(GlDevice device) {
         glDrawArrays(primitive, start, count);
     }
 

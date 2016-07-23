@@ -92,8 +92,8 @@ int main()
         glfwMakeContextCurrent(window);
 
         DerelictGL3.reload();
-        auto device = createGlDevice();
-        auto cmdBuf = rc(device.context.makeCommandBuffer());
+        auto device = rc(createGlDevice());
+        auto cmdBuf = rc(device.factory.makeCommandBuffer());
 
         import std.datetime : StopWatch;
 
@@ -109,7 +109,7 @@ int main()
             cmdBuf.bindVertexBuffers(dataSet.vertexBuffers);
             cmdBuf.callDraw(0, cast(uint)vbuf.count, none!Instance);
 
-            device.context.submit(cmdBuf);
+            device.submit(cmdBuf);
 
             /* Swap front and back buffers */
             glfwSwapBuffers(window);

@@ -1,7 +1,7 @@
 module gfx.backend.dummy;
 
 import gfx.core : Device;
-import gfx.core.context : Context;
+import gfx.core.factory : Factory;
 import gfx.core.rc : rcCode;
 import gfx.core.format : Format;
 import gfx.core.buffer : BufferRes, RawBuffer, BufferSliceInfo;
@@ -14,16 +14,21 @@ import gfx.core.command : CommandBuffer;
 
 
 class DummyDevice : Device {
-    @property Context context() {
-        return new DummyContext();
+    mixin(rcCode);
+    void drop() {}
+
+    @property Factory factory() {
+        return new DummyFactory();
     }
-}
-
-
-class DummyContext : Context {
 
     @property bool hasIntrospection() const { return false; }
     @property string name() const { return "dummy"; }
+
+    void submit(CommandBuffer buffer) {}
+}
+
+
+class DummyFactory : Factory {
 
     TextureRes makeTexture(TextureCreationDesc, const(ubyte)[][]) {
         return new DummyTexture();
@@ -65,8 +70,6 @@ class DummyContext : Context {
     CommandBuffer makeCommandBuffer() {
         return null;
     }
-
-    void submit(CommandBuffer buffer) {}
 }
 
 

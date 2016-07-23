@@ -13,7 +13,8 @@ import gfx.backend.gl3.pso : GlPipelineState;
 import gfx.backend.gl3.command : GlCommandBuffer;
 
 import gfx.core : Device;
-import gfx.core.context : Context;
+import gfx.core.rc : rcCode;
+import gfx.core.factory : Factory;
 import gfx.core.format : Format;
 import gfx.core.buffer : BufferRes, RawBuffer;
 import gfx.core.texture : TextureRes, RawTexture, TextureUsage;
@@ -33,27 +34,6 @@ Device createGlDevice() {
 }
 
 
-class GlDevice : Device {
-    GlDeviceContext _context;
-    ContextInfo _info;
-
-    this() {
-        _info = ContextInfo.fetch();
-
-        import std.exception : enforce;
-
-        enforce(_info.glVersion.major >= 3, "Open GL 3.0 is requested by gfx-d");
-        enforce(_info.glslVersion.decimal >= 130, "GLSL v1.30 is requested by gfx-d");
-        enforce(_info.caps.interfaceQuery, "GL_ARB_program_interface_query is requested by gfx-d");
-
-        _context = new GlDeviceContext(_info.caps);
-    }
-
-    @property Context context() {
-        return _context;
-    }
-}
-
 struct GlCaps {
     import std.bitmanip : bitfields;
 
@@ -69,7 +49,50 @@ struct GlCaps {
 }
 
 
-class GlDeviceContext : Context {
+class GlDevice : Device {
+
+    mixin(rcCode);
+
+    GlFactory _factory;
+    ContextInfo _info;
+
+    this() {
+        _info = ContextInfo.fetch();
+
+        import std.exception : enforce;
+
+        enforce(_info.glVersion.major >= 3, "Open GL 3.0 is requested by gfx-d");
+        enforce(_info.glslVersion.decimal >= 130, "GLSL v1.30 is requested by gfx-d");
+        enforce(_info.caps.interfaceQuery, "GL_ARB_program_interface_query is requested by gfx-d");
+
+        _factory = new GlFactory(_info.caps);
+    }
+
+    void drop() {}
+
+    @property const(ContextInfo) info() const { return _info; }
+    @property GlCaps caps() const { return _info.caps; }
+
+    @property bool hasIntrospection() const {
+        return caps.interfaceQuery;
+    }
+    @property string name() const {
+        return "OpenGl 3";
+    }
+
+    @property Factory factory() {
+        return _factory;
+    }
+
+    void submit(CommandBuffer buffer) {
+        import std.algorithm : each;
+        auto cmds = unsafeCast!GlCommandBuffer(buffer).retrieve();
+        cmds.each!(cmd => cmd.execute(this));
+    }
+}
+
+
+class GlFactory : Factory {
 
     GlCaps _caps;
 
@@ -78,14 +101,6 @@ class GlDeviceContext : Context {
     }
 
     @property GlCaps caps() const { return _caps; }
-
-
-    @property bool hasIntrospection() const {
-        return _caps.interfaceQuery;
-    }
-    @property string name() const {
-        return "OpenGl 3";
-    }
 
     TextureRes makeTexture(TextureCreationDesc desc, const(ubyte)[][] data) {
         return makeTextureImpl(_caps.textureStorage, desc, data);
@@ -126,11 +141,5 @@ class GlDeviceContext : Context {
 
     CommandBuffer makeCommandBuffer() {
         return new GlCommandBuffer();
-    }
-
-    void submit(CommandBuffer buffer) {
-        import std.algorithm : each;
-        auto cmds = unsafeCast!GlCommandBuffer(buffer).retrieve();
-        cmds.each!(cmd => cmd.execute(this));
     }
 }
