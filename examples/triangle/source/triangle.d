@@ -49,6 +49,8 @@ int main()
 {
     /// window with a color buffer and no depth/stencil buffer
     auto window = rc(gfxGlfwWindow!Rgba8("gfx-d - Triangle", 640, 480));
+    auto colRtv = rc(window.colorSurface.viewAsRenderTarget());
+
     {
         auto vbuf = rc(createVertexBuffer!Vertex(triangle));
         auto prog = makeRc!Program(ShaderSet.vertexPixel(
