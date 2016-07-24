@@ -7,6 +7,7 @@ import gfx.core.format :    isFormatted, Formatted, SurfaceType, ChannelType,
                             isRender, isDepth, isStencil, isDepthStencil, hasDepthStencilSurface,
                             redBits, greenBits, blueBits, alphaBits, depthBits, stencilBits,
                             hasChannel;
+import gfx.core.surface :   Surface;
 
 import derelict.glfw3.glfw3;
 import derelict.opengl3.gl3;
@@ -399,10 +400,10 @@ class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthStencilSurface
 
     import gfx.core.format : hasRenderSurface;
 
-    static assert(hasRenderSurface!Col, Col.stringof~" is not a valid color format");
-
     this(string title, ushort width, ushort height, ubyte samples=1) {
         import gfx.core.format : format;
+        import gfx.core.surface : BuiltinSurface;
+
         immutable colF = format!Col;
         static if (DepSten.length == 0) {
             super(title, width, height, samples, colF.surface);
@@ -419,7 +420,66 @@ class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthStencilSurface
         else {
             static assert(false, "supplied to many buffer configurations");
         }
+
+        _colorSurface = new BuiltinSurface!Col(device.builtinSurface, width, height, samples);
+        static if (DepSten.length == 1) {
+            _depthStencilSurface = new BuiltinSurface!(DepSten[0])(device.builtinSurface, width, height, samples);
+        }
+        static if (DepSten.length == 2) {
+            _depthSurface = new BuiltinSurface!(DepSten[0])(device.builtinSurface, width, height, samples);
+            _stencilSurface = new BuiltinSurface!(DepSten[1])(device.builtinSurface, width, height, samples);
+        }
     }
+
+    override void drop() {
+        _colorSurface.unload();
+        static if (DepSten.length == 1) {
+            _depthStencilSurface.unload();
+        }
+        else static if (DepSten.length == 2) {
+            _depthSurface.unload();
+            _stencilSurface.unload();
+        }
+        super.drop();
+    }
+
+    static assert(hasRenderSurface!Col, Col.stringof~" is not a valid color format");
+
+    private Rc!(Surface!Col) _colorSurface;
+
+    public @property Surface!Col colorSurface() {
+        return _colorSurface.obj;
+    }
+
+
+    static if (DepSten.length == 1) {
+
+        static assert (hasDepthStencilSurface!(DepSten[0]));
+
+        private Rc!(Surface!(DepSten[0])) _depthStencilSurface;
+
+        public @property Surface!(DepSten[0]) depthStencilSurface() {
+            return _depthStencilSurface.obj;
+        }
+
+    }
+    else static if (DepSten.length == 2) {
+
+        static assert (isDepthSurface!(DepSten[0]));
+        static assert (isStencilSurface!(DepSten[1]));
+
+        private Rc!(Surface!(DepSten[0])) _depthSurface;
+        private Rc!(Surface!(DepSten[1])) _stencilSurface;
+
+        public @property Surface!(DepSten[0]) depthSurface() {
+            return _depthSurface.obj;
+        }
+        public @property Surface!(DepSten[1]) stencilSurface() {
+            return _stencilSurface.obj;
+        }
+    }
+
+
 }
 
 
