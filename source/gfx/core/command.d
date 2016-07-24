@@ -1,5 +1,6 @@
 module gfx.core.command;
 
+import gfx.core : Rect;
 import gfx.core.rc : RefCounted;
 import gfx.core.typecons : SafeUnion, Option;
 import gfx.core.pso : RawPipelineState, VertexBufferSet, PixelTargetSet;
@@ -66,6 +67,9 @@ interface CommandBuffer : RefCounted {
     /+
     /// Bind an index buffer
     void bindIndex(RawBuffer, IndexType);
+    +/
+    void setViewport(Rect r);
+    /+
     /// Set scissor rectangle
     void setScissor(target.Rect);
     /// Set reference values for the blending and stencil front/back

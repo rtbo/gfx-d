@@ -278,6 +278,10 @@ class GlCommandBuffer : CommandBuffer {
 
     }
 
+    void setViewport(Rect r) {
+        _commands ~= new SetViewportCommand(r);
+    }
+
     void clearColor(RawRenderTargetView view, ClearColor color) {
         // TODO handle targets
         PixelTargetSet targets;
