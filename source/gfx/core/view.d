@@ -7,6 +7,7 @@ import gfx.core.factory : Factory;
 import gfx.core.format : isFormatted, Formatted;
 import gfx.core.buffer : ShaderResourceBuffer;
 import gfx.core.texture : Texture;
+import gfx.core.surface : Surface;
 
 import std.typecons : BitFlags;
 
@@ -149,7 +150,7 @@ class SurfaceRenderTargetView(T) : RenderTargetView!T {
 
     void pinResources(Device device) {
         if(!_surf.pinned) _surf.pinResources(device);
-        _res = device.factory.viewAsRenderTarget(_surf.obj);
+        _res = device.factory.makeRenderTargetView(_surf.obj);
     }
 
     void drop() {
@@ -193,7 +194,7 @@ class TextureDepthStencilView(T) : DepthStencilView!T {
         desc.level = _level;
         desc.layer = _layer;
         desc.flags = _flags;
-        _res = device.factory.viewAsDepthStencil(_tex.obj, desc);
+        _res = device.factory.makeDepthStencilView(_tex.obj, desc);
     }
 
     void drop() {
@@ -212,7 +213,7 @@ class SurfaceDepthStencilView(T) : DepthStencilView!T {
 
     void pinResources(Device device) {
         if(!_surf.pinned) _surf.pinResources(device);
-        _res = device.factory.viewAsDepthStencil(_surf.obj);
+        _res = device.factory.makeDepthStencilView(_surf.obj);
     }
 
     void drop() {

@@ -78,7 +78,7 @@ class Surface(T) : RawSurface if (isFormatted!T) {
         static if (isRenderSurface!(Fmt.Surface)) {
             usage |= SurfaceUsage.RenderTarget;
         }
-        static if (isDepthStencil!(Fmt.Surface)) {
+        static if (isDepthStencilSurface!(Fmt.Surface)) {
             usage |= SurfaceUsage.DepthStencil;
         }
         super(usage, width, height, format!T(), samples);
