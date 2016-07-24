@@ -107,6 +107,10 @@ abstract class RawRenderTargetView : ResourceHolder {
     @property bool pinned() const {
         return _res.loaded;
     }
+
+    @property bool builtin() const {
+        return false;
+    }
 }
 
 abstract class RenderTargetView(T) : RawRenderTargetView if (isFormatted!T) {
@@ -157,6 +161,10 @@ class SurfaceRenderTargetView(T) : RenderTargetView!T {
         _surf.unload();
         _res.unload();
     }
+
+    override @property bool builtin() const {
+        return _surf.loaded && _surf.builtin;
+    }
 }
 
 
@@ -167,6 +175,10 @@ abstract class RawDepthStencilView : ResourceHolder {
 
     @property bool pinned() const {
         return _res.loaded;
+    }
+
+    @property bool builtin() const {
+        return false;
     }
 }
 
@@ -219,5 +231,9 @@ class SurfaceDepthStencilView(T) : DepthStencilView!T {
     void drop() {
         _surf.unload();
         _res.unload();
+    }
+
+    override @property bool builtin() const {
+        return _surf.loaded && _surf.builtin;
     }
 }

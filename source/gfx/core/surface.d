@@ -63,6 +63,10 @@ abstract class RawSurface : ResourceHolder {
     void drop() {
         _res.unload();
     }
+
+    @property bool builtin() const {
+        return false;
+    }
 }
 
 
@@ -95,7 +99,8 @@ class Surface(T) : RawSurface if (isFormatted!T) {
     }
 }
 
-class BuiltinSurface(T) : Surface!T {
+class BuiltinSurface(T) : Surface!T
+{
     this(BuiltinSurfaceRes res, ushort width, ushort height, ubyte samples) {
         super(width, height, samples);
         _res = res;
@@ -105,5 +110,9 @@ class BuiltinSurface(T) : Surface!T {
         import gfx.core.util : unsafeCast;
         _width = width; _height = height;
         unsafeCast!BuiltinSurfaceRes(_res.obj).updateSize(width, height);
+    }
+
+    override @property bool builtin() const {
+        return true;
     }
 }
