@@ -53,6 +53,7 @@ interface Device : RefCounted {
 
     @property BuiltinSurfaceRes builtinSurface();
 
+    CommandBuffer makeCommandBuffer();
     void submit(CommandBuffer buffer);
 }
 

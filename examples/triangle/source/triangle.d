@@ -63,8 +63,8 @@ int main()
         data.input = vbuf;
         auto dataSet = pipe.makeDataSet(data);
 
-        auto vpCmdBuf = rc(window.device.factory.makeCommandBuffer());
-        auto renderCmdBuf = rc(window.device.factory.makeCommandBuffer());
+        auto vpCmdBuf = rc(window.device.makeCommandBuffer());
+        auto renderCmdBuf = rc(window.device.makeCommandBuffer());
 
 
         // will quit on any key hit (as well as on close by 'x' click)

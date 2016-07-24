@@ -28,6 +28,10 @@ class DummyDevice : Device {
         return null;
     }
 
+    CommandBuffer makeCommandBuffer() {
+        return null;
+    }
+
     void submit(CommandBuffer buffer) {}
 }
 
@@ -68,10 +72,6 @@ class DummyFactory : Factory {
         return null;
     }
     PipelineStateRes makePipeline(Program, PipelineDescriptor) {
-        return null;
-    }
-
-    CommandBuffer makeCommandBuffer() {
         return null;
     }
 }

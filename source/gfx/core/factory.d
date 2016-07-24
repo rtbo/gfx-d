@@ -8,7 +8,6 @@ import gfx.core.surface : SurfaceRes, SurfUsageFlags, RawSurface;
 import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, Program;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes, DSVReadOnlyFlags;
 import gfx.core.pso : PipelineStateRes, PipelineDescriptor;
-import gfx.core.command : CommandBuffer;
 
 interface Factory {
 
@@ -75,6 +74,4 @@ interface Factory {
 
     PipelineStateRes makePipeline(Program prog, PipelineDescriptor descriptor);
 
-
-    CommandBuffer makeCommandBuffer();
 }

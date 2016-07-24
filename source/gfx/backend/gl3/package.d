@@ -91,6 +91,10 @@ class GlDevice : Device {
         return _builtinSurf.obj;
     }
 
+    CommandBuffer makeCommandBuffer() {
+        return new GlCommandBuffer();
+    }
+
     void submit(CommandBuffer buffer) {
         import gfx.core.util : unsafeCast;
         import std.algorithm : each;
@@ -145,9 +149,5 @@ class GlFactory : Factory {
     }
     PipelineStateRes makePipeline(Program prog, PipelineDescriptor descriptor) {
         return new GlPipelineState(prog, descriptor);
-    }
-
-    CommandBuffer makeCommandBuffer() {
-        return new GlCommandBuffer();
     }
 }
