@@ -1,6 +1,6 @@
 module gfx.core.texture;
 
-import gfx.core : Device, Resource, ResourceHolder, untypeSlices;
+import gfx.core : Device, Resource, ResourceHolder;
 import gfx.core.typecons : Option;
 import gfx.core.rc : RefCounted, rcCode;
 import gfx.core.factory : Factory;
@@ -181,6 +181,7 @@ abstract class Texture(TexelF) : RawTexture if (isFormatted!TexelF) {
     /// numFaces and faceIndex will be 0 for non-cube textures
     this(TextureType type, TexUsageFlags usage, ImageInfo imgInfo, ubyte samples, const(Texel)[][] texels) {
         alias format = gfx.core.format.format;
+        import gfx.core.util : untypeSlices;
         super(type, usage, imgInfo, samples, format!TexelF, cast(ubyte)Texel.sizeof, untypeSlices(texels));
     }
 

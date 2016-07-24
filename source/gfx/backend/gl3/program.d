@@ -1,6 +1,5 @@
 module gfx.backend.gl3.program;
 
-import gfx.backend : unsafeCast;
 import gfx.core.factory : Factory;
 import gfx.core.rc : rcCode;
 import gfx.core.program;
@@ -394,6 +393,7 @@ class GlProgram : ProgramRes {
 
     this(in bool uboSupport, ShaderRes[] shaders) {
         import std.algorithm : map, each, fold;
+        import gfx.core.util : unsafeCast;
 
         _uboSupport = uboSupport;
         _name = glCreateProgram();

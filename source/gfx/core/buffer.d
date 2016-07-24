@@ -1,6 +1,6 @@
 module gfx.core.buffer;
 
-import gfx.core : Device, Resource, ResourceHolder, untypeSlice;
+import gfx.core : Device, Resource, ResourceHolder;
 import gfx.core.rc : RefCounted, Rc, rcCode;
 import gfx.core.factory : Factory;
 import gfx.core.format : Formatted;
@@ -123,6 +123,7 @@ class Buffer(T) : RawPlainBuffer {
         super(role, usage, access, count, ElType.sizeof, []);
     }
     this(in BufferRole role, in BufferUsage usage, in MapAccess access, in const(T)[] data) {
+        import gfx.core.util : untypeSlice;
         super(role, usage, access, data.length, ElType.sizeof, untypeSlice(data));
     }
 }

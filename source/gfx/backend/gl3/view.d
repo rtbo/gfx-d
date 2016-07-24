@@ -1,6 +1,5 @@
 module gfx.backend.gl3.view;
 
-import gfx.backend : unsafeCast;
 import gfx.backend.gl3.buffer : GlBuffer;
 import gfx.backend.gl3.texture : GlTexture, formatToGlInternalFormat;
 import gfx.core.rc : Rc, rcCode;
@@ -23,6 +22,7 @@ class GlBufferShaderResourceView : ShaderResourceViewRes {
     Rc!GlBuffer _buf;
 
     this(RawBuffer buf, Format fmt) {
+        import gfx.core.util : unsafeCast;
         assert(buf.pinned);
         _buf = unsafeCast!GlBuffer(buf.res);
 
@@ -44,6 +44,7 @@ class GlTextureShaderResourceView : ShaderResourceViewRes {
     Rc!GlTexture _tex;
 
     this(RawTexture tex, Factory.TexSRVCreationDesc desc) {
+        import gfx.core.util : unsafeCast;
         assert(tex.pinned);
         _tex = unsafeCast!GlTexture(tex.res);
     }

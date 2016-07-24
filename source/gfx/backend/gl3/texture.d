@@ -1,6 +1,5 @@
 module gfx.backend.gl3.texture;
 
-import gfx.backend : unsafeCast;
 import gfx.backend.gl3.buffer : GlBuffer;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.format : Format, SurfaceType, ChannelType;

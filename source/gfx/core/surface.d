@@ -1,6 +1,6 @@
 module gfx.core.surface;
 
-import gfx.core : Device, Resource, ResourceHolder, untypeSlices;
+import gfx.core : Device, Resource, ResourceHolder;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.factory : Factory;
 import gfx.core.format : isFormatted, Formatted, Format, Swizzle, isRenderSurface, isDepthStencilSurface;

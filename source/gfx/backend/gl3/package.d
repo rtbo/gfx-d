@@ -1,6 +1,5 @@
 module gfx.backend.gl3;
 
-import gfx.backend : unsafeCast;
 import gfx.backend.gl3.info : ContextInfo;
 import gfx.backend.gl3.buffer : makeBufferImpl;
 import gfx.backend.gl3.texture : makeTextureImpl, GlSurface;
@@ -85,6 +84,7 @@ class GlDevice : Device {
     }
 
     void submit(CommandBuffer buffer) {
+        import gfx.core.util : unsafeCast;
         import std.algorithm : each;
         auto cmds = unsafeCast!GlCommandBuffer(buffer).retrieve();
         cmds.each!(cmd => cmd.execute(this));

@@ -1,6 +1,5 @@
 module gfx.backend.gl3.command;
 
-import gfx.backend : unsafeCast;
 import gfx.backend.gl3 : GlDevice;
 import gfx.backend.gl3.state : setRasterizer;
 import gfx.backend.gl3.buffer : GlBuffer, GlVertexBuffer;
@@ -130,6 +129,7 @@ class BindAttributeCommand : Command {
     }
 
     final void execute(GlDevice device) {
+        import gfx.core.util : unsafeCast;
         assert(buf.loaded);
         assert(pso.loaded);
         if (!buf.pinned) buf.pinResources(device);
