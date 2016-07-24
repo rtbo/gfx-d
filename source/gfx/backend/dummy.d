@@ -6,7 +6,7 @@ import gfx.core.rc : rcCode;
 import gfx.core.format : Format;
 import gfx.core.buffer : BufferRes, RawBuffer, BufferSliceInfo;
 import gfx.core.texture : TextureRes, RawTexture, ImageSliceInfo;
-import gfx.core.surface : SurfaceRes, RawSurface;
+import gfx.core.surface : SurfaceRes, BuiltinSurfaceRes, RawSurface;
 import gfx.core.program : ShaderRes, ProgramRes, ProgramVars, ShaderStage, Program;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes;
 import gfx.core.pso : PipelineStateRes, PipelineDescriptor;
@@ -17,12 +17,16 @@ class DummyDevice : Device {
     mixin(rcCode);
     void drop() {}
 
+    @property bool hasIntrospection() const { return false; }
+    @property string name() const { return "dummy"; }
+
     @property Factory factory() {
         return new DummyFactory();
     }
 
-    @property bool hasIntrospection() const { return false; }
-    @property string name() const { return "dummy"; }
+    @property BuiltinSurfaceRes builtinSurface() {
+        return null;
+    }
 
     void submit(CommandBuffer buffer) {}
 }

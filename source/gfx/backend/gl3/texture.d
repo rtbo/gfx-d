@@ -4,7 +4,7 @@ import gfx.backend.gl3.buffer : GlBuffer;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.format : Format, SurfaceType, ChannelType;
 import gfx.core.texture;
-import gfx.core.surface : SurfaceRes;
+import gfx.core.surface : SurfaceRes, BuiltinSurfaceRes;
 import gfx.core.buffer : RawBuffer;
 import gfx.core.factory : Factory;
 import gfx.core.error;
@@ -12,7 +12,7 @@ import gfx.core.error;
 
 import derelict.opengl3.gl3;
 
-import std.typecons : Tuple;
+import std.typecons : Tuple, Flag;
 import std.experimental.logger;
 
 
@@ -103,6 +103,7 @@ class GlSurface : SurfaceRes {
     ushort _height;
     ubyte _samples;
 
+    /// constructor for regular surface
     this(Factory.SurfaceCreationDesc desc) {
         _internalFormat = formatToGlInternalFormat(desc.format);
         _width = desc.width;
@@ -119,6 +120,9 @@ class GlSurface : SurfaceRes {
         }
     }
 
+    /// constructor for builtin surface
+    private this(Flag!"builtin") {}
+
     void drop() {
         glDeleteRenderbuffers(1, &_name);
     }
@@ -132,6 +136,26 @@ class GlSurface : SurfaceRes {
     @property ushort height() const { return _height; }
     @property ubyte samples() const { return _samples; }
 }
+
+
+class GlBuiltinSurface : GlSurface, BuiltinSurfaceRes {
+
+    this() {
+        import std.typecons : Yes;
+        super(Yes.builtin);
+    }
+
+    override void drop() {}
+    override void bind() {}
+
+    void updateSize(ushort width, ushort height) {
+        _width = width;
+        _height = height;
+    }
+
+}
+
+
 
 abstract class GlTexture : TextureRes {
     mixin(rcCode);

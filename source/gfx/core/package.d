@@ -3,6 +3,7 @@ module gfx.core;
 import gfx.core.rc : RefCounted;
 import gfx.core.factory : Factory;
 import gfx.core.command : CommandBuffer;
+import gfx.core.surface : BuiltinSurfaceRes;
 
 import std.traits;
 
@@ -49,6 +50,8 @@ interface Device : RefCounted {
     @property string name() const;
 
     @property Factory factory();
+
+    @property BuiltinSurfaceRes builtinSurface();
 
     void submit(CommandBuffer buffer);
 }

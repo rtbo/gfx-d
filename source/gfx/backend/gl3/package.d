@@ -2,7 +2,7 @@ module gfx.backend.gl3;
 
 import gfx.backend.gl3.info : ContextInfo;
 import gfx.backend.gl3.buffer : makeBufferImpl;
-import gfx.backend.gl3.texture : makeTextureImpl, GlSurface;
+import gfx.backend.gl3.texture : makeTextureImpl, GlSurface, GlBuiltinSurface;
 import gfx.backend.gl3.view :   GlBufferShaderResourceView,
                                 GlTextureShaderResourceView,
                                 GlTextureTargetView,
@@ -12,12 +12,12 @@ import gfx.backend.gl3.pso : GlPipelineState;
 import gfx.backend.gl3.command : GlCommandBuffer;
 
 import gfx.core : Device;
-import gfx.core.rc : rcCode;
+import gfx.core.rc : rcCode, Rc;
 import gfx.core.factory : Factory;
 import gfx.core.format : Format;
 import gfx.core.buffer : BufferRes, RawBuffer;
 import gfx.core.texture : TextureRes, RawTexture, TextureUsage;
-import gfx.core.surface : SurfaceRes, RawSurface;
+import gfx.core.surface : SurfaceRes, BuiltinSurfaceRes, RawSurface;
 import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, ProgramVars, Program;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes;
 import gfx.core.pso : PipelineStateRes, PipelineDescriptor;
@@ -54,6 +54,7 @@ class GlDevice : Device {
 
     GlFactory _factory;
     ContextInfo _info;
+    Rc!GlBuiltinSurface _builtinSurf;
 
     this() {
         _info = ContextInfo.fetch();
@@ -67,7 +68,9 @@ class GlDevice : Device {
         _factory = new GlFactory(_info.caps);
     }
 
-    void drop() {}
+    void drop() {
+        _builtinSurf.unload();
+    }
 
     @property const(ContextInfo) info() const { return _info; }
     @property GlCaps caps() const { return _info.caps; }
@@ -81,6 +84,11 @@ class GlDevice : Device {
 
     @property Factory factory() {
         return _factory;
+    }
+
+    @property BuiltinSurfaceRes builtinSurface() {
+        if (!_builtinSurf.loaded) _builtinSurf = new GlBuiltinSurface;
+        return _builtinSurf.obj;
     }
 
     void submit(CommandBuffer buffer) {

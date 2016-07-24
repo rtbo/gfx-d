@@ -4,7 +4,7 @@ import gfx.core : Device, Resource, ResourceHolder;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.factory : Factory;
 import gfx.core.format : isFormatted, Formatted, Format, Swizzle, isRenderSurface, isDepthStencilSurface;
-import gfx.core.view : RenderTargetView;
+import gfx.core.view : RenderTargetView, DepthStencilView;
 
 import std.typecons : BitFlags;
 
@@ -19,6 +19,11 @@ alias SurfUsageFlags = BitFlags!SurfaceUsage;
 
 interface SurfaceRes : Resource {
     void bind();
+}
+
+/// surface that is created by the window
+interface BuiltinSurfaceRes : SurfaceRes {
+    void updateSize(ushort w, ushort w);
 }
 
 abstract class RawSurface : ResourceHolder {
@@ -87,5 +92,18 @@ class Surface(T) : RawSurface if (isFormatted!T) {
     DepthStencilView!T viewAsDepthStencil() {
         import gfx.core.view : SurfaceDepthStencilView;
         return new SurfaceDepthStencilView!T(this);
+    }
+}
+
+class BuiltinSurface(T) : Surface!T {
+    this(BuiltinSurfaceRes res, ushort width, ushort height, ubyte samples) {
+        super(width, height, samples);
+        _res = res;
+    }
+
+    void updateSize(ushort width, ushort height) {
+        import gfx.core.util : unsafeCast;
+        _width = width; _height = height;
+        unsafeCast!BuiltinSurfaceRes(_res.obj).updateSize(width, height);
     }
 }
