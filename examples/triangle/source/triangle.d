@@ -71,7 +71,6 @@ int main()
         };
 
         window.onFbResize = (ushort w, ushort h) {
-            writeln("fb resize ", w, " ", h);
             vpCmdBuf.setViewport(Rect(0, 0, w, h));
             window.device.submit(vpCmdBuf);
         };
