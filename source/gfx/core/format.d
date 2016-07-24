@@ -1,3 +1,4 @@
+/// provides compile time and runtime support for image formats
 module gfx.core.format;
 
 import std.meta : AliasSeq, staticIndexOf;
