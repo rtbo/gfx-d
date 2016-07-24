@@ -1,6 +1,6 @@
 module triangle;
 
-import gfx.core : Primitive;
+import gfx.core : Rect, Primitive;
 import gfx.core.rc : Rc, rc, makeRc;
 import gfx.core.typecons : Option, none, some;
 import gfx.core.format : Rgba8, Depth32F;
@@ -61,8 +61,20 @@ int main()
         data.input = vbuf;
         auto dataSet = pipe.makeDataSet(data);
 
+        auto vpCmdBuf = rc(window.device.factory.makeCommandBuffer());
+        auto renderCmdBuf = rc(window.device.factory.makeCommandBuffer());
 
-        auto cmdBuf = rc(window.device.factory.makeCommandBuffer());
+
+        // will quit on any key hit (as well as on close by 'x' click)
+        window.onKey = (int, int, int, int) {
+            window.shouldClose = true;
+        };
+
+        window.onFbResize = (ushort w, ushort h) {
+            writeln("fb resize ", w, " ", h);
+            vpCmdBuf.setViewport(Rect(0, 0, w, h));
+            window.device.submit(vpCmdBuf);
+        };
 
         import std.datetime : StopWatch;
 
@@ -73,12 +85,12 @@ int main()
         /* Loop until the user closes the window */
         while (!window.shouldClose) {
 
-            cmdBuf.clearColor(null, clearColor(backColor));
-            cmdBuf.bindPipelineState(pipe.obj);
-            cmdBuf.bindVertexBuffers(dataSet.vertexBuffers);
-            cmdBuf.callDraw(0, cast(uint)vbuf.count, none!Instance);
+            renderCmdBuf.clearColor(null, clearColor(backColor));
+            renderCmdBuf.bindPipelineState(pipe.obj);
+            renderCmdBuf.bindVertexBuffers(dataSet.vertexBuffers);
+            renderCmdBuf.callDraw(0, cast(uint)vbuf.count, none!Instance);
 
-            window.device.submit(cmdBuf);
+            window.device.submit(renderCmdBuf);
 
             /* Swap front and back buffers */
             window.swapBuffers();
