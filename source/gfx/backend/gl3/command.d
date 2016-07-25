@@ -51,12 +51,10 @@ class SetRasterizerCommand : Command {
     final void unload() {}
 }
 
-class SetDrawColorBuffers : Command {
-    ubyte mask;
+class SetDrawColorBuffersCommand : Command {
+    ColorTargetMask mask;
 
-    static assert(maxColorTargets <= 8*typeof(mask).sizeof);
-
-    this(ubyte mask) {
+    this(ColorTargetMask mask) {
         this.mask = mask;
     }
 
@@ -145,17 +143,39 @@ class BindAttributeCommand : Command {
     }
 }
 
+
 class BindPixelTargetsCommand : Command {
     PixelTargetSet targets;
-    GLuint fbo;
 
-    this(PixelTargetSet targets, GLuint fbo) {
+    this(PixelTargetSet targets) {
         this.targets = targets;
-        this.fbo = fbo;
     }
 
     final void execute(GlDevice device) {
-        info("impl bind targets");
+        import gfx.backend.gl3.view : GlTargetView;
+        import gfx.core : ResourceHolder;
+        import gfx.core.util : unsafeCast;
+
+        enum point = GL_DRAW_FRAMEBUFFER;
+
+        void bindTarget(T)(T obj, GLenum attachment) if (is(T : ResourceHolder)) {
+            assert(obj !is null);
+            if (!obj.pinned) obj.pinResources(device);
+            unsafeCast!(GlTargetView)(obj.res).bind(point, attachment);
+        }
+
+        foreach(i; 0 .. maxColorTargets) {
+            if (targets.colors[i].loaded) {
+                bindTarget(targets.colors[i].obj, cast(GLenum)(GL_COLOR_ATTACHMENT0+i));
+            }
+            else break;
+        }
+        if (targets.depth.loaded) {
+            bindTarget(targets.depth.obj, GL_DEPTH_ATTACHMENT);
+        }
+        if (targets.stencil.loaded) {
+            bindTarget(targets.stencil.obj, GL_STENCIL_ATTACHMENT);
+        }
 
         unload();
     }
@@ -164,6 +184,23 @@ class BindPixelTargetsCommand : Command {
         targets = PixelTargetSet.init;
     }
 }
+
+class BindFramebufferCommand : Command {
+    GLenum access;
+    GLuint fbo;
+
+    this(GLenum access, GLuint fbo) {
+        this.access = access;
+        this.fbo = fbo;
+    }
+
+    final void execute(GlDevice device) {
+        glBindFramebuffer(access, fbo);
+    }
+
+    final void unload() {}
+}
+
 
 class ClearCommand : Command {
     Option!ClearColor color;
@@ -270,7 +307,32 @@ class GlCommandBuffer : CommandBuffer {
     }
 
     void bindPixelTargets(PixelTargetSet targets) {
+        import gfx.core : MaybeBuiltin;
 
+        bool bltin(T)(in T obj) if (is(T : MaybeBuiltin)) {
+            return !obj ||  obj.builtin;
+        }
+        immutable isBuiltin =
+                !targets.colors[1].loaded &&
+                !targets.colors[2].loaded &&
+                !targets.colors[3].loaded &&
+                bltin(targets.colors[0].obj) &&
+                bltin(targets.depth.obj) &&
+                bltin(targets.stencil.obj);
+        if (isBuiltin) {
+            _commands ~= new BindFramebufferCommand(GL_DRAW_FRAMEBUFFER, 0);
+        }
+        else {
+            _commands ~= new BindFramebufferCommand(GL_DRAW_FRAMEBUFFER, _fbo);
+            _commands ~= new BindPixelTargetsCommand(targets);
+            ubyte num=0;
+            foreach(i; 0..maxColorTargets) {
+                if (targets.colors[i].loaded) ++num;
+                else break;
+            }
+            immutable ubyte mask = 0x0f && ((1 << num) - 1);
+            _commands ~= new SetDrawColorBuffersCommand(mask);
+        }
     }
 
     void setViewport(Rect r) {
