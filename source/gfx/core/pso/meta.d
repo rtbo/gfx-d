@@ -1,5 +1,6 @@
 module gfx.core.pso.meta;
 
+import gfx.core.rc : Rc;
 import gfx.core.format : SurfaceType, ChannelType, Format, Formatted, isFormatted;
 import gfx.core.buffer : Buffer;
 import gfx.core.view : RenderTargetView;
@@ -23,6 +24,35 @@ struct VertexBuffer(T) {}
 
 struct RenderTarget(T) if (isFormatted!T) {}
 
+
+
+
+template InitType(MF) if (isMetaField!MF) {
+    import std.traits : Fields;
+
+    static if (is(MF == VertexBuffer!T, T)) {
+        alias InitType = VertexAttribDesc[(Fields!T).length];
+    }
+    else static if (is(MF == RenderTarget!T, T)) {
+        alias InitType = ColorTargetDesc;
+    }
+    else {
+        static assert(false, "Unsupported pipeline meta type: "~MF.stringof);
+    }
+}
+
+
+template DataType(MF) if (isMetaField!MF) {
+    static if (is(MF == VertexBuffer!T, T)) {
+        alias DataType = Rc!(Buffer!T);
+    }
+    else static if (is(MF == RenderTarget!T, T)) {
+        alias DataType = Rc!(RenderTargetView!T);
+    }
+    else {
+        static assert(false, "Unsupported pipeline meta type: "~MF.stringof);
+    }
+}
 
 
 template isMetaField(MF) {
@@ -49,29 +79,6 @@ template isMetaVertexBufferField(MF) {
     enum isMetaVertexBufferField = is(MF == VertexBuffer!T, T);
 }
 
-template metaVertexBufferFields(MS) if (isMetaStruct!MS) {
-    import std.traits : Fields, FieldNameTuple;
-    import std.meta : AliasSeq;
-
-    template VBF(size_t n) {
-        static if (n == Fields!(MS).length) {
-            alias VBF = AliasSeq!();
-        }
-        else static if (isMetaVertexBufferField!(Fields!MS[n])) {
-            alias VBF = AliasSeq!(
-                MetaVertexBufferField!(MS, FieldNameTuple!MS[n]),
-                VBF!(n+1)
-            );
-        }
-        else {
-            alias VBF = VBF!(n+1);
-        }
-    }
-
-    alias metaVertexBufferFields = VBF!0;
-}
-
-
 template MetaVertexBufferField(MS, string f) if (isMetaStruct!MS) {
     alias MF = FieldType!(MS, f);
     enum name = f;
@@ -84,21 +91,48 @@ template MetaVertexBufferField(MS, string f) if (isMetaStruct!MS) {
     }
 }
 
+alias metaVertexBufferFields(MS) = metaResolveFields!(MS, isMetaVertexBufferField, MetaVertexBufferField);
 
 
+template isMetaRenderTarget(MF) {
+    enum isMetaRenderTarget = is(MF == RenderTarget!T, T);
+}
 
-template InitType(MF) if (isMetaField!MF) {
-    import std.traits : Fields;
+template MetaRenderTargetField(MS, string f) if (isMetaStruct!MS) {
+    alias MF = FieldType!(MS, f);
+    enum name = f;
 
-    static if (is(MF == VertexBuffer!T, T)) {
-        alias InitType = VertexAttribDesc[(Fields!T).length];
-    }
-    else static if (is(MF == RenderTarget!T, T)) {
-        alias InitType = ColorTargetDesc;
+    static if (is(MF == RenderTarget!T, T)) {
+        alias SurfaceType = T;
     }
     else {
-        static assert(false, "Unsupported pipeline meta type: "~MF.stringof);
+        static assert(false, T.stringof ~ " is not a render target meta field");
     }
+}
+
+alias metaRenderTargetFields(MS) = metaResolveFields!(MS, isMetaRenderTargetField, MetaRenderTargetField);
+
+
+template metaResolveFields(MS, alias test, alias FieldTplt) if (isMetaStruct!MS) {
+    import std.traits : Fields, FieldNameTuple;
+    import std.meta : AliasSeq;
+
+    template resolve(size_t n) {
+        static if (n == Fields!(MS).length) {
+            alias resolve = AliasSeq!();
+        }
+        else static if (test!(Fields!MS[n])) {
+            alias resolve = AliasSeq!(
+                FieldTplt!(MS, FieldNameTuple!MS[n]),
+                resolve!(n+1)
+            );
+        }
+        else {
+            alias resolve = resolve!(n+1);
+        }
+    }
+
+    alias metaResolveFields = resolve!0;
 }
 
 
@@ -135,18 +169,6 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
     }
 }
 
-
-template DataType(MF) if (isMetaField!MF) {
-    static if (is(MF == VertexBuffer!T, T)) {
-        alias DataType = Buffer!T;
-    }
-    else static if (is(MF == RenderTarget!T, T)) {
-        alias DataType = RenderTargetView!T;
-    }
-    else {
-        static assert(false, "Unsupported pipeline meta type: "~MF.stringof);
-    }
-}
 
 
 template InitTrait(MS, string field) if (isMetaStruct!MS) {
