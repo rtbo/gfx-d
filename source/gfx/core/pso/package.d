@@ -270,17 +270,18 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
 
         RawDataSet res;
 
-        foreach (vbf; metaVertexInputFields!MS) {
-            foreach (i, va; Fields!(vbf.VertexType)) {
+        foreach (vif; metaVertexInputFields!MS) {
+            foreach (i, va; Fields!(vif.VertexType)) {
                 // adding the same buffer for each field
                 // offset is handled by VertexAttribDesc
                 // slot information is not given here, also handled by the descriptor
                 // it is important that buffers are kept in the correct order
-                res.vertexBuffers.addBuf(mixin(format("dataStruct.%s", vbf.name)));
+                res.vertexBuffers.addBuf(mixin(format("dataStruct.%s", vif.name)));
             }
         }
 
         foreach (rtf; metaColorOutputFields!MS) {
+            // same remark than for vertex attribs
             res.pixelTargets.addColor(mixin(format("dataStruct.%s", rtf.name)));
         }
 
