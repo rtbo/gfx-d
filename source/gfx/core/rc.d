@@ -34,6 +34,9 @@ enum rcCode = "
     public void release() {
         rc_ -= 1;
         if (!rc_) {
+            // uncomment to instrument
+            // import std.stdio : writeln;
+            // writeln(\"dropping \", typeof(this).stringof);
             drop();
         }
     }";
