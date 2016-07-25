@@ -123,6 +123,7 @@ struct PixelTargetSet {
         import std.algorithm : max;
 
         colors[slot] = view;
+        width = max(w, width);
         height = max(h, height);
     }
 
