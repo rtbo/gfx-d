@@ -14,7 +14,12 @@ U unsafeCast(U, T)(T obj)
         return uObj;
     }
     else {
-        return cast(U)(cast(void*)obj);
+        static if (is(T == interface) && is(U == class)) {
+            return cast(U)(cast(void*)(cast(Object)obj));
+        }
+        else {
+            return cast(U)(cast(void*)obj);
+        }
     }
 }
 
@@ -30,7 +35,12 @@ const(U) unsafeCast(U, T)(const(T) obj)
         return uObj;
     }
     else {
-        return cast(const(U))(cast(const(void*))obj);
+        static if (is(T == interface) && is(U == class)) {
+            return cast(const(U))(cast(const(void*))(cast(const(Object))obj));
+        }
+        else {
+            return cast(const(U))(cast(const(void*))obj);
+        }
     }
 }
 
