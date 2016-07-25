@@ -79,9 +79,6 @@ abstract class RawBuffer : ResourceHolder {
         _res.unload();
     }
 
-    final @property bool pinned() const {
-        return _res.loaded;
-    }
     void pinResources(Device device) {
         Factory.BufferCreationDesc desc;
         desc.role = _role;

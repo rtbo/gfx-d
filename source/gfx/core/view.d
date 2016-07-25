@@ -37,10 +37,6 @@ abstract class RawShaderResourceView : ResourceHolder {
     void drop() {
         _res.unload();
     }
-
-    @property bool pinned() const {
-        return _res.loaded;
-    }
 }
 
 abstract class ShaderResourceView(T) : RawShaderResourceView {
@@ -104,15 +100,11 @@ abstract class RawRenderTargetView : ResourceHolder, MaybeBuiltin {
 
     Rc!RenderTargetViewRes _res;
 
-    @property bool pinned() const {
-        return _res.loaded;
-    }
-
     @property bool builtin() const {
         return false;
     }
 
-    @property inout(RenderTargetViewRes) res() inout {
+    final @property inout(RenderTargetViewRes) res() inout {
         return _res.obj;
     }
 }
@@ -176,10 +168,6 @@ abstract class RawDepthStencilView : ResourceHolder, MaybeBuiltin {
     mixin(rcCode);
 
     Rc!DepthStencilViewRes _res;
-
-    @property bool pinned() const {
-        return _res.loaded;
-    }
 
     @property bool builtin() const {
         return false;

@@ -37,7 +37,9 @@ interface ResourceHolder : RefCounted {
 
     @property inout(Resource) res() inout;
 
-    @property bool pinned() const;
+    final @property bool pinned() const {
+        return res !is null;
+    }
 
     void pinResources(Device device)
     in { assert(!pinned); }

@@ -135,8 +135,6 @@ abstract class RawTexture : ResourceHolder {
     final @property Format format() const { return _format; }
     final @property ubyte texelSize() const { return _texelSize; }
 
-    final @property bool pinned() const { return _res !is null; }
-
     final void pinResources(Device device) {
         Factory.TextureCreationDesc desc;
         desc.type = type;

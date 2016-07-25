@@ -220,11 +220,7 @@ class Shader : ResourceHolder {
 
     @property ShaderStage stage() const { return _stage; }
 
-    @property inout(ShaderRes) res() inout { return _res; }
-
-    @property bool pinned() const {
-        return _res.loaded;
-    }
+    final @property inout(ShaderRes) res() inout { return _res; }
 
     void pinResources(Device device) {
         _res = device.factory.makeShader(_stage, _code);
@@ -253,11 +249,7 @@ class Program : ResourceHolder {
         _shaders.each!(s => s.addRef());
     }
 
-    @property inout(ProgramRes) res() inout { return _res; }
-
-    @property bool pinned() const {
-        return _res.loaded;
-    }
+    final @property inout(ProgramRes) res() inout { return _res; }
 
     void pinResources(Device device) {
         import std.algorithm : map, each;

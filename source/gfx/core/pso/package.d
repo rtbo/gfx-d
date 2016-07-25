@@ -199,7 +199,7 @@ abstract class RawPipelineState : ResourceHolder {
         _descriptor.rasterizer = rasterizer;
     }
 
-    @property inout(PipelineStateRes) res() inout { return _res.obj; }
+    final @property inout(PipelineStateRes) res() inout { return _res.obj; }
 
     @property inout(Program) program() inout { return _prog.obj; }
 
@@ -207,10 +207,6 @@ abstract class RawPipelineState : ResourceHolder {
     @property Rasterizer rasterizer() const { return _descriptor.rasterizer; }
     @property bool scissors() const { return _descriptor.scissors; }
     @property inout(VertexAttribDesc)[] vertexAttribs() inout { return _descriptor.vertexAttribs; }
-
-    @property bool pinned() const {
-        return _res.loaded;
-    }
 
     void drop() {
         _prog.unload();

@@ -44,11 +44,8 @@ abstract class RawSurface : ResourceHolder, MaybeBuiltin {
         _samples = samples;
     }
 
-    @property inout(SurfaceRes) res() inout { return _res.obj; }
+    final @property inout(SurfaceRes) res() inout { return _res.obj; }
 
-    @property bool pinned() const {
-        return _res.loaded;
-    }
 
     void pinResources(Device device) {
         Factory.SurfaceCreationDesc desc;
