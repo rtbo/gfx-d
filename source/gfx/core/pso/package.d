@@ -20,7 +20,7 @@ import gfx.core.format : Format;
 import gfx.core.buffer : RawBuffer;
 import gfx.core.program : Program, VarType, ProgramVars;
 import gfx.core.view : RawRenderTargetView, RawDepthStencilView;
-import gfx.core.pso.meta : isMetaStruct, PipelineInit, PipelineData, VertexInput, ColorOutput;
+import gfx.core.pso.meta : isMetaStruct;
 
 
 
@@ -203,8 +203,11 @@ abstract class RawPipelineState : ResourceHolder {
 }
 
 
-class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS) {
+class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
+{
+    import gfx.core.pso.meta : PipelineInit, PipelineData;
     import std.traits : Fields, FieldNameTuple;
+
     alias Init = PipelineInit!MS;
     alias Data = PipelineData!MS;
 
@@ -219,15 +222,13 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS) {
     }
 
     private void initDescriptor(in Init initStruct) {
+        import gfx.core.pso.meta : metaVertexInputFields, metaColorOutputFields;
         import std.format : format;
-        foreach(i, MF; Fields!MS) {
-            alias field = FieldNameTuple!MS[i];
-            static if (is(MF == VertexInput!T, T)) {
-                _descriptor.vertexAttribs ~= mixin(format("initStruct.%s[]", field));
-            }
-            static if (is(MF == ColorOutput!T, T)) {
-                _descriptor.colorTargets ~= mixin(format("initStruct.%s", field));
-            }
+        foreach (vif; metaVertexInputFields!MS) {
+            _descriptor.vertexAttribs ~= mixin(format("initStruct.%s[]", vif.name));
+        }
+        foreach (cof; metaColorOutputFields!MS) {
+            _descriptor.colorTargets ~= mixin(format("initStruct.%s", cof.name));
         }
     }
 

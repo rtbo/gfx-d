@@ -20,9 +20,13 @@ struct GfxSlot {
 }
 
 
-struct VertexInput(T) {}
+struct VertexInput(T) {
+    alias VertexType = T;
+}
 
-struct ColorOutput(T) if (isFormatted!T) {}
+struct ColorOutput(T) if (isFormatted!T) {
+    alias FormatType = T;
+}
 
 
 
@@ -30,10 +34,10 @@ struct ColorOutput(T) if (isFormatted!T) {}
 template InitType(MF) if (isMetaField!MF) {
     import std.traits : Fields;
 
-    static if (is(MF == VertexInput!T, T)) {
-        alias InitType = VertexAttribDesc[(Fields!T).length];
+    static if (isMetaVertexInputField!MF) {
+        alias InitType = VertexAttribDesc[(Fields!(MF.VertexType)).length];
     }
-    else static if (is(MF == ColorOutput!T, T)) {
+    else static if (isMetaColorOutputField!MF) {
         alias InitType = ColorTargetDesc;
     }
     else {
@@ -43,11 +47,11 @@ template InitType(MF) if (isMetaField!MF) {
 
 
 template DataType(MF) if (isMetaField!MF) {
-    static if (is(MF == VertexInput!T, T)) {
-        alias DataType = Rc!(Buffer!T);
+    static if (isMetaVertexInputField!MF) {
+        alias DataType = Rc!(Buffer!(MF.VertexType));
     }
-    else static if (is(MF == ColorOutput!T, T)) {
-        alias DataType = Rc!(RenderTargetView!T);
+    else static if (isMetaColorOutputField!MF) {
+        alias DataType = Rc!(RenderTargetView!(MF.FormatType));
     }
     else {
         static assert(false, "Unsupported pipeline meta type: "~MF.stringof);
@@ -56,15 +60,8 @@ template DataType(MF) if (isMetaField!MF) {
 
 
 template isMetaField(MF) {
-    static if (is(MF == VertexInput!T, T)) {
-        enum isMetaField = true;
-    }
-    else static if (is(MF == ColorOutput!T, T)) {
-        enum isMetaField = true;
-    }
-    else {
-        enum isMetaField = false;
-    }
+    enum isMetaField =  isMetaVertexInputField!MF ||
+                        isMetaColorOutputField!MF;
 }
 
 template isMetaStruct(M) {
@@ -81,17 +78,14 @@ template isMetaVertexInputField(MF) {
 
 template MetaVertexInputField(MS, string f) if (isMetaStruct!MS) {
     alias MF = FieldType!(MS, f);
-    enum name = f;
+    static assert(isMetaVertexInputField!MF);
 
-    static if (is(MF == VertexInput!T, T)) {
-        alias VertexType = T;
-    }
-    else {
-        static assert(false, T.stringof ~ " is not a vertex buffer meta field");
-    }
+    enum name = f;
+    alias VertexType = MF.VertexType;
 }
 
 alias metaVertexInputFields(MS) = metaResolveFields!(MS, isMetaVertexInputField, MetaVertexInputField);
+
 
 
 template isMetaColorOutputField(MF) {
@@ -100,17 +94,14 @@ template isMetaColorOutputField(MF) {
 
 template MetaColorOutputField(MS, string f) if (isMetaStruct!MS) {
     alias MF = FieldType!(MS, f);
-    enum name = f;
+    static assert(isMetaColorOutputField!MF);
 
-    static if (is(MF == ColorOutput!T, T)) {
-        alias SurfaceType = T;
-    }
-    else {
-        static assert(false, T.stringof ~ " is not a render target meta field");
-    }
+    enum name = f;
+    alias FormatType = MF.FormatType;
 }
 
 alias metaColorOutputFields(MS) = metaResolveFields!(MS, isMetaColorOutputField, MetaColorOutputField);
+
 
 
 template metaResolveFields(MS, alias test, alias FieldTplt) if (isMetaStruct!MS) {
@@ -142,23 +133,23 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
     alias MF = FieldType!(MS, field);
     alias IF = InitType!MF;
 
-    static if (is(MF == VertexInput!T, T)) {
-        alias gfxFields = GfxStructFields!(T);
+    static if (isMetaVertexInputField!MF) {
+        alias gfxFields = GfxStructFields!(MF.VertexType);
         string initCode() {
             string res = "[";
             foreach(f; gfxFields) {
                 res ~= format("VertexAttribDesc(\"%s\", %s, " ~
                             "StructField(Format(SurfaceType.%s, ChannelType.%s), %s, %s, %s, %s), 0),\n",
                     f.gfxName, f.gfxSlot, f.Fmt.Surface.surfaceType, f.Fmt.Channel.channelType,
-                    f.offset, f.size, f.alignment, T.sizeof);
+                    f.offset, f.size, f.alignment, MF.VertexType.sizeof);
             }
             return res ~ "]";
         }
         enum InitValue = mixin(initCode());
     }
-    else static if (is(MF == ColorOutput!T, T)) {
+    else static if (isMetaColorOutputField!MF) {
         string initCode() {
-            alias Fmt = Formatted!T;
+            alias Fmt = Formatted!(MF.FormatType);
             return format("ColorTargetDesc(\"%s\", %s, " ~
                     "Format(SurfaceType.%s, ChannelType.%s), " ~
                     "ColorInfo.from(cast(ColorMask)ColorFlags.All))",
