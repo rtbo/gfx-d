@@ -50,7 +50,6 @@ int main()
     /// window with a color buffer and no depth/stencil buffer
     auto window = rc(gfxGlfwWindow!Rgba8("gfx-d - Triangle", 640, 480));
     auto colRtv = rc(window.colorSurface.viewAsRenderTarget());
-
     {
         auto vbuf = rc(createVertexBuffer!Vertex(triangle));
         auto prog = makeRc!Program(ShaderSet.vertexPixel(
@@ -61,6 +60,7 @@ int main()
 
         auto data = PipeState.Data.init;
         data.input = vbuf;
+        data.output = colRtv;
         auto dataSet = pipe.makeDataSet(data);
 
         auto vpCmdBuf = rc(window.device.makeCommandBuffer());
@@ -86,7 +86,7 @@ int main()
         /* Loop until the user closes the window */
         while (!window.shouldClose) {
 
-            renderCmdBuf.clearColor(null, clearColor(backColor));
+            renderCmdBuf.clearColor(colRtv.obj, clearColor(backColor));
             renderCmdBuf.bindPipelineState(pipe.obj);
             renderCmdBuf.bindVertexBuffers(dataSet.vertexBuffers);
             renderCmdBuf.callDraw(0, cast(uint)vbuf.count, none!Instance);
@@ -98,8 +98,8 @@ int main()
 
             /* Poll for and process events */
             window.pollEvents();
-            frameCount += 1;
 
+            frameCount += 1;
 
             version(Windows) {
                 // vsync is not always enabled with glfw on windows
