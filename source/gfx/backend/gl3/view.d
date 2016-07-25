@@ -3,6 +3,7 @@ module gfx.backend.gl3.view;
 import gfx.backend.gl3.buffer : GlBuffer;
 import gfx.backend.gl3.texture : GlTexture, formatToGlInternalFormat;
 import gfx.core.rc : Rc, rcCode;
+import gfx.core.typecons : Option;
 import gfx.core.factory : Factory;
 import gfx.core.format : Format;
 import gfx.core.buffer : RawBuffer;
@@ -58,21 +59,41 @@ class GlTextureShaderResourceView : ShaderResourceViewRes {
 
 abstract class GlTargetView : RenderTargetViewRes, DepthStencilViewRes {
     mixin(rcCode);
+
+    void bind(GLenum point, GLenum attachment);
 }
 
 class GlTextureTargetView : GlTargetView {
     Rc!RawTexture _tex;
+    ubyte _level;
+    Option!ubyte _layer;
 
     this(RawTexture tex, Factory.TexRTVCreationDesc desc) {
         _tex = tex;
+        _level = desc.level;
+        _layer = desc.layer;
     }
 
     this(RawTexture tex, Factory.TexDSVCreationDesc desc) {
         _tex = tex;
+        _level = desc.level;
+        _layer = desc.layer;
     }
 
     void drop() {
         _tex.unload();
+    }
+
+    override void bind(GLenum point, GLenum attachment) {
+        import gfx.backend.gl3.texture : GlTexture;
+        import gfx.core.util : unsafeCast;
+        immutable name = unsafeCast!GlTexture(_tex.res).name;
+        if (_layer.isSome) {
+            glFramebufferTextureLayer(point, attachment, name, _level, _layer.get());
+        }
+        else {
+            glFramebufferTexture(point, attachment, name, _level);
+        }
     }
 }
 
@@ -86,5 +107,12 @@ class GlSurfaceTargetView : GlTargetView {
 
     void drop() {
         _surf.unload();
+    }
+
+    override void bind(GLenum point, GLenum attachment) {
+        import gfx.backend.gl3.texture : GlSurface;
+        import gfx.core.util : unsafeCast;
+        immutable name = unsafeCast!GlSurface(_surf.res).name;
+        glFramebufferRenderbuffer(point, attachment, GL_RENDERBUFFER, name);
     }
 }

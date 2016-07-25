@@ -180,6 +180,8 @@ abstract class GlTexture : TextureRes {
     void bind() {
         glBindTexture(_target, _name);
     }
+
+    @property GLuint name() const { return _name; }
 }
 
 
