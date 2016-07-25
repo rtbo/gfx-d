@@ -220,6 +220,8 @@ class Shader : ResourceHolder {
 
     @property ShaderStage stage() const { return _stage; }
 
+    @property inout(ShaderRes) res() inout { return _res; }
+
     @property bool pinned() const {
         return _res.loaded;
     }

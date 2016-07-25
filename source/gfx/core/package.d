@@ -35,6 +35,8 @@ interface Resource : RefCounted {}
 
 interface ResourceHolder : RefCounted {
 
+    @property inout(Resource) res() inout;
+
     @property bool pinned() const;
 
     void pinResources(Device device)
