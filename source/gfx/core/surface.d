@@ -1,6 +1,6 @@
 module gfx.core.surface;
 
-import gfx.core : Device, Resource, ResourceHolder;
+import gfx.core : Device, Resource, ResourceHolder, MaybeBuiltin;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.factory : Factory;
 import gfx.core.format : isFormatted, Formatted, Format, Swizzle, isRenderSurface, isDepthStencilSurface;
@@ -26,7 +26,7 @@ interface BuiltinSurfaceRes : SurfaceRes {
     void updateSize(ushort w, ushort w);
 }
 
-abstract class RawSurface : ResourceHolder {
+abstract class RawSurface : ResourceHolder, MaybeBuiltin {
     mixin(rcCode);
 
     Rc!SurfaceRes _res;

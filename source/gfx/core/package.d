@@ -17,6 +17,7 @@ alias ColorTargetMask = ubyte;
 static assert(maxVertexAttribs <= 8*AttribMask.sizeof);
 static assert(maxColorTargets <= 8*ColorTargetMask.sizeof);
 
+
 enum Primitive {
     Points,
     Lines,
@@ -42,6 +43,11 @@ interface ResourceHolder : RefCounted {
 
 }
 
+/// implemented by objects that can hold or be builtin surfaces
+interface MaybeBuiltin {
+    /// returns true if implementer holds or is a builtin surface
+    @property bool builtin() const;
+}
 
 interface Device : RefCounted {
 

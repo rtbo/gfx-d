@@ -1,6 +1,6 @@
 module gfx.core.view;
 
-import gfx.core : Device, Resource, ResourceHolder;
+import gfx.core : Device, Resource, ResourceHolder, MaybeBuiltin;
 import gfx.core.typecons : Option;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.factory : Factory;
@@ -99,7 +99,7 @@ class TextureShaderResourceView(T) : ShaderResourceView!T if(isFormatted!T) {
 }
 
 
-abstract class RawRenderTargetView : ResourceHolder {
+abstract class RawRenderTargetView : ResourceHolder, MaybeBuiltin {
     mixin(rcCode);
 
     Rc!RenderTargetViewRes _res;
@@ -110,6 +110,10 @@ abstract class RawRenderTargetView : ResourceHolder {
 
     @property bool builtin() const {
         return false;
+    }
+
+    @property inout(RenderTargetViewRes) res() inout {
+        return _res.obj;
     }
 }
 
@@ -168,7 +172,7 @@ class SurfaceRenderTargetView(T) : RenderTargetView!T {
 }
 
 
-abstract class RawDepthStencilView : ResourceHolder {
+abstract class RawDepthStencilView : ResourceHolder, MaybeBuiltin {
     mixin(rcCode);
 
     Rc!DepthStencilViewRes _res;
@@ -179,6 +183,10 @@ abstract class RawDepthStencilView : ResourceHolder {
 
     @property bool builtin() const {
         return false;
+    }
+
+    @property inout(DepthStencilViewRes) res() inout {
+        return _res.obj;
     }
 }
 
