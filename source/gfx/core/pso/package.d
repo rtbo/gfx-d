@@ -117,17 +117,7 @@ struct VertexBufferSet {
 struct PixelTargetSet {
 
     /// Array of color target views
-    struct RTV {
-        ubyte slot;
-        RawRenderTargetView rtv;
-
-        this(ubyte slot, RawRenderTargetView rtv) {
-            rtv.addRef();
-            this.slot = slot;
-            this.rtv = rtv;
-        }
-    }
-    RTV[] colors;
+    RawRenderTargetView[] colors;
 
     /// Depth target view
     Rc!RawDepthStencilView depth;
@@ -140,17 +130,16 @@ struct PixelTargetSet {
 
 
     /// Add a color view to the specified slot
-    void addColor(ubyte slot, RawRenderTargetView view, ushort w, ushort h) {
+    void addColor(RawRenderTargetView view) {
         import gfx.core.rc : rc;
         import std.algorithm : max;
 
-        colors ~= RTV(slot, view);
-        width = max(w, width);
-        height = max(h, height);
+        view.addRef();
+        colors ~= view;
     }
 
     /// Add a depth or stencil view to the specified slot
-    void addDepthStencil(RawDepthStencilView view, bool hasDepth, bool hasStencil, ushort w, ushort h) {
+    void addDepthStencil(RawDepthStencilView view, bool hasDepth, bool hasStencil) {
         import std.algorithm : max;
 
         if(hasDepth) {
@@ -159,18 +148,16 @@ struct PixelTargetSet {
         if(hasStencil) {
             stencil = view;
         }
-        width = max(w, width);
-        height = max(h, height);
     }
 
     this(this) {
-        import std.algorithm : each, map;
-        colors.map!(rtv => rtv.rtv).each!(rtv => rtv.addRef());
+        import std.algorithm : each;
+        colors.each!(rtv => rtv.addRef());
     }
 
     ~this() {
-        import std.algorithm : each, map;
-        colors.map!(rtv => rtv.rtv).each!(rtv => rtv.release());
+        import std.algorithm : each;
+        colors.each!(rtv => rtv.release());
     }
 }
 
@@ -207,13 +194,12 @@ abstract class RawPipelineState : ResourceHolder {
     @property Rasterizer rasterizer() const { return _descriptor.rasterizer; }
     @property bool scissors() const { return _descriptor.scissors; }
     @property inout(VertexAttribDesc)[] vertexAttribs() inout { return _descriptor.vertexAttribs; }
+    @property inout(ColorTargetDesc)[] colorTargets() inout { return _descriptor.colorTargets; }
 
     void drop() {
         _prog.unload();
         _res.unload();
     }
-
-    void validate() {}
 }
 
 
@@ -277,7 +263,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS) {
 
 
     RawDataSet makeDataSet(Data dataStruct) {
-        import gfx.core.pso.meta : metaVertexBufferFields;
+        import gfx.core.pso.meta : metaVertexBufferFields, metaRenderTargetFields;
         import std.format : format;
         import std.traits : Fields;
 
@@ -289,8 +275,12 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS) {
                 // offset is handled by VertexAttribDesc
                 // slot information is not given here, also handled by the descriptor
                 // it is important that buffers are kept in the correct order
-                res.vertexBuffers.addBuf(Rc!RawBuffer(mixin(format("dataStruct.%s", vbf.name))));
+                res.vertexBuffers.addBuf(mixin(format("dataStruct.%s", vbf.name)));
             }
+        }
+
+        foreach (rtf; metaRenderTargetFields!MS) {
+            res.pixelTargets.addColor(mixin(format("dataStruct.%s", rtf.name)));
         }
 
         return res;

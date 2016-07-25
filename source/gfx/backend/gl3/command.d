@@ -144,11 +144,14 @@ class BindAttributeCommand : Command {
 }
 
 
+/// command that binds a pixel target set and take slots from the pipeline
 class BindPixelTargetsCommand : Command {
     PixelTargetSet targets;
+    Rc!RawPipelineState pso;
 
-    this(PixelTargetSet targets) {
+    this(PixelTargetSet targets, RawPipelineState pso) {
         this.targets = targets;
+        this.pso = pso;
     }
 
     final void execute(GlDevice device) {
@@ -164,8 +167,9 @@ class BindPixelTargetsCommand : Command {
             unsafeCast!(GlTargetView)(obj.res).bind(point, attachment);
         }
 
-        foreach(rtv; targets.colors) {
-            bindTarget(rtv.rtv, GL_COLOR_ATTACHMENT0+rtv.slot);
+        assert(targets.colors.length == pso.colorTargets.length);
+        foreach(i, rtv; targets.colors) {
+            bindTarget(rtv, GL_COLOR_ATTACHMENT0+pso.colorTargets[i].slot);
         }
         if (targets.depth.loaded) {
             bindTarget(targets.depth.obj, GL_DEPTH_ATTACHMENT);
@@ -179,6 +183,33 @@ class BindPixelTargetsCommand : Command {
 
     final void unload() {
         targets = PixelTargetSet.init;
+        pso.unload;
+    }
+}
+
+/// command that bind a single color target to a known slot
+/// this to be used when a bound pipeline is not necessary (e.g. with clearColor)
+class BindColorTargetCommand : Command {
+    ubyte slot;
+    Rc!RawRenderTargetView view;
+
+    this(ubyte slot, RawRenderTargetView view) {
+        this.slot = slot;
+        this.view = view;
+    }
+
+    final void execute(GlDevice device) {
+        import gfx.backend.gl3.view : GlTargetView;
+        import gfx.core.util : unsafeCast;
+
+        if (!view.pinned) view.pinResources(device);
+        unsafeCast!(GlTargetView)(view.res).bind(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+slot);
+
+        unload();
+    }
+
+    final void unload() {
+        view.unload();
     }
 }
 
@@ -306,12 +337,14 @@ class GlCommandBuffer : CommandBuffer {
     void bindPixelTargets(PixelTargetSet targets) {
         import gfx.core : MaybeBuiltin;
 
+        assert(_cache.pso.loaded, "must bind pso before pixel targets");
+
         bool bltin(T)(in T obj) if (is(T : MaybeBuiltin)) {
             return !obj ||  obj.builtin;
         }
         immutable isBuiltin =
                 targets.colors.length == 1 &&
-                targets.colors[0].rtv.builtin &&
+                targets.colors[0].builtin &&
                 bltin(targets.depth.obj) &&
                 bltin(targets.stencil.obj);
         if (isBuiltin) {
@@ -319,11 +352,22 @@ class GlCommandBuffer : CommandBuffer {
         }
         else {
             _commands ~= new BindFramebufferCommand(GL_DRAW_FRAMEBUFFER, _fbo);
-            _commands ~= new BindPixelTargetsCommand(targets);
+            _commands ~= new BindPixelTargetsCommand(targets, _cache.pso);
 
             immutable num=cast(ubyte)targets.colors.length;
             immutable mask = 0x0f && ((1 << num) - 1);
             _commands ~= new SetDrawColorBuffersCommand(mask);
+        }
+    }
+
+    private void bindSingleColorTarget(RawRenderTargetView view) {
+        if (view.builtin) {
+            _commands ~= new BindFramebufferCommand(GL_DRAW_FRAMEBUFFER, 0);
+        }
+        else {
+            _commands ~= new BindFramebufferCommand(GL_DRAW_FRAMEBUFFER, _fbo);
+            _commands ~= new BindColorTargetCommand(0, view);
+            _commands ~= new SetDrawColorBuffersCommand(1);
         }
     }
 
@@ -333,9 +377,7 @@ class GlCommandBuffer : CommandBuffer {
 
     void clearColor(RawRenderTargetView view, ClearColor color) {
         // TODO handle targets
-        PixelTargetSet targets;
-        targets.colors ~= PixelTargetSet.RTV(0, view);
-        bindPixelTargets(targets);
+        bindSingleColorTarget(view);
         _commands ~= new ClearCommand(some(color), none!float, none!ubyte);
     }
 
