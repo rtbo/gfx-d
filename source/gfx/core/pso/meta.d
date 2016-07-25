@@ -94,8 +94,8 @@ template MetaVertexBufferField(MS, string f) if (isMetaStruct!MS) {
 alias metaVertexBufferFields(MS) = metaResolveFields!(MS, isMetaVertexBufferField, MetaVertexBufferField);
 
 
-template isMetaRenderTarget(MF) {
-    enum isMetaRenderTarget = is(MF == RenderTarget!T, T);
+template isMetaRenderTargetField(MF) {
+    enum isMetaRenderTargetField = is(MF == RenderTarget!T, T);
 }
 
 template MetaRenderTargetField(MS, string f) if (isMetaStruct!MS) {
