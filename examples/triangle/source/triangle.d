@@ -22,8 +22,8 @@ struct Vertex {
 }
 
 struct PipeMeta {
-                        VertexBuffer!Vertex input;
-    @GfxName("o_Color") RenderTarget!Rgba8 output;
+                        VertexInput!Vertex input;
+    @GfxName("o_Color") ColorOutput!Rgba8 output;
 }
 
 alias PipeState = PipelineState!PipeMeta;

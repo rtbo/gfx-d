@@ -20,7 +20,7 @@ import gfx.core.format : Format;
 import gfx.core.buffer : RawBuffer;
 import gfx.core.program : Program, VarType, ProgramVars;
 import gfx.core.view : RawRenderTargetView, RawDepthStencilView;
-import gfx.core.pso.meta : isMetaStruct, PipelineInit, PipelineData, VertexBuffer, RenderTarget;
+import gfx.core.pso.meta : isMetaStruct, PipelineInit, PipelineData, VertexInput, ColorOutput;
 
 
 
@@ -222,10 +222,10 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS) {
         import std.format : format;
         foreach(i, MF; Fields!MS) {
             alias field = FieldNameTuple!MS[i];
-            static if (is(MF == VertexBuffer!T, T)) {
+            static if (is(MF == VertexInput!T, T)) {
                 _descriptor.vertexAttribs ~= mixin(format("initStruct.%s[]", field));
             }
-            static if (is(MF == RenderTarget!T, T)) {
+            static if (is(MF == ColorOutput!T, T)) {
                 _descriptor.colorTargets ~= mixin(format("initStruct.%s", field));
             }
         }
@@ -263,13 +263,13 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS) {
 
 
     RawDataSet makeDataSet(Data dataStruct) {
-        import gfx.core.pso.meta : metaVertexBufferFields, metaRenderTargetFields;
+        import gfx.core.pso.meta : metaVertexInputFields, metaColorOutputFields;
         import std.format : format;
         import std.traits : Fields;
 
         RawDataSet res;
 
-        foreach (vbf; metaVertexBufferFields!MS) {
+        foreach (vbf; metaVertexInputFields!MS) {
             foreach (i, va; Fields!(vbf.VertexType)) {
                 // adding the same buffer for each field
                 // offset is handled by VertexAttribDesc
@@ -279,7 +279,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS) {
             }
         }
 
-        foreach (rtf; metaRenderTargetFields!MS) {
+        foreach (rtf; metaColorOutputFields!MS) {
             res.pixelTargets.addColor(mixin(format("dataStruct.%s", rtf.name)));
         }
 

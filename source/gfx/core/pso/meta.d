@@ -20,9 +20,9 @@ struct GfxSlot {
 }
 
 
-struct VertexBuffer(T) {}
+struct VertexInput(T) {}
 
-struct RenderTarget(T) if (isFormatted!T) {}
+struct ColorOutput(T) if (isFormatted!T) {}
 
 
 
@@ -30,10 +30,10 @@ struct RenderTarget(T) if (isFormatted!T) {}
 template InitType(MF) if (isMetaField!MF) {
     import std.traits : Fields;
 
-    static if (is(MF == VertexBuffer!T, T)) {
+    static if (is(MF == VertexInput!T, T)) {
         alias InitType = VertexAttribDesc[(Fields!T).length];
     }
-    else static if (is(MF == RenderTarget!T, T)) {
+    else static if (is(MF == ColorOutput!T, T)) {
         alias InitType = ColorTargetDesc;
     }
     else {
@@ -43,10 +43,10 @@ template InitType(MF) if (isMetaField!MF) {
 
 
 template DataType(MF) if (isMetaField!MF) {
-    static if (is(MF == VertexBuffer!T, T)) {
+    static if (is(MF == VertexInput!T, T)) {
         alias DataType = Rc!(Buffer!T);
     }
-    else static if (is(MF == RenderTarget!T, T)) {
+    else static if (is(MF == ColorOutput!T, T)) {
         alias DataType = Rc!(RenderTargetView!T);
     }
     else {
@@ -56,10 +56,10 @@ template DataType(MF) if (isMetaField!MF) {
 
 
 template isMetaField(MF) {
-    static if (is(MF == VertexBuffer!T, T)) {
+    static if (is(MF == VertexInput!T, T)) {
         enum isMetaField = true;
     }
-    else static if (is(MF == RenderTarget!T, T)) {
+    else static if (is(MF == ColorOutput!T, T)) {
         enum isMetaField = true;
     }
     else {
@@ -75,15 +75,15 @@ template isMetaStruct(M) {
 }
 
 
-template isMetaVertexBufferField(MF) {
-    enum isMetaVertexBufferField = is(MF == VertexBuffer!T, T);
+template isMetaVertexInputField(MF) {
+    enum isMetaVertexInputField = is(MF == VertexInput!T, T);
 }
 
-template MetaVertexBufferField(MS, string f) if (isMetaStruct!MS) {
+template MetaVertexInputField(MS, string f) if (isMetaStruct!MS) {
     alias MF = FieldType!(MS, f);
     enum name = f;
 
-    static if (is(MF == VertexBuffer!T, T)) {
+    static if (is(MF == VertexInput!T, T)) {
         alias VertexType = T;
     }
     else {
@@ -91,18 +91,18 @@ template MetaVertexBufferField(MS, string f) if (isMetaStruct!MS) {
     }
 }
 
-alias metaVertexBufferFields(MS) = metaResolveFields!(MS, isMetaVertexBufferField, MetaVertexBufferField);
+alias metaVertexInputFields(MS) = metaResolveFields!(MS, isMetaVertexInputField, MetaVertexInputField);
 
 
-template isMetaRenderTargetField(MF) {
-    enum isMetaRenderTargetField = is(MF == RenderTarget!T, T);
+template isMetaColorOutputField(MF) {
+    enum isMetaColorOutputField = is(MF == ColorOutput!T, T);
 }
 
-template MetaRenderTargetField(MS, string f) if (isMetaStruct!MS) {
+template MetaColorOutputField(MS, string f) if (isMetaStruct!MS) {
     alias MF = FieldType!(MS, f);
     enum name = f;
 
-    static if (is(MF == RenderTarget!T, T)) {
+    static if (is(MF == ColorOutput!T, T)) {
         alias SurfaceType = T;
     }
     else {
@@ -110,7 +110,7 @@ template MetaRenderTargetField(MS, string f) if (isMetaStruct!MS) {
     }
 }
 
-alias metaRenderTargetFields(MS) = metaResolveFields!(MS, isMetaRenderTargetField, MetaRenderTargetField);
+alias metaColorOutputFields(MS) = metaResolveFields!(MS, isMetaColorOutputField, MetaColorOutputField);
 
 
 template metaResolveFields(MS, alias test, alias FieldTplt) if (isMetaStruct!MS) {
@@ -142,7 +142,7 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
     alias MF = FieldType!(MS, field);
     alias IF = InitType!MF;
 
-    static if (is(MF == VertexBuffer!T, T)) {
+    static if (is(MF == VertexInput!T, T)) {
         alias gfxFields = GfxStructFields!(T);
         string initCode() {
             string res = "[";
@@ -156,7 +156,7 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
         }
         enum InitValue = mixin(initCode());
     }
-    else static if (is(MF == RenderTarget!T, T)) {
+    else static if (is(MF == ColorOutput!T, T)) {
         string initCode() {
             alias Fmt = Formatted!T;
             return format("ColorTargetDesc(\"%s\", %s, " ~
