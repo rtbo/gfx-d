@@ -392,7 +392,7 @@ class GlProgram : ProgramRes {
     ShaderUsageFlags _usage;
 
     this(in bool uboSupport, ShaderRes[] shaders) {
-        import std.algorithm : map, each, fold;
+        import std.algorithm : map, each/+, fold+/;
         import gfx.core.util : unsafeCast;
 
         _uboSupport = uboSupport;
@@ -412,8 +412,11 @@ class GlProgram : ProgramRes {
             warningf("link error of shader program:\n%s", log);
         }
 
-        _usage = shaders.map!(s => s.stage)
-            .fold!((u, s) => u | s.toUsage())(ShaderUsage.None);
+        //_usage = shaders.map!(s => s.stage)
+        //    .fold!((u, s) => u | s.toUsage())(ShaderUsage.None);
+        foreach(sh; shaders) {
+            _usage |= sh.stage.toUsage();
+        }
     }
 
     void drop() {
