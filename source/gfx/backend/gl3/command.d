@@ -164,11 +164,8 @@ class BindPixelTargetsCommand : Command {
             unsafeCast!(GlTargetView)(obj.res).bind(point, attachment);
         }
 
-        foreach(i; 0 .. maxColorTargets) {
-            if (targets.colors[i].loaded) {
-                bindTarget(targets.colors[i].obj, cast(GLenum)(GL_COLOR_ATTACHMENT0+i));
-            }
-            else break;
+        foreach(rtv; targets.colors) {
+            bindTarget(rtv.rtv, GL_COLOR_ATTACHMENT0+rtv.slot);
         }
         if (targets.depth.loaded) {
             bindTarget(targets.depth.obj, GL_DEPTH_ATTACHMENT);
@@ -313,10 +310,8 @@ class GlCommandBuffer : CommandBuffer {
             return !obj ||  obj.builtin;
         }
         immutable isBuiltin =
-                !targets.colors[1].loaded &&
-                !targets.colors[2].loaded &&
-                !targets.colors[3].loaded &&
-                bltin(targets.colors[0].obj) &&
+                targets.colors.length == 1 &&
+                targets.colors[0].rtv.builtin &&
                 bltin(targets.depth.obj) &&
                 bltin(targets.stencil.obj);
         if (isBuiltin) {
@@ -325,12 +320,9 @@ class GlCommandBuffer : CommandBuffer {
         else {
             _commands ~= new BindFramebufferCommand(GL_DRAW_FRAMEBUFFER, _fbo);
             _commands ~= new BindPixelTargetsCommand(targets);
-            ubyte num=0;
-            foreach(i; 0..maxColorTargets) {
-                if (targets.colors[i].loaded) ++num;
-                else break;
-            }
-            immutable ubyte mask = 0x0f && ((1 << num) - 1);
+
+            immutable num=cast(ubyte)targets.colors.length;
+            immutable mask = 0x0f && ((1 << num) - 1);
             _commands ~= new SetDrawColorBuffersCommand(mask);
         }
     }
@@ -342,7 +334,7 @@ class GlCommandBuffer : CommandBuffer {
     void clearColor(RawRenderTargetView view, ClearColor color) {
         // TODO handle targets
         PixelTargetSet targets;
-        targets.colors[0] = view;
+        targets.colors ~= PixelTargetSet.RTV(0, view);
         bindPixelTargets(targets);
         _commands ~= new ClearCommand(some(color), none!float, none!ubyte);
     }

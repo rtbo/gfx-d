@@ -101,13 +101,34 @@ struct VertexBufferSet {
         buf.addRef();
         _buffers ~= buf;
     }
+
+    this(this) {
+        import std.algorithm : each;
+        buffers.each!(b => b.addRef());
+    }
+
+    ~this() {
+        import std.algorithm : each;
+        buffers.each!(b => b.release());
+    }
 }
 
 /// A complete set of render targets to be used for pixel export in PSO.
 struct PixelTargetSet {
 
     /// Array of color target views
-    Rc!RawRenderTargetView[maxColorTargets] colors;
+    struct RTV {
+        ubyte slot;
+        RawRenderTargetView rtv;
+
+        this(ubyte slot, RawRenderTargetView rtv) {
+            rtv.addRef();
+            this.slot = slot;
+            this.rtv = rtv;
+        }
+    }
+    RTV[] colors;
+
     /// Depth target view
     Rc!RawDepthStencilView depth;
     /// Stencil target view
@@ -120,9 +141,10 @@ struct PixelTargetSet {
 
     /// Add a color view to the specified slot
     void addColor(ubyte slot, RawRenderTargetView view, ushort w, ushort h) {
+        import gfx.core.rc : rc;
         import std.algorithm : max;
 
-        colors[slot] = view;
+        colors ~= RTV(slot, view);
         width = max(w, width);
         height = max(h, height);
     }
@@ -140,22 +162,22 @@ struct PixelTargetSet {
         width = max(w, width);
         height = max(h, height);
     }
+
+    this(this) {
+        import std.algorithm : each, map;
+        colors.map!(rtv => rtv.rtv).each!(rtv => rtv.addRef());
+    }
+
+    ~this() {
+        import std.algorithm : each, map;
+        colors.map!(rtv => rtv.rtv).each!(rtv => rtv.release());
+    }
 }
 
 
 struct RawDataSet {
     VertexBufferSet vertexBuffers;
     PixelTargetSet pixelTargets;
-
-    this(this) {
-        import std.algorithm : each;
-        vertexBuffers.buffers.each!(b => b.addRef());
-    }
-
-    ~this() {
-        import std.algorithm : each;
-        vertexBuffers.buffers.each!(b => b.release());
-    }
 }
 
 
