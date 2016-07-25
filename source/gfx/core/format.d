@@ -86,9 +86,9 @@ enum isSurface(T) =
         isDepthSurface!T ||
         isStencilSurface!T;
 
-enum isDepthStencilSurface(T) = isDepthSurface!T || isStencilSurface!T;
+enum isDepthOrStencilSurface(T) = isDepthSurface!T || isStencilSurface!T;
 
-@property bool isDepthStencil(in SurfaceType st) {
+@property bool isDepthOrStencil(in SurfaceType st) {
     return isDepth(st) || isStencil(st);
 }
 
@@ -167,8 +167,8 @@ template hasDepthSurface(Fmt) if (isFormatted!Fmt) {
 template hasStencilSurface(Fmt) if (isFormatted!Fmt) {
     enum hasStencilSurface = isStencilSurface!(Formatted!Fmt.Surface);
 }
-template hasDepthStencilSurface(Fmt) if (isFormatted!Fmt) {
-    enum hasDepthStencilSurface = isDepthStencilSurface!(Formatted!Fmt.Surface);
+template hasDepthOrStencilSurface(Fmt) if (isFormatted!Fmt) {
+    enum hasDepthOrStencilSurface = isDepthOrStencilSurface!(Formatted!Fmt.Surface);
 }
 
 struct Format {

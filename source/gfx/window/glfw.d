@@ -4,7 +4,7 @@ import gfx.backend.gl3 :    GlDevice, createGlDevice;
 import gfx.core :           Device;
 import gfx.core.rc :        RefCounted, Rc, rcCode;
 import gfx.core.format :    isFormatted, Formatted, SurfaceType, ChannelType,
-                            isRender, isDepth, isStencil, isDepthStencil, hasDepthStencilSurface,
+                            isRender, isDepth, isStencil, isDepthOrStencil, hasDepthOrStencilSurface,
                             redBits, greenBits, blueBits, alphaBits, depthBits, stencilBits,
                             hasChannel;
 import gfx.core.surface :   Surface;
@@ -237,7 +237,7 @@ class RawWindow : RefCounted {
     }
 
     private void setupDs(SurfaceType dsSurf) {
-        assert(isDepthStencil(dsSurf));
+        assert(isDepthOrStencil(dsSurf));
         if (dsSurf.isDepth) glfwWindowHint(GLFW_DEPTH_BITS, dsSurf.depthBits);
         if (dsSurf.isStencil) glfwWindowHint(GLFW_STENCIL_BITS, dsSurf.stencilBits);
     }
@@ -396,7 +396,7 @@ class RawWindow : RefCounted {
 }
 
 
-class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthStencilSurface, DepSten)) {
+class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthOrStencilSurface, DepSten)) {
 
     import gfx.core.format : hasRenderSurface;
 

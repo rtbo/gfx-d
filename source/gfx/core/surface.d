@@ -3,7 +3,7 @@ module gfx.core.surface;
 import gfx.core : Device, Resource, ResourceHolder, MaybeBuiltin;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.factory : Factory;
-import gfx.core.format : isFormatted, Formatted, Format, Swizzle, isRenderSurface, isDepthStencilSurface;
+import gfx.core.format : isFormatted, Formatted, Format, Swizzle, isRenderSurface, isDepthOrStencilSurface;
 import gfx.core.view : RenderTargetView, DepthStencilView;
 
 import std.typecons : BitFlags;
@@ -70,7 +70,7 @@ abstract class RawSurface : ResourceHolder, MaybeBuiltin {
 class Surface(T) : RawSurface if (isFormatted!T) {
     alias Fmt = Formatted!T;
 
-    static assert (isRenderSurface!(Fmt.Surface) || isDepthStencilSurface!(Fmt.Surface),
+    static assert (isRenderSurface!(Fmt.Surface) || isDepthOrStencilSurface!(Fmt.Surface),
             "what is this surface for?");
 
     this(ushort width, ushort height, ubyte samples) {
@@ -79,7 +79,7 @@ class Surface(T) : RawSurface if (isFormatted!T) {
         static if (isRenderSurface!(Fmt.Surface)) {
             usage |= SurfaceUsage.RenderTarget;
         }
-        static if (isDepthStencilSurface!(Fmt.Surface)) {
+        static if (isDepthOrStencilSurface!(Fmt.Surface)) {
             usage |= SurfaceUsage.DepthStencil;
         }
         super(usage, width, height, format!T(), samples);
