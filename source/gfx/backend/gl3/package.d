@@ -55,6 +55,8 @@ class GlDevice : Device {
     GlFactory _factory;
     ContextInfo _info;
     Rc!GlBuiltinSurface _builtinSurf;
+    GLuint _fbo;
+    GLuint _vao;
 
     this() {
         _info = ContextInfo.fetch();
@@ -66,9 +68,15 @@ class GlDevice : Device {
         enforce(_info.caps.interfaceQuery, "GL_ARB_program_interface_query is requested by gfx-d");
 
         _factory = new GlFactory(_info.caps);
+
+        glGenFramebuffers(1, &_fbo);
+        glGenVertexArrays(1, &_vao);
+        glBindVertexArray(_vao);
     }
 
     void drop() {
+        glDeleteVertexArrays(1, &_vao);
+        glDeleteFramebuffers(1, &_fbo);
         _builtinSurf.unload();
     }
 
@@ -92,7 +100,7 @@ class GlDevice : Device {
     }
 
     CommandBuffer makeCommandBuffer() {
-        return new GlCommandBuffer();
+        return new GlCommandBuffer(_fbo);
     }
 
     void submit(CommandBuffer buffer) {

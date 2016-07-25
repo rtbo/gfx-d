@@ -236,19 +236,14 @@ class GlCommandBuffer : CommandBuffer {
     mixin(rcCode);
 
     GLuint _fbo;
-    GLuint _vao;
     GlCommandCache _cache;
     Command[] _commands;
 
-    this() {
-        glGenVertexArrays(1, &_vao);
-        glGenFramebuffers(1, &_fbo);
-        glBindVertexArray(_vao);
+    this(GLuint fbo) {
+        _fbo = fbo;
     }
 
     void drop() {
-        glDeleteFramebuffers(1, &_fbo);
-        glDeleteVertexArrays(1, &_vao);
         _cache = GlCommandCache.init;
         import std.algorithm : each;
         _commands.each!(cmd => cmd.unload());
