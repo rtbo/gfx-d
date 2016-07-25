@@ -27,6 +27,15 @@ struct VertexInput(T) {
 struct ColorOutput(T) if (isFormatted!T) {
     alias FormatType = T;
 }
+struct DepthOutput(T) if (isFormatted!T) {
+    alias FormatType = T;
+}
+struct StencilOutput(T) if (isFormatted!T) {
+    alias FormatType = T;
+}
+struct DepthStencilOutput(T) if (isFormatted!T) {
+    alias FormatType = T;
+}
 
 
 
@@ -75,7 +84,6 @@ template isMetaStruct(M) {
 template isMetaVertexInputField(MF) {
     enum isMetaVertexInputField = is(MF == VertexInput!T, T);
 }
-
 template MetaVertexInputField(MS, string f) if (isMetaStruct!MS) {
     alias MF = FieldType!(MS, f);
     static assert(isMetaVertexInputField!MF);
@@ -83,7 +91,6 @@ template MetaVertexInputField(MS, string f) if (isMetaStruct!MS) {
     enum name = f;
     alias VertexType = MF.VertexType;
 }
-
 alias metaVertexInputFields(MS) = metaResolveFields!(MS, isMetaVertexInputField, MetaVertexInputField);
 
 
@@ -91,18 +98,47 @@ alias metaVertexInputFields(MS) = metaResolveFields!(MS, isMetaVertexInputField,
 template isMetaColorOutputField(MF) {
     enum isMetaColorOutputField = is(MF == ColorOutput!T, T);
 }
+alias MetaColorOutputField(MF, string f) = MetaOutputField!(MF, f);
+alias metaColorOutputFields(MS) = metaResolveFields!(MS, isMetaColorOutputField, MetaColorOutputField);
 
-template MetaColorOutputField(MS, string f) if (isMetaStruct!MS) {
+
+
+template isMetaDepthOutputField(MF) {
+    enum isMetaDepthOutputField = is(MF == DepthOutput!T, T);
+}
+alias MetaDepthOutputField(MF, string f) = MetaOutputField!(MF, f);
+alias metaDepthOutputFields(MS) = metaResolveFields!(MS, isMetaDepthOutputField, MetaDepthOutputField);
+
+
+
+template isMetaStencilOutputField(MF) {
+    enum isMetaStencilOutputField = is(MF == StencilOutput!T, T);
+}
+alias MetaStencilOutputField(MF, string f) = MetaOutputField!(MF, f);
+alias metaStencilOutputFields(MS) = metaResolveFields!(MS, isMetaStencilOutputField, MetaStencilOutputField);
+
+
+
+template isMetaDepthStencilOutputField(MF) {
+    enum isMetaDepthStencilOutputField = is(MF == DepthStencilOutput!T, T);
+}
+alias MetaDepthStencilOutputField(MF, string f) = MetaOutputField!(MF, f);
+alias metaDepthStencilOutputFields(MS) =
+            metaResolveFields!(MS, isMetaDepthStencilOutputField, MetaDepthStencilOutputField);
+
+
+
+
+template MetaOutputField(MS, string f) if (isMetaStruct!MS) {
     alias MF = FieldType!(MS, f);
-    static assert(isMetaColorOutputField!MF);
+    static assert(isMetaColorOutputField!MF ||
+                    isMetaDepthOutputField!MF ||
+                    isMetaStencilOutputField!MF ||
+                    isMetaDepthStencilOutputField!MF);
 
     enum name = f;
     alias FormatType = MF.FormatType;
 }
-
-alias metaColorOutputFields(MS) = metaResolveFields!(MS, isMetaColorOutputField, MetaColorOutputField);
-
-
 
 template metaResolveFields(MS, alias test, alias FieldTplt) if (isMetaStruct!MS) {
     import std.traits : Fields, FieldNameTuple;
