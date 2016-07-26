@@ -30,10 +30,38 @@ enum BaseType {
     I32, U32, F32, F64, Bool
 }
 
+enum MatrixOrder {
+    ColumnMajor, RowMajor,
+}
+
 struct VarType {
     BaseType baseType;
-    ubyte dim1;
-    ubyte dim2;
+    ubyte dim1 = 1;
+    ubyte dim2 = 1;
+    MatrixOrder order = MatrixOrder.ColumnMajor;
+
+    // scalar ctor
+    this(in BaseType baseType) {
+        this.baseType = baseType;
+    }
+    // vector ctor
+    this(in BaseType baseType, in ubyte dim) {
+        this.baseType = baseType;
+        this.dim1 = dim;
+    }
+    // matrix ctor
+    this(in BaseType baseType, in ubyte dim1, in ubyte dim2) {
+        this.baseType = baseType;
+        this.dim1 = dim1;
+        this.dim2 = dim2;
+    }
+    // matrix ctor
+    this(in BaseType baseType, in ubyte dim1, in ubyte dim2, in MatrixOrder order) {
+        this.baseType = baseType;
+        this.dim1 = dim1;
+        this.dim2 = dim2;
+        this.order = order;
+    }
 
     @property size_t size() const {
         size_t baseSize() {
@@ -63,6 +91,125 @@ struct VarType {
         return dim1 > 1 && dim2 > 1;
     }
 }
+
+template isVarBaseType(T) {
+    enum isVarBaseType =    is(T == int) ||
+                            is(T == uint) ||
+                            is(T == float) ||
+                            is(T == double) ||
+                            is(T == bool);
+}
+
+// multi purpose template
+private template VarTypeTemplate(T, MatrixOrder order=MatrixOrder.ColumnMajor)
+{
+    template baseType(T) {
+        static if (is(T == int)) {
+            enum baseType = BaseType.I32;
+        }
+        else static if (is(T == uint)) {
+            enum baseType = BaseType.U32;
+        }
+        else static if (is(T == float)) {
+            enum baseType = BaseType.F32;
+        }
+        else static if (is(T == double)) {
+            enum baseType = BaseType.F64;
+        }
+        else static if (is(T == bool)) {
+            enum baseType = BaseType.Bool;
+        }
+    }
+
+    static if (isVarBaseType!T) {
+        enum type = baseType!T;
+        enum dim1 = 1;
+        enum dim2 = 1;
+    }
+    else static if (is(T == U[N], U, ubyte N)) {
+        static if (isVarBaseType!U) {
+            enum type = baseType!U;
+            enum dim1 = N;
+            enum dim2 = 1;
+        }
+        else static if (is(U == V[M], V, ubyte M)) {
+            enum type = baseType!V;
+            enum dim1 = N;
+            enum dim2 = M;
+        }
+        else {
+            static assert(false, "unsupported var type: "~T.stringof);
+        }
+    }
+    else {
+        static assert(false, "unsupported var type: "~T.stringof);
+    }
+    enum matrixOrder = order;
+    enum varType = VarType(type, dim1, dim2, order);
+}
+
+template varBaseType(T) {
+    alias vtt = VarTypeTemplate!T;
+    enum varBaseType = vtt.type;
+}
+
+template isScalarVarType(T) {
+    alias vtt = VarTypeTemplate!T;
+    enum isScalarVarType = vtt.dim1 == 1 && vtt.dim1 == 1;
+}
+
+template isVectorVarType(T) {
+    // should matrices also be vectors? at the moment no.
+    alias vtt = VarTypeTemplate!T;
+    enum isVectorVarType = vtt.dim1 > 1 && vtt.dim2 == 1;
+}
+
+template isMatrixVarType(T) {
+    alias vtt = VarTypeTemplate!T;
+    enum isMatrixVarType = vtt.dim1 > 1 && vtt.dim2 > 1;
+}
+
+template varType(T, MatrixOrder order=MatrixOrder.ColumnMajor) {
+    alias vtt = VarTypeTemplate!(T, order);
+    enum varType = vtt.varType;
+}
+
+template varDim1(T) {
+    alias vtt = VarTypeTemplate!T;
+    enum varDim1 = vtt.dim1;
+}
+
+template varDim2(T) {
+    alias vtt = VarTypeTemplate!T;
+    enum varDim2 = vtt.dim2;
+}
+
+version(unittest) {
+    static assert(varBaseType!int == BaseType.I32);
+    static assert( isScalarVarType!float);
+    static assert(!isVectorVarType!float);
+    static assert(!isMatrixVarType!float);
+
+    static assert(!isScalarVarType!(float[3]));
+    static assert( isVectorVarType!(float[3]));
+    static assert(!isMatrixVarType!(float[3]));
+
+    static assert(!isScalarVarType!(float[3][3]));
+    static assert(!isVectorVarType!(float[3][3]));
+    static assert( isMatrixVarType!(float[3][3]));
+
+    unittest {
+        immutable vt = varType!(int[4]);
+        assert(vt.baseType == BaseType.I32);
+        assert(vt.dim1 == 4);
+        assert(vt.dim2 == 1);
+        assert(!vt.isScalar);
+        assert( vt.isVector);
+        assert(!vt.isMatrix);
+        assert(vt.size == 16);
+    }
+}
+
 
 struct AttributeVar {
     string name;
