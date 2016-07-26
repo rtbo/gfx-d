@@ -33,25 +33,10 @@ struct BufferSliceInfo {
     size_t size;
 }
 
-
 /// determines if T is valid for index buffers
 template isIndexType(T) {
     enum isIndexType = is(T == ushort) || is(T == uint);
 }
-
-
-Buffer!T createVertexBuffer(T)(const(T)[] data) {
-    return new Buffer!T(BufferRole.Vertex, BufferUsage.Const, MapAccess.None, data);
-}
-
-Buffer!T createIndexBuffer(T)(const(T)[] data) if (isIndexType!T) {
-    return new Buffer!T(BufferRole.Index, BufferUsage.Const, MapAccess.None, data);
-}
-
-Buffer!T createConstBuffer(T)(size_t num=1) {
-    return new Buffer!T(BufferRole.Constant, BufferUsage.Dynamic, MapAccess.None, num);
-}
-
 
 
 interface BufferRes : Resource {
@@ -125,6 +110,23 @@ class Buffer(T) : RawPlainBuffer {
     }
 }
 
+class VertexBuffer(T) : Buffer!T {
+    this(const(T)[] data) {
+        super(BufferRole.Vertex, BufferUsage.Const, MapAccess.None, data);
+    }
+}
+
+class IndexBuffer(T) : Buffer!T if (isIndexType!T) {
+    this(const(T)[] data) {
+        super(BufferRole.Index, BufferUsage.Const, MapAccess.None, data);
+    }
+}
+
+class ConstBuffer(T) : Buffer!T {
+    this(size_t num=1) {
+        super(BufferRole.Constant, BufferUsage.Dynamic, MapAccess.None, num);
+    }
+}
 
 class ShaderResourceBuffer(T) : Buffer!T if (isFormatted!T) {
     this(in BufferUsage usage, in MapAccess access, in const(T)[] data) {
@@ -136,3 +138,33 @@ class ShaderResourceBuffer(T) : Buffer!T if (isFormatted!T) {
     }
 }
 
+
+
+
+/// Represents a slice into a vertex buffer. This is how index buffers are to be used
+struct VertexBufferSlice {
+    enum Mode {
+        Auto, U16, U32,
+    }
+    Mode mode;
+    size_t start;
+    size_t end;
+    size_t baseVertex;
+    Rc!RawBuffer buffer;
+
+    this(T)(IndexBuffer!T ibuf) {
+        static if (is(T == ushort)) {
+            mode = Mode.U16;
+        }
+        else static if (is(T == uint)) {
+            mode = Mode.U32;
+        }
+        end = ibuf.count;
+        buffer = ibuf;
+    }
+
+    this(T)(size_t count) {
+        mode = Mode.Auto;
+        end = count;
+    }
+}

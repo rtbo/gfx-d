@@ -4,7 +4,7 @@ import gfx.core : Rect, Primitive;
 import gfx.core.rc : Rc, rc, makeRc;
 import gfx.core.typecons : Option, none, some;
 import gfx.core.format : Rgba8, Depth32F;
-import gfx.core.buffer : createVertexBuffer;
+import gfx.core.buffer : VertexBuffer;
 import gfx.core.program : ShaderSet, Program;
 import gfx.core.pso.meta;
 import gfx.core.pso : PipelineDescriptor, PipelineState, VertexBufferSet;
@@ -28,11 +28,6 @@ struct PipeMeta {
 
 alias PipeState = PipelineState!PipeMeta;
 
-static assert(isMetaStruct!PipeMeta);
-
-alias PipeInit = PipelineInit!PipeMeta;
-alias PipeData = PipelineData!PipeMeta;
-
 
 
 immutable triangle = [
@@ -51,7 +46,7 @@ int main()
     auto window = rc(gfxGlfwWindow!Rgba8("gfx-d - Triangle", 640, 480));
     auto colRtv = rc(window.colorSurface.viewAsRenderTarget());
     {
-        auto vbuf = rc(createVertexBuffer!Vertex(triangle));
+        auto vbuf = makeRc!(VertexBuffer!Vertex)(triangle);
         auto prog = makeRc!Program(ShaderSet.vertexPixel(
             import("130-triangle.v.glsl"),
             import("130-triangle.f.glsl"),
