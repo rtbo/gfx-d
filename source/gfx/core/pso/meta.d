@@ -2,9 +2,9 @@ module gfx.core.pso.meta;
 
 import gfx.core.rc : Rc;
 import gfx.core.format : SurfaceType, ChannelType, Format, Formatted, isFormatted;
-import gfx.core.buffer : Buffer;
+import gfx.core.buffer : VertexBuffer, Buffer, ConstBuffer;
 import gfx.core.view : RenderTargetView;
-import gfx.core.pso : VertexAttribDesc, ColorTargetDesc, StructField, PipelineDescriptor, ColorInfo;
+import gfx.core.pso : VertexAttribDesc, ShaderResourceDesc, ColorTargetDesc, StructField, PipelineDescriptor, ColorInfo;
 import gfx.core.state : ColorFlags, ColorMask;
 
 
@@ -19,11 +19,25 @@ struct GfxSlot {
     ubyte value;
 }
 
-
+// input attributes
 struct VertexInput(T) {
     alias VertexType = T;
 }
 
+// constant blocks
+struct ConstantBlock(T) {
+    alias BlockType = T;
+}
+
+// resources
+struct ShaderResource(T) if (isFormatted!T) {
+    alias FormatType = T;
+}
+struct ShaderSampler(T) if (isFormatted!T) {
+    alias FormatType = T;
+}
+
+// output targets
 struct ColorOutput(T) if (isFormatted!T) {
     alias FormatType = T;
 }
@@ -40,11 +54,18 @@ struct DepthStencilOutput(T) if (isFormatted!T) {
 
 
 
-template InitType(MF) if (isMetaField!MF) {
+template InitType(MF) if (isMetaField!MF)
+{
     import std.traits : Fields;
 
     static if (isMetaVertexInputField!MF) {
         alias InitType = VertexAttribDesc[(Fields!(MF.VertexType)).length];
+    }
+    else static if (isMetaConstantBlockField!MF) {
+        alias InitType = ConstantBlockDesc;
+    }
+    else static if (isMetaShaderResourceField!MF) {
+        alias InitType = ShaderResourceDesc;
     }
     else static if (isMetaColorOutputField!MF) {
         alias InitType = ColorTargetDesc;
@@ -55,9 +76,16 @@ template InitType(MF) if (isMetaField!MF) {
 }
 
 
-template DataType(MF) if (isMetaField!MF) {
+template DataType(MF) if (isMetaField!MF)
+{
     static if (isMetaVertexInputField!MF) {
-        alias DataType = Rc!(Buffer!(MF.VertexType));
+        alias DataType = Rc!(VertexBuffer!(MF.VertexType));
+    }
+    else static if (isMetaConstantBlockField!MF) {
+        alias DataType = Rc!(ConstBuffer!(MF.BlockType));
+    }
+    else static if (isMetaShaderResourceField!MF) {
+        alias DataType = Rc!(ShaderResourceView!(MF.FormatType));
     }
     else static if (isMetaColorOutputField!MF) {
         alias DataType = Rc!(RenderTargetView!(MF.FormatType));
@@ -70,6 +98,8 @@ template DataType(MF) if (isMetaField!MF) {
 
 template isMetaField(MF) {
     enum isMetaField =  isMetaVertexInputField!MF ||
+                        isMetaConstantBlockField!MF ||
+                        isMetaShaderResourceField!MF ||
                         isMetaColorOutputField!MF;
 }
 
@@ -80,6 +110,9 @@ template isMetaStruct(M) {
     enum isMetaStruct = allSatisfy!(isMetaField, Fields!M);
 }
 
+
+
+// input attributes
 
 template isMetaVertexInputField(MF) {
     enum isMetaVertexInputField = is(MF == VertexInput!T, T);
@@ -95,10 +128,43 @@ alias metaVertexInputFields(MS) = metaResolveFields!(MS, isMetaVertexInputField,
 
 
 
+// constant blocks
+
+template isMetaConstantBlockField(MF) {
+    enum isMetaConstantBlockField = is(MF == ConstantBlock!T, T);
+}
+template MetaConstantBlockField(MS, string f) if (isMetaStruct!MS) {
+    alias MF = FieldType!(MS, f);
+    static assert(isMetaConstantBlockField!MF);
+
+    enum name = f;
+    alias BlockType = MF.BlockType;
+}
+alias metaConstantBlockFields(MS) = metaResolveFields!(MS, isMetaConstantBlockField, MetaConstantBlockField);
+
+
+
+// shader resources
+
+template isMetaShaderResourceField(MF) {
+    enum isMetaShaderResourceField = is(MF == ShaderResource!T, T);
+}
+alias MetaShaderResourceField(MS, string f) = MetaFormattedField!(MF, f);
+alias metaShaderResourceFields(MS) = metaResolveFields!(MS, isMetaShaderResourceField, MetaShaderResourceField);
+
+template isMetaShaderSamplerField(MF) {
+    enum isMetaShaderSamplerField = is(MF == ShaderSampler!T, T);
+}
+alias MetaShaderSamplerField(MS, string f) = MetaFormattedField!(MF, f);
+alias metaShaderSamplerFields(MS) = metaResolveFields!(MS, isMetaShaderSamplerField, MetaShaderSamplerField);
+
+
+
+
 template isMetaColorOutputField(MF) {
     enum isMetaColorOutputField = is(MF == ColorOutput!T, T);
 }
-alias MetaColorOutputField(MF, string f) = MetaOutputField!(MF, f);
+alias MetaColorOutputField(MF, string f) = MetaFormattedField!(MF, f);
 alias metaColorOutputFields(MS) = metaResolveFields!(MS, isMetaColorOutputField, MetaColorOutputField);
 
 
@@ -106,7 +172,7 @@ alias metaColorOutputFields(MS) = metaResolveFields!(MS, isMetaColorOutputField,
 template isMetaDepthOutputField(MF) {
     enum isMetaDepthOutputField = is(MF == DepthOutput!T, T);
 }
-alias MetaDepthOutputField(MF, string f) = MetaOutputField!(MF, f);
+alias MetaDepthOutputField(MF, string f) = MetaFormattedField!(MF, f);
 alias metaDepthOutputFields(MS) = metaResolveFields!(MS, isMetaDepthOutputField, MetaDepthOutputField);
 
 
@@ -114,7 +180,7 @@ alias metaDepthOutputFields(MS) = metaResolveFields!(MS, isMetaDepthOutputField,
 template isMetaStencilOutputField(MF) {
     enum isMetaStencilOutputField = is(MF == StencilOutput!T, T);
 }
-alias MetaStencilOutputField(MF, string f) = MetaOutputField!(MF, f);
+alias MetaStencilOutputField(MF, string f) = MetaFormattedField!(MF, f);
 alias metaStencilOutputFields(MS) = metaResolveFields!(MS, isMetaStencilOutputField, MetaStencilOutputField);
 
 
@@ -122,19 +188,22 @@ alias metaStencilOutputFields(MS) = metaResolveFields!(MS, isMetaStencilOutputFi
 template isMetaDepthStencilOutputField(MF) {
     enum isMetaDepthStencilOutputField = is(MF == DepthStencilOutput!T, T);
 }
-alias MetaDepthStencilOutputField(MF, string f) = MetaOutputField!(MF, f);
+alias MetaDepthStencilOutputField(MF, string f) = MetaFormattedField!(MF, f);
 alias metaDepthStencilOutputFields(MS) =
             metaResolveFields!(MS, isMetaDepthStencilOutputField, MetaDepthStencilOutputField);
 
 
 
-
-template MetaOutputField(MS, string f) if (isMetaStruct!MS) {
+template isMetaFormattedField(MF) {
+    enum isMetaFormattedField =     isMetaShaderResourceField!MF ||
+                                    isMetaColorOutputField!MF ||
+                                    isMetaDepthOutputField!MF ||
+                                    isMetaStencilOutputField!MF ||
+                                    isMetaDepthStencilOutputField!MF;
+}
+template MetaFormattedField(MS, string f) if (isMetaStruct!MS) {
     alias MF = FieldType!(MS, f);
-    static assert(isMetaColorOutputField!MF ||
-                    isMetaDepthOutputField!MF ||
-                    isMetaStencilOutputField!MF ||
-                    isMetaDepthStencilOutputField!MF);
+    static assert(isMetaFormattedField!MF);
 
     enum name = f;
     alias FormatType = MF.FormatType;
@@ -181,7 +250,28 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
             }
             return res ~ "]";
         }
-        enum InitValue = mixin(initCode());
+    }
+    else static if (isMetaConstantBlockField!MF) {
+        alias gfxFields = GfxStructFields!(MF.BlockType);
+        string initCode() {
+            string res = "[";
+            foreach (f; gfxFields) {
+                res ~= format("ConstantBlockDesc(\"%s\", %s, " ~
+                            "StructField(Format(SurfaceType.%s, ChannelType.%s), %s, %s, %s, %s)),\n",
+                    f.gfxName, f.gfxSlot, f.Fmt.Surface.surfaceType, f.Fmt.Channel.channelType,
+                    f.offset, f.size, f.alignment, MF.BlockType.sizeof);
+            }
+            return res ~ "]";
+        }
+    }
+    else static if (isMetaShaderResourceField!MF) {
+        string initCode() {
+            alias Fmt = Formatted!(MF.FormatType);
+            return format("ShaderResourceDesc(\"%s\", %s, " ~
+                    "Format(SurfaceType.%s, ChannelType.%s))",
+                    resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
+                    Fmt.Surface.surfaceType, Fmt.Channel.channelType);
+        }
     }
     else static if (isMetaColorOutputField!MF) {
         string initCode() {
@@ -192,8 +282,8 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
                     resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
                     Fmt.Surface.surfaceType, Fmt.Channel.channelType);
         }
-        enum InitValue = mixin(initCode());
     }
+    enum InitValue = mixin(initCode());
 }
 
 

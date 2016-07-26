@@ -13,13 +13,13 @@ module gfx.core.pso;
 
 import gfx.core :   Device, Resource, ResourceHolder, Primitive,
                     maxVertexAttribs, maxColorTargets, AttribMask, ColorTargetMask;
-import gfx.core.rc : Rc, rcCode;
+import gfx.core.rc : Rc, rcCode, RefCounted;
 import gfx.core.typecons : Option, none;
 import gfx.core.state : Rasterizer, ColorMask, ColorFlags, BlendChannel, Blend;
 import gfx.core.format : Format;
 import gfx.core.buffer : RawBuffer;
 import gfx.core.program : Program, VarType, ProgramVars;
-import gfx.core.view : RawRenderTargetView, RawDepthStencilView;
+import gfx.core.view : RawShaderResourceView, RawRenderTargetView, RawDepthStencilView;
 import gfx.core.pso.meta : isMetaStruct;
 
 
@@ -40,6 +40,18 @@ struct VertexAttribDesc {
     ubyte slot;
     StructField field;
     ubyte instanceRate;
+}
+
+struct ConstantBlockDesc {
+    string name;
+    ubyte slot;
+    StructField field;
+}
+
+struct ShaderResourceDesc {
+    string name;
+    ubyte slot;
+    Format format;
 }
 
 
@@ -76,11 +88,19 @@ struct PipelineDescriptor {
     bool scissors;
 
     VertexAttribDesc[] vertexAttribs;
+    ConstantBlockDesc[] constantBlocks;
+    ShaderResourceDesc[] shaderResources;
     ColorTargetDesc[] colorTargets;
 
     @property bool needsToFetchSlots() const {
         foreach(at; vertexAttribs) {
             if (at.slot == ubyte.max) return true;
+        }
+        foreach(cb; constantBlocks) {
+            if (cb.slot == ubyte.max) return true;
+        }
+        foreach(sr; shaderResources) {
+            if (sr.slot == ubyte.max) return true;
         }
         foreach(ct; colorTargets) {
             if (ct.slot == ubyte.max) return true;
@@ -92,26 +112,32 @@ struct PipelineDescriptor {
 
 // data structs
 
-struct VertexBufferSet {
-    private RawBuffer[] _buffers;
+struct ResourceSet(ElemT, string fieldName) if (is(ElemT : RefCounted))
+{
+    import std.format : format;
 
-    @property inout(RawBuffer)[] buffers() inout { return _buffers; }
+    private ElemT[] _elems;
+    mixin(format("@property inout(ElemT)[] %s() inout { return _elems; }", fieldName));
 
-    void addBuf(RawBuffer buf) {
-        buf.addRef();
-        _buffers ~= buf;
+    void add(ElemT elem) {
+        elem.addRef();
+        _elems ~= elem;
     }
 
     this(this) {
         import std.algorithm : each;
-        buffers.each!(b => b.addRef());
+        _elems.each!(e => e.addRef());
     }
-
     ~this() {
         import std.algorithm : each;
-        buffers.each!(b => b.release());
+        _elems.each!(e => e.release());
     }
 }
+
+alias VertexBufferSet = ResourceSet!(RawBuffer, "buffers");
+alias ConstantBlockSet = ResourceSet!(RawBuffer, "blocks");
+alias ShaderResourceSet = ResourceSet!(RawShaderResourceView, "views");
+
 
 /// A complete set of render targets to be used for pixel export in PSO.
 struct PixelTargetSet {
@@ -164,6 +190,8 @@ struct PixelTargetSet {
 
 struct RawDataSet {
     VertexBufferSet vertexBuffers;
+    ConstantBlockSet constantBlocks;
+    ShaderResourceSet shaderResources;
     PixelTargetSet pixelTargets;
 }
 
@@ -222,10 +250,19 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
     }
 
     private void initDescriptor(in Init initStruct) {
-        import gfx.core.pso.meta : metaVertexInputFields, metaColorOutputFields;
+        import gfx.core.pso.meta :  metaVertexInputFields,
+                                    metaConstantBlockFields,
+                                    metaShaderResourceFields,
+                                    metaColorOutputFields;
         import std.format : format;
         foreach (vif; metaVertexInputFields!MS) {
             _descriptor.vertexAttribs ~= mixin(format("initStruct.%s[]", vif.name));
+        }
+        foreach (cbf; metaConstantBlockFields!MS) {
+            _descriptor.constantBlocks ~= mixin(format("initStruct.%s[]", cbf.name));
+        }
+        foreach (srf; metaShaderResourceFields!MS) {
+            _descriptor.shaderResources ~= mixin(format("initStruct.%s", srf.name));
         }
         foreach (cof; metaColorOutputFields!MS) {
             _descriptor.colorTargets ~= mixin(format("initStruct.%s", cof.name));
@@ -249,6 +286,22 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
                 enforce(!var.empty, format("cannot find attribute %s in pipeline", at.name));
                 at.slot = var.front.loc;
             }
+            foreach(ref cb; _descriptor.constantBlocks) {
+                if (cb.slot != ubyte.max) continue;
+                auto var = vars.constBuffers
+                        .find!(b => b.name == cb.name)
+                        .takeOne();
+                enforce(!var.empty, format("cannot find block %s in pipeline", cb.name));
+                cb.slot = var.front.loc;
+            }
+            foreach(ref srv; _descriptor.shaderResources) {
+                if (srv.slot != ubyte.max) continue;
+                auto var = vars.textures
+                        .find!(v => v.name == srv.name)
+                        .takeOne();
+                enforce(!var.empty, format("cannot find texture %s in pipeline", srv.name));
+                srv.slot = var.front.loc;
+            }
             foreach(ref ct; _descriptor.colorTargets) {
                 if (ct.slot != ubyte.max) continue;
                 auto var = vars.outputs
@@ -264,24 +317,33 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
 
 
     RawDataSet makeDataSet(Data dataStruct) {
-        import gfx.core.pso.meta : metaVertexInputFields, metaColorOutputFields;
+        import gfx.core.pso.meta :  metaVertexInputFields,
+                                    metaConstantBlockFields,
+                                    metaShaderResourceFields,
+                                    metaColorOutputFields;
         import std.format : format;
         import std.traits : Fields;
 
         RawDataSet res;
 
+        // each resource is added here in the order that it is declared in the pipeline meta struct
+        // the same order is used in the descriptor and in the init struct
+        // this how link is made between all structs
+
         foreach (vif; metaVertexInputFields!MS) {
             foreach (i, va; Fields!(vif.VertexType)) {
-                // adding the same buffer for each field
-                // offset is handled by VertexAttribDesc
-                // slot information is not given here, also handled by the descriptor
-                // it is important that buffers are kept in the correct order
-                res.vertexBuffers.addBuf(mixin(format("dataStruct.%s", vif.name)));
+                res.vertexBuffers.add(mixin(format("dataStruct.%s", vif.name)));
             }
         }
-
+        foreach (cbf; metaConstantBlockFields!MS) {
+            foreach (i, cb; Fields!(cbf.BlockType)) {
+                res.constantBlocks.add(mixin(format("dataStruct.%s", cbf.name)));
+            }
+        }
+        foreach (srv; metaShaderResourceFields!MS) {
+            res.shaderResources.add(mixin(format("dataStruct.%s", srv.name)));
+        }
         foreach (rtf; metaColorOutputFields!MS) {
-            // same remark than for vertex attribs
             res.pixelTargets.addColor(mixin(format("dataStruct.%s", rtf.name)));
         }
 
