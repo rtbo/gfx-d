@@ -5,7 +5,9 @@ import gfx.core.format : SurfaceType, ChannelType, Format, Formatted, isFormatte
 import gfx.core.program : BaseType, VarType, varBaseType, varDim1, varDim2;
 import gfx.core.buffer : VertexBuffer, Buffer, ConstBuffer;
 import gfx.core.view : RenderTargetView;
-import gfx.core.pso : VertexAttribDesc, ShaderResourceDesc, ColorTargetDesc, StructField, PipelineDescriptor, ColorInfo;
+import gfx.core.pso :   StructField, PipelineDescriptor, ColorInfo,
+                        VertexAttribDesc, ConstantBlockDesc,
+                        ShaderResourceDesc, ColorTargetDesc;
 import gfx.core.state : ColorFlags, ColorMask;
 
 
@@ -253,14 +255,9 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
         }
     }
     else static if (isMetaConstantBlockField!MF) {
-        alias gfxFields = GfxStructFields!(MF.BlockType);
         string initCode() {
-            string res = "[";
-            foreach (f; gfxFields) {
-                res ~= format("ConstantBlockDesc(\"%s\", %s),\n",
-                    f.gfxName, f.gfxSlot);
-            }
-            return res ~ "]";
+            return format("ConstantBlockDesc(\"%s\", %s)",
+                    resolveGfxName!(MS, field), resolveGfxSlot!(MS, field));
         }
     }
     else static if (isMetaShaderResourceField!MF) {

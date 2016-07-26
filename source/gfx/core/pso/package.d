@@ -256,7 +256,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
             _descriptor.vertexAttribs ~= mixin(format("initStruct.%s[]", vif.name));
         }
         foreach (cbf; metaConstantBlockFields!MS) {
-            _descriptor.constantBlocks ~= mixin(format("initStruct.%s[]", cbf.name));
+            _descriptor.constantBlocks ~= mixin(format("initStruct.%s", cbf.name));
         }
         foreach (srf; metaShaderResourceFields!MS) {
             _descriptor.shaderResources ~= mixin(format("initStruct.%s", srf.name));
