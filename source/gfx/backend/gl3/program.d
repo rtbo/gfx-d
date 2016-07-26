@@ -320,6 +320,16 @@ ConstBufferVar[] queryUniformBlocks(GLuint prog, ConstVar[][] blockVars) {
         res[i] = ConstBufferVar(name, cast(ubyte)loc, size, blockVars[i]);
     }
 
+    // check binding points
+    import std.algorithm : map, canFind;
+    if (!res.map!(cbv => cbv.loc).canFind!(loc => loc>1)) {
+        // no binding points set manually, we set them ourselves
+        foreach (GLuint i, ref cbv; res) {
+            glUniformBlockBinding(prog, i, i);
+            cbv.loc = cast(ubyte)i;
+        }
+    }
+
     return res;
 }
 
