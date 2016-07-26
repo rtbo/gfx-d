@@ -2,6 +2,7 @@ module gfx.core.pso.meta;
 
 import gfx.core.rc : Rc;
 import gfx.core.format : SurfaceType, ChannelType, Format, Formatted, isFormatted;
+import gfx.core.program : BaseType, VarType, varBaseType, varDim1, varDim2;
 import gfx.core.buffer : VertexBuffer, Buffer, ConstBuffer;
 import gfx.core.view : RenderTargetView;
 import gfx.core.pso : VertexAttribDesc, ShaderResourceDesc, ColorTargetDesc, StructField, PipelineDescriptor, ColorInfo;
@@ -244,8 +245,8 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
             string res = "[";
             foreach(f; gfxFields) {
                 res ~= format("VertexAttribDesc(\"%s\", %s, " ~
-                            "StructField(Format(SurfaceType.%s, ChannelType.%s), %s, %s, %s, %s), 0),\n",
-                    f.gfxName, f.gfxSlot, f.Fmt.Surface.surfaceType, f.Fmt.Channel.channelType,
+                            "StructField(VarType(BaseType.%s, %s, %s), %s, %s, %s, %s), 0),\n",
+                    f.gfxName, f.gfxSlot, f.vtBaseType, f.vtDim1, f.vtDim2,
                     f.offset, f.size, f.alignment, MF.VertexType.sizeof);
             }
             return res ~ "]";
@@ -256,10 +257,8 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
         string initCode() {
             string res = "[";
             foreach (f; gfxFields) {
-                res ~= format("ConstantBlockDesc(\"%s\", %s, " ~
-                            "StructField(Format(SurfaceType.%s, ChannelType.%s), %s, %s, %s, %s)),\n",
-                    f.gfxName, f.gfxSlot, f.Fmt.Surface.surfaceType, f.Fmt.Channel.channelType,
-                    f.offset, f.size, f.alignment, MF.BlockType.sizeof);
+                res ~= format("ConstantBlockDesc(\"%s\", %s),\n",
+                    f.gfxName, f.gfxSlot);
             }
             return res ~ "]";
         }
@@ -430,7 +429,9 @@ version(unittest) {
 /// template representing a struct field (such as vertex or constant block) at compile time
 template GfxStructField(T, size_t o, string f, string g, ubyte s) {
     alias Field = T;
-    alias Fmt = Formatted!T;
+    enum vtBaseType = varBaseType!T;
+    enum vtDim1 = varDim1!T;
+    enum vtDim2 = varDim2!T;
     enum offset = o;
     enum size = T.sizeof;
     enum alignment = T.alignof;

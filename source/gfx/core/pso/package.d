@@ -23,12 +23,10 @@ import gfx.core.view : RawShaderResourceView, RawRenderTargetView, RawDepthStenc
 import gfx.core.pso.meta : isMetaStruct;
 
 
-
-
 // descriptor structs
 
 struct StructField {
-    Format format;
+    VarType type;
     size_t offset;
     size_t size;
     size_t alignment;
@@ -45,7 +43,6 @@ struct VertexAttribDesc {
 struct ConstantBlockDesc {
     string name;
     ubyte slot;
-    StructField field;
 }
 
 struct ShaderResourceDesc {
