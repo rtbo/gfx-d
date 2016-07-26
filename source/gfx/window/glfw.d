@@ -454,7 +454,7 @@ class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthOrStencilSurfa
 
     static if (DepSten.length == 1) {
 
-        static assert (hasDepthStencilSurface!(DepSten[0]));
+        static assert (hasDepthOrStencilSurface!(DepSten[0]));
 
         private Rc!(Surface!(DepSten[0])) _depthStencilSurface;
 

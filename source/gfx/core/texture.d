@@ -188,19 +188,19 @@ abstract class Texture(TexelF) : RawTexture if (isFormatted!TexelF) {
         updateRaw(slice, cast(ubyte[])texels);
     }
 
-    ShaderResourceView!T viewAsShaderResource(ubyte minLevel, ubyte maxLevel, Swizzle swizzle) {
+    ShaderResourceView!TexelF viewAsShaderResource(ubyte minLevel, ubyte maxLevel, Swizzle swizzle) {
         import gfx.core.view : TextureShaderResourceView;
-        return new TextureShaderResourceView!T(this, minLevel, maxLevel, swizzle);
+        return new TextureShaderResourceView!TexelF(this, minLevel, maxLevel, swizzle);
     }
 
-    RenderTargetView!T viewAsRenderTarget(ubyte level, Option!ubyte layer) {
+    RenderTargetView!TexelF viewAsRenderTarget(ubyte level, Option!ubyte layer) {
         import gfx.core.view : TextureRenderTargetView;
-        return new TextureRenderTargetView!T(this, level, layer);
+        return new TextureRenderTargetView!TexelF(this, level, layer);
     }
 
-    DepthStencilView!T viewAsDepthStencil(ubyte level, Option!ubyte layer, DSVReadOnlyFlags flags) {
+    DepthStencilView!TexelF viewAsDepthStencil(ubyte level, Option!ubyte layer, DSVReadOnlyFlags flags) {
         import gfx.core.view : TextureDepthStencilView;
-        return new TextureDepthStencilView!T(this, level, layer, flags);
+        return new TextureDepthStencilView!TexelF(this, level, layer, flags);
     }
 }
 

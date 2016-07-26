@@ -4,7 +4,7 @@ import gfx.core : Device, Resource, ResourceHolder, MaybeBuiltin;
 import gfx.core.typecons : Option;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.factory : Factory;
-import gfx.core.format : isFormatted, Formatted;
+import gfx.core.format : isFormatted, Formatted, Swizzle;
 import gfx.core.buffer : ShaderResourceBuffer;
 import gfx.core.texture : Texture;
 import gfx.core.surface : Surface;
@@ -33,6 +33,8 @@ abstract class RawShaderResourceView : ResourceHolder {
     mixin(rcCode);
 
     private Rc!ShaderResourceViewRes _res;
+
+    @property inout(ShaderResourceViewRes) res() inout { return _res.obj; }
 
     void drop() {
         _res.unload();
@@ -86,11 +88,11 @@ class TextureShaderResourceView(T) : ShaderResourceView!T if(isFormatted!T) {
     void pinResources(Device device) {
         if(!_tex.pinned) _tex.pinResources(device);
         Factory.TexSRVCreationDesc desc;
-        desc.channel = Fmt.Surface;
+        desc.channel = Fmt.Channel.channelType;
         desc.minLevel = _minLevel;
         desc.maxLevel = _maxLevel;
         desc.swizzle = _swizzle;
-        _tex = device.factory.viewAsShaderResource(_tex, desc);
+        _res = device.factory.makeShaderResourceView(_tex, desc);
     }
 }
 
@@ -131,7 +133,7 @@ class TextureRenderTargetView(T) : RenderTargetView!T {
         desc.channel = Fmt.Channel.channelType;
         desc.level = _level;
         desc.layer = _layer;
-        _res = device.factory.viewAsRenderTarget(_tex.obj, desc);
+        _res = device.factory.makeRenderTargetView(_tex.obj, desc);
     }
 
     void drop() {
