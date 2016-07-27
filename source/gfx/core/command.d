@@ -86,7 +86,7 @@ interface CommandBuffer : RefCounted {
     void clearDepthStencil(RawDepthStencilView, Option!(target.Depth), Option!(target.Stencil));
     +/
     /// Draw a primitive
-    void callDraw(uint start, uint count, Option!Instance);
+    void draw(uint start, uint count, Option!Instance);
     /+/// Draw a primitive with index buffer
     void callDrawIndexed(uint start, uint count, uint base, Option!Instance);
     +/

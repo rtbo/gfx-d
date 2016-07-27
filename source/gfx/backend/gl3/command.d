@@ -381,7 +381,7 @@ class GlCommandBuffer : CommandBuffer {
         _commands ~= new ClearCommand(some(color), none!float, none!ubyte);
     }
 
-    void callDraw(uint start, uint count, Option!Instance) {
+    void draw(uint start, uint count, Option!Instance) {
         // TODO instanced drawings
         assert(_cache.pso.loaded, "must bind pso before draw calls");
         _commands ~= new DrawCommand(primitiveToGl(_cache.pso.primitive), start, count);

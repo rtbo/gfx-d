@@ -85,7 +85,7 @@ int main()
             renderCmdBuf.bindPipelineState(pipe.obj);
             renderCmdBuf.bindVertexBuffers(dataSet.vertexBuffers);
             renderCmdBuf.bindPixelTargets(dataSet.pixelTargets);
-            renderCmdBuf.callDraw(0, cast(uint)vbuf.count, none!Instance);
+            renderCmdBuf.draw(0, cast(uint)vbuf.count, none!Instance);
 
             window.device.submit(renderCmdBuf);
 
