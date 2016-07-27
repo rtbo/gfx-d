@@ -28,10 +28,6 @@ enum MapAccess {
     RW
 }
 
-struct BufferSliceInfo {
-    size_t offset;
-    size_t size;
-}
 
 /// determines if T is valid for index buffers
 template isIndexType(T) {
@@ -41,7 +37,7 @@ template isIndexType(T) {
 
 interface BufferRes : Resource {
     void bind();
-    void update(BufferSliceInfo slice, const(ubyte)[] data);
+    void update(size_t offset, const(ubyte)[] data);
 }
 
 abstract class RawBuffer : ResourceHolder {

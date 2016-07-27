@@ -3,7 +3,7 @@ module gfx.backend.gl3.buffer;
 import gfx.core.rc : rcCode;
 import gfx.core.factory : Factory;
 import gfx.core.program : BaseType;
-import gfx.core.buffer : BufferRes, BufferRole, BufferUsage, BufferSliceInfo;
+import gfx.core.buffer : BufferRes, BufferRole, BufferUsage;
 import gfx.core.pso : VertexAttribDesc;
 
 import derelict.opengl3.gl3;
@@ -75,10 +75,9 @@ class GlBuffer : BufferRes {
     void bind() {
         glBindBuffer(_target, _name);
     }
-    void update(BufferSliceInfo slice, const(ubyte)[] data) {
-        assert(slice.size <= data.length);
-        assert(_size >= slice.offset+slice.size);
-        glBufferSubData(_target, slice.offset, slice.size, cast(const(GLvoid*))data.ptr);
+    void update(size_t offset, const(ubyte)[] data) {
+        assert(_size >= offset+data.length);
+        glBufferSubData(_target, offset, data.length, cast(const(GLvoid*))data.ptr);
     }
 
     @property GLuint name() const { return _name; }

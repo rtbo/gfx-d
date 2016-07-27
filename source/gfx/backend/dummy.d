@@ -4,7 +4,7 @@ import gfx.core : Device;
 import gfx.core.factory : Factory;
 import gfx.core.rc : rcCode;
 import gfx.core.format : Format;
-import gfx.core.buffer : BufferRes, RawBuffer, BufferSliceInfo;
+import gfx.core.buffer : BufferRes, RawBuffer;
 import gfx.core.texture : TextureRes, RawTexture, ImageSliceInfo;
 import gfx.core.surface : SurfaceRes, BuiltinSurfaceRes, RawSurface;
 import gfx.core.program : ShaderRes, ProgramRes, ProgramVars, ShaderStage, Program;
@@ -88,7 +88,7 @@ class DummyBuffer : BufferRes {
     mixin(rcCode);
     void drop() {}
     void bind() {}
-    void update(BufferSliceInfo slice, const(ubyte)[] data) {}
+    void update(size_t buffer, const(ubyte)[] data) {}
 }
 
 class DummyShader : ShaderRes {
