@@ -3,7 +3,9 @@ module gfx.core.command;
 import gfx.core : Rect;
 import gfx.core.rc : RefCounted;
 import gfx.core.typecons : SafeUnion, Option;
-import gfx.core.pso : RawPipelineState, VertexBufferSet, PixelTargetSet;
+import gfx.core.buffer :    RawBuffer, IndexType;
+import gfx.core.pso :   RawPipelineState,
+                        VertexBufferSet, ConstantBlockSet, PixelTargetSet;
 import gfx.core.view : RawRenderTargetView;
 
 import std.traits : isStaticArray;
@@ -49,9 +51,9 @@ interface CommandBuffer : RefCounted {
     void bindPipelineState(RawPipelineState);
     /// Bind a complete set of vertex buffers
     void bindVertexBuffers(VertexBufferSet);
-    /+
     /// Bind a complete set of constant buffers
-    void bindConstantBuffers(ConstantBufferParam[]);
+    void bindConstantBuffers(ConstantBlockSet);
+    /+
     /// Bind a global constant
     void bindGlobalConstant(Location, UniformValue);
     /// Bind a complete set of shader resource views
@@ -64,18 +66,18 @@ interface CommandBuffer : RefCounted {
     /// Bind a complete set of pixel targets, including multiple
     /// colors views and an optional depth/stencil view.
     void bindPixelTargets(PixelTargetSet);
-    /+
     /// Bind an index buffer
     void bindIndex(RawBuffer, IndexType);
-    +/
     void setViewport(Rect r);
     /+
     /// Set scissor rectangle
     void setScissor(target.Rect);
     /// Set reference values for the blending and stencil front/back
     void setRefValues(s.RefValues);
+    +/
     /// Update a vertex/index/uniform buffer
-    void updateBuffer(RawBuffer, ubyte[] data, size_t offset);
+    void updateBuffer(RawBuffer, const(ubyte)[] data, size_t offset);
+    /+
     /// Update a texture
     void updateTexture(RawTexture, tex.Kind, Option!(tex.CubeFace), ubyte[] data, tex.RawImageInfo);
     void generateMipmap(RawShaderResourceView);
@@ -87,8 +89,7 @@ interface CommandBuffer : RefCounted {
     +/
     /// Draw a primitive
     void draw(uint start, uint count, Option!Instance);
-    /+/// Draw a primitive with index buffer
-    void callDrawIndexed(uint start, uint count, uint base, Option!Instance);
-    +/
+    // Draw a primitive with index buffer
+    void drawIndexed(uint start, uint count, uint base, Option!Instance);
 }
 

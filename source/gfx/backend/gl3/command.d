@@ -10,8 +10,10 @@ import gfx.core.typecons : Option, some, none;
 import gfx.core.command : CommandBuffer, ClearColor, Instance;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.program : Program;
-import gfx.core.buffer : RawBuffer;
-import gfx.core.pso : RawPipelineState, VertexBufferSet, PixelTargetSet, VertexAttribDesc;
+import gfx.core.buffer : RawBuffer, IndexType;
+import gfx.core.pso :   RawPipelineState,
+                        VertexBufferSet, ConstantBlockSet, PixelTargetSet,
+                        VertexAttribDesc, ConstantBlockDesc;
 import gfx.core.state : Rasterizer, Stencil, CullFace;
 import gfx.core.view : RawRenderTargetView;
 import gfx.core.format : ChannelType, SurfaceType;
@@ -133,6 +135,34 @@ class BindAttributeCommand : Command {
         if (!buf.pinned) buf.pinResources(device);
         if (!pso.pinned) pso.pinResources(device);
         unsafeCast!GlVertexBuffer(buf.res).bindWithAttrib(pso.vertexAttribs[attribIndex], device.caps.instanceRate);
+        unload();
+    }
+
+    final void unload() {
+        buf.unload();
+        pso.unload();
+    }
+}
+
+class BindConstantBufferCommand : Command {
+    Rc!RawBuffer buf;
+    Rc!RawPipelineState pso;
+    size_t blockIndex;
+
+    this(RawBuffer buf, RawPipelineState pso, size_t blockIndex) {
+        this.buf = buf;
+        this.pso = pso;
+        this.blockIndex = blockIndex;
+    }
+
+    final void execute(GlDevice device) {
+        import gfx.core.util : unsafeCast;
+        assert(buf.loaded);
+        assert(pso.loaded);
+        if (!buf.pinned) buf.pinResources(device);
+        if (!pso.pinned) pso.pinResources(device);
+        immutable bufName = unsafeCast!GlBuffer(buf.res).name;
+        glBindBufferBase(GL_UNIFORM_BUFFER, pso.constantBlocks[blockIndex].slot, bufName);
 
         unload();
     }
@@ -230,6 +260,48 @@ class BindFramebufferCommand : Command {
 }
 
 
+class BindBufferCommand : Command {
+    Rc!RawBuffer buf;
+
+    this(RawBuffer buf) {
+        this.buf = buf;
+    }
+
+    final void execute(GlDevice device) {
+        assert(buf.loaded);
+        if (!buf.pinned) buf.pinResources(device);
+
+        buf.res.bind();
+
+        unload();
+    }
+
+    final void unload() {
+        buf.unload();
+    }
+}
+
+class UpdateBufferCommand : Command {
+    Rc!RawBuffer buf;
+    const(ubyte)[] data;
+    size_t offset;
+
+    this(RawBuffer buf, const(ubyte)[] data, size_t offset) {
+        this.buf = buf; this.data = data; this.offset = offset;
+    }
+
+    final void execute(GlDevice device) {
+        assert(buf.loaded);
+        if (!buf.pinned) buf.pinResources(device);
+        buf.res.update(offset, data);
+        unload();
+    }
+
+    final void unload() {
+        buf.unload();
+    }
+}
+
 class ClearCommand : Command {
     Option!ClearColor color;
     Option!float depth;
@@ -283,17 +355,36 @@ class DrawCommand : Command {
         this.primitive = primitive; this.start = start; this.count = count;
     }
 
-    void execute(GlDevice device) {
+    final void execute(GlDevice device) {
         glDrawArrays(primitive, start, count);
     }
 
-    void unload() {}
+    final void unload() {}
 }
 
+class DrawIndexedCommand : Command {
+    GLenum primitive;
+    GLsizei count;
+    GLenum indexType;
+    size_t offset;
+
+    this(GLenum primitive, GLsizei count, GLenum indexType, size_t offset) {
+        this.primitive = primitive;
+        this.count = count;
+        this.indexType = indexType;
+        this.offset = offset;
+    }
+
+    final void execute(GlDevice device) {
+        glDrawElements(primitive, count, indexType, cast(GLvoid*)offset);
+    }
+    final void unload() {}
+}
 
 
 struct GlCommandCache {
     Rc!RawPipelineState pso;
+    IndexType indexType;
 }
 
 
@@ -334,6 +425,13 @@ class GlCommandBuffer : CommandBuffer {
         }
     }
 
+    void bindConstantBuffers(ConstantBlockSet set) {
+        assert(_cache.pso.loaded, "must bind pso before constant blocks");
+        foreach (i; 0 .. set.blocks.length) {
+            _commands ~= new BindConstantBufferCommand(set.blocks[i], _cache.pso.obj, i);
+        }
+    }
+
     void bindPixelTargets(PixelTargetSet targets) {
         import gfx.core : MaybeBuiltin;
 
@@ -371,8 +469,18 @@ class GlCommandBuffer : CommandBuffer {
         }
     }
 
+    void bindIndex(RawBuffer buf, IndexType ind) {
+        assert(ind != IndexType.None);
+        _cache.indexType = ind;
+        _commands ~= new BindBufferCommand(buf);
+    }
+
     void setViewport(Rect r) {
         _commands ~= new SetViewportCommand(r);
+    }
+
+    void updateBuffer(RawBuffer buffer, const(ubyte)[] data, size_t offset) {
+        _commands ~= new UpdateBufferCommand(buffer, data, offset);
     }
 
     void clearColor(RawRenderTargetView view, ClearColor color) {
@@ -385,5 +493,25 @@ class GlCommandBuffer : CommandBuffer {
         // TODO instanced drawings
         assert(_cache.pso.loaded, "must bind pso before draw calls");
         _commands ~= new DrawCommand(primitiveToGl(_cache.pso.primitive), start, count);
+    }
+
+    void drawIndexed(uint start, uint count, uint base, Option!Instance) {
+        // TODO instanced drawings
+        assert(_cache.pso.loaded, "must bind pso before draw calls");
+        assert(_cache.indexType != IndexType.None, "must bind index before indexed draw calls");
+        GLenum index;
+        size_t offset;
+        switch(_cache.indexType) {
+            case IndexType.U16:
+                index = GL_UNSIGNED_SHORT;
+                offset = start*2;
+                break;
+            case IndexType.U32:
+                index = GL_UNSIGNED_INT;
+                offset = start*4;
+                break;
+            default: assert(false);
+        }
+        _commands ~= new DrawIndexedCommand(primitiveToGl(_cache.pso.primitive), count, index, offset);
     }
 }

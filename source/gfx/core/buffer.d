@@ -135,14 +135,13 @@ class ShaderResourceBuffer(T) : Buffer!T if (isFormatted!T) {
 }
 
 
-
+enum IndexType {
+    None, U16, U32,
+}
 
 /// Represents a slice into a vertex buffer. This is how index buffers are to be used
 struct VertexBufferSlice {
-    enum Mode {
-        Auto, U16, U32,
-    }
-    Mode mode;
+    IndexType type;
     size_t start;
     size_t end;
     size_t baseVertex;
@@ -150,17 +149,17 @@ struct VertexBufferSlice {
 
     this(T)(IndexBuffer!T ibuf) {
         static if (is(T == ushort)) {
-            mode = Mode.U16;
+            type = IndexType.U16;
         }
         else static if (is(T == uint)) {
-            mode = Mode.U32;
+            type = IndexType.U32;
         }
         end = ibuf.count;
         buffer = ibuf;
     }
 
     this(T)(size_t count) {
-        mode = Mode.Auto;
+        mode = IndexType.None;
         end = count;
     }
 }

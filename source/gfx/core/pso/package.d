@@ -219,6 +219,7 @@ abstract class RawPipelineState : ResourceHolder {
     @property Rasterizer rasterizer() const { return _descriptor.rasterizer; }
     @property bool scissors() const { return _descriptor.scissors; }
     @property inout(VertexAttribDesc)[] vertexAttribs() inout { return _descriptor.vertexAttribs; }
+    @property inout(ConstantBlockDesc)[] constantBlocks() inout { return _descriptor.constantBlocks; }
     @property inout(ColorTargetDesc)[] colorTargets() inout { return _descriptor.colorTargets; }
 
     void drop() {
@@ -333,9 +334,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
             }
         }
         foreach (cbf; metaConstantBlockFields!MS) {
-            foreach (i, cb; Fields!(cbf.BlockType)) {
-                res.constantBlocks.add(mixin(format("dataStruct.%s", cbf.name)));
-            }
+            res.constantBlocks.add(mixin(format("dataStruct.%s", cbf.name)));
         }
         foreach (srv; metaShaderResourceFields!MS) {
             res.shaderResources.add(mixin(format("dataStruct.%s", srv.name)));
