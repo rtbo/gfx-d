@@ -112,30 +112,18 @@ enum StencilOp {
 /// Complete stencil state for a given side of a face.
 struct StencilSide {
     /// Comparison function to use to determine if the stencil test passes.
-    Comparison fun;
+    Comparison fun          = Comparison.Always;
     /// A mask that is ANDd with both the stencil buffer value and the reference value when they
     /// are read before doing the stencil test.
-    ubyte maskRead;
+    ubyte maskRead          = ubyte.max;
     /// A mask that is ANDd with the stencil value before writing to the stencil buffer.
-    ubyte maskWrite;
+    ubyte maskWrite         = ubyte.max;
     /// What operation to do if the stencil test fails.
-    StencilOp opFail;
+    StencilOp opFail        = StencilOp.Keep;
     /// What operation to do if the stenil test passes but the depth test fails.
-    StencilOp opDepthFail;
+    StencilOp opDepthFail   = StencilOp.Keep;
     /// What operation to do if both the depth and stencil test pass.
-    StencilOp opPass;
-
-
-    static StencilSide makeDefault() {
-        return StencilSide(
-            Comparison.Always,
-            ubyte.max,
-            ubyte.max,
-            StencilOp.Keep,
-            StencilOp.Keep,
-            StencilOp.Keep,
-        );
-    }
+    StencilOp opPass        = StencilOp.Keep;
 }
 
 
@@ -143,13 +131,6 @@ struct StencilSide {
 struct Stencil {
     StencilSide front;
     StencilSide back;
-
-    static Stencil makeDefault() {
-        auto def = StencilSide.makeDefault();
-        return Stencil(
-            def, def
-        );
-    }
 
     this(StencilSide front, StencilSide back) {
         this.front = front;
@@ -166,13 +147,12 @@ struct Stencil {
 /// Depth test state.
 struct Depth {
     /// Comparison function to use.
-    Comparison fun;
+    Comparison fun = Comparison.Always;
     /// Specify whether to write to the depth buffer or not.
-    bool write;
+    bool write = false;
 
-    static Depth makeDefault() {
-        return Depth(Comparison.Always, false);
-    }
+    enum lessEqualWrite = Depth(Comparison.LessEqual, true);
+    enum lessEqualTest = Depth(Comparison.LessEqual, false);
 }
 
 enum Equation {
@@ -251,24 +231,16 @@ alias ColorMask = BitFlags!(ColorFlags, Yes.unsafe);
 /// The state of an active color render target
 struct Color {
     /// Color mask to use.
-    ColorMask mask;
+    ColorMask mask      = cast(ColorMask)ColorFlags.All;
     /// Optional blending.
-    Option!Blend blend;
-
-    static Color makeDefault() {
-        return Color(cast(ColorMask)ColorFlags.All, none!Blend);
-    }
+    Option!Blend blend  = none!Blend;
 }
 
 /// The complete set of the rasterizer reference values.
 /// Switching these doesn't roll the hardware context.
 struct RefValues {
     /// Stencil front and back values.
-    ubyte[2] stencil;
+    ubyte[2] stencil    = [0, 0];
     /// Constant blend color.
-    float[4] blend;
-
-    RefValues makeDefault() {
-        return RefValues([0, 0], [0, 0, 0, 0]);
-    }
+    float[4] blend      = [0, 0, 0, 0];
 }

@@ -30,7 +30,10 @@ class GlPipelineState : PipelineStateRes {
 
         _input = descriptor.vertexAttribs;
 
-        // TODO fill in depth and stencil
+        if (descriptor.depthStencil.isSome) {
+            _output.depth = descriptor.depthStencil.depth;
+            _output.stencil = descriptor.depthStencil.stencil;
+        }
         foreach(ct; descriptor.colorTargets) {
             _output.mask |= 1 << ct.slot;
             _output.colors[ct.slot].mask = ct.info.mask;

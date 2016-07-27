@@ -14,13 +14,14 @@ module gfx.core.pso;
 import gfx.core :   Device, Resource, ResourceHolder, Primitive,
                     maxVertexAttribs, maxColorTargets, AttribMask, ColorTargetMask;
 import gfx.core.rc : Rc, rcCode, RefCounted;
-import gfx.core.typecons : Option, none;
+import gfx.core.typecons : Option, none, some;
 import gfx.core.state : Rasterizer, ColorMask, ColorFlags, BlendChannel, Blend;
-import gfx.core.format : Format;
+import gfx.core.format : Format, SurfaceType, Formatted;
 import gfx.core.buffer : RawBuffer;
 import gfx.core.program : Program, VarType, ProgramVars;
 import gfx.core.view : RawShaderResourceView, RawRenderTargetView, RawDepthStencilView;
 import gfx.core.pso.meta : isMetaStruct;
+import s = gfx.core.state;
 
 
 // descriptor structs
@@ -78,16 +79,38 @@ struct ColorTargetDesc {
     ColorInfo info;
 }
 
+struct DepthStencilDesc {
+    SurfaceType surface;
+
+    Option!(s.Depth) depth;
+    Option!(s.Stencil) stencil;
+
+    this(SurfaceType surface, s.Depth depth) {
+        this.surface = surface;
+        this.depth = some(depth);
+    }
+    this(SurfaceType surface, s.Stencil stencil) {
+        this.surface = surface;
+        this.stencil = some(stencil);
+    }
+    this(SurfaceType surface, s.Depth depth, s.Stencil stencil) {
+        this.surface = surface;
+        this.depth = some(depth);
+        this.stencil = some(stencil);
+    }
+}
+
 
 struct PipelineDescriptor {
-    Primitive primitive;
-    Rasterizer rasterizer;
-    bool scissors;
+    Primitive   primitive;
+    Rasterizer  rasterizer;
+    bool        scissors;
 
-    VertexAttribDesc[] vertexAttribs;
-    ConstantBlockDesc[] constantBlocks;
-    ShaderResourceDesc[] shaderResources;
-    ColorTargetDesc[] colorTargets;
+    VertexAttribDesc[]      vertexAttribs;
+    ConstantBlockDesc[]     constantBlocks;
+    ShaderResourceDesc[]    shaderResources;
+    ColorTargetDesc[]       colorTargets;
+    Option!DepthStencilDesc depthStencil;
 
     @property bool needsToFetchSlots() const {
         foreach(at; vertexAttribs) {
@@ -161,18 +184,6 @@ struct PixelTargetSet {
         colors ~= view;
     }
 
-    /// Add a depth or stencil view to the specified slot
-    void addDepthStencil(RawDepthStencilView view, bool hasDepth, bool hasStencil) {
-        import std.algorithm : max;
-
-        if(hasDepth) {
-            depth = view;
-        }
-        if(hasStencil) {
-            stencil = view;
-        }
-    }
-
     this(this) {
         import std.algorithm : each;
         colors.each!(rtv => rtv.addRef());
@@ -215,6 +226,7 @@ abstract class RawPipelineState : ResourceHolder {
 
     @property inout(Program) program() inout { return _prog.obj; }
 
+    @property inout(PipelineDescriptor) descriptor() inout { return _descriptor; }
     @property Primitive primitive() const { return _descriptor.primitive; }
     @property Rasterizer rasterizer() const { return _descriptor.rasterizer; }
     @property bool scissors() const { return _descriptor.scissors; }
@@ -251,7 +263,10 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
         import gfx.core.pso.meta :  metaVertexInputFields,
                                     metaConstantBlockFields,
                                     metaShaderResourceFields,
-                                    metaColorOutputFields;
+                                    metaColorOutputFields,
+                                    metaDepthOutputFields,
+                                    metaStencilOutputFields,
+                                    metaDepthStencilOutputFields;
         import std.format : format;
         foreach (vif; metaVertexInputFields!MS) {
             _descriptor.vertexAttribs ~= mixin(format("initStruct.%s[]", vif.name));
@@ -264,6 +279,17 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
         }
         foreach (cof; metaColorOutputFields!MS) {
             _descriptor.colorTargets ~= mixin(format("initStruct.%s", cof.name));
+        }
+        enum numDS = metaDepthOutputFields!MS.length +
+                    metaStencilOutputFields!MS.length +
+                    metaDepthStencilOutputFields!MS.length;
+        static assert(numDS == 0 || numDS == 1,
+                MS.stringof~" has too many depth-stencil targets (should be one at most)");
+        foreach(dof; metaDepthOutputFields!MS) {
+            alias Fmt = Formatted!(dof.FormatType);
+            _descriptor.depthStencil = some(DepthStencilDesc(
+                        Fmt.Surface.surfaceType,
+                        mixin(format("initStruct.%s", dof.name))));
         }
     }
 
@@ -318,7 +344,10 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
         import gfx.core.pso.meta :  metaVertexInputFields,
                                     metaConstantBlockFields,
                                     metaShaderResourceFields,
-                                    metaColorOutputFields;
+                                    metaColorOutputFields,
+                                    metaDepthOutputFields,
+                                    metaStencilOutputFields,
+                                    metaDepthStencilOutputFields;
         import std.format : format;
         import std.traits : Fields;
 
@@ -342,7 +371,16 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
         foreach (rtf; metaColorOutputFields!MS) {
             res.pixelTargets.addColor(mixin(format("dataStruct.%s", rtf.name)));
         }
-
+        foreach (dof; metaDepthOutputFields!MS) {
+            res.pixelTargets.depth = mixin(format("dataStruct.%s", dof.name));
+        }
+        foreach (sof; metaStencilOutputFields!MS) {
+            res.pixelTargets.stencil = mixin(format("dataStruct.%s", sof.name));
+        }
+        foreach (dsof; metaDepthStencilOutputFields!MS) {
+            res.pixelTargets.depth = mixin(format("dataStruct.%s", dsof.name));
+            res.pixelTargets.stencil = mixin(format("dataStruct.%s", dsof.name));
+        }
         return res;
     }
 

@@ -6,7 +6,7 @@ import gfx.core.typecons : SafeUnion, Option;
 import gfx.core.buffer :    RawBuffer, IndexType;
 import gfx.core.pso :   RawPipelineState,
                         VertexBufferSet, ConstantBlockSet, PixelTargetSet;
-import gfx.core.view : RawRenderTargetView;
+import gfx.core.view : RawRenderTargetView, RawDepthStencilView;
 
 import std.traits : isStaticArray;
 
@@ -84,9 +84,8 @@ interface CommandBuffer : RefCounted {
     +/
     /// Clear color target
     void clearColor(RawRenderTargetView, ClearColor);
-    /+
-    void clearDepthStencil(RawDepthStencilView, Option!(target.Depth), Option!(target.Stencil));
-    +/
+    /// Clear depth-stencil targets
+    void clearDepthStencil(RawDepthStencilView, Option!float, Option!ubyte);
     /// Draw a primitive
     void draw(uint start, uint count, Option!Instance);
     // Draw a primitive with index buffer

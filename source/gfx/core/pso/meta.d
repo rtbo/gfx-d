@@ -4,11 +4,11 @@ import gfx.core.rc : Rc;
 import gfx.core.format : SurfaceType, ChannelType, Format, Formatted, isFormatted;
 import gfx.core.program : BaseType, VarType, varBaseType, varDim1, varDim2;
 import gfx.core.buffer : VertexBuffer, Buffer, ConstBuffer;
-import gfx.core.view : RenderTargetView;
+import gfx.core.view : RenderTargetView, DepthStencilView;
 import gfx.core.pso :   StructField, PipelineDescriptor, ColorInfo,
                         VertexAttribDesc, ConstantBlockDesc,
                         ShaderResourceDesc, ColorTargetDesc;
-import gfx.core.state : ColorFlags, ColorMask;
+import gfx.core.state : ColorFlags, ColorMask, Depth;
 
 
 
@@ -20,6 +20,11 @@ struct GfxName {
 /// UDA struct to associate slots of shader symbols at compile time
 struct GfxSlot {
     ubyte value;
+}
+
+/// UDA struct to associate depth state to depth targets at compile time
+struct GfxDepth {
+    Depth value;
 }
 
 // input attributes
@@ -73,6 +78,9 @@ template InitType(MF) if (isMetaField!MF)
     else static if (isMetaColorOutputField!MF) {
         alias InitType = ColorTargetDesc;
     }
+    else static if (isMetaDepthOutputField!MF) {
+        alias InitType = Depth;
+    }
     else {
         static assert(false, "Unsupported pipeline meta type: "~MF.stringof);
     }
@@ -93,6 +101,9 @@ template DataType(MF) if (isMetaField!MF)
     else static if (isMetaColorOutputField!MF) {
         alias DataType = Rc!(RenderTargetView!(MF.FormatType));
     }
+    else static if (isMetaDepthOutputField!MF) {
+        alias DataType = Rc!(DepthStencilView!(MF.FormatType));
+    }
     else {
         static assert(false, "Unsupported pipeline meta type: "~MF.stringof);
     }
@@ -103,7 +114,8 @@ template isMetaField(MF) {
     enum isMetaField =  isMetaVertexInputField!MF ||
                         isMetaConstantBlockField!MF ||
                         isMetaShaderResourceField!MF ||
-                        isMetaColorOutputField!MF;
+                        isMetaColorOutputField!MF ||
+                        isMetaDepthOutputField!MF;
 }
 
 template isMetaStruct(M) {
@@ -253,12 +265,14 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
             }
             return res ~ "]";
         }
+        enum InitValue = mixin(initCode());
     }
     else static if (isMetaConstantBlockField!MF) {
         string initCode() {
             return format("ConstantBlockDesc(\"%s\", %s)",
                     resolveGfxName!(MS, field), resolveGfxSlot!(MS, field));
         }
+        enum InitValue = mixin(initCode());
     }
     else static if (isMetaShaderResourceField!MF) {
         string initCode() {
@@ -268,6 +282,7 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
                     resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
                     Fmt.Surface.surfaceType, Fmt.Channel.channelType);
         }
+        enum InitValue = mixin(initCode());
     }
     else static if (isMetaColorOutputField!MF) {
         string initCode() {
@@ -278,8 +293,11 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
                     resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
                     Fmt.Surface.surfaceType, Fmt.Channel.channelType);
         }
+        enum InitValue = mixin(initCode());
     }
-    enum InitValue = mixin(initCode());
+    else static if (isMetaDepthOutputField!MF) {
+        enum InitValue = resolveUDAValue!(GfxDepth, MS, field, Depth, Depth.init);
+    }
 }
 
 
