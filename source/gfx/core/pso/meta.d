@@ -4,7 +4,7 @@ import gfx.core.rc : Rc;
 import gfx.core.format : SurfaceType, ChannelType, Format, Formatted, isFormatted;
 import gfx.core.program : BaseType, VarType, varBaseType, varDim1, varDim2;
 import gfx.core.buffer : VertexBuffer, Buffer, ConstBuffer;
-import gfx.core.view : RenderTargetView, DepthStencilView;
+import gfx.core.view : RenderTargetView, DepthStencilView, ShaderResourceView;
 import gfx.core.pso :   StructField, PipelineDescriptor, ColorInfo,
                         VertexAttribDesc, ConstantBlockDesc,
                         ShaderResourceDesc, ColorTargetDesc;
@@ -164,7 +164,7 @@ alias metaConstantBlockFields(MS) = metaResolveFields!(MS, isMetaConstantBlockFi
 template isMetaShaderResourceField(MF) {
     enum isMetaShaderResourceField = is(MF == ShaderResource!T, T);
 }
-alias MetaShaderResourceField(MS, string f) = MetaFormattedField!(MF, f);
+alias MetaShaderResourceField(MS, string f) = MetaFormattedField!(MS, f);
 alias metaShaderResourceFields(MS) = metaResolveFields!(MS, isMetaShaderResourceField, MetaShaderResourceField);
 
 template isMetaShaderSamplerField(MF) {
@@ -248,14 +248,14 @@ template metaResolveFields(MS, alias test, alias FieldTplt) if (isMetaStruct!MS)
 
 
 template InitValue(MS, string field) if (isMetaStruct!MS) {
-    import std.format : format;
 
     alias MF = FieldType!(MS, field);
     alias IF = InitType!MF;
 
     static if (isMetaVertexInputField!MF) {
-        alias gfxFields = GfxStructFields!(MF.VertexType);
         string initCode() {
+            import std.format : format;
+            alias gfxFields = GfxStructFields!(MF.VertexType);
             string res = "[";
             foreach(f; gfxFields) {
                 res ~= format("VertexAttribDesc(\"%s\", %s, " ~
@@ -268,32 +268,20 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
         enum InitValue = mixin(initCode());
     }
     else static if (isMetaConstantBlockField!MF) {
-        string initCode() {
-            return format("ConstantBlockDesc(\"%s\", %s)",
-                    resolveGfxName!(MS, field), resolveGfxSlot!(MS, field));
-        }
-        enum InitValue = mixin(initCode());
+        enum InitValue = ConstantBlockDesc(resolveGfxName!(MS, field), resolveGfxSlot!(MS, field));
     }
     else static if (isMetaShaderResourceField!MF) {
-        string initCode() {
-            alias Fmt = Formatted!(MF.FormatType);
-            return format("ShaderResourceDesc(\"%s\", %s, " ~
-                    "Format(SurfaceType.%s, ChannelType.%s))",
-                    resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
-                    Fmt.Surface.surfaceType, Fmt.Channel.channelType);
-        }
-        enum InitValue = mixin(initCode());
+        import gfx.core.format : format;
+        enum InitValue = ShaderResourceDesc(
+            resolveGfxName!(MS, field), resolveGfxSlot!(MS, field), format!(MF.FormatType)
+        );
     }
     else static if (isMetaColorOutputField!MF) {
-        string initCode() {
-            alias Fmt = Formatted!(MF.FormatType);
-            return format("ColorTargetDesc(\"%s\", %s, " ~
-                    "Format(SurfaceType.%s, ChannelType.%s), " ~
-                    "ColorInfo.from(cast(ColorMask)ColorFlags.All))",
-                    resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
-                    Fmt.Surface.surfaceType, Fmt.Channel.channelType);
-        }
-        enum InitValue = mixin(initCode());
+        import gfx.core.format : format;
+        enum InitValue = ColorTargetDesc(
+            resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
+            format!(MF.FormatType), ColorInfo.from(cast(ColorMask)ColorFlags.All)
+        );
     }
     else static if (isMetaDepthOutputField!MF) {
         enum InitValue = resolveUDAValue!(GfxDepth, MS, field, Depth, Depth.init);
