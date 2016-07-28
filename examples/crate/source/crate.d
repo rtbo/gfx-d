@@ -11,9 +11,10 @@ import gfx.core.command : clearColor, Instance;
 import s = gfx.core.state : Rasterizer;
 import gfx.core.pso.meta;
 import gfx.core.pso : PipelineState;
+import gfx.core.encoder : Encoder;
 import gfx.window.glfw : gfxGlfwWindow;
 
-import gl3n.linalg : mat4, mat3, vec3, vec4, dot;
+import gl3n.linalg : mat4, mat3, vec3;
 import derelict.opengl3.gl3;
 
 import std.stdio : writeln;
@@ -157,28 +158,22 @@ void main()
     ));
 
     auto renderCmdBuf = rc(window.device.makeCommandBuffer());
+    auto encoder = Encoder(renderCmdBuf);
 
     auto view = mat4.look_at(vec3(2, -5, 3), vec3(0, 0, 0), vec3(0, 0, 1));
     auto proj = mat4.perspective(640, 480, 45, 1, 10);
-    auto mvpMat = proj*view;
-    auto normalMat = mat3(view);
     auto matrices = Matrices(
-        mvpMat.transposed().matrix,
-        normalMat.transposed().matrix
+        (proj*view).transposed().matrix,
+        mat3(view).transposed().matrix
     );
-    auto mp = cast(const(ubyte)*)&matrices;
-    auto ms = mp[0 .. Matrices.sizeof];
 
     auto numLights = NumLights(2);
-    auto nlp = cast(const(ubyte)*)&numLights;
-    auto nls = nlp[0 .. NumLights.sizeof];
 
     auto lights = [
         Light([1.0, 0.0, 0.0, 0.0],    [0.8, 0.4, 0.4, 1.0]),
         Light([-1.0, 0.0, 0.0, 0.0],    [0.4, 0.4, 0.8, 1.0]),
     ];
-    auto lip = cast(const(ubyte)*)lights.ptr;
-    auto lis = lip[0 .. Light.sizeof*lights.length];
+
 
     // will quit on any key hit (as well as on close by 'x' click)
     window.onKey = (int, int, int, int) {
@@ -195,9 +190,9 @@ void main()
     /* Loop until the user closes the window */
     while (!window.shouldClose) {
 
-        renderCmdBuf.updateBuffer(matBlk, ms, 0);
-        renderCmdBuf.updateBuffer(nlBlk, nls, 0);
-        renderCmdBuf.updateBuffer(ligBlk, lis, 0);
+        encoder.updateConstBuffer(matBlk, matrices);
+        encoder.updateConstBuffer(nlBlk, numLights);
+        encoder.updateConstBuffer(ligBlk, lights);
         renderCmdBuf.clearColor(colRtv.obj, clearColor(backColor));
         renderCmdBuf.clearDepthStencil(dsv, some(1.0f), none!ubyte);
         renderCmdBuf.bindPipelineState(pipe.obj);
