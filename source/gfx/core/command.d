@@ -4,8 +4,8 @@ import gfx.core : Rect;
 import gfx.core.rc : RefCounted;
 import gfx.core.typecons : SafeUnion, Option;
 import gfx.core.buffer :    RawBuffer, IndexType;
-import gfx.core.pso :   RawPipelineState,
-                        VertexBufferSet, ConstantBlockSet, PixelTargetSet;
+import gfx.core.pso :   RawPipelineState, VertexBufferSet, ConstantBlockSet,
+                        ShaderResourceSet, PixelTargetSet;
 import gfx.core.view : RawRenderTargetView, RawDepthStencilView;
 
 import std.traits : isStaticArray;
@@ -56,8 +56,10 @@ interface CommandBuffer : RefCounted {
     /+
     /// Bind a global constant
     void bindGlobalConstant(Location, UniformValue);
+    +/
     /// Bind a complete set of shader resource views
-    void bindResourceViews(ResourceViewParam[]);
+    void bindResourceViews(ShaderResourceSet);
+    /+
     /// Bind a complete set of unordered access views
     void bindUnorderedViews(UnorderedViewParam[]);
     /// Bind a complete set of samplers

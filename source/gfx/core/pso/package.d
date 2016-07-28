@@ -226,13 +226,14 @@ abstract class RawPipelineState : ResourceHolder {
 
     @property inout(Program) program() inout { return _prog.obj; }
 
-    @property inout(PipelineDescriptor) descriptor() inout { return _descriptor; }
+    @property const(PipelineDescriptor) descriptor() const { return _descriptor; }
     @property Primitive primitive() const { return _descriptor.primitive; }
     @property Rasterizer rasterizer() const { return _descriptor.rasterizer; }
     @property bool scissors() const { return _descriptor.scissors; }
-    @property inout(VertexAttribDesc)[] vertexAttribs() inout { return _descriptor.vertexAttribs; }
-    @property inout(ConstantBlockDesc)[] constantBlocks() inout { return _descriptor.constantBlocks; }
-    @property inout(ColorTargetDesc)[] colorTargets() inout { return _descriptor.colorTargets; }
+    @property const(VertexAttribDesc)[] vertexAttribs() const { return _descriptor.vertexAttribs; }
+    @property const(ShaderResourceDesc)[] shaderResources() const { return _descriptor.shaderResources; }
+    @property const(ConstantBlockDesc)[] constantBlocks() const { return _descriptor.constantBlocks; }
+    @property const(ColorTargetDesc)[] colorTargets() const { return _descriptor.colorTargets; }
 
     void drop() {
         _prog.unload();

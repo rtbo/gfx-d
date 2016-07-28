@@ -37,6 +37,10 @@ class GlBufferShaderResourceView : ShaderResourceViewRes {
         _buf.unload();
         glDeleteBuffers(1, &_texName);
     }
+
+    final void bind() {
+        glBindTexture(GL_TEXTURE_BUFFER, _texName);
+    }
 }
 
 class GlTextureShaderResourceView : ShaderResourceViewRes {
@@ -52,6 +56,10 @@ class GlTextureShaderResourceView : ShaderResourceViewRes {
 
     void drop() {
         _tex.unload();
+    }
+
+    final void bind() {
+        _tex.bind();
     }
 }
 

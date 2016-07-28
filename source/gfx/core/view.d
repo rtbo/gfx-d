@@ -21,7 +21,9 @@ alias DSVReadOnlyFlags = BitFlags!DSVReadOnly;
 
 
 
-interface ShaderResourceViewRes : Resource {}
+interface ShaderResourceViewRes : Resource {
+    void bind();
+}
 
 interface RenderTargetViewRes : Resource {}
 

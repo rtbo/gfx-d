@@ -11,11 +11,11 @@ import gfx.core.command : CommandBuffer, ClearColor, Instance;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.program : Program;
 import gfx.core.buffer : RawBuffer, IndexType;
-import gfx.core.pso :   RawPipelineState,
-                        VertexBufferSet, ConstantBlockSet, PixelTargetSet,
+import gfx.core.pso :   RawPipelineState, VertexBufferSet, ConstantBlockSet,
+                        ShaderResourceSet, PixelTargetSet,
                         VertexAttribDesc, ConstantBlockDesc;
 import gfx.core.state : Rasterizer, CullFace;
-import gfx.core.view : RawRenderTargetView, RawDepthStencilView;
+import gfx.core.view : RawShaderResourceView, RawRenderTargetView, RawDepthStencilView;
 import gfx.core.format : ChannelType, SurfaceType;
 import gfx.core.state : Comparison, Depth, Stencil;
 
@@ -210,6 +210,31 @@ class BindConstantBufferCommand : Command {
     final void unload() {
         buf.unload();
         pso.unload();
+    }
+}
+
+
+class BindResourceViewsCommand : Command {
+    Rc!RawPipelineState pso;
+    ShaderResourceSet set;
+
+    this(RawPipelineState pso, ShaderResourceSet set) {
+        this.pso = pso; this.set = set;
+    }
+
+    final void execute(GlDevice device) {
+        assert(pso.loaded);
+        if (!pso.pinned) pso.pinResources(device);
+        foreach(i, srv; set.views) {
+            if (!srv.pinned) srv.pinResources(device);
+            glActiveTexture(cast(GLenum)(GL_TEXTURE0+pso.shaderResources[i].slot));
+            srv.res.bind();
+        }
+        unload();
+    }
+    final void unload() {
+        pso.unload();
+        set = ShaderResourceSet.init;
     }
 }
 
@@ -464,6 +489,11 @@ class GlCommandBuffer : CommandBuffer {
         foreach (i; 0 .. set.blocks.length) {
             _commands ~= new BindConstantBufferCommand(set.blocks[i], _cache.pso.obj, i);
         }
+    }
+
+    void bindResourceViews(ShaderResourceSet set) {
+        assert(_cache.pso.loaded, "must bind pso before resource views");
+        _commands ~= new BindResourceViewsCommand(_cache.pso, set);
     }
 
     void bindPixelTargets(PixelTargetSet targets) {
