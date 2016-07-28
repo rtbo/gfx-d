@@ -357,6 +357,19 @@ class RawWindow : RefCounted {
     }
 
 
+    @property ushort width() const {
+        int width, h;
+        glfwGetFramebufferSize(cast(GLFWwindow*)_window, &width, &h);
+        return cast(ushort)width;
+    }
+
+    @property ushort height() const {
+        int w, height;
+        glfwGetFramebufferSize(cast(GLFWwindow*)_window, &w, &height);
+        return cast(ushort)height;
+    }
+
+
     @property bool shouldClose() const nothrow {
         return cast(bool)glfwWindowShouldClose(cast(GLFWwindow*)_window);
     }
