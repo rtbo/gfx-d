@@ -11,6 +11,7 @@
 		"derelict-glfw3" : "3.1.0"
 	},
 	"subPackages": [
-		"./examples/triangle"
+		"./examples/triangle",
+		"./examples/crate"
 	]
 }
