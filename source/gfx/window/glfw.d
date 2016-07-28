@@ -205,18 +205,6 @@ class RawWindow : RefCounted {
         setupWindow(title, width, height);
     }
 
-    /// constructor with a depth and a stencil buffer
-    this(string title, ushort width, ushort height, ubyte samples,
-            SurfaceType colorSurf, SurfaceType dsSurf1, SurfaceType dsSurf2)
-    {
-        /// TODO: assert depth xor stencil
-        setupGlContext();
-        setupColor(colorSurf);
-        setupDs(dsSurf1); setupDs(dsSurf2);
-        setupMisc(samples);
-        setupWindow(title, width, height);
-    }
-
     private void setupGlContext() {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -238,8 +226,8 @@ class RawWindow : RefCounted {
 
     private void setupDs(SurfaceType dsSurf) {
         assert(isDepthOrStencil(dsSurf));
-        if (dsSurf.isDepth) glfwWindowHint(GLFW_DEPTH_BITS, dsSurf.depthBits);
-        if (dsSurf.isStencil) glfwWindowHint(GLFW_STENCIL_BITS, dsSurf.stencilBits);
+        glfwWindowHint(GLFW_DEPTH_BITS, dsSurf.depthBits);
+        glfwWindowHint(GLFW_STENCIL_BITS, dsSurf.stencilBits);
     }
 
     private void setupMisc(ubyte samples) {
@@ -412,11 +400,6 @@ class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthOrStencilSurfa
             immutable dsF = format!(DepSten[0]);
             super(title, width, height, samples, colF.surface, dsF.surface);
         }
-        else static if (DepSten.length == 2) {
-            immutable dsF1 = format!(DepSten[0]);
-            immutable dsF2 = format!(DepSten[1]);
-            super(title, width, height, samples, colF.surface, dsF1.surface, dsF2.surface);
-        }
         else {
             static assert(false, "supplied to many buffer configurations");
         }
@@ -424,10 +407,6 @@ class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthOrStencilSurfa
         _colorSurface = new BuiltinSurface!Col(device.builtinSurface, width, height, samples);
         static if (DepSten.length == 1) {
             _depthStencilSurface = new BuiltinSurface!(DepSten[0])(device.builtinSurface, width, height, samples);
-        }
-        static if (DepSten.length == 2) {
-            _depthSurface = new BuiltinSurface!(DepSten[0])(device.builtinSurface, width, height, samples);
-            _stencilSurface = new BuiltinSurface!(DepSten[1])(device.builtinSurface, width, height, samples);
         }
     }
 
@@ -463,22 +442,6 @@ class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthOrStencilSurfa
         }
 
     }
-    else static if (DepSten.length == 2) {
-
-        static assert (isDepthSurface!(DepSten[0]));
-        static assert (isStencilSurface!(DepSten[1]));
-
-        private Rc!(Surface!(DepSten[0])) _depthSurface;
-        private Rc!(Surface!(DepSten[1])) _stencilSurface;
-
-        public @property Surface!(DepSten[0]) depthSurface() {
-            return _depthSurface.obj;
-        }
-        public @property Surface!(DepSten[1]) stencilSurface() {
-            return _stencilSurface.obj;
-        }
-    }
-
 
 }
 
