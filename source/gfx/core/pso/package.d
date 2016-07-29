@@ -358,7 +358,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
     }
 
 
-    RawDataSet makeDataSet(Data dataStruct) {
+    final RawDataSet makeDataSet(Data dataStruct) {
         import gfx.core.pso.meta :  metaVertexInputFields,
                                     metaConstantBlockFields,
                                     metaResourceViewFields,
