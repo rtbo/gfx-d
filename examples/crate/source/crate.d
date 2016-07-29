@@ -6,7 +6,7 @@ import gfx.core.typecons : none, some;
 import gfx.core.format : Rgba8, Depth, newSwizzle;
 import gfx.core.buffer : VertexBuffer, IndexBuffer, VertexBufferSlice, ConstBuffer;
 import gfx.core.program : Program, ShaderSet;
-import gfx.core.texture : Texture2D;
+import gfx.core.texture : Texture2D, Sampler, FilterMethod, WrapMode;
 import gfx.core.command : clearColor, Instance;
 import s = gfx.core.state : Rasterizer;
 import gfx.core.pso.meta;
@@ -54,13 +54,16 @@ struct CratePipeMeta {
     ConstantBlock!Light     lights;
 
     @GfxName("t_Sampler")
-    ResourceView!Rgba8    texture;
+    ResourceView!Rgba8      texture;
+
+    @GfxName("t_Sampler")
+    ResourceSampler         sampler;
 
     @GfxName("o_Color")
     ColorOutput!Rgba8       outColor;
 
     @GfxDepth(s.Depth.lessEqualWrite)
-    DepthOutput!Depth        outDepth;
+    DepthOutput!Depth       outDepth;
 }
 
 alias CratePipeline = PipelineState!CratePipeMeta;
@@ -137,13 +140,14 @@ Texture2D!Rgba8 loadTexture() {
 
 void main()
 {
-	auto window = rc(gfxGlfwWindow!(Rgba8, Depth)("gfx-d - Crate example", 640, 480));
+	auto window = rc(gfxGlfwWindow!(Rgba8, Depth)("gfx-d - Crate example", 640, 480, 4));
     auto colRtv = rc(window.colorSurface.viewAsRenderTarget());
     auto dsv = rc(window.depthStencilSurface.viewAsDepthStencil());
 
     auto vbuf = makeRc!(VertexBuffer!Vertex)(crate);
     auto slice = VertexBufferSlice(new IndexBuffer!ushort(crateIndices));
     auto srv = rc(loadTexture().viewAsShaderResource(0, 0, newSwizzle()));
+    auto sampler = makeRc!Sampler(srv, FilterMethod.Anisotropic, WrapMode.init);
 
     auto matBlk = makeRc!(ConstBuffer!Matrices)(1);
     auto nlBlk = makeRc!(ConstBuffer!NumLights)(1);
@@ -154,7 +158,7 @@ void main()
     ));
     auto pipe = makeRc!CratePipeline(prog.obj, Primitive.Triangles, Rasterizer.newFill());
     auto dataSet = pipe.makeDataSet(CratePipeline.Data(
-        vbuf, matBlk, nlBlk, ligBlk, srv, colRtv, dsv
+        vbuf, matBlk, nlBlk, ligBlk, srv, sampler, colRtv, dsv
     ));
 
     auto renderCmdBuf = rc(window.device.makeCommandBuffer());
@@ -166,14 +170,11 @@ void main()
         (proj*view).transposed().matrix,
         mat3(view).transposed().matrix
     );
-
     auto numLights = NumLights(2);
-
     auto lights = [
         Light([1.0, 0.0, 0.0, 0.0],    [0.8, 0.4, 0.4, 1.0]),
         Light([-1.0, 0.0, 0.0, 0.0],    [0.4, 0.4, 0.8, 1.0]),
     ];
-
 
     // will quit on any key hit (as well as on close by 'x' click)
     window.onKey = (int, int, int, int) {
@@ -200,6 +201,7 @@ void main()
         renderCmdBuf.bindVertexBuffers(dataSet.vertexBuffers);
         renderCmdBuf.bindConstantBuffers(dataSet.constantBlocks);
         renderCmdBuf.bindResourceViews(dataSet.resourceViews);
+        renderCmdBuf.bindSamplers(dataSet.samplers);
         renderCmdBuf.drawIndexed(cast(uint)slice.start, cast(uint)slice.end, 0, none!Instance);
         window.device.submit(renderCmdBuf);
 
