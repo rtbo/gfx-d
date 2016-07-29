@@ -18,7 +18,11 @@ alias ClearColor = SafeUnion!(
     "Uint",  uint[4],
 );
 
-ClearColor clearColor(T)(in T[4] col) {
+template isClearColorCompType(T) {
+    enum isClearColorCompType = is(T == float) || is(T == int) || is(T == uint);
+}
+
+ClearColor clearColor(T)(in T[4] col) if (isClearColorCompType!T) {
     static if (is(T == float)) {
         return ClearColor.makeFloat(col);
     }
@@ -28,10 +32,20 @@ ClearColor clearColor(T)(in T[4] col) {
     else static if (is(T == uint)) {
         return ClearColor.makeUint(col);
     }
-    else {
-        static assert(false, T.stringof ~ " is not a valid clear color type");
-    }
 }
+
+ClearColor clearColor(T)(in T[3] col) if (isClearColorCompType!T) {
+    return clearColor([col[0], col[1], col[2], T(0)]);
+}
+
+ClearColor clearColor(T)(in T[2] col) if (isClearColorCompType!T) {
+    return clearColor([col[0], col[1], T(0), T(0)]);
+}
+
+ClearColor clearColor(T)(in T col) if (isClearColorCompType!T) {
+    return clearColor([col, T(0), T(0), T(0)]);
+}
+
 
 
 struct Instance {
@@ -70,6 +84,7 @@ interface CommandBuffer : RefCounted {
     void bindPixelTargets(PixelTargetSet);
     /// Bind an index buffer
     void bindIndex(RawBuffer, IndexType);
+    /// Set viewport rect
     void setViewport(Rect r);
     /+
     /// Set scissor rectangle
