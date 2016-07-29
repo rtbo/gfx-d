@@ -1,11 +1,13 @@
 module gfx.backend.gl3.texture;
 
 import gfx.backend.gl3.buffer : GlBuffer;
+import gfx.backend.gl3.view : GlShaderResourceView;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.format : Format, SurfaceType, ChannelType;
 import gfx.core.texture;
 import gfx.core.surface : SurfaceRes, BuiltinSurfaceRes;
 import gfx.core.buffer : RawBuffer;
+import gfx.core.view : ShaderResourceViewRes;
 import gfx.core.factory : Factory;
 import gfx.core.error;
 
@@ -14,6 +16,118 @@ import derelict.opengl3.gl3;
 
 import std.typecons : Tuple, Flag;
 import std.experimental.logger;
+
+
+GLenum[2] filterToGl(FilterMethod filter) {
+    final switch (filter) {                     // minification                 // magnification
+        case FilterMethod.Scale:        return [ GL_NEAREST,                    GL_NEAREST];
+        case FilterMethod.Mipmap:       return [ GL_NEAREST_MIPMAP_NEAREST,     GL_NEAREST];
+        case FilterMethod.Bilinear:     return [ GL_LINEAR_MIPMAP_NEAREST,      GL_LINEAR];
+        case FilterMethod.Trilinear:    return [ GL_LINEAR_MIPMAP_LINEAR,       GL_LINEAR];
+        case FilterMethod.Anisotropic:  return [ GL_LINEAR_MIPMAP_LINEAR,       GL_LINEAR];
+    }
+}
+
+GLenum wrapToGl(WrapMode wrap) {
+    final switch (wrap) {
+        case WrapMode.Tile:     return GL_REPEAT;
+        case WrapMode.Mirror:   return GL_MIRRORED_REPEAT;
+        case WrapMode.Clamp:    return GL_CLAMP_TO_EDGE;
+        case WrapMode.Border:   return GL_CLAMP_TO_BORDER;
+    }
+}
+
+
+abstract class GlSampler : SamplerRes {
+    mixin (rcCode);
+
+    abstract void bind(ubyte slot);
+}
+
+
+class GlSamplerWithObj : GlSampler {
+    GLuint _sampler;
+
+    this(ShaderResourceViewRes, SamplerInfo info) {
+        glGenSamplers(1, &_sampler);
+
+        if (info.filter == FilterMethod.Anisotropic) {
+            glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, info.anisotropyMax);
+        }
+        immutable filter = filterToGl(info.filter);
+        glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, filter[0]);
+        glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, filter[1]);
+
+        glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, wrapToGl(info.wrapMode[0]));
+        glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, wrapToGl(info.wrapMode[1]));
+        glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_R, wrapToGl(info.wrapMode[2]));
+        immutable border = cast(float[4])info.border;
+        glSamplerParameterfv(_sampler, GL_TEXTURE_BORDER_COLOR, &border[0]);
+
+        glSamplerParameterf(_sampler, GL_TEXTURE_LOD_BIAS, cast(float)info.lodBias);
+        glSamplerParameterf(_sampler, GL_TEXTURE_MIN_LOD, cast(float)info.lodRange[0]);
+        glSamplerParameterf(_sampler, GL_TEXTURE_MAX_LOD, cast(float)info.lodRange[1]);
+
+        if (info.comparison.isSome) {
+            import gfx.backend.gl3.command : comparisonToGl;
+            glSamplerParameteri(_sampler, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+            glSamplerParameteri(_sampler, GL_TEXTURE_COMPARE_FUNC, comparisonToGl(info.comparison));
+        }
+        else {
+            glSamplerParameteri(_sampler, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+        }
+    }
+
+    void drop() {
+        glDeleteSamplers(1, &_sampler);
+    }
+
+    override void bind(ubyte slot) {
+        glBindSampler(slot, _sampler);
+    }
+}
+
+
+class GlSamplerWithoutObj : GlSampler {
+    SamplerInfo _info;
+    GLenum _target;
+
+    this(ShaderResourceViewRes srv, SamplerInfo info) {
+        import gfx.core.util : unsafeCast;
+        _info = info;
+        _target = unsafeCast!GlShaderResourceView(srv).target;
+    }
+    void drop() {}
+    override void bind(ubyte) {
+        if (_info.filter == FilterMethod.Anisotropic) {
+            glTexParameteri(_target, GL_TEXTURE_MAX_ANISOTROPY_EXT, _info.anisotropyMax);
+        }
+        immutable filter = filterToGl(_info.filter);
+        glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, filter[0]);
+        glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, filter[1]);
+
+        glTexParameteri(_target, GL_TEXTURE_WRAP_S, wrapToGl(_info.wrapMode[0]));
+        glTexParameteri(_target, GL_TEXTURE_WRAP_T, wrapToGl(_info.wrapMode[1]));
+        glTexParameteri(_target, GL_TEXTURE_WRAP_R, wrapToGl(_info.wrapMode[2]));
+        //immutable border = cast(float[4])_info.border;
+        //glTexParameterfv(_target, GL_TEXTURE_BORDER_COLOR, &border[0]);
+
+        //glTexParameterf(_target, GL_TEXTURE_LOD_BIAS, cast(float)_info.lodBias);
+        glTexParameterf(_target, GL_TEXTURE_MIN_LOD, cast(float)_info.lodRange[0]);
+        glTexParameterf(_target, GL_TEXTURE_MAX_LOD, cast(float)_info.lodRange[1]);
+
+        if (_info.comparison.isSome) {
+            import gfx.backend.gl3.command : comparisonToGl;
+            glTexParameteri(_target, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+            glTexParameteri(_target, GL_TEXTURE_COMPARE_FUNC, comparisonToGl(_info.comparison));
+        }
+        else {
+            glTexParameteri(_target, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+        }
+    }
+}
+
+
 
 
 package TextureRes makeTextureImpl(in bool hasStorage, Factory.TextureCreationDesc desc, const(ubyte)[][] data) {
@@ -182,6 +296,7 @@ abstract class GlTexture : TextureRes {
     }
 
     @property GLuint name() const { return _name; }
+    @property GLenum target() const { return _target; }
 }
 
 

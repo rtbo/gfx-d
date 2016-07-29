@@ -5,7 +5,7 @@ import gfx.core.factory : Factory;
 import gfx.core.rc : rcCode;
 import gfx.core.format : Format;
 import gfx.core.buffer : BufferRes, RawBuffer;
-import gfx.core.texture : TextureRes, RawTexture, ImageSliceInfo;
+import gfx.core.texture : TextureRes, RawTexture, ImageSliceInfo, SamplerRes, SamplerInfo;
 import gfx.core.surface : SurfaceRes, BuiltinSurfaceRes, RawSurface;
 import gfx.core.program : ShaderRes, ProgramRes, ProgramVars, ShaderStage, Program;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes;
@@ -41,7 +41,10 @@ class DummyFactory : Factory {
     TextureRes makeTexture(TextureCreationDesc, const(ubyte)[][]) {
         return new DummyTexture();
     }
-    SurfaceRes makeSurface(SurfaceCreationDesc desc) {
+    SamplerRes makeSampler(ShaderResourceViewRes, SamplerInfo) {
+        return null;
+    }
+    SurfaceRes makeSurface(SurfaceCreationDesc) {
         return null;
     }
     BufferRes makeBuffer(BufferCreationDesc, const(ubyte)[]) {

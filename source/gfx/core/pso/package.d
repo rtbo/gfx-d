@@ -18,6 +18,7 @@ import gfx.core.typecons : Option, none, some;
 import gfx.core.state : Rasterizer, ColorMask, ColorFlags, BlendChannel, Blend;
 import gfx.core.format : Format, SurfaceType, Formatted;
 import gfx.core.buffer : RawBuffer;
+import gfx.core.texture : Sampler;
 import gfx.core.program : Program, VarType, ProgramVars;
 import gfx.core.view : RawShaderResourceView, RawRenderTargetView, RawDepthStencilView;
 import gfx.core.pso.meta : isMetaStruct;
@@ -50,6 +51,11 @@ struct ResourceViewDesc {
     string name;
     ubyte slot;
     Format format;
+}
+
+struct SamplerDesc {
+    string name;
+    ubyte slot;
 }
 
 
@@ -109,6 +115,7 @@ struct PipelineDescriptor {
     VertexAttribDesc[]      vertexAttribs;
     ConstantBlockDesc[]     constantBlocks;
     ResourceViewDesc[]      resourceViews;
+    SamplerDesc[]           samplers;
     ColorTargetDesc[]       colorTargets;
     Option!DepthStencilDesc depthStencil;
 
@@ -119,8 +126,11 @@ struct PipelineDescriptor {
         foreach(cb; constantBlocks) {
             if (cb.slot == ubyte.max) return true;
         }
-        foreach(sr; resourceViews) {
-            if (sr.slot == ubyte.max) return true;
+        foreach(rv; resourceViews) {
+            if (rv.slot == ubyte.max) return true;
+        }
+        foreach(s; samplers) {
+            if (s.slot == ubyte.max) return true;
         }
         foreach(ct; colorTargets) {
             if (ct.slot == ubyte.max) return true;
@@ -157,6 +167,7 @@ struct ResourceSet(ElemT, string fieldName) if (is(ElemT : RefCounted))
 alias VertexBufferSet = ResourceSet!(RawBuffer, "buffers");
 alias ConstantBlockSet = ResourceSet!(RawBuffer, "blocks");
 alias ResourceViewSet = ResourceSet!(RawShaderResourceView, "views");
+alias SamplerSet = ResourceSet!(Sampler, "samplers");
 
 
 /// A complete set of render targets to be used for pixel export in PSO.
@@ -200,6 +211,7 @@ struct RawDataSet {
     VertexBufferSet vertexBuffers;
     ConstantBlockSet constantBlocks;
     ResourceViewSet resourceViews;
+    SamplerSet samplers;
     PixelTargetSet pixelTargets;
 }
 
@@ -257,6 +269,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
         import gfx.core.pso.meta :  metaVertexInputFields,
                                     metaConstantBlockFields,
                                     metaResourceViewFields,
+                                    metaResourceSamplerFields,
                                     metaColorOutputFields,
                                     metaDepthOutputFields,
                                     metaStencilOutputFields,
@@ -268,8 +281,11 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
         foreach (cbf; metaConstantBlockFields!MS) {
             _descriptor.constantBlocks ~= mixin(format("initStruct.%s", cbf.name));
         }
-        foreach (srf; metaResourceViewFields!MS) {
-            _descriptor.resourceViews ~= mixin(format("initStruct.%s", srf.name));
+        foreach (rvf; metaResourceViewFields!MS) {
+            _descriptor.resourceViews ~= mixin(format("initStruct.%s", rvf.name));
+        }
+        foreach (rsf; metaResourceSamplerFields!MS) {
+            _descriptor.samplers ~= mixin(format("initStruct.%s", rsf.name));
         }
         foreach (cof; metaColorOutputFields!MS) {
             _descriptor.colorTargets ~= mixin(format("initStruct.%s", cof.name));
@@ -320,6 +336,14 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
                 enforce(!var.empty, format("cannot find texture %s in pipeline", srv.name));
                 srv.slot = var.front.loc;
             }
+            foreach(ref sampler; _descriptor.samplers) {
+                if (sampler.slot != ubyte.max) continue;
+                auto var = vars.samplers
+                        .find!(v => v.name == sampler.name)
+                        .takeOne();
+                enforce(!var.empty, format("cannot find sampler %s in pipeline", sampler.name));
+                sampler.slot = var.front.slot;
+            }
             foreach(ref ct; _descriptor.colorTargets) {
                 if (ct.slot != ubyte.max) continue;
                 auto var = vars.outputs
@@ -338,6 +362,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
         import gfx.core.pso.meta :  metaVertexInputFields,
                                     metaConstantBlockFields,
                                     metaResourceViewFields,
+                                    metaResourceSamplerFields,
                                     metaColorOutputFields,
                                     metaDepthOutputFields,
                                     metaStencilOutputFields,
@@ -359,8 +384,11 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
         foreach (cbf; metaConstantBlockFields!MS) {
             res.constantBlocks.add(mixin(format("dataStruct.%s", cbf.name)));
         }
-        foreach (srv; metaResourceViewFields!MS) {
-            res.resourceViews.add(mixin(format("dataStruct.%s", srv.name)));
+        foreach (rvf; metaResourceViewFields!MS) {
+            res.resourceViews.add(mixin(format("dataStruct.%s", rvf.name)));
+        }
+        foreach (rsf; metaResourceSamplerFields!MS) {
+            res.samplers.add(mixin(format("dataStruct.%s", rsf.name)));
         }
         foreach (rtf; metaColorOutputFields!MS) {
             res.pixelTargets.addColor(mixin(format("dataStruct.%s", rtf.name)));

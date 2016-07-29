@@ -4,10 +4,11 @@ import gfx.core.rc : Rc;
 import gfx.core.format : SurfaceType, ChannelType, Format, Formatted, isFormatted;
 import gfx.core.program : BaseType, VarType, varBaseType, varDim1, varDim2;
 import gfx.core.buffer : VertexBuffer, Buffer, ConstBuffer;
+import gfx.core.texture : Sampler;
 import gfx.core.view : RenderTargetView, DepthStencilView, ShaderResourceView;
 import gfx.core.pso :   StructField, PipelineDescriptor, ColorInfo,
                         VertexAttribDesc, ConstantBlockDesc,
-                        ResourceViewDesc, ColorTargetDesc;
+                        ResourceViewDesc, SamplerDesc, ColorTargetDesc;
 import gfx.core.state : ColorFlags, ColorMask, Depth;
 
 
@@ -41,7 +42,7 @@ struct ConstantBlock(T) {
 struct ResourceView(T) if (isFormatted!T) {
     alias FormatType = T;
 }
-struct ShaderSampler {}
+struct ResourceSampler {}
 
 // output targets
 struct ColorOutput(T) if (isFormatted!T) {
@@ -73,6 +74,9 @@ template InitType(MF) if (isMetaField!MF)
     else static if (isMetaResourceViewField!MF) {
         alias InitType = ResourceViewDesc;
     }
+    else static if (isMetaResourceSamplerField!MF) {
+        alias InitType = SamplerDesc;
+    }
     else static if (isMetaColorOutputField!MF) {
         alias InitType = ColorTargetDesc;
     }
@@ -96,6 +100,9 @@ template DataType(MF) if (isMetaField!MF)
     else static if (isMetaResourceViewField!MF) {
         alias DataType = Rc!(ShaderResourceView!(MF.FormatType));
     }
+    else static if (isMetaResourceSamplerField!MF) {
+        alias DataType = Rc!Sampler;
+    }
     else static if (isMetaColorOutputField!MF) {
         alias DataType = Rc!(RenderTargetView!(MF.FormatType));
     }
@@ -112,6 +119,7 @@ template isMetaField(MF) {
     enum isMetaField =  isMetaVertexInputField!MF ||
                         isMetaConstantBlockField!MF ||
                         isMetaResourceViewField!MF ||
+                        isMetaResourceSamplerField!MF ||
                         isMetaColorOutputField!MF ||
                         isMetaDepthOutputField!MF;
 }
@@ -165,11 +173,15 @@ template isMetaResourceViewField(MF) {
 alias MetaResourceViewField(MS, string f) = MetaFormattedField!(MS, f);
 alias metaResourceViewFields(MS) = metaResolveFields!(MS, isMetaResourceViewField, MetaResourceViewField);
 
-template isMetaShaderSamplerField(MF) {
-    enum isMetaShaderSamplerField = is(MF == ShaderSampler!T, T);
+template isMetaResourceSamplerField(MF) {
+    enum isMetaResourceSamplerField = is(MF == ResourceSampler);
 }
-alias MetaShaderSamplerField(MS, string f) = MetaFormattedField!(MF, f);
-alias metaShaderSamplerFields(MS) = metaResolveFields!(MS, isMetaShaderSamplerField, MetaShaderSamplerField);
+template MetaResourceSamplerField(MS, string f) {
+    alias MF = FieldType!(MS, f);
+    static assert(isMetaResourceSamplerField!MF);
+    enum name = f;
+}
+alias metaResourceSamplerFields(MS) = metaResolveFields!(MS, isMetaResourceSamplerField, MetaResourceSamplerField);
 
 
 
@@ -273,6 +285,11 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
         import gfx.core.format : format;
         enum InitValue = ResourceViewDesc(
             resolveGfxName!(MS, field), resolveGfxSlot!(MS, field), format!(MF.FormatType)
+        );
+    }
+    else static if (isMetaResourceSamplerField!MF) {
+        enum InitValue = SamplerDesc(
+            resolveGfxName!(MS, field), resolveGfxSlot!(MS, field)
         );
     }
     else static if (isMetaColorOutputField!MF) {

@@ -1,11 +1,12 @@
 module gfx.core.texture;
 
 import gfx.core : Device, Resource, ResourceHolder;
-import gfx.core.typecons : Option;
-import gfx.core.rc : RefCounted, rcCode;
+import gfx.core.typecons : Option, none;
+import gfx.core.rc : RefCounted, rcCode, Rc;
 import gfx.core.factory : Factory;
 import gfx.core.format : isFormatted, Formatted, Format, Swizzle;
-import gfx.core.view : ShaderResourceView, RenderTargetView, DepthStencilView, DSVReadOnlyFlags;
+import gfx.core.view : RawShaderResourceView, ShaderResourceView, RenderTargetView, DepthStencilView, DSVReadOnlyFlags;
+import gfx.core.state : Comparison;
 
 import std.typecons : BitFlags;
 import std.experimental.logger;
@@ -81,15 +82,139 @@ struct ImageInfo {
     }
 }
 
+/// Specifies how texture coordinates outside the range `[0, 1]` are handled.
+enum WrapMode {
+    /// Tile the texture. That is, sample the coordinate modulo `1.0`. This is
+    /// the default.
+    Tile,
+    /// Mirror the texture. Like tile, but uses abs(coord) before the modulo.
+    Mirror,
+    /// Clamp the texture to the value at `0.0` or `1.0` respectively.
+    Clamp,
+    /// Use border color.
+    Border,
+}
+
+/// Wrapper for the level of detail of a texture
+struct Lod {
+    short lod;
+
+    this (in short lod) {
+        this.lod = lod;
+    }
+    this (in float v) {
+        lod = cast(short)(v * 8f);
+    }
+
+    float opCast(T : float)() const {
+        return float(lod) / 8f;
+    }
+}
+
+/// A wrapper for a 8bpp color packed into a 32bit int
+struct PackedColor {
+    uint color;
+
+    this (in uint color) {
+        this.color = color;
+    }
+    this (in float[4] col) {
+        color = 0;
+        foreach (i; 0 .. 4) {
+            immutable ubyte comp = 0xff & cast(uint)(col[i] * 255f + 0.5f);
+            color |= comp << (8*(3-i));
+        }
+    }
+
+    float[4] opCast(T : float[4])() const {
+        float[4] col;
+        foreach (i; 0 .. 4) {
+            immutable ubyte comp = 0xff & (color >> (8 *(3-i)));
+            col[i] = (float(comp) + 0.5f) / 255f;
+        }
+        return col;
+    }
+}
+
+/// How to [filter](https://en.wikipedia.org/wiki/Texture_filtering) the
+/// texture when sampling. They correspond to increasing levels of quality,
+/// but also cost. They "layer" on top of each other: it is not possible to
+/// have bilinear filtering without mipmapping, for example.
+///
+/// These names are somewhat poor, in that "bilinear" is really just doing
+/// linear filtering on each axis, and it is only bilinear in the case of 2D
+/// textures. Similarly for trilinear, it is really Quadralinear(?) for 3D
+/// textures. Alas, these names are simple, and match certain intuitions
+/// ingrained by many years of public use of inaccurate terminology.
+enum FilterMethod {
+    /// The dumbest filtering possible, nearest-neighbor interpolation.
+    Scale,
+    /// Add simple mipmapping.
+    Mipmap,
+    /// Sample multiple texels within a single mipmap level to increase
+    /// quality.
+    Bilinear,
+    /// Sample multiple texels across two mipmap levels to increase quality.
+    Trilinear,
+    /// Anisotropic filtering with a given "max", must be between 1 and 16,
+    /// inclusive.
+    Anisotropic
+}
+
+
+interface SamplerRes : Resource {
+}
 
 interface TextureRes : Resource {
     void bind();
     void update(in ImageSliceInfo slice, const(ubyte)[] data);
 }
 
+struct SamplerInfo {
+    FilterMethod filter;
+    ubyte anisotropyMax = 16;
+    WrapMode[3] wrapMode;
+    Lod lodBias;
+    Lod[2] lodRange;
+    Option!Comparison comparison;
+    PackedColor border;
+}
 
-/// untyped texture class
-/// instanciate directly typed ones such as Texture2D!Rgba8
+class Sampler : ResourceHolder {
+    mixin(rcCode);
+
+    private Rc!SamplerRes _res;
+    private Rc!RawShaderResourceView _srv;
+    private SamplerInfo _info;
+
+    this (RawShaderResourceView srv, FilterMethod filter, WrapMode mode) {
+        _srv = srv;
+        _info.filter = filter;
+        _info.wrapMode = [mode, mode, mode];
+        _info.lodBias = Lod(0);
+        _info.lodRange = [Lod(-8000), Lod(8000)];
+    }
+
+    this (RawShaderResourceView srv, SamplerInfo info) {
+        _srv = srv;
+        _info = info;
+    }
+
+    final void drop() {
+        _res.unload();
+        _srv.unload();
+    }
+
+    final @property inout(SamplerRes) res() inout { return _res.obj; }
+
+    final void pinResources(Device device) {
+        if (!_srv.pinned) _srv.pinResources(device);
+        _res = device.factory.makeSampler(_srv.res, _info);
+    }
+}
+
+/// Untyped abstract texture class.
+/// Applications must nstanciate directly typed ones such as Texture2D!Rgba8
 abstract class RawTexture : ResourceHolder {
     mixin(rcCode);
 

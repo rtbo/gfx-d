@@ -14,9 +14,12 @@ import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilV
 import derelict.opengl3.gl3;
 
 
-
-class GlBufferShaderResourceView : ShaderResourceViewRes {
+abstract class GlShaderResourceView : ShaderResourceViewRes {
     mixin(rcCode);
+    abstract @property GLenum target() const;
+}
+
+class GlBufferShaderResourceView : GlShaderResourceView {
 
     GLuint _texName;
     GLenum _internalFormat;
@@ -41,10 +44,13 @@ class GlBufferShaderResourceView : ShaderResourceViewRes {
     final void bind() {
         glBindTexture(GL_TEXTURE_BUFFER, _texName);
     }
+
+    final override @property GLenum target() const {
+        return GL_TEXTURE_BUFFER;
+    }
 }
 
-class GlTextureShaderResourceView : ShaderResourceViewRes {
-    mixin(rcCode);
+class GlTextureShaderResourceView : GlShaderResourceView {
 
     Rc!GlTexture _tex;
 
@@ -60,6 +66,10 @@ class GlTextureShaderResourceView : ShaderResourceViewRes {
 
     final void bind() {
         _tex.bind();
+    }
+
+    final override @property GLenum target() const {
+        return _tex.target;
     }
 }
 

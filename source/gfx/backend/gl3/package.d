@@ -2,7 +2,8 @@ module gfx.backend.gl3;
 
 import gfx.backend.gl3.info : ContextInfo;
 import gfx.backend.gl3.buffer : makeBufferImpl;
-import gfx.backend.gl3.texture : makeTextureImpl, GlSurface, GlBuiltinSurface;
+import gfx.backend.gl3.texture :    makeTextureImpl, GlSurface, GlBuiltinSurface,
+                                    GlSamplerWithObj, GlSamplerWithoutObj;
 import gfx.backend.gl3.view :   GlBufferShaderResourceView,
                                 GlTextureShaderResourceView,
                                 GlTextureTargetView,
@@ -16,7 +17,7 @@ import gfx.core.rc : rcCode, Rc;
 import gfx.core.factory : Factory;
 import gfx.core.format : Format;
 import gfx.core.buffer : BufferRes, RawBuffer;
-import gfx.core.texture : TextureRes, RawTexture, TextureUsage;
+import gfx.core.texture : TextureRes, RawTexture, TextureUsage, SamplerRes, SamplerInfo;
 import gfx.core.surface : SurfaceRes, BuiltinSurfaceRes, RawSurface;
 import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, ProgramVars, Program;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes;
@@ -124,6 +125,14 @@ class GlFactory : Factory {
 
     TextureRes makeTexture(TextureCreationDesc desc, const(ubyte)[][] data) {
         return makeTextureImpl(_caps.textureStorage, desc, data);
+    }
+    SamplerRes makeSampler(ShaderResourceViewRes srv, SamplerInfo info) {
+        if (caps.samplerObject) {
+            return new GlSamplerWithObj(srv, info);
+        }
+        else {
+            return new GlSamplerWithoutObj(srv, info);
+        }
     }
     SurfaceRes makeSurface(SurfaceCreationDesc desc) {
         return new GlSurface(desc);

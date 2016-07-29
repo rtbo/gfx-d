@@ -5,7 +5,7 @@ import gfx.core.rc : RefCounted;
 import gfx.core.typecons : SafeUnion, Option;
 import gfx.core.buffer :    RawBuffer, IndexType;
 import gfx.core.pso :   RawPipelineState, VertexBufferSet, ConstantBlockSet,
-                        ResourceViewSet, PixelTargetSet;
+                        ResourceViewSet, SamplerSet, PixelTargetSet;
 import gfx.core.view : RawRenderTargetView, RawDepthStencilView;
 
 import std.traits : isStaticArray;
@@ -62,9 +62,9 @@ interface CommandBuffer : RefCounted {
     /+
     /// Bind a complete set of unordered access views
     void bindUnorderedViews(UnorderedViewParam[]);
-    /// Bind a complete set of samplers
-    void bindSamplers(SamplerParam[]);
     +/
+    /// Bind a complete set of samplers
+    void bindSamplers(SamplerSet);
     /// Bind a complete set of pixel targets, including multiple
     /// colors views and an optional depth/stencil view.
     void bindPixelTargets(PixelTargetSet);

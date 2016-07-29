@@ -12,7 +12,7 @@ import gfx.core.rc : Rc, rcCode;
 import gfx.core.program : Program;
 import gfx.core.buffer : RawBuffer, IndexType;
 import gfx.core.pso :   RawPipelineState, VertexBufferSet, ConstantBlockSet,
-                        ResourceViewSet, PixelTargetSet,
+                        ResourceViewSet, SamplerSet, PixelTargetSet,
                         VertexAttribDesc, ConstantBlockDesc;
 import gfx.core.state : Rasterizer, CullFace;
 import gfx.core.view : RawShaderResourceView, RawRenderTargetView, RawDepthStencilView;
@@ -240,6 +240,31 @@ class BindResourceViewsCommand : Command {
     }
 }
 
+
+class BindSamplersCommand : Command {
+    Rc!RawPipelineState pso;
+    SamplerSet set;
+
+    this (RawPipelineState pso, SamplerSet set) {
+        this.pso = pso; this.set = set;
+    }
+
+    final void execute(GlDevice device) {
+        import gfx.backend.gl3.texture : GlSampler;
+        import gfx.core.util : unsafeCast;
+        assert(pso.loaded);
+        if (!pso.pinned) pso.pinResources(device);
+        foreach (i, sampler; set.samplers) {
+            if (!sampler.pinned) sampler.pinResources(device);
+            unsafeCast!GlSampler(sampler.res).bind(pso.descriptor.samplers[i].slot);
+        }
+        unload();
+    }
+    final void unload() {
+        pso.unload();
+        set = SamplerSet.init;
+    }
+}
 
 class BindPixelTargetsCommand(bool withPSO) : Command {
     PixelTargetSet targets;
@@ -496,6 +521,11 @@ class GlCommandBuffer : CommandBuffer {
     void bindResourceViews(ResourceViewSet set) {
         assert(_cache.pso.loaded, "must bind pso before resource views");
         _commands ~= new BindResourceViewsCommand(_cache.pso, set);
+    }
+
+    void bindSamplers(SamplerSet set) {
+        assert(_cache.pso.loaded, "must bind pso before samplers");
+        _commands ~= new BindSamplersCommand(_cache.pso, set);
     }
 
     void bindPixelTargets(PixelTargetSet targets) {
