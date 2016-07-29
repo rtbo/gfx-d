@@ -157,60 +157,58 @@ class BindProgramCommand : Command {
     }
 }
 
-class BindAttributeCommand : Command {
-    Rc!RawBuffer buf;
+class BindVertexBuffersCommand : Command {
+    VertexBufferSet set;
     Rc!RawPipelineState pso;
-    size_t attribIndex;
 
-    this(RawBuffer buf, RawPipelineState pso, size_t attribIndex) {
-        this.buf = buf;
+    this(VertexBufferSet set, RawPipelineState pso) {
+        this.set = set;
         this.pso = pso;
-        this.attribIndex = attribIndex;
     }
 
     final void execute(GlDevice device) {
         import gfx.core.util : unsafeCast;
-        assert(buf.loaded);
         assert(pso.loaded);
-        if (!buf.pinned) buf.pinResources(device);
         if (!pso.pinned) pso.pinResources(device);
-        unsafeCast!GlVertexBuffer(buf.res).bindWithAttrib(
-                pso.descriptor.vertexAttribs[attribIndex],
-                device.caps.instanceRate);
+        foreach (i, vbuf; set.buffers) {
+            if (!vbuf.pinned) vbuf.pinResources(device);
+            unsafeCast!GlVertexBuffer(vbuf.res).bindWithAttrib(
+                    pso.descriptor.vertexAttribs[i],
+                    device.caps.instanceRate);
+        }
         unload();
     }
 
     final void unload() {
-        buf.unload();
+        set = VertexBufferSet.init;
         pso.unload();
     }
 }
 
-class BindConstantBufferCommand : Command {
-    Rc!RawBuffer buf;
+class BindConstantBuffersCommand : Command {
+    ConstantBlockSet set;
     Rc!RawPipelineState pso;
-    size_t blockIndex;
 
-    this(RawBuffer buf, RawPipelineState pso, size_t blockIndex) {
-        this.buf = buf;
+    this(ConstantBlockSet set, RawPipelineState pso) {
+        this.set = set;
         this.pso = pso;
-        this.blockIndex = blockIndex;
     }
 
     final void execute(GlDevice device) {
         import gfx.core.util : unsafeCast;
-        assert(buf.loaded);
         assert(pso.loaded);
-        if (!buf.pinned) buf.pinResources(device);
         if (!pso.pinned) pso.pinResources(device);
-        immutable bufName = unsafeCast!GlBuffer(buf.res).name;
-        glBindBufferBase(GL_UNIFORM_BUFFER, pso.descriptor.constantBlocks[blockIndex].slot, bufName);
+        foreach (i, buf; set.blocks) {
+            if (!buf.pinned) buf.pinResources(device);
+            immutable bufName = unsafeCast!GlBuffer(buf.res).name;
+            glBindBufferBase(GL_UNIFORM_BUFFER, pso.descriptor.constantBlocks[i].slot, bufName);
+        }
 
         unload();
     }
 
     final void unload() {
-        buf.unload();
+       	set = ConstantBlockSet.init;
         pso.unload();
     }
 }
@@ -559,16 +557,12 @@ class GlCommandBuffer : CommandBuffer {
 
     void bindVertexBuffers(VertexBufferSet set) {
         assert(_cache.pso.loaded, "must bind pso before vertex buffers");
-        foreach (i;  0 .. set.buffers.length) {
-            _commands ~= new BindAttributeCommand(set.buffers[i], _cache.pso.obj, i);
-        }
+        _commands ~= new BindVertexBuffersCommand(set, _cache.pso.obj);
     }
 
     void bindConstantBuffers(ConstantBlockSet set) {
         assert(_cache.pso.loaded, "must bind pso before constant blocks");
-        foreach (i; 0 .. set.blocks.length) {
-            _commands ~= new BindConstantBufferCommand(set.blocks[i], _cache.pso.obj, i);
-        }
+        _commands ~= new BindConstantBuffersCommand(set, _cache.pso.obj);
     }
 
     void bindResourceViews(ResourceViewSet set) {
