@@ -53,11 +53,23 @@ interface MaybeBuiltin {
     @property bool builtin() const;
 }
 
+
+struct Caps {
+    import std.bitmanip : bitfields;
+
+    mixin(bitfields!(
+        bool, "introspection", 1,
+        bool, "instanceDraw", 1,
+        bool, "instanceBase", 1,
+        bool, "instanceRate", 1,
+        byte, "", 4,
+    ));
+}
+
 interface Device : RefCounted {
 
-    @property bool hasIntrospection() const;
-
     @property string name() const;
+    @property Caps caps() const;
 
     @property Factory factory();
 

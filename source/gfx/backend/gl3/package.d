@@ -12,7 +12,7 @@ import gfx.backend.gl3.program : GlShader, GlProgram;
 import gfx.backend.gl3.pso : GlPipelineState;
 import gfx.backend.gl3.command : GlCommandBuffer;
 
-import gfx.core : Device;
+import gfx.core : Device, Caps;
 import gfx.core.rc : rcCode, Rc;
 import gfx.core.factory : Factory;
 import gfx.core.format : Format;
@@ -38,13 +38,11 @@ struct GlCaps {
     import std.bitmanip : bitfields;
 
     mixin(bitfields!(
-        bool, "interfaceQuery", 1,
         bool, "samplerObject", 1,
         bool, "textureStorage", 1,
         bool, "attribBinding", 1,
         bool, "ubo", 1,
-        bool, "instanceRate", 1,
-        byte, "", 2,
+        byte, "", 4,
     ));
 }
 
@@ -66,9 +64,10 @@ class GlDevice : Device {
 
         enforce(_info.glVersion.major >= 3, "Open GL 3.0 is requested by gfx-d");
         enforce(_info.glslVersion.decimal >= 130, "GLSL v1.30 is requested by gfx-d");
-        enforce(_info.caps.interfaceQuery, "GL_ARB_program_interface_query is requested by gfx-d");
+        enforce(_info.caps.introspection, "GL_ARB_program_interface_query is requested by gfx-d");
+        enforce(_info.glCaps.ubo, "GL_ARB_uniform_buffer_object is requested by gfx-d");
 
-        _factory = new GlFactory(_info.caps);
+        _factory = new GlFactory(_info.caps, _info.glCaps);
 
         glGenFramebuffers(1, &_fbo);
         glGenVertexArrays(1, &_vao);
@@ -82,11 +81,8 @@ class GlDevice : Device {
     }
 
     @property const(ContextInfo) info() const { return _info; }
-    @property GlCaps caps() const { return _info.caps; }
+    @property Caps caps() const { return _info.caps; }
 
-    @property bool hasIntrospection() const {
-        return caps.interfaceQuery;
-    }
     @property string name() const {
         return "OpenGl 3";
     }
@@ -115,19 +111,22 @@ class GlDevice : Device {
 
 class GlFactory : Factory {
 
-    GlCaps _caps;
+    Caps _caps;
+    GlCaps _glCaps;
 
-    this(GlCaps caps) {
+    this(Caps caps, GlCaps glCaps) {
         _caps = caps;
+        _glCaps = glCaps;
     }
 
-    @property GlCaps caps() const { return _caps; }
+    @property Caps caps() const { return _caps; }
+    @property GlCaps glCaps() const { return _glCaps; }
 
     TextureRes makeTexture(TextureCreationDesc desc, const(ubyte)[][] data) {
-        return makeTextureImpl(_caps.textureStorage, desc, data);
+        return makeTextureImpl(glCaps.textureStorage, desc, data);
     }
     SamplerRes makeSampler(ShaderResourceViewRes srv, SamplerInfo info) {
-        if (caps.samplerObject) {
+        if (glCaps.samplerObject) {
             return new GlSamplerWithObj(srv, info);
         }
         else {
@@ -144,7 +143,7 @@ class GlFactory : Factory {
         return new GlShader(stage, code);
     }
     ProgramRes makeProgram(ShaderRes[] shaders) {
-        return new GlProgram(_caps.ubo, shaders);
+        return new GlProgram(glCaps.ubo, shaders);
     }
     ShaderResourceViewRes makeShaderResourceView(RawTexture tex, TexSRVCreationDesc desc) {
         return new GlTextureShaderResourceView(tex, desc);

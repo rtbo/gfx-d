@@ -1,6 +1,6 @@
 module gfx.backend.dummy;
 
-import gfx.core : Device;
+import gfx.core : Device, Caps;
 import gfx.core.factory : Factory;
 import gfx.core.rc : rcCode;
 import gfx.core.format : Format;
@@ -17,8 +17,10 @@ class DummyDevice : Device {
     mixin(rcCode);
     void drop() {}
 
-    @property bool hasIntrospection() const { return false; }
     @property string name() const { return "dummy"; }
+    @property Caps caps() const {
+        return Caps();
+    }
 
     @property Factory factory() {
         return new DummyFactory();

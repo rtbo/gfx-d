@@ -310,8 +310,10 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
             import std.algorithm : find;
             import std.range : takeOne, empty, front;
             import std.format : format;
-            enforce(device.hasIntrospection);
+
+            enforce(device.caps.introspection);
             ProgramVars vars = _prog.fetchVars();
+
             foreach(ref at; _descriptor.vertexAttribs) {
                 if (at.slot != ubyte.max) continue;
                 auto var = vars.attributes

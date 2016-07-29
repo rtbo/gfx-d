@@ -1,6 +1,7 @@
 module gfx.backend.gl3.info;
 
 import gfx.backend.gl3 : GlCaps;
+import gfx.core : Caps;
 import gfx.core.typecons : Option, none, some;
 
 import derelict.opengl3.gl3;
@@ -68,7 +69,8 @@ struct ContextInfo {
     Version glslVersion;
     Ext[string] extensions;
 
-    GlCaps caps;
+    Caps caps;
+    GlCaps glCaps;
 
     public bool versionSupported(in int maj, in int min) const {
         return glVersion.major > maj ||
@@ -100,13 +102,16 @@ struct ContextInfo {
             res.extensions[ext] = Ext();
         }
 
-        res.caps.interfaceQuery = res.versionOrExtensionSupported(4, 3, "GL_ARB_program_interface_query");
-        res.caps.samplerObject = res.versionOrExtensionSupported(3, 3, "GL_ARB_sampler_objects");
-        res.caps.textureStorage = res.versionOrExtensionSupported(4, 2, "GL_ARB_texture_storage") &&
-                    res.versionOrExtensionSupported(4, 3, "GL_ARB_texture_storage_multisample");
-        res.caps.attribBinding = res.versionOrExtensionSupported(4, 3, "GL_ARB_vertex_attrib_binding");
-        res.caps.ubo = res.versionOrExtensionSupported(3, 1, "GL_ARB_uniform_buffer_object");
+        res.caps.introspection = res.versionOrExtensionSupported(4, 3, "GL_ARB_program_interface_query");
+        res.caps.instanceDraw = res.versionOrExtensionSupported(3, 1, "GL_ARB_draw_instanced");
+        res.caps.instanceBase = res.versionOrExtensionSupported(4, 2, "GL_ARB_base_instance");
         res.caps.instanceRate = res.versionOrExtensionSupported(3, 3, "GL_ARB_instanced_arrays");
+
+        res.glCaps.samplerObject = res.versionOrExtensionSupported(3, 3, "GL_ARB_sampler_objects");
+        res.glCaps.textureStorage = res.versionOrExtensionSupported(4, 2, "GL_ARB_texture_storage") &&
+                    res.versionOrExtensionSupported(4, 3, "GL_ARB_texture_storage_multisample");
+        res.glCaps.attribBinding = res.versionOrExtensionSupported(4, 3, "GL_ARB_vertex_attrib_binding");
+        res.glCaps.ubo = res.versionOrExtensionSupported(3, 1, "GL_ARB_uniform_buffer_object");
 
         return res;
     }
@@ -127,10 +132,10 @@ struct ContextInfo {
                 glVersion.vendorInfo.empty?"":" "~ glVersion.vendorInfo);
         res ~= format("    glslVersion: %s.%s\n", glslVersion.major, glslVersion.minor);
         res ~= "    Caps: {\n";
-        res ~= format("        interfaceQuery: %s\n", caps.interfaceQuery);
-        res ~= format("        samplerObject: %s\n", caps.samplerObject);
-        res ~= format("        textureStorage: %s\n", caps.textureStorage);
-        res ~= format("        attribBinding: %s\n", caps.attribBinding);
+        res ~= format("        introspection: %s\n", caps.introspection);
+        res ~= format("        instanceDraw: %s\n", caps.instanceDraw);
+        res ~= format("        instanceBase: %s\n", caps.instanceBase);
+        res ~= format("        instanceRate: %s\n", caps.instanceRate);
         res ~= "    }\n";
         res ~= "    extensions: [\n";
         foreach(ext; extensions.keys) {
