@@ -18,6 +18,7 @@ import gl3n.linalg : mat4, mat3, vec3;
 import derelict.opengl3.gl3;
 
 import std.stdio : writeln;
+import std.math : PI;
 
 enum maxNumLights = 5;
 
@@ -28,8 +29,8 @@ struct Vertex {
 }
 
 struct Matrices {
-    float[4][4] mvpMat;
-    float[3][3] normalMat;
+    float[4][4] mvp;
+    float[3][3] normal;
 }
 
 struct Light {
@@ -140,7 +141,7 @@ Texture2D!Rgba8 loadTexture() {
 
 void main()
 {
-	auto window = rc(gfxGlfwWindow!(Rgba8, Depth)("gfx-d - Crate example", 640, 480, 4));
+	auto window = rc(gfxGlfwWindow!(Rgba8, Depth)("gfx-d - Crate example", 640, 480));
     auto colRtv = rc(window.colorSurface.viewAsRenderTarget());
     auto dsv = rc(window.depthStencilSurface.viewAsDepthStencil());
 
@@ -163,17 +164,12 @@ void main()
 
     auto encoder = Encoder(window.device.makeCommandBuffer());
 
-    auto view = mat4.look_at(vec3(2, -5, 3), vec3(0, 0, 0), vec3(0, 0, 1));
-    auto proj = mat4.perspective(640, 480, 45, 1, 10);
-    auto matrices = Matrices(
-        (proj*view).transposed().matrix,
-        mat3(view).transposed().matrix
-    );
-    auto numLights = NumLights(2);
-    auto lights = [
-        Light([1.0, 0.0, 0.0, 0.0],    [0.8, 0.4, 0.4, 1.0]),
-        Light([-1.0, 0.0, 0.0, 0.0],    [0.4, 0.4, 0.8, 1.0]),
-    ];
+    // setting lights
+    encoder.updateConstBuffer(nlBlk, NumLights(2));
+    encoder.updateConstBuffer(ligBlk, [
+        Light([1.0, 1.0, 0.0, 0.0],    [0.8, 0.4, 0.4, 1.0]),
+        Light([-1.0, 1.0, 0.0, 0.0],    [0.4, 0.4, 0.8, 1.0]),
+    ]);
 
     // will quit on any key hit (as well as on close by 'x' click)
     window.onKey = (int, int, int, int) {
@@ -185,14 +181,23 @@ void main()
     StopWatch sw;
     sw.start();
 
-    window.makeCurrent();
+    // 6 RPM at 60 FPS
+    immutable puls = 6 * 2*PI / 3600f;
+    auto angle = 0f;
+    immutable view = mat4.look_at(vec3(0, -5, 3), vec3(0, 0, 0), vec3(0, 0, 1));
+    immutable proj = mat4.perspective(640, 480, 45, 1, 10);
 
     /* Loop until the user closes the window */
     while (!window.shouldClose) {
 
+        immutable model = mat4.rotation(angle, vec3(0, 0, 1));
+        immutable MV = view*model;
+        immutable matrices = Matrices(
+            (proj*MV).transposed().matrix,
+            mat3(model).transposed().matrix
+        );
         encoder.updateConstBuffer(matBlk, matrices);
-        encoder.updateConstBuffer(nlBlk, numLights);
-        encoder.updateConstBuffer(ligBlk, lights);
+
         encoder.clear!Rgba8(colRtv, backColor);
         encoder.clearDepth(dsv, 1f);
         encoder.draw!CratePipeMeta(slice, pso, data);
@@ -205,6 +210,7 @@ void main()
         window.pollEvents();
 
         frameCount += 1;
+        angle += puls;
 
         version(Windows) {
             // vsync is not always enabled with glfw on windows
