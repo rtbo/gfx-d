@@ -4,12 +4,13 @@ import gfx.core : Rect, Primitive;
 import gfx.core.rc : Rc, rc, makeRc;
 import gfx.core.typecons : Option, none, some;
 import gfx.core.format : Rgba8, Depth32F;
-import gfx.core.buffer : VertexBuffer;
+import gfx.core.buffer : VertexBuffer, VertexBufferSlice;
 import gfx.core.program : ShaderSet, Program;
 import gfx.core.pso.meta;
 import gfx.core.pso : PipelineDescriptor, PipelineState, VertexBufferSet;
 import gfx.core.state : Rasterizer;
 import gfx.core.command : clearColor, Instance;
+import gfx.core.encoder : Encoder;
 
 import gfx.window.glfw : gfxGlfwWindow;
 
@@ -47,20 +48,18 @@ int main()
     auto colRtv = rc(window.colorSurface.viewAsRenderTarget());
     {
         auto vbuf = makeRc!(VertexBuffer!Vertex)(triangle);
+        auto slice = VertexBufferSlice(vbuf.count);
         auto prog = makeRc!Program(ShaderSet.vertexPixel(
             import("130-triangle.v.glsl"),
             import("130-triangle.f.glsl"),
         ));
-        auto pipe = makeRc!PipeState(prog.obj, Primitive.Triangles, Rasterizer.newFill());
+        auto pso = makeRc!PipeState(prog.obj, Primitive.Triangles, Rasterizer.newFill());
 
         auto data = PipeState.Data.init;
         data.input = vbuf;
         data.output = colRtv;
-        auto dataSet = pipe.makeDataSet(data);
 
-        auto vpCmdBuf = rc(window.device.makeCommandBuffer());
-        auto renderCmdBuf = rc(window.device.makeCommandBuffer());
-
+        auto encoder = Encoder(window.device.makeCommandBuffer());
 
         // will quit on any key hit (as well as on close by 'x' click)
         window.onKey = (int, int, int, int) {
@@ -68,8 +67,7 @@ int main()
         };
 
         window.onFbResize = (ushort w, ushort h) {
-            vpCmdBuf.setViewport(Rect(0, 0, w, h));
-            window.device.submit(vpCmdBuf);
+            encoder.setViewport(Rect(0, 0, w, h));
         };
 
         import std.datetime : StopWatch;
@@ -81,13 +79,9 @@ int main()
         /* Loop until the user closes the window */
         while (!window.shouldClose) {
 
-            renderCmdBuf.clearColor(colRtv.obj, clearColor(backColor));
-            renderCmdBuf.bindPipelineState(pipe.obj);
-            renderCmdBuf.bindVertexBuffers(dataSet.vertexBuffers);
-            renderCmdBuf.bindPixelTargets(dataSet.pixelTargets);
-            renderCmdBuf.draw(0, cast(uint)vbuf.count, none!Instance);
-
-            window.device.submit(renderCmdBuf);
+            encoder.clear!Rgba8(colRtv, backColor);
+            encoder.draw!PipeMeta(slice, pso, data);
+            encoder.flush(window.device);
 
             /* Swap front and back buffers */
             window.swapBuffers();

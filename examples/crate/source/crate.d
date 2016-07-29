@@ -156,13 +156,12 @@ void main()
         import("330-crate.v.glsl"),
         import("330-crate.f.glsl"),
     ));
-    auto pipe = makeRc!CratePipeline(prog.obj, Primitive.Triangles, Rasterizer.newFill());
-    auto dataSet = pipe.makeDataSet(CratePipeline.Data(
+    auto pso = makeRc!CratePipeline(prog.obj, Primitive.Triangles, Rasterizer.newFill());
+    auto data = CratePipeline.Data(
         vbuf, matBlk, nlBlk, ligBlk, srv, sampler, colRtv, dsv
-    ));
+    );
 
-    auto renderCmdBuf = rc(window.device.makeCommandBuffer());
-    auto encoder = Encoder(renderCmdBuf);
+    auto encoder = Encoder(window.device.makeCommandBuffer());
 
     auto view = mat4.look_at(vec3(2, -5, 3), vec3(0, 0, 0), vec3(0, 0, 1));
     auto proj = mat4.perspective(640, 480, 45, 1, 10);
@@ -194,16 +193,10 @@ void main()
         encoder.updateConstBuffer(matBlk, matrices);
         encoder.updateConstBuffer(nlBlk, numLights);
         encoder.updateConstBuffer(ligBlk, lights);
-        renderCmdBuf.clearColor(colRtv.obj, clearColor(backColor));
-        renderCmdBuf.clearDepthStencil(dsv, some(1.0f), none!ubyte);
-        renderCmdBuf.bindPipelineState(pipe.obj);
-        renderCmdBuf.bindIndex(slice.buffer, slice.type);
-        renderCmdBuf.bindVertexBuffers(dataSet.vertexBuffers);
-        renderCmdBuf.bindConstantBuffers(dataSet.constantBlocks);
-        renderCmdBuf.bindResourceViews(dataSet.resourceViews);
-        renderCmdBuf.bindSamplers(dataSet.samplers);
-        renderCmdBuf.drawIndexed(cast(uint)slice.start, cast(uint)slice.end, 0, none!Instance);
-        window.device.submit(renderCmdBuf);
+        encoder.clear!Rgba8(colRtv, backColor);
+        encoder.clearDepth(dsv, 1f);
+        encoder.draw!CratePipeMeta(slice, pso, data);
+        encoder.flush(window.device);
 
         /* Swap front and back buffers */
         window.swapBuffers();
