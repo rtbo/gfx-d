@@ -69,19 +69,20 @@ class GlBuffer : BufferRes {
         glBufferData(_target, _size, ptr, _usage);
     }
 
-    void drop() {
+    final void drop() {
         glDeleteBuffers(1, &_name);
     }
-    void bind() {
+    final void bind() {
         glBindBuffer(_target, _name);
     }
-    void update(size_t offset, const(ubyte)[] data) {
+    final void update(size_t offset, const(ubyte)[] data) {
         assert(_size >= offset+data.length);
+        bind();
         glBufferSubData(_target, offset, data.length, cast(const(GLvoid*))data.ptr);
     }
 
-    @property GLuint name() const { return _name; }
-    @property GLenum target() const { return _target; }
+    final @property GLuint name() const { return _name; }
+    final @property GLenum target() const { return _target; }
 }
 
 

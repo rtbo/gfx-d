@@ -377,7 +377,6 @@ class UpdateBufferCommand : Command {
     final void execute(GlDevice device) {
         assert(buf.loaded);
         if (!buf.pinned) buf.pinResources(device);
-        buf.res.bind();
         buf.res.update(offset, data);
         unload();
     }
