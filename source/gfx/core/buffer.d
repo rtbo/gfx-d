@@ -158,8 +158,8 @@ struct VertexBufferSlice {
         buffer = ibuf;
     }
 
-    this(T)(size_t count) {
-        mode = IndexType.None;
+    this(size_t count) {
+        type = IndexType.None;
         end = count;
     }
 }
