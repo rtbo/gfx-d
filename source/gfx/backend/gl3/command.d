@@ -11,6 +11,7 @@ import gfx.core.draw : CommandBuffer, ClearColor, Instance;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.program : Program;
 import gfx.core.buffer : RawBuffer, IndexType;
+import gfx.core.texture : RawTexture, ImageSliceInfo;
 import gfx.core.pso :   RawPipelineState, VertexBufferSet, ConstantBlockSet,
                         ResourceViewSet, SamplerSet, PixelTargetSet,
                         VertexAttribDesc, ConstantBlockDesc;
@@ -386,6 +387,56 @@ class UpdateBufferCommand : Command {
     }
 }
 
+class UpdateTextureCommand : Command {
+    Rc!RawTexture tex;
+    ImageSliceInfo info;
+    const(ubyte)[] data;
+
+    this(RawTexture tex, in ImageSliceInfo info, const(ubyte)[] data) {
+        this.tex = tex;
+        this.info = info;
+        this.data = data;
+    }
+
+    final void execute(GlDevice device) {
+        assert(tex.loaded);
+        if (!tex.pinned) tex.pinResources(device);
+        tex.res.update(info, data);
+        unload();
+    }
+
+    final void unload() {
+        tex.unload();
+        data = [];
+    }
+}
+
+class GenerateMipmapCommand : Command {
+    Rc!RawShaderResourceView view;
+
+    this(RawShaderResourceView view) {
+        this.view = view;
+    }
+
+    final void execute(GlDevice device) {
+        import gfx.backend.gl3.view : GlShaderResourceView;
+        import gfx.core.util : unsafeCast;
+
+        assert(view.loaded);
+        if (!view.pinned) view.pinResources(device);
+        auto res = unsafeCast!GlShaderResourceView(view.res);
+        immutable target = res.target;
+        immutable name = res.texName;
+        glBindTexture(target, name);
+        glGenerateMipmap(target);
+        unload();
+    }
+
+    final void unload() {
+        view.unload();
+    }
+}
+
 class ClearCommand : Command {
     Option!ClearColor color;
     Option!float depth;
@@ -617,6 +668,14 @@ class GlCommandBuffer : CommandBuffer {
 
     void updateBuffer(RawBuffer buffer, const(ubyte)[] data, size_t offset) {
         _commands ~= new UpdateBufferCommand(buffer, data, offset);
+    }
+
+    void updateTexture(RawTexture tex, ImageSliceInfo info, const(ubyte)[] data) {
+        _commands ~= new UpdateTextureCommand(tex, info, data);
+    }
+
+    void generateMipmap(RawShaderResourceView view) {
+        _commands ~= new GenerateMipmapCommand(view);
     }
 
     void clearColor(RawRenderTargetView view, ClearColor color) {

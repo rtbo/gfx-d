@@ -3,10 +3,11 @@ module gfx.core.draw;
 import gfx.core : Rect;
 import gfx.core.rc : RefCounted;
 import gfx.core.typecons : SafeUnion, Option;
-import gfx.core.buffer :    RawBuffer, IndexType;
+import gfx.core.buffer : RawBuffer, IndexType;
+import gfx.core.texture : RawTexture, ImageSliceInfo;
 import gfx.core.pso :   RawPipelineState, VertexBufferSet, ConstantBlockSet,
                         ResourceViewSet, SamplerSet, PixelTargetSet;
-import gfx.core.view : RawRenderTargetView, RawDepthStencilView;
+import gfx.core.view : RawShaderResourceView, RawRenderTargetView, RawDepthStencilView;
 
 import std.traits : isStaticArray;
 
@@ -94,11 +95,9 @@ interface CommandBuffer : RefCounted {
     +/
     /// Update a vertex/index/uniform buffer
     void updateBuffer(RawBuffer, const(ubyte)[] data, size_t offset);
-    /+
     /// Update a texture
-    void updateTexture(RawTexture, tex.Kind, Option!(tex.CubeFace), ubyte[] data, tex.RawImageInfo);
-    void generateMipmap(RawShaderResourceView);
-    +/
+    void updateTexture(RawTexture tex, ImageSliceInfo info, const(ubyte)[] data);
+    void generateMipmap(RawShaderResourceView view);
     /// Clear color target
     void clearColor(RawRenderTargetView, ClearColor);
     /// Clear depth-stencil targets

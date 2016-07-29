@@ -6,6 +6,7 @@ import gfx.core.typecons : Option, some, none;
 import gfx.core.draw : CommandBuffer, clearColor, Instance;
 import gfx.core.format : Formatted, isFormatted;
 import gfx.core.buffer : Buffer, ConstBuffer, VertexBufferSlice, IndexType;
+import gfx.core.texture : Texture, ImageSliceInfo;
 import gfx.core.view : RenderTargetView, DepthStencilView;
 import gfx.core.pso : PipelineState;
 import gfx.core.pso.meta : PipelineData;
@@ -42,6 +43,12 @@ struct Encoder {
         auto byteOffset = offset*T.sizeof;
         auto bytes = cast(const(ubyte)*)data.ptr;
         _cmdBuf.updateBuffer(buf, bytes[0 .. data.length*T.sizeof], byteOffset);
+    }
+
+    void updateTexture(T)(Texture!T tex, ImageSliceInfo info, const(Texture!T.Texel)[] texels) {
+        import gfx.core.util : untypeSlice;
+        // TODO bounds check
+        _cmdBuf.updateTexture(tex, info, untypeSlice(texels));
     }
 
     void updateConstBuffer(T)(ConstBuffer!T buf, in T value) {

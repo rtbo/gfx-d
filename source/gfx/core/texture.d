@@ -271,19 +271,6 @@ abstract class RawTexture : ResourceHolder {
         _res.addRef();
         _initData = [];
     }
-
-
-
-    /// update part of the texture described by slice with the provided texels.
-    /// binary layout of texels MUST match with the texture format
-    final void updateRaw(ImageSliceInfo slice, const(ubyte)[] texels) {
-        assert(pinned);
-        assert(texels.length == _texelSize*slice.width*slice.height*slice.depth);
-        assert(slice.xoffset+slice.width <= width);
-        assert(slice.yoffset+slice.height <= height);
-        assert(slice.zoffset+slice.depth <= depth);
-        _res.update(slice, texels);
-    }
 }
 
 
@@ -306,11 +293,6 @@ abstract class Texture(TexelF) : RawTexture if (isFormatted!TexelF) {
         alias format = gfx.core.format.format;
         import gfx.core.util : untypeSlices;
         super(type, usage, imgInfo, samples, format!TexelF, cast(ubyte)Texel.sizeof, untypeSlices(texels));
-    }
-
-    /// update part of the texture described by slice with the provided texels.
-    final void update(ImageSliceInfo slice, const(Texel)[] texels) {
-        updateRaw(slice, cast(ubyte[])texels);
     }
 
     ShaderResourceView!TexelF viewAsShaderResource(ubyte minLevel, ubyte maxLevel, Swizzle swizzle) {

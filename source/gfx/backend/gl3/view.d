@@ -17,6 +17,7 @@ import derelict.opengl3.gl3;
 abstract class GlShaderResourceView : ShaderResourceViewRes {
     mixin(rcCode);
     abstract @property GLenum target() const;
+    abstract @property GLuint texName() const;
 }
 
 class GlBufferShaderResourceView : GlShaderResourceView {
@@ -48,6 +49,9 @@ class GlBufferShaderResourceView : GlShaderResourceView {
     final override @property GLenum target() const {
         return GL_TEXTURE_BUFFER;
     }
+    final override @property GLuint texName() const {
+        return _texName;
+    }
 }
 
 class GlTextureShaderResourceView : GlShaderResourceView {
@@ -70,6 +74,9 @@ class GlTextureShaderResourceView : GlShaderResourceView {
 
     final override @property GLenum target() const {
         return _tex.target;
+    }
+    final override @property GLuint texName() const {
+        return _tex.name;
     }
 }
 

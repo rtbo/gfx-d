@@ -288,10 +288,10 @@ abstract class GlTexture : TextureRes {
         glGenTextures(1, &_name);
     }
 
-    void drop() {
+    final void drop() {
         glDeleteTextures(1, &_name);
     }
-    void bind() {
+    final void bind() {
         glBindTexture(_target, _name);
     }
 
@@ -321,6 +321,7 @@ class GlTexture1D(bool UseStorage) : GlTexture {
     }
 
     void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+        bind();
         glTexSubImage1D(_target, slice.level, slice.xoffset, slice.width,
                 _format, _type, cast(const(GLvoid)*)data.ptr);
     }
@@ -349,6 +350,7 @@ class GlTexture2D(bool UseStorage) : GlTexture {
     }
 
     void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+        bind();
         glTexSubImage2D(_target, slice.level,
                 slice.xoffset, slice.yoffset,
                 slice.width, slice.height,
@@ -408,6 +410,7 @@ class GlTexture3D(bool UseStorage) : GlTexture {
     }
 
     void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+        bind();
         glTexSubImage3D(_target, slice.level,
                 slice.xoffset, slice.yoffset, slice.zoffset,
                 slice.width, slice.height, slice.depth,
@@ -506,6 +509,7 @@ class GlTextureCube(bool UseStorage) : GlTexture {
     }
 
     void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+        bind();
         immutable face = faceToGl(slice.face);
         glTexSubImage2D(face, slice.level,
                 slice.xoffset, slice.yoffset,
@@ -533,6 +537,7 @@ class GlTextureCubeArray : GlTexture {
     }
 
     void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+        bind();
         immutable face = faceToGl(slice.face);
         immutable zoffset = slice.zoffset*6 + faceIndex(slice.face);
         glTexSubImage3D(face, slice.level,
