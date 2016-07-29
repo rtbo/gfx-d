@@ -585,47 +585,47 @@ class GlCommandBuffer : CommandBuffer {
         _fbo = fbo;
     }
 
-    void drop() {
+    final void drop() {
         _cache = GlCommandCache.init;
         import std.algorithm : each;
         _commands.each!(cmd => cmd.unload());
     }
 
-    Command[] retrieve() {
+    final Command[] retrieve() {
         auto cmds = _commands;
         _commands = [];
         _cache = GlCommandCache.init;
         return cmds;
     }
 
-    void bindPipelineState(RawPipelineState pso) {
+    final void bindPipelineState(RawPipelineState pso) {
         _cache.pso = pso;
         _commands ~= new BindProgramCommand(pso.program);
         _commands ~= new SetRasterizerCommand(pso.descriptor.rasterizer);
         _commands ~= new SetDepthStateCommand(pso);
     }
 
-    void bindVertexBuffers(VertexBufferSet set) {
+    final void bindVertexBuffers(VertexBufferSet set) {
         assert(_cache.pso.loaded, "must bind pso before vertex buffers");
         _commands ~= new BindVertexBuffersCommand(set, _cache.pso.obj);
     }
 
-    void bindConstantBuffers(ConstantBlockSet set) {
+    final void bindConstantBuffers(ConstantBlockSet set) {
         assert(_cache.pso.loaded, "must bind pso before constant blocks");
         _commands ~= new BindConstantBuffersCommand(set, _cache.pso.obj);
     }
 
-    void bindResourceViews(ResourceViewSet set) {
+    final void bindResourceViews(ResourceViewSet set) {
         assert(_cache.pso.loaded, "must bind pso before resource views");
         _commands ~= new BindResourceViewsCommand(_cache.pso, set);
     }
 
-    void bindSamplers(SamplerSet set) {
+    final void bindSamplers(SamplerSet set) {
         assert(_cache.pso.loaded, "must bind pso before samplers");
         _commands ~= new BindSamplersCommand(_cache.pso, set);
     }
 
-    void bindPixelTargets(PixelTargetSet targets) {
+    final void bindPixelTargets(PixelTargetSet targets) {
         assert(_cache.pso.loaded, "must bind pso before pixel targets");
         bindPixelTargetsImpl!true(targets);
     }
@@ -655,29 +655,29 @@ class GlCommandBuffer : CommandBuffer {
         }
     }
 
-    void bindIndex(RawBuffer buf, IndexType ind) {
+    final void bindIndex(RawBuffer buf, IndexType ind) {
         assert(ind != IndexType.None);
         _cache.indexType = ind;
         _commands ~= new BindBufferCommand(buf);
     }
 
-    void setViewport(Rect r) {
+    final void setViewport(Rect r) {
         _commands ~= new SetViewportCommand(r);
     }
 
-    void updateBuffer(RawBuffer buffer, const(ubyte)[] data, size_t offset) {
+    final void updateBuffer(RawBuffer buffer, const(ubyte)[] data, size_t offset) {
         _commands ~= new UpdateBufferCommand(buffer, data, offset);
     }
 
-    void updateTexture(RawTexture tex, ImageSliceInfo info, const(ubyte)[] data) {
+    final void updateTexture(RawTexture tex, ImageSliceInfo info, const(ubyte)[] data) {
         _commands ~= new UpdateTextureCommand(tex, info, data);
     }
 
-    void generateMipmap(RawShaderResourceView view) {
+    final void generateMipmap(RawShaderResourceView view) {
         _commands ~= new GenerateMipmapCommand(view);
     }
 
-    void clearColor(RawRenderTargetView view, ClearColor color) {
+    final void clearColor(RawRenderTargetView view, ClearColor color) {
         // TODO handle targets
         PixelTargetSet targets;
         targets.addColor(view);
@@ -685,7 +685,7 @@ class GlCommandBuffer : CommandBuffer {
         _commands ~= new ClearCommand(some(color), none!float, none!ubyte);
     }
 
-    void clearDepthStencil(RawDepthStencilView view, Option!float depth, Option!ubyte stencil) {
+    final void clearDepthStencil(RawDepthStencilView view, Option!float depth, Option!ubyte stencil) {
         PixelTargetSet targets;
         if (depth.isSome) {
             targets.depth = view;
@@ -697,13 +697,13 @@ class GlCommandBuffer : CommandBuffer {
         _commands ~= new ClearCommand(none!ClearColor, depth, stencil);
     }
 
-    void draw(uint start, uint count, Option!Instance instances) {
+    final void draw(uint start, uint count, Option!Instance instances) {
         // TODO instanced drawings
         assert(_cache.pso.loaded, "must bind pso before draw calls");
         _commands ~= new DrawCommand(primitiveToGl(_cache.pso.descriptor.primitive), start, count, instances);
     }
 
-    void drawIndexed(uint start, uint count, uint base, Option!Instance instances) {
+    final void drawIndexed(uint start, uint count, uint base, Option!Instance instances) {
         // TODO instanced drawings
         assert(_cache.pso.loaded, "must bind pso before draw calls");
         assert(_cache.indexType != IndexType.None, "must bind index before indexed draw calls");

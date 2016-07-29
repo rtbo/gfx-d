@@ -429,15 +429,15 @@ class GlProgram : ProgramRes {
         }
     }
 
-    void drop() {
+    final void drop() {
         glDeleteProgram(_name);
     }
 
-    void bind() {
+    final void bind() {
         glUseProgram(_name);
     }
 
-    ProgramVars fetchVars() const {
+    final ProgramVars fetchVars() const {
         ProgramVars vars;
         ConstVar[][] blockVars;
 

@@ -37,7 +37,7 @@ class GlBufferShaderResourceView : GlShaderResourceView {
         glTexBuffer(GL_TEXTURE_BUFFER, _internalFormat, _buf.name);
     }
 
-    void drop() {
+    final void drop() {
         _buf.unload();
         glDeleteBuffers(1, &_texName);
     }
@@ -64,7 +64,7 @@ class GlTextureShaderResourceView : GlShaderResourceView {
         _tex = unsafeCast!GlTexture(tex.res);
     }
 
-    void drop() {
+    final void drop() {
         _tex.unload();
     }
 
@@ -85,7 +85,7 @@ class GlTextureShaderResourceView : GlShaderResourceView {
 abstract class GlTargetView : RenderTargetViewRes, DepthStencilViewRes {
     mixin(rcCode);
 
-    void bind(GLenum point, GLenum attachment);
+    abstract void bind(GLenum point, GLenum attachment);
 }
 
 class GlTextureTargetView : GlTargetView {
@@ -105,11 +105,11 @@ class GlTextureTargetView : GlTargetView {
         _layer = desc.layer;
     }
 
-    void drop() {
+    final void drop() {
         _tex.unload();
     }
 
-    override void bind(GLenum point, GLenum attachment) {
+    final override void bind(GLenum point, GLenum attachment) {
         import gfx.backend.gl3.texture : GlTexture;
         import gfx.core.util : unsafeCast;
         immutable name = unsafeCast!GlTexture(_tex.res).name;
@@ -130,11 +130,11 @@ class GlSurfaceTargetView : GlTargetView {
         _surf = surf;
     }
 
-    void drop() {
+    final void drop() {
         _surf.unload();
     }
 
-    override void bind(GLenum point, GLenum attachment) {
+    final override void bind(GLenum point, GLenum attachment) {
         import gfx.backend.gl3.texture : GlSurface;
         import gfx.core.util : unsafeCast;
         immutable name = unsafeCast!GlSurface(_surf.res).name;

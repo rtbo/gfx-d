@@ -365,15 +365,15 @@ class Shader : ResourceHolder {
         _code = code;
     }
 
-    @property ShaderStage stage() const { return _stage; }
+    final @property ShaderStage stage() const { return _stage; }
 
     final @property inout(ShaderRes) res() inout { return _res; }
 
-    void pinResources(Device device) {
+    final void pinResources(Device device) {
         _res = device.factory.makeShader(_stage, _code);
     }
 
-    void drop() {
+    final void drop() {
         _res.unload();
     }
 }
@@ -398,7 +398,7 @@ class Program : ResourceHolder {
 
     final @property inout(ProgramRes) res() inout { return _res; }
 
-    void pinResources(Device device) {
+    final void pinResources(Device device) {
         import std.algorithm : map, each;
         import std.array : array;
         _shaders.each!((s) { if(!s.pinned) s.pinResources(device); });
@@ -408,13 +408,13 @@ class Program : ResourceHolder {
         _shaders = [];
     }
 
-    ProgramVars fetchVars() const {
+    final ProgramVars fetchVars() const {
         assert(pinned);
         return _res.fetchVars();
     }
 
 
-    void drop() {
+    final void drop() {
         import std.algorithm : each;
         _shaders.each!(s => s.release()); // in case pinResources was not called
         _shaders = [];

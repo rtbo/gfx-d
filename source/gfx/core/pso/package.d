@@ -236,11 +236,11 @@ abstract class RawPipelineState : ResourceHolder {
 
     final @property inout(PipelineStateRes) res() inout { return _res.obj; }
 
-    @property inout(Program) program() inout { return _prog.obj; }
+    final @property inout(Program) program() inout { return _prog.obj; }
 
-    @property const(PipelineDescriptor) descriptor() const { return _descriptor; }
+    final @property const(PipelineDescriptor) descriptor() const { return _descriptor; }
 
-    void drop() {
+    final void drop() {
         _prog.unload();
         _res.unload();
     }
@@ -303,7 +303,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
         }
     }
 
-    void pinResources(Device device) {
+    final void pinResources(Device device) {
         if (!_prog.pinned) _prog.pinResources(device);
         if (_descriptor.needsToFetchSlots) {
             import std.exception : enforce;

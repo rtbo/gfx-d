@@ -74,34 +74,34 @@ class GlDevice : Device {
         glBindVertexArray(_vao);
     }
 
-    void drop() {
+    final void drop() {
         glDeleteVertexArrays(1, &_vao);
         glDeleteFramebuffers(1, &_fbo);
         _builtinSurf.unload();
     }
 
-    @property const(ContextInfo) info() const { return _info; }
+    final @property const(ContextInfo) info() const { return _info; }
     final @property Caps caps() const { return _info.caps; }
     final @property GlCaps glCaps() const { return _info.glCaps; }
 
-    @property string name() const {
+    final @property string name() const {
         return "OpenGl 3";
     }
 
-    @property Factory factory() {
+    final @property Factory factory() {
         return _factory;
     }
 
-    @property BuiltinSurfaceRes builtinSurface() {
+    final @property BuiltinSurfaceRes builtinSurface() {
         if (!_builtinSurf.loaded) _builtinSurf = new GlBuiltinSurface;
         return _builtinSurf.obj;
     }
 
-    CommandBuffer makeCommandBuffer() {
+    final CommandBuffer makeCommandBuffer() {
         return new GlCommandBuffer(_fbo);
     }
 
-    void submit(CommandBuffer buffer) {
+    final void submit(CommandBuffer buffer) {
         import gfx.core.util : unsafeCast;
         import std.algorithm : each;
         auto cmds = unsafeCast!GlCommandBuffer(buffer).retrieve();
@@ -123,10 +123,10 @@ class GlFactory : Factory {
     final @property Caps caps() const { return _caps; }
     final @property GlCaps glCaps() const { return _glCaps; }
 
-    TextureRes makeTexture(TextureCreationDesc desc, const(ubyte)[][] data) {
+    final TextureRes makeTexture(TextureCreationDesc desc, const(ubyte)[][] data) {
         return makeTextureImpl(glCaps.textureStorage, desc, data);
     }
-    SamplerRes makeSampler(ShaderResourceViewRes srv, SamplerInfo info) {
+    final SamplerRes makeSampler(ShaderResourceViewRes srv, SamplerInfo info) {
         if (glCaps.samplerObject) {
             return new GlSamplerWithObj(srv, info);
         }
@@ -134,37 +134,37 @@ class GlFactory : Factory {
             return new GlSamplerWithoutObj(srv, info);
         }
     }
-    SurfaceRes makeSurface(SurfaceCreationDesc desc) {
+    final SurfaceRes makeSurface(SurfaceCreationDesc desc) {
         return new GlSurface(desc);
     }
-    BufferRes makeBuffer(BufferCreationDesc desc, const(ubyte)[] data) {
+    final BufferRes makeBuffer(BufferCreationDesc desc, const(ubyte)[] data) {
         return makeBufferImpl(desc, data);
     }
-    ShaderRes makeShader(ShaderStage stage, string code) {
+    final ShaderRes makeShader(ShaderStage stage, string code) {
         return new GlShader(stage, code);
     }
-    ProgramRes makeProgram(ShaderRes[] shaders) {
+    final ProgramRes makeProgram(ShaderRes[] shaders) {
         return new GlProgram(glCaps.ubo, shaders);
     }
-    ShaderResourceViewRes makeShaderResourceView(RawTexture tex, TexSRVCreationDesc desc) {
+    final ShaderResourceViewRes makeShaderResourceView(RawTexture tex, TexSRVCreationDesc desc) {
         return new GlTextureShaderResourceView(tex, desc);
     }
-    ShaderResourceViewRes makeShaderResourceView(RawBuffer buf, Format fmt) {
+    final ShaderResourceViewRes makeShaderResourceView(RawBuffer buf, Format fmt) {
         return new GlBufferShaderResourceView(buf, fmt);
     }
-    RenderTargetViewRes makeRenderTargetView(RawTexture tex, TexRTVCreationDesc desc) {
+    final RenderTargetViewRes makeRenderTargetView(RawTexture tex, TexRTVCreationDesc desc) {
         return new GlTextureTargetView(tex, desc);
     }
-    RenderTargetViewRes makeRenderTargetView(RawSurface surf) {
+    final RenderTargetViewRes makeRenderTargetView(RawSurface surf) {
         return new GlSurfaceTargetView(surf);
     }
-    DepthStencilViewRes makeDepthStencilView(RawTexture tex, TexDSVCreationDesc desc) {
+    final DepthStencilViewRes makeDepthStencilView(RawTexture tex, TexDSVCreationDesc desc) {
         return new GlTextureTargetView(tex, desc);
     }
-    DepthStencilViewRes makeDepthStencilView(RawSurface surf) {
+    final DepthStencilViewRes makeDepthStencilView(RawSurface surf) {
         return new GlSurfaceTargetView(surf);
     }
-    PipelineStateRes makePipeline(Program prog, PipelineDescriptor descriptor) {
+    final PipelineStateRes makePipeline(Program prog, PipelineDescriptor descriptor) {
         return new GlPipelineState(prog, descriptor);
     }
 }

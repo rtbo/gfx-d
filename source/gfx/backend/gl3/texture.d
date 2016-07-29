@@ -78,11 +78,11 @@ class GlSamplerWithObj : GlSampler {
         }
     }
 
-    void drop() {
+    final void drop() {
         glDeleteSamplers(1, &_sampler);
     }
 
-    override void bind(ubyte slot) {
+    final override void bind(ubyte slot) {
         glBindSampler(slot, _sampler);
     }
 }
@@ -97,8 +97,8 @@ class GlSamplerWithoutObj : GlSampler {
         _info = info;
         _target = unsafeCast!GlShaderResourceView(srv).target;
     }
-    void drop() {}
-    override void bind(ubyte) {
+    final void drop() {}
+    final override void bind(ubyte) {
         if (_info.filter == FilterMethod.Anisotropic) {
             glTexParameteri(_target, GL_TEXTURE_MAX_ANISOTROPY_EXT, _info.anisotropyMax);
         }
@@ -245,10 +245,10 @@ class GlSurface : SurfaceRes {
         glBindRenderbuffer(GL_RENDERBUFFER, _name);
     }
 
-    @property GLuint name() const { return _name; }
-    @property ushort width() const { return _width; }
-    @property ushort height() const { return _height; }
-    @property ubyte samples() const { return _samples; }
+    final @property GLuint name() const { return _name; }
+    final @property ushort width() const { return _width; }
+    final @property ushort height() const { return _height; }
+    final @property ubyte samples() const { return _samples; }
 }
 
 
@@ -259,10 +259,10 @@ class GlBuiltinSurface : GlSurface, BuiltinSurfaceRes {
         super(Yes.builtin);
     }
 
-    override void drop() {}
-    override void bind() {}
+    final override void drop() {}
+    final override void bind() {}
 
-    void updateSize(ushort width, ushort height) {
+    final void updateSize(ushort width, ushort height) {
         _width = width;
         _height = height;
     }
@@ -295,8 +295,8 @@ abstract class GlTexture : TextureRes {
         glBindTexture(_target, _name);
     }
 
-    @property GLuint name() const { return _name; }
-    @property GLenum target() const { return _target; }
+    final @property GLuint name() const { return _name; }
+    final @property GLenum target() const { return _target; }
 }
 
 
@@ -320,7 +320,7 @@ class GlTexture1D(bool UseStorage) : GlTexture {
         }
     }
 
-    void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+    final void update(in ImageSliceInfo slice, const(ubyte)[] data) {
         bind();
         glTexSubImage1D(_target, slice.level, slice.xoffset, slice.width,
                 _format, _type, cast(const(GLvoid)*)data.ptr);
@@ -349,7 +349,7 @@ class GlTexture2D(bool UseStorage) : GlTexture {
         }
     }
 
-    void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+    final void update(in ImageSliceInfo slice, const(ubyte)[] data) {
         bind();
         glTexSubImage2D(_target, slice.level,
                 slice.xoffset, slice.yoffset,
@@ -381,7 +381,7 @@ class GlTexture2DMultisample(bool UseStorage) : GlTexture {
         }
     }
 
-    void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+    final void update(in ImageSliceInfo slice, const(ubyte)[] data) {
         warningf("ignoring attempt to upload data to Multisample Texture");
     }
 }
@@ -409,7 +409,7 @@ class GlTexture3D(bool UseStorage) : GlTexture {
         }
     }
 
-    void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+    final void update(in ImageSliceInfo slice, const(ubyte)[] data) {
         bind();
         glTexSubImage3D(_target, slice.level,
                 slice.xoffset, slice.yoffset, slice.zoffset,
@@ -442,7 +442,7 @@ class GlTexture3DMultisample(bool UseStorage) : GlTexture {
         }
     }
 
-    void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+    final void update(in ImageSliceInfo slice, const(ubyte)[] data) {
         warningf("ignoring attempt to upload data to Multisample Texture");
     }
 }
@@ -508,7 +508,7 @@ class GlTextureCube(bool UseStorage) : GlTexture {
         }
     }
 
-    void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+    final void update(in ImageSliceInfo slice, const(ubyte)[] data) {
         bind();
         immutable face = faceToGl(slice.face);
         glTexSubImage2D(face, slice.level,
@@ -536,7 +536,7 @@ class GlTextureCubeArray : GlTexture {
 
     }
 
-    void update(in ImageSliceInfo slice, const(ubyte)[] data) {
+    final void update(in ImageSliceInfo slice, const(ubyte)[] data) {
         bind();
         immutable face = faceToGl(slice.face);
         immutable zoffset = slice.zoffset*6 + faceIndex(slice.face);

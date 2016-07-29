@@ -46,13 +46,13 @@ class GlPipelineState : PipelineStateRes {
         }
     }
 
-    @property ref const(VertexAttribDesc[]) input() const { return _input; }
-    @property ref const(OutputMerger) output() const { return _output; }
+    final @property ref const(VertexAttribDesc[]) input() const { return _input; }
+    final @property ref const(OutputMerger) output() const { return _output; }
 
-    void drop() {
+    final void drop() {
         _prog.unload();
     }
 
-    void bind() {
+    final void bind() {
     }
 }

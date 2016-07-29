@@ -36,7 +36,7 @@ abstract class RawShaderResourceView : ResourceHolder {
 
     private Rc!ShaderResourceViewRes _res;
 
-    @property inout(ShaderResourceViewRes) res() inout { return _res.obj; }
+    final @property inout(ShaderResourceViewRes) res() inout { return _res.obj; }
 
     void drop() {
         _res.unload();
@@ -55,12 +55,12 @@ class BufferShaderResourceView(T) : ShaderResourceView!T if (isFormatted!T) {
         _buf = buf;
     }
 
-    override void drop() {
+    final override void drop() {
         _buf.unload();
         super.drop();
     }
 
-    void pinResources(Device device) {
+    final void pinResources(Device device) {
         import gfx.core.format : format;
         if(!_buf.pinned) _buf.pinResources(device);
         immutable fmt = format!T;
@@ -82,12 +82,12 @@ class TextureShaderResourceView(T) : ShaderResourceView!T if(isFormatted!T) {
         _swizzle = swizzle;
     }
 
-    override void drop() {
+    final override void drop() {
         _tex.unload();
         super.drop();
     }
 
-    void pinResources(Device device) {
+    final void pinResources(Device device) {
         if(!_tex.pinned) _tex.pinResources(device);
         Factory.TexSRVCreationDesc desc;
         desc.channel = Fmt.Channel.channelType;
@@ -129,7 +129,7 @@ class TextureRenderTargetView(T) : RenderTargetView!T {
         _layer = layer;
     }
 
-    void pinResources(Device device) {
+    final void pinResources(Device device) {
         if(!_tex.pinned) _tex.pinResources(device);
         Factory.TexRTVCreationDesc desc;
         desc.channel = Fmt.Channel.channelType;
@@ -138,7 +138,7 @@ class TextureRenderTargetView(T) : RenderTargetView!T {
         _res = device.factory.makeRenderTargetView(_tex.obj, desc);
     }
 
-    void drop() {
+    final void drop() {
         _tex.unload();
         _res.unload();
     }
@@ -152,17 +152,17 @@ class SurfaceRenderTargetView(T) : RenderTargetView!T {
         _surf = surf;
     }
 
-    void pinResources(Device device) {
+    final void pinResources(Device device) {
         if(!_surf.pinned) _surf.pinResources(device);
         _res = device.factory.makeRenderTargetView(_surf.obj);
     }
 
-    void drop() {
+    final void drop() {
         _surf.unload();
         _res.unload();
     }
 
-    override @property bool builtin() const {
+    final override @property bool builtin() const {
         return _surf.loaded && _surf.builtin;
     }
 }
@@ -177,7 +177,7 @@ abstract class RawDepthStencilView : ResourceHolder, MaybeBuiltin {
         return false;
     }
 
-    @property inout(DepthStencilViewRes) res() inout {
+    final @property inout(DepthStencilViewRes) res() inout {
         return _res.obj;
     }
 }
@@ -200,7 +200,7 @@ class TextureDepthStencilView(T) : DepthStencilView!T {
         _flags = flags;
     }
 
-    void pinResources(Device device) {
+    final void pinResources(Device device) {
         if(!_tex.pinned) _tex.pinResources(device);
         Factory.TexDSVCreationDesc desc;
         desc.level = _level;
@@ -209,7 +209,7 @@ class TextureDepthStencilView(T) : DepthStencilView!T {
         _res = device.factory.makeDepthStencilView(_tex.obj, desc);
     }
 
-    void drop() {
+    final void drop() {
         _tex.unload();
         _res.unload();
     }
@@ -223,17 +223,17 @@ class SurfaceDepthStencilView(T) : DepthStencilView!T {
         _surf = surf;
     }
 
-    void pinResources(Device device) {
+    final void pinResources(Device device) {
         if(!_surf.pinned) _surf.pinResources(device);
         _res = device.factory.makeDepthStencilView(_surf.obj);
     }
 
-    void drop() {
+    final void drop() {
         _surf.unload();
         _res.unload();
     }
 
-    override @property bool builtin() const {
+    final override @property bool builtin() const {
         return _surf.loaded && _surf.builtin;
     }
 }

@@ -93,7 +93,7 @@ class GlVertexBuffer : GlBuffer {
         super(desc, data);
     }
 
-    void bindWithAttrib(in VertexAttribDesc attrib, bool instanceRateSupport) {
+    final void bindWithAttrib(in VertexAttribDesc attrib, bool instanceRateSupport) {
         import gfx.core.program : BaseType;
 
         assert(!attrib.field.type.isMatrix);

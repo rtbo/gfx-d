@@ -47,7 +47,7 @@ abstract class RawSurface : ResourceHolder, MaybeBuiltin {
     final @property inout(SurfaceRes) res() inout { return _res.obj; }
 
 
-    void pinResources(Device device) {
+    final void pinResources(Device device) {
         Factory.SurfaceCreationDesc desc;
         desc.usage = _usage;
         desc.width = _width;
@@ -57,7 +57,7 @@ abstract class RawSurface : ResourceHolder, MaybeBuiltin {
         _res = device.factory.makeSurface(desc);
     }
 
-    void drop() {
+    final void drop() {
         _res.unload();
     }
 
@@ -85,12 +85,12 @@ class Surface(T) : RawSurface if (isFormatted!T) {
         super(usage, width, height, format!T(), samples);
     }
 
-    RenderTargetView!T viewAsRenderTarget() {
+    final RenderTargetView!T viewAsRenderTarget() {
         import gfx.core.view : SurfaceRenderTargetView;
         return new SurfaceRenderTargetView!T(this);
     }
 
-    DepthStencilView!T viewAsDepthStencil() {
+    final DepthStencilView!T viewAsDepthStencil() {
         import gfx.core.view : SurfaceDepthStencilView;
         return new SurfaceDepthStencilView!T(this);
     }
@@ -103,13 +103,13 @@ class BuiltinSurface(T) : Surface!T
         _res = res;
     }
 
-    void updateSize(ushort width, ushort height) {
+    final void updateSize(ushort width, ushort height) {
         import gfx.core.util : unsafeCast;
         _width = width; _height = height;
         unsafeCast!BuiltinSurfaceRes(_res.obj).updateSize(width, height);
     }
 
-    override @property bool builtin() const {
+    final override @property bool builtin() const {
         return true;
     }
 }

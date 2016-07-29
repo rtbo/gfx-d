@@ -260,64 +260,64 @@ class RawWindow : RefCounted {
         _device.unload();
     }
 
-    @property inout(GLFWwindow)* glfwWindow() inout nothrow {
+    final @property inout(GLFWwindow)* glfwWindow() inout nothrow {
         return _window;
     }
 
-    @property inout(Device) device() inout { return _device.obj; }
+    final @property inout(Device) device() inout { return _device.obj; }
 
 
-    @property void onClose(CloseDg dg) nothrow {
+    final @property void onClose(CloseDg dg) nothrow {
         _closeDg = dg;
     }
-    @property void onResize(ResizeDg dg) nothrow {
+    final @property void onResize(ResizeDg dg) nothrow {
         glfwSetWindowSizeCallback(_window, &handleSize);
         _resizeDg = dg;
     }
-    @property void onFbResize(ResizeDg dg) nothrow {
+    final @property void onFbResize(ResizeDg dg) nothrow {
         glfwSetFramebufferSizeCallback(_window, &handleFbSize);
         _fbResizeDg = dg;
     }
-    @property void onIconify(IconifyDg dg) nothrow {
+    final @property void onIconify(IconifyDg dg) nothrow {
         glfwSetWindowIconifyCallback(_window, &handleIconify);
         _iconifyDg = dg;
     }
-    @property void onFocus(FocusDg dg) nothrow {
+    final @property void onFocus(FocusDg dg) nothrow {
         glfwSetWindowFocusCallback(_window, &handleFocus);
         _focusDg = dg;
     }
 
-    @property void onKey(KeyDg dg) nothrow {
+    final @property void onKey(KeyDg dg) nothrow {
         glfwSetKeyCallback(_window, &handleKey);
         _keyDg = dg;
     }
-    @property void onChar(CharDg dg) nothrow {
+    final @property void onChar(CharDg dg) nothrow {
         glfwSetCharCallback(_window, &handleChar);
         _charDg = dg;
     }
-    @property void onCursorPos(CursorPosDg dg) nothrow {
+    final @property void onCursorPos(CursorPosDg dg) nothrow {
         glfwSetCursorPosCallback(_window, &handleCursorPos);
         _cursorPosDg = dg;
     }
-    @property void onCursorEnter(CursorEnterDg dg) nothrow {
+    final @property void onCursorEnter(CursorEnterDg dg) nothrow {
         glfwSetCursorEnterCallback(_window, &handleCursorEnter);
         _cursorEnterDg = dg;
     }
-    @property void onMouseButton(MouseButtonDg dg) nothrow {
+    final @property void onMouseButton(MouseButtonDg dg) nothrow {
         glfwSetMouseButtonCallback(_window, &handleMouseButton);
         _mouseButtonDg = dg;
     }
-    @property void onScroll(ScrollDg dg) nothrow {
+    final @property void onScroll(ScrollDg dg) nothrow {
         glfwSetScrollCallback(_window, &handleScroll);
         _scrollDg = dg;
     }
 
 
-    @property bool visible() const nothrow {
+    final @property bool visible() const nothrow {
         return glfwGetWindowAttrib(cast(GLFWwindow*)_window, GLFW_VISIBLE) != 0;
     }
 
-    @property void visible(in bool visible) nothrow {
+    final @property void visible(in bool visible) nothrow {
         if (visible) {
             glfwShowWindow(_window);
         }
@@ -326,11 +326,11 @@ class RawWindow : RefCounted {
         }
     }
 
-    @property bool iconified() const nothrow {
+    final @property bool iconified() const nothrow {
         return glfwGetWindowAttrib(cast(GLFWwindow*)_window, GLFW_ICONIFIED) != 0;
     }
 
-    @property void iconified(in bool iconified) nothrow {
+    final @property void iconified(in bool iconified) nothrow {
         if (iconified) {
             glfwIconifyWindow(_window);
         }
@@ -339,42 +339,42 @@ class RawWindow : RefCounted {
         }
     }
 
-    @property bool maximized() const nothrow {
+    final @property bool maximized() const nothrow {
         return glfwGetWindowAttrib(cast(GLFWwindow*)_window, GLFW_MAXIMIZED) != 0;
     }
 
-    void maximize() nothrow {
+    final void maximize() nothrow {
         glfwMaximizeWindow(_window);
     }
 
 
-    @property bool focused() const nothrow {
+    final @property bool focused() const nothrow {
         return glfwGetWindowAttrib(cast(GLFWwindow*)_window, GLFW_FOCUSED) != 0;
     }
 
-    void focus() nothrow {
+    final void focus() nothrow {
         glfwFocusWindow(_window);
     }
 
 
-    @property ushort width() const {
+    final @property ushort width() const {
         int width, h;
         glfwGetFramebufferSize(cast(GLFWwindow*)_window, &width, &h);
         return cast(ushort)width;
     }
 
-    @property ushort height() const {
+    final @property ushort height() const {
         int w, height;
         glfwGetFramebufferSize(cast(GLFWwindow*)_window, &w, &height);
         return cast(ushort)height;
     }
 
 
-    @property bool shouldClose() const nothrow {
+    final @property bool shouldClose() const nothrow {
         return cast(bool)glfwWindowShouldClose(cast(GLFWwindow*)_window);
     }
 
-    @property void shouldClose(bool val) nothrow {
+    final @property void shouldClose(bool val) nothrow {
         glfwSetWindowShouldClose(_window, val);
     }
 
@@ -382,16 +382,16 @@ class RawWindow : RefCounted {
         glfwPollEvents();
     }
 
-    void makeCurrent() nothrow {
+    final void makeCurrent() nothrow {
         glfwMakeContextCurrent(_window);
     }
 
-    void doneCurrent() nothrow {
+    final void doneCurrent() nothrow {
         glfwMakeContextCurrent(null);
     }
 
     /// swap front and back buffer
-    void swapBuffers() nothrow {
+    final void swapBuffers() nothrow {
         glfwSwapBuffers(_window);
     }
 }
@@ -439,7 +439,7 @@ class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthOrStencilSurfa
 
     private Rc!(Surface!Col) _colorSurface;
 
-    public @property Surface!Col colorSurface() {
+    final public @property Surface!Col colorSurface() {
         return _colorSurface.obj;
     }
 
@@ -450,7 +450,7 @@ class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthOrStencilSurfa
 
         private Rc!(Surface!(DepSten[0])) _depthStencilSurface;
 
-        public @property Surface!(DepSten[0]) depthStencilSurface() {
+        final public @property Surface!(DepSten[0]) depthStencilSurface() {
             return _depthStencilSurface.obj;
         }
 

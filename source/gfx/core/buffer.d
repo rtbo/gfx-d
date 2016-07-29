@@ -60,7 +60,7 @@ abstract class RawBuffer : ResourceHolder {
         _res.unload();
     }
 
-    void pinResources(Device device) {
+    final void pinResources(Device device) {
         Factory.BufferCreationDesc desc;
         desc.role = _role;
         desc.usage = _usage;
@@ -129,7 +129,7 @@ class ShaderResourceBuffer(T) : Buffer!T if (isFormatted!T) {
         super(BufferRole.ShaderResource, usage, access, data);
     }
 
-    ShaderResourceView!T viewAsShaderResource() {
+    final ShaderResourceView!T viewAsShaderResource() {
         return new BufferShaderResourceView!T(this);
     }
 }
