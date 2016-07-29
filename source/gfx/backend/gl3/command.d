@@ -174,7 +174,9 @@ class BindAttributeCommand : Command {
         assert(pso.loaded);
         if (!buf.pinned) buf.pinResources(device);
         if (!pso.pinned) pso.pinResources(device);
-        unsafeCast!GlVertexBuffer(buf.res).bindWithAttrib(pso.vertexAttribs[attribIndex], device.caps.instanceRate);
+        unsafeCast!GlVertexBuffer(buf.res).bindWithAttrib(
+                pso.descriptor.vertexAttribs[attribIndex],
+                device.caps.instanceRate);
         unload();
     }
 
@@ -202,7 +204,7 @@ class BindConstantBufferCommand : Command {
         if (!buf.pinned) buf.pinResources(device);
         if (!pso.pinned) pso.pinResources(device);
         immutable bufName = unsafeCast!GlBuffer(buf.res).name;
-        glBindBufferBase(GL_UNIFORM_BUFFER, pso.constantBlocks[blockIndex].slot, bufName);
+        glBindBufferBase(GL_UNIFORM_BUFFER, pso.descriptor.constantBlocks[blockIndex].slot, bufName);
 
         unload();
     }
@@ -227,7 +229,7 @@ class BindResourceViewsCommand : Command {
         if (!pso.pinned) pso.pinResources(device);
         foreach(i, srv; set.views) {
             if (!srv.pinned) srv.pinResources(device);
-            glActiveTexture(cast(GLenum)(GL_TEXTURE0+pso.resourceViews[i].slot));
+            glActiveTexture(cast(GLenum)(GL_TEXTURE0+pso.descriptor.resourceViews[i].slot));
             srv.res.bind();
         }
         unload();
@@ -271,9 +273,9 @@ class BindPixelTargetsCommand(bool withPSO) : Command {
         static if (withPSO) {
             assert(pso.loaded);
             if (!pso.pinned) pso.pinResources(device);
-            assert(targets.colors.length == pso.colorTargets.length);
+            assert(targets.colors.length == pso.descriptor.colorTargets.length);
             foreach(i, rtv; targets.colors) {
-                bindTarget(rtv, GL_COLOR_ATTACHMENT0+pso.colorTargets[i].slot);
+                bindTarget(rtv, GL_COLOR_ATTACHMENT0+pso.descriptor.colorTargets[i].slot);
             }
         }
         else {
@@ -473,7 +475,7 @@ class GlCommandBuffer : CommandBuffer {
     void bindPipelineState(RawPipelineState pso) {
         _cache.pso = pso;
         _commands ~= new BindProgramCommand(pso.program);
-        _commands ~= new SetRasterizerCommand(pso.rasterizer);
+        _commands ~= new SetRasterizerCommand(pso.descriptor.rasterizer);
         _commands ~= new SetDepthStateCommand(pso);
     }
 
@@ -563,7 +565,7 @@ class GlCommandBuffer : CommandBuffer {
     void draw(uint start, uint count, Option!Instance) {
         // TODO instanced drawings
         assert(_cache.pso.loaded, "must bind pso before draw calls");
-        _commands ~= new DrawCommand(primitiveToGl(_cache.pso.primitive), start, count);
+        _commands ~= new DrawCommand(primitiveToGl(_cache.pso.descriptor.primitive), start, count);
     }
 
     void drawIndexed(uint start, uint count, uint base, Option!Instance) {
@@ -583,6 +585,6 @@ class GlCommandBuffer : CommandBuffer {
                 break;
             default: assert(false);
         }
-        _commands ~= new DrawIndexedCommand(primitiveToGl(_cache.pso.primitive), count, index, offset);
+        _commands ~= new DrawIndexedCommand(primitiveToGl(_cache.pso.descriptor.primitive), count, index, offset);
     }
 }
