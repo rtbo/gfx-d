@@ -401,7 +401,7 @@ class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthOrStencilSurfa
 
     import gfx.core.format : hasRenderSurface;
 
-    this(string title, ushort width, ushort height, ubyte samples=1) {
+    this(string title, ushort width, ushort height, ubyte samples=0) {
         import gfx.core.format : format;
         import gfx.core.surface : BuiltinSurface;
 
@@ -460,7 +460,7 @@ class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthOrStencilSurfa
 
 
 
-auto gfxGlfwWindow(Col, DepSten...)(string title, ushort width, ushort height, ubyte samples=1)
+auto gfxGlfwWindow(Col, DepSten...)(string title, ushort width, ushort height, ubyte samples=0)
 {
     return new Window!(Col, DepSten)(title, width, height, samples);
 }
