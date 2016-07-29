@@ -54,7 +54,7 @@ struct CratePipeMeta {
     ConstantBlock!Light     lights;
 
     @GfxName("t_Sampler")
-    ShaderResource!Rgba8    texture;
+    ResourceView!Rgba8    texture;
 
     @GfxName("o_Color")
     ColorOutput!Rgba8       outColor;
@@ -199,7 +199,7 @@ void main()
         renderCmdBuf.bindIndex(slice.buffer, slice.type);
         renderCmdBuf.bindVertexBuffers(dataSet.vertexBuffers);
         renderCmdBuf.bindConstantBuffers(dataSet.constantBlocks);
-        renderCmdBuf.bindResourceViews(dataSet.shaderResources);
+        renderCmdBuf.bindResourceViews(dataSet.resourceViews);
         renderCmdBuf.drawIndexed(cast(uint)slice.start, cast(uint)slice.end, 0, none!Instance);
         window.device.submit(renderCmdBuf);
 

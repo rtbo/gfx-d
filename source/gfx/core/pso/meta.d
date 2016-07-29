@@ -7,7 +7,7 @@ import gfx.core.buffer : VertexBuffer, Buffer, ConstBuffer;
 import gfx.core.view : RenderTargetView, DepthStencilView, ShaderResourceView;
 import gfx.core.pso :   StructField, PipelineDescriptor, ColorInfo,
                         VertexAttribDesc, ConstantBlockDesc,
-                        ShaderResourceDesc, ColorTargetDesc;
+                        ResourceViewDesc, ColorTargetDesc;
 import gfx.core.state : ColorFlags, ColorMask, Depth;
 
 
@@ -38,12 +38,10 @@ struct ConstantBlock(T) {
 }
 
 // resources
-struct ShaderResource(T) if (isFormatted!T) {
+struct ResourceView(T) if (isFormatted!T) {
     alias FormatType = T;
 }
-struct ShaderSampler(T) if (isFormatted!T) {
-    alias FormatType = T;
-}
+struct ShaderSampler {}
 
 // output targets
 struct ColorOutput(T) if (isFormatted!T) {
@@ -72,8 +70,8 @@ template InitType(MF) if (isMetaField!MF)
     else static if (isMetaConstantBlockField!MF) {
         alias InitType = ConstantBlockDesc;
     }
-    else static if (isMetaShaderResourceField!MF) {
-        alias InitType = ShaderResourceDesc;
+    else static if (isMetaResourceViewField!MF) {
+        alias InitType = ResourceViewDesc;
     }
     else static if (isMetaColorOutputField!MF) {
         alias InitType = ColorTargetDesc;
@@ -95,7 +93,7 @@ template DataType(MF) if (isMetaField!MF)
     else static if (isMetaConstantBlockField!MF) {
         alias DataType = Rc!(ConstBuffer!(MF.BlockType));
     }
-    else static if (isMetaShaderResourceField!MF) {
+    else static if (isMetaResourceViewField!MF) {
         alias DataType = Rc!(ShaderResourceView!(MF.FormatType));
     }
     else static if (isMetaColorOutputField!MF) {
@@ -113,7 +111,7 @@ template DataType(MF) if (isMetaField!MF)
 template isMetaField(MF) {
     enum isMetaField =  isMetaVertexInputField!MF ||
                         isMetaConstantBlockField!MF ||
-                        isMetaShaderResourceField!MF ||
+                        isMetaResourceViewField!MF ||
                         isMetaColorOutputField!MF ||
                         isMetaDepthOutputField!MF;
 }
@@ -161,11 +159,11 @@ alias metaConstantBlockFields(MS) = metaResolveFields!(MS, isMetaConstantBlockFi
 
 // shader resources
 
-template isMetaShaderResourceField(MF) {
-    enum isMetaShaderResourceField = is(MF == ShaderResource!T, T);
+template isMetaResourceViewField(MF) {
+    enum isMetaResourceViewField = is(MF == ResourceView!T, T);
 }
-alias MetaShaderResourceField(MS, string f) = MetaFormattedField!(MS, f);
-alias metaShaderResourceFields(MS) = metaResolveFields!(MS, isMetaShaderResourceField, MetaShaderResourceField);
+alias MetaResourceViewField(MS, string f) = MetaFormattedField!(MS, f);
+alias metaResourceViewFields(MS) = metaResolveFields!(MS, isMetaResourceViewField, MetaResourceViewField);
 
 template isMetaShaderSamplerField(MF) {
     enum isMetaShaderSamplerField = is(MF == ShaderSampler!T, T);
@@ -175,6 +173,7 @@ alias metaShaderSamplerFields(MS) = metaResolveFields!(MS, isMetaShaderSamplerFi
 
 
 
+// output targets
 
 template isMetaColorOutputField(MF) {
     enum isMetaColorOutputField = is(MF == ColorOutput!T, T);
@@ -210,7 +209,7 @@ alias metaDepthStencilOutputFields(MS) =
 
 
 template isMetaFormattedField(MF) {
-    enum isMetaFormattedField =     isMetaShaderResourceField!MF ||
+    enum isMetaFormattedField =     isMetaResourceViewField!MF ||
                                     isMetaColorOutputField!MF ||
                                     isMetaDepthOutputField!MF ||
                                     isMetaStencilOutputField!MF ||
@@ -270,9 +269,9 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
     else static if (isMetaConstantBlockField!MF) {
         enum InitValue = ConstantBlockDesc(resolveGfxName!(MS, field), resolveGfxSlot!(MS, field));
     }
-    else static if (isMetaShaderResourceField!MF) {
+    else static if (isMetaResourceViewField!MF) {
         import gfx.core.format : format;
-        enum InitValue = ShaderResourceDesc(
+        enum InitValue = ResourceViewDesc(
             resolveGfxName!(MS, field), resolveGfxSlot!(MS, field), format!(MF.FormatType)
         );
     }

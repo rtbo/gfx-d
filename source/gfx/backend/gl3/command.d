@@ -12,7 +12,7 @@ import gfx.core.rc : Rc, rcCode;
 import gfx.core.program : Program;
 import gfx.core.buffer : RawBuffer, IndexType;
 import gfx.core.pso :   RawPipelineState, VertexBufferSet, ConstantBlockSet,
-                        ShaderResourceSet, PixelTargetSet,
+                        ResourceViewSet, PixelTargetSet,
                         VertexAttribDesc, ConstantBlockDesc;
 import gfx.core.state : Rasterizer, CullFace;
 import gfx.core.view : RawShaderResourceView, RawRenderTargetView, RawDepthStencilView;
@@ -216,9 +216,9 @@ class BindConstantBufferCommand : Command {
 
 class BindResourceViewsCommand : Command {
     Rc!RawPipelineState pso;
-    ShaderResourceSet set;
+    ResourceViewSet set;
 
-    this(RawPipelineState pso, ShaderResourceSet set) {
+    this(RawPipelineState pso, ResourceViewSet set) {
         this.pso = pso; this.set = set;
     }
 
@@ -227,14 +227,14 @@ class BindResourceViewsCommand : Command {
         if (!pso.pinned) pso.pinResources(device);
         foreach(i, srv; set.views) {
             if (!srv.pinned) srv.pinResources(device);
-            glActiveTexture(cast(GLenum)(GL_TEXTURE0+pso.shaderResources[i].slot));
+            glActiveTexture(cast(GLenum)(GL_TEXTURE0+pso.resourceViews[i].slot));
             srv.res.bind();
         }
         unload();
     }
     final void unload() {
         pso.unload();
-        set = ShaderResourceSet.init;
+        set = ResourceViewSet.init;
     }
 }
 
@@ -491,7 +491,7 @@ class GlCommandBuffer : CommandBuffer {
         }
     }
 
-    void bindResourceViews(ShaderResourceSet set) {
+    void bindResourceViews(ResourceViewSet set) {
         assert(_cache.pso.loaded, "must bind pso before resource views");
         _commands ~= new BindResourceViewsCommand(_cache.pso, set);
     }
