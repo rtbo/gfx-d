@@ -436,13 +436,22 @@ class DrawCommand : Command {
     GLenum primitive;
     GLint start;
     GLsizei count;
+    Option!Instance instances;
 
-    this(GLenum primitive, GLint start, GLsizei count) {
-        this.primitive = primitive; this.start = start; this.count = count;
+    this(GLenum primitive, GLint start, GLsizei count, Option!Instance instances) {
+        this.primitive = primitive; this.start = start; this.count = count; this.instances = instances;
     }
 
     final void execute(GlDevice device) {
-        glDrawArrays(primitive, start, count);
+        if (instances.isSome) {
+            assert(device.caps.instanceDraw);
+            glDrawArraysInstancedBaseInstance(
+                primitive, start, count, instances.count, instances.base
+            );
+        }
+        else {
+            glDrawArrays(primitive, start, count);
+        }
     }
 
     final void unload() {}
@@ -453,16 +462,59 @@ class DrawIndexedCommand : Command {
     GLsizei count;
     GLenum indexType;
     size_t offset;
+    GLint baseVertex;
+    Option!Instance instances;
 
-    this(GLenum primitive, GLsizei count, GLenum indexType, size_t offset) {
+    this(GLenum primitive, GLsizei count, GLenum indexType,
+            size_t offset, GLint baseVertex, Option!Instance instances) {
         this.primitive = primitive;
         this.count = count;
         this.indexType = indexType;
         this.offset = offset;
+        this.baseVertex = baseVertex;
+        this.instances = instances;
     }
 
     final void execute(GlDevice device) {
-        glDrawElements(primitive, count, indexType, cast(GLvoid*)offset);
+
+        assert(baseVertex == 0 || device.caps.vertexBase);
+        auto offsetp = cast(GLvoid*)offset;
+
+        if (instances.isSome) {
+            assert(device.caps.instanceDraw);
+            if (baseVertex == 0 && instances.base == 0) {
+                glDrawElementsInstanced(
+                    primitive, count, indexType, offsetp, instances.count
+                );
+            }
+            else if (baseVertex != 0 && instances.base == 0) {
+                glDrawElementsInstancedBaseVertex(
+                    primitive, count, indexType, offsetp, instances.count, baseVertex
+                );
+            }
+            else if (baseVertex == 0 && instances.base != 0) {
+                glDrawElementsInstancedBaseInstance(
+                    primitive, count, indexType, offsetp, instances.count, instances.base
+                );
+            }
+            else {
+                glDrawElementsInstancedBaseVertexBaseInstance(
+                    primitive, count, indexType, offsetp, instances.count, baseVertex, instances.base
+                );
+            }
+        }
+        else {
+            if (baseVertex == 0) {
+                glDrawElements(
+                    primitive, count, indexType, offsetp
+                );
+            }
+            else {
+                glDrawElementsBaseVertex(
+                    primitive, count, indexType, offsetp, baseVertex
+                );
+            }
+        }
     }
     final void unload() {}
 }
@@ -593,13 +645,13 @@ class GlCommandBuffer : CommandBuffer {
         _commands ~= new ClearCommand(none!ClearColor, depth, stencil);
     }
 
-    void draw(uint start, uint count, Option!Instance) {
+    void draw(uint start, uint count, Option!Instance instances) {
         // TODO instanced drawings
         assert(_cache.pso.loaded, "must bind pso before draw calls");
-        _commands ~= new DrawCommand(primitiveToGl(_cache.pso.descriptor.primitive), start, count);
+        _commands ~= new DrawCommand(primitiveToGl(_cache.pso.descriptor.primitive), start, count, instances);
     }
 
-    void drawIndexed(uint start, uint count, uint base, Option!Instance) {
+    void drawIndexed(uint start, uint count, uint base, Option!Instance instances) {
         // TODO instanced drawings
         assert(_cache.pso.loaded, "must bind pso before draw calls");
         assert(_cache.indexType != IndexType.None, "must bind index before indexed draw calls");
@@ -616,6 +668,8 @@ class GlCommandBuffer : CommandBuffer {
                 break;
             default: assert(false);
         }
-        _commands ~= new DrawIndexedCommand(primitiveToGl(_cache.pso.descriptor.primitive), count, index, offset);
+        _commands ~= new DrawIndexedCommand(
+            primitiveToGl(_cache.pso.descriptor.primitive), count, index, offset, base, instances
+        );
     }
 }

@@ -62,7 +62,8 @@ struct Caps {
         bool, "instanceDraw", 1,
         bool, "instanceBase", 1,
         bool, "instanceRate", 1,
-        byte, "", 4,
+        bool, "vertexBase", 1,
+        byte, "", 3,
     ));
 }
 

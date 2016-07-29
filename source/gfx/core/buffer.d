@@ -141,10 +141,14 @@ enum IndexType {
 
 /// Represents a slice into a vertex buffer. This is how index buffers are to be used
 struct VertexBufferSlice {
+    import gfx.core.typecons : Option;
+    import gfx.core.draw : Instance;
+
     IndexType type;
     size_t start;
     size_t end;
     size_t baseVertex;
+    Option!Instance instances;
     Rc!RawBuffer buffer;
 
     this(T)(IndexBuffer!T ibuf) {

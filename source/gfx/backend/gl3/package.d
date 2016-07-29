@@ -81,7 +81,8 @@ class GlDevice : Device {
     }
 
     @property const(ContextInfo) info() const { return _info; }
-    @property Caps caps() const { return _info.caps; }
+    final @property Caps caps() const { return _info.caps; }
+    final @property GlCaps glCaps() const { return _info.glCaps; }
 
     @property string name() const {
         return "OpenGl 3";
@@ -119,8 +120,8 @@ class GlFactory : Factory {
         _glCaps = glCaps;
     }
 
-    @property Caps caps() const { return _caps; }
-    @property GlCaps glCaps() const { return _glCaps; }
+    final @property Caps caps() const { return _caps; }
+    final @property GlCaps glCaps() const { return _glCaps; }
 
     TextureRes makeTexture(TextureCreationDesc desc, const(ubyte)[][] data) {
         return makeTextureImpl(glCaps.textureStorage, desc, data);

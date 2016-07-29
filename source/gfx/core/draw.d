@@ -49,8 +49,8 @@ ClearColor clearColor(T)(in T col) if (isClearColorCompType!T) {
 
 
 struct Instance {
-    uint instanceCount;
-    uint vertexCount;
+    uint count;
+    uint base;
 }
 
 /// An interface of the abstract command buffer. It collects commands in an
