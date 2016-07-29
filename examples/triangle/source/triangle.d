@@ -9,7 +9,7 @@ import gfx.core.program : ShaderSet, Program;
 import gfx.core.pso.meta;
 import gfx.core.pso : PipelineDescriptor, PipelineState, VertexBufferSet;
 import gfx.core.state : Rasterizer;
-import gfx.core.command : clearColor, Instance;
+import gfx.core.draw : clearColor, Instance;
 import gfx.core.encoder : Encoder;
 
 import gfx.window.glfw : gfxGlfwWindow;

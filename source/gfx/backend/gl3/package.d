@@ -22,7 +22,7 @@ import gfx.core.surface : SurfaceRes, BuiltinSurfaceRes, RawSurface;
 import gfx.core.program : ShaderStage, ShaderRes, ProgramRes, ProgramVars, Program;
 import gfx.core.view : ShaderResourceViewRes, RenderTargetViewRes, DepthStencilViewRes;
 import gfx.core.pso : PipelineStateRes, PipelineDescriptor;
-import gfx.core.command : CommandBuffer;
+import gfx.core.draw : CommandBuffer;
 
 import derelict.opengl3.gl3;
 

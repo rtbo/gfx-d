@@ -7,7 +7,7 @@ import gfx.backend.gl3.program;
 import gfx.backend.gl3.pso : GlPipelineState, OutputMerger;
 import gfx.core : maxVertexAttribs, maxColorTargets, AttribMask, ColorTargetMask, Rect, Primitive;
 import gfx.core.typecons : Option, some, none;
-import gfx.core.command : CommandBuffer, ClearColor, Instance;
+import gfx.core.draw : CommandBuffer, ClearColor, Instance;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.program : Program;
 import gfx.core.buffer : RawBuffer, IndexType;

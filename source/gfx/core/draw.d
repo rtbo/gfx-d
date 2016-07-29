@@ -1,4 +1,4 @@
-module gfx.core.command;
+module gfx.core.draw;
 
 import gfx.core : Rect;
 import gfx.core.rc : RefCounted;

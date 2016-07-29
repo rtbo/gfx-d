@@ -7,7 +7,7 @@ import gfx.core.format : Rgba8, Depth, newSwizzle;
 import gfx.core.buffer : VertexBuffer, IndexBuffer, VertexBufferSlice, ConstBuffer;
 import gfx.core.program : Program, ShaderSet;
 import gfx.core.texture : Texture2D, Sampler, FilterMethod, WrapMode;
-import gfx.core.command : clearColor, Instance;
+import gfx.core.draw : clearColor, Instance;
 import s = gfx.core.state : Rasterizer;
 import gfx.core.pso.meta;
 import gfx.core.pso : PipelineState;

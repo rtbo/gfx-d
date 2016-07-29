@@ -3,7 +3,7 @@ module gfx.core.encoder;
 import gfx.core : Device, Rect;
 import gfx.core.rc : Rc;
 import gfx.core.typecons : Option, some, none;
-import gfx.core.command : CommandBuffer, clearColor, Instance;
+import gfx.core.draw : CommandBuffer, clearColor, Instance;
 import gfx.core.format : Formatted, isFormatted;
 import gfx.core.buffer : Buffer, ConstBuffer, VertexBufferSlice, IndexType;
 import gfx.core.view : RenderTargetView, DepthStencilView;

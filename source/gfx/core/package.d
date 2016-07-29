@@ -2,7 +2,7 @@ module gfx.core;
 
 import gfx.core.rc : RefCounted;
 import gfx.core.factory : Factory;
-import gfx.core.command : CommandBuffer;
+import gfx.core.draw : CommandBuffer;
 import gfx.core.surface : BuiltinSurfaceRes;
 
 import std.traits;
