@@ -218,7 +218,7 @@ class Sampler : ResourceHolder {
 abstract class RawTexture : ResourceHolder {
     mixin(rcCode);
 
-    private TextureRes _res;
+    private Rc!TextureRes _res;
     private TextureType _type;
     private TexUsageFlags _usage;
     private ImageInfo _imgInfo;
@@ -241,10 +241,7 @@ abstract class RawTexture : ResourceHolder {
     }
 
     final void drop() {
-        if(_res) {
-            _res.release();
-            _res = null;
-        }
+        _res.unload();
     }
 
     final @property inout(TextureRes) res() inout { return _res; }
@@ -268,7 +265,6 @@ abstract class RawTexture : ResourceHolder {
         desc.imgInfo = imgInfo;
         desc.samples = _samples;
         _res = device.factory.makeTexture(desc, _initData);
-        _res.addRef();
         _initData = [];
     }
 }
