@@ -14,7 +14,7 @@ import gfx.core.pso : PipelineState;
 import gfx.core.encoder : Encoder;
 import gfx.window.glfw : gfxGlfwWindow;
 
-import gl3n.linalg : mat4, mat3, vec3;
+import gl3n.linalg : mat4, mat3, vec3, vec4;
 import derelict.opengl3.gl3;
 
 import std.stdio : writeln;
@@ -30,7 +30,7 @@ struct Vertex {
 
 struct Matrices {
     float[4][4] mvp;
-    float[3][3] normal;
+    float[4][4] normal;
 }
 
 struct Light {
@@ -165,10 +165,13 @@ void main()
     auto encoder = Encoder(window.device.makeCommandBuffer());
 
     // setting lights
+    auto normalize(float[4] vec) {
+        return vec4(vec).normalized().vector;
+    }
     encoder.updateConstBuffer(nlBlk, NumLights(2));
     encoder.updateConstBuffer(ligBlk, [
-        Light([1.0, 1.0, 0.0, 0.0],    [0.8, 0.4, 0.4, 1.0]),
-        Light([-1.0, 1.0, 0.0, 0.0],    [0.4, 0.4, 0.8, 1.0]),
+        Light(normalize([1.0, 1.0, -1.0, 0.0]),    [0.8, 0.5, 0.2, 1.0]),
+        Light(normalize([-1.0, 1.0, -1.0, 0.0]),    [0.2, 0.5, 0.8, 1.0]),
     ]);
 
     // will quit on any key hit (as well as on close by 'x' click)
@@ -176,25 +179,27 @@ void main()
         window.shouldClose = true;
     };
 
-    import std.datetime : StopWatch;
-    size_t frameCount;
-    StopWatch sw;
-    sw.start();
-
     // 6 RPM at 60 FPS
     immutable puls = 6 * 2*PI / 3600f;
     auto angle = 0f;
     immutable view = mat4.look_at(vec3(0, -5, 3), vec3(0, 0, 0), vec3(0, 0, 1));
     immutable proj = mat4.perspective(640, 480, 45, 1, 10);
+    immutable viewProj = proj*view;
+
+    import std.datetime : StopWatch;
+    size_t frameCount;
+    StopWatch sw;
+    sw.start();
 
     /* Loop until the user closes the window */
     while (!window.shouldClose) {
 
         immutable model = mat4.rotation(angle, vec3(0, 0, 1));
-        immutable MV = view*model;
+        immutable mvp = viewProj*model;
+        immutable normals = model.inverse().transposed();
         immutable matrices = Matrices(
-            (proj*MV).transposed().matrix,
-            mat3(model).transposed().matrix
+            mvp.transposed().matrix,
+            normals.transposed().matrix
         );
         encoder.updateConstBuffer(matBlk, matrices);
 

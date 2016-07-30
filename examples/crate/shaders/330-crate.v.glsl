@@ -9,11 +9,11 @@ out vec2 v_TexCoord;
 
 uniform Matrices {
 	mat4 u_mvpMat;
-	mat3 u_normalMat;
+	mat4 u_normalMat;
 };
 
 void main() {
-	v_Normal = normalize(u_normalMat * a_Normal);
+	v_Normal = (u_normalMat * vec4(a_Normal, 0.0)).xyz;
 	v_TexCoord = a_TexCoord;
     gl_Position = u_mvpMat * vec4(a_Pos, 1.0);
 }

@@ -14,8 +14,8 @@ uniform NumLights {
 };
 
 struct Light {
-	vec3 direction;		// camera space
-	vec3 color;			// diffuse color
+	vec4 direction;		// world space, prenormalized
+	vec4 color;
 };
 
 layout (std140) uniform Lights {
@@ -31,10 +31,8 @@ void main() {
 
 	vec3 bright = vec3(0.0, 0.0, 0.0);
 	for (int i=0; i<u_NumLights && i<MAX_LIGHTS; ++i) {
-		vec3 to_light = normalize(-u_Lights[i].direction.xyz);
+		vec3 to_light = -u_Lights[i].direction.xyz;
 		vec3 light_col = u_Lights[i].color.rgb;
-		//vec3 to_light = normalize(-direction.xyz);
-		//vec3 light_col = color.rgb;
 		float d = max(dot(normal, to_light), 0.0);
 		bright += d * light_col;
 	}
