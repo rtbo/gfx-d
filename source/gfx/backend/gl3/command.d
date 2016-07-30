@@ -18,7 +18,7 @@ import gfx.core.pso :   RawPipelineState, VertexBufferSet, ConstantBlockSet,
 import gfx.core.state : Rasterizer, CullFace;
 import gfx.core.view : RawShaderResourceView, RawRenderTargetView, RawDepthStencilView;
 import gfx.core.format : ChannelType, SurfaceType;
-import gfx.core.state : Comparison, Depth, Stencil;
+import gfx.core.state : Comparison, Depth, Stencil, StencilOp, StencilSide;
 
 import derelict.opengl3.gl3;
 
@@ -45,6 +45,19 @@ GLenum comparisonToGl(in Comparison fun) {
         case Comparison.Greater:        return GL_GREATER;
         case Comparison.NotEqual:       return GL_NOTEQUAL;
         case Comparison.Always:         return GL_ALWAYS;
+    }
+}
+
+GLenum operationToGl(in StencilOp op) {
+    final switch (op) {
+        case StencilOp.Keep:            return GL_KEEP;
+        case StencilOp.Zero:            return GL_ZERO;
+        case StencilOp.Replace:         return GL_REPLACE;
+        case StencilOp.IncrementClamp:  return GL_INCR;
+        case StencilOp.IncrementWrap:   return GL_INCR_WRAP;
+        case StencilOp.DecrementClamp:  return GL_DECR;
+        case StencilOp.DecrementWrap:   return GL_DECR_WRAP;
+        case StencilOp.Invert:          return GL_INVERT;
     }
 }
 
@@ -97,7 +110,7 @@ class SetViewportCommand : Command {
     final void unload() {}
 }
 
-class SetScissorsCommand : Command {
+class SetScissorCommand : Command {
     Option!Rect rect;
     this(Option!Rect rect) { this.rect = rect; }
 
@@ -135,6 +148,41 @@ class SetDepthStateCommand : Command {
         }
         unload();
     }
+    final void unload() {
+        pso.unload();
+    }
+}
+
+class SetStencilTestCommand : Command {
+    Rc!RawPipelineState pso;
+    ubyte[2] stencilRef;
+
+    this(RawPipelineState pso, ubyte[2] stencilRef) {
+        this.pso = pso; this.stencilRef = stencilRef;
+    }
+
+    final void execute (GlDevice device) {
+        import gfx.core.util : unsafeCast;
+        assert(pso.loaded);
+        if (!pso.pinned) pso.pinResources(device);
+        auto stencil = unsafeCast!GlPipelineState(pso.res).output.stencil;
+        if (stencil.isSome) {
+            glEnable(GL_STENCIL_TEST);
+            void bindSide(GLenum face, StencilSide side, ubyte refVal) {
+                glStencilFuncSeparate(face, comparisonToGl(side.fun), refVal, side.maskRead);
+                glStencilMaskSeparate(face, side.maskWrite);
+                glStencilOpSeparate(
+                    face, operationToGl(side.opFail), operationToGl(side.opDepthFail), operationToGl(side.opPass)
+                );
+            }
+            immutable cull = pso.descriptor.rasterizer.cullFace;
+            if (cull != CullFace.Front) bindSide(GL_FRONT, stencil.front, stencilRef[0]);
+            if (cull != CullFace.Back) bindSide(GL_BACK, stencil.back, stencilRef[1]);
+        }
+
+        unload();
+    }
+
     final void unload() {
         pso.unload();
     }
@@ -663,6 +711,25 @@ class GlCommandBuffer : CommandBuffer {
 
     final void setViewport(Rect r) {
         _commands ~= new SetViewportCommand(r);
+    }
+
+    final void setScissor(Rect r) {
+        Option!Rect or;
+        if (_cache.pso.loaded && _cache.pso.descriptor.scissor) {
+            or = r;
+        }
+        _commands ~= new SetScissorCommand(or);
+    }
+
+    final void setRefValues(float[4] blend, ubyte[2] stencil) {
+        assert(_cache.pso.loaded);
+        _commands ~= new SetStencilTestCommand(_cache.pso, stencil);
+        _commands ~= new class Command {
+            final void execute(GlDevice device) {
+                glBlendColor(blend[0], blend[1], blend[2], blend[3]);
+            }
+            final void unload() {}
+        };
     }
 
     final void updateBuffer(RawBuffer buffer, const(ubyte)[] data, size_t offset) {

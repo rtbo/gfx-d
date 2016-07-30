@@ -1,5 +1,6 @@
 module gfx.core.pso.meta;
 
+import gfx.core : Rect;
 import gfx.core.rc : Rc;
 import gfx.core.format : SurfaceType, ChannelType, Format, Formatted, isFormatted;
 import gfx.core.program : BaseType, VarType, varBaseType, varDim1, varDim2;
@@ -9,8 +10,9 @@ import gfx.core.view : RenderTargetView, DepthStencilView, ShaderResourceView;
 import gfx.core.pso :   StructField, PipelineDescriptor, ColorInfo,
                         VertexAttribDesc, ConstantBlockDesc,
                         ResourceViewDesc, SamplerDesc, ColorTargetDesc;
-import gfx.core.state : ColorFlags, ColorMask, Depth;
+import gfx.core.state : ColorFlags, ColorMask, Depth, Stencil;
 
+import std.typecons : Tuple, tuple;
 
 
 /// UDA struct to associate names of shader symbols at compile time
@@ -27,6 +29,13 @@ struct GfxSlot {
 struct GfxDepth {
     Depth value;
 }
+
+/// UDA struct to associate stencil state to stencil targets at compile time
+struct GfxStencil {
+    Stencil value;
+}
+
+
 
 // input attributes
 struct VertexInput(T) {
@@ -58,7 +67,7 @@ struct DepthStencilOutput(T) if (isFormatted!T) {
     alias FormatType = T;
 }
 
-
+struct Scissor {}
 
 
 template InitType(MF) if (isMetaField!MF)
@@ -82,6 +91,15 @@ template InitType(MF) if (isMetaField!MF)
     }
     else static if (isMetaDepthOutputField!MF) {
         alias InitType = Depth;
+    }
+    else static if (isMetaStencilOutputField!MF) {
+        alias InitType = Stencil;
+    }
+    else static if (isMetaDepthStencilOutputField!MF) {
+        alias InitType = Tuple!(Depth, Stencil);
+    }
+    else static if (isMetaScissorField!MF) {
+        alias InitType = void;
     }
     else {
         static assert(false, "Unsupported pipeline meta type: "~MF.stringof);
@@ -109,6 +127,15 @@ template DataType(MF) if (isMetaField!MF)
     else static if (isMetaDepthOutputField!MF) {
         alias DataType = Rc!(DepthStencilView!(MF.FormatType));
     }
+    else static if (isMetaStencilOutputField!MF) {
+        alias DataType = Tuple!(Rc!(DepthStencilView!(MF.FormatType)), ubyte[2]);
+    }
+    else static if (isMetaDepthStencilOutputField!MF) {
+        alias DataType = Tuple!(Rc!(DepthStencilView!(MF.FormatType)), ubyte[2]);
+    }
+    else static if (isMetaScissorField!MF) {
+        alias DataType = Rect;
+    }
     else {
         static assert(false, "Unsupported pipeline meta type: "~MF.stringof);
     }
@@ -121,7 +148,10 @@ template isMetaField(MF) {
                         isMetaResourceViewField!MF ||
                         isMetaResourceSamplerField!MF ||
                         isMetaColorOutputField!MF ||
-                        isMetaDepthOutputField!MF;
+                        isMetaDepthOutputField!MF ||
+                        isMetaStencilOutputField!MF ||
+                        isMetaDepthStencilOutputField!MF ||
+                        isMetaScissorField!MF;
 }
 
 template isMetaStruct(M) {
@@ -190,7 +220,7 @@ alias metaResourceSamplerFields(MS) = metaResolveFields!(MS, isMetaResourceSampl
 template isMetaColorOutputField(MF) {
     enum isMetaColorOutputField = is(MF == ColorOutput!T, T);
 }
-alias MetaColorOutputField(MF, string f) = MetaFormattedField!(MF, f);
+alias MetaColorOutputField(MS, string f) = MetaFormattedField!(MS, f);
 alias metaColorOutputFields(MS) = metaResolveFields!(MS, isMetaColorOutputField, MetaColorOutputField);
 
 
@@ -198,7 +228,7 @@ alias metaColorOutputFields(MS) = metaResolveFields!(MS, isMetaColorOutputField,
 template isMetaDepthOutputField(MF) {
     enum isMetaDepthOutputField = is(MF == DepthOutput!T, T);
 }
-alias MetaDepthOutputField(MF, string f) = MetaFormattedField!(MF, f);
+alias MetaDepthOutputField(MS, string f) = MetaFormattedField!(MS, f);
 alias metaDepthOutputFields(MS) = metaResolveFields!(MS, isMetaDepthOutputField, MetaDepthOutputField);
 
 
@@ -206,7 +236,7 @@ alias metaDepthOutputFields(MS) = metaResolveFields!(MS, isMetaDepthOutputField,
 template isMetaStencilOutputField(MF) {
     enum isMetaStencilOutputField = is(MF == StencilOutput!T, T);
 }
-alias MetaStencilOutputField(MF, string f) = MetaFormattedField!(MF, f);
+alias MetaStencilOutputField(MS, string f) = MetaFormattedField!(MS, f);
 alias metaStencilOutputFields(MS) = metaResolveFields!(MS, isMetaStencilOutputField, MetaStencilOutputField);
 
 
@@ -214,10 +244,20 @@ alias metaStencilOutputFields(MS) = metaResolveFields!(MS, isMetaStencilOutputFi
 template isMetaDepthStencilOutputField(MF) {
     enum isMetaDepthStencilOutputField = is(MF == DepthStencilOutput!T, T);
 }
-alias MetaDepthStencilOutputField(MF, string f) = MetaFormattedField!(MF, f);
+alias MetaDepthStencilOutputField(MS, string f) = MetaFormattedField!(MS, f);
 alias metaDepthStencilOutputFields(MS) =
             metaResolveFields!(MS, isMetaDepthStencilOutputField, MetaDepthStencilOutputField);
 
+
+template isMetaScissorField(MF) {
+    enum isMetaScissorField = is(MF == Scissor);
+}
+template MetaScissorField(MS, string f) {
+    alias MF = FieldType!(MS, f);
+    static assert(isMetaScissorField!MF);
+    enum name = f;
+}
+alias metaScissorFields(MS) = metaResolveFields!(MS, isMetaScissorField, MetaScissorField);
 
 
 template isMetaFormattedField(MF) {
@@ -302,6 +342,15 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
     else static if (isMetaDepthOutputField!MF) {
         enum InitValue = resolveUDAValue!(GfxDepth, MS, field, Depth, Depth.init);
     }
+    else static if (isMetaStencilOutputField!MF) {
+        enum InitValue = resolveUDAValue!(GfxStencil, MS, field, Stencil, Stencil.init);
+    }
+    else static if (isMetaDepthStencilOutputField!MF) {
+        enum InitValue = tuple(
+            resolveUDAValue!(GfxDepth, MS, field, Depth, Depth.init),
+            resolveUDAValue!(GfxStencil, MS, field, Stencil, Stencil.init),
+        );
+    }
 }
 
 
@@ -327,7 +376,9 @@ template PipelineStruct(MS, alias Trait, bool hasDefValue) if (isMetaStruct!MS) 
     string fieldsCode() {
         string res;
         foreach(f; FieldNameTuple!MS) {
-            res ~= format("%s;\n", fieldCode!f());
+            static if (!is(Trait!(MS, f).Type == void)) {
+                res ~= format("%s;\n", fieldCode!f());
+            }
         }
         return res;
     }
@@ -336,7 +387,9 @@ template PipelineStruct(MS, alias Trait, bool hasDefValue) if (isMetaStruct!MS) 
         string defValueCode() {
             string res = "enum defValue = Struct (";
             foreach(i, f; FieldNameTuple!MS) {
-                res ~= format("Trait!(MS, \"%s\").defValue, ", f);
+                static if (!is(Trait!(MS, f).Type == void)) {
+                    res ~= format("Trait!(MS, \"%s\").defValue, ", f);
+                }
             }
             return res ~ ");";
         }

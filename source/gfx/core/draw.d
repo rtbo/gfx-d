@@ -86,13 +86,11 @@ interface CommandBuffer : RefCounted {
     /// Bind an index buffer
     void bindIndex(RawBuffer, IndexType);
     /// Set viewport rect
-    void setViewport(Rect r);
-    /+
+    void setViewport(Rect);
     /// Set scissor rectangle
-    void setScissor(target.Rect);
+    void setScissor(Rect);
     /// Set reference values for the blending and stencil front/back
-    void setRefValues(s.RefValues);
-    +/
+    void setRefValues(float[4] blend, ubyte[2] stencil);
     /// Update a vertex/index/uniform buffer
     void updateBuffer(RawBuffer, const(ubyte)[] data, size_t offset);
     /// Update a texture

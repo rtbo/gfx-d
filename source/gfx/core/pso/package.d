@@ -11,7 +11,7 @@
 /// for other backends, the pipeline switch is emulated
 module gfx.core.pso;
 
-import gfx.core :   Device, Resource, ResourceHolder, Primitive,
+import gfx.core :   Device, Resource, ResourceHolder, Primitive, Rect,
                     maxVertexAttribs, maxColorTargets, AttribMask, ColorTargetMask;
 import gfx.core.rc : Rc, rcCode, RefCounted;
 import gfx.core.typecons : Option, none, some;
@@ -110,7 +110,7 @@ struct DepthStencilDesc {
 struct PipelineDescriptor {
     Primitive   primitive;
     Rasterizer  rasterizer;
-    bool        scissors;
+    bool        scissor;
 
     VertexAttribDesc[]      vertexAttribs;
     ConstantBlockDesc[]     constantBlocks;
@@ -213,6 +213,9 @@ struct RawDataSet {
     ResourceViewSet resourceViews;
     SamplerSet samplers;
     PixelTargetSet pixelTargets;
+    Rect scissor;
+    float[4] blendRef;
+    ubyte[2] stencilRef;
 }
 
 
@@ -273,7 +276,8 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
                                     metaColorOutputFields,
                                     metaDepthOutputFields,
                                     metaStencilOutputFields,
-                                    metaDepthStencilOutputFields;
+                                    metaDepthStencilOutputFields,
+                                    metaScissorFields;
         import std.format : format;
         foreach (vif; metaVertexInputFields!MS) {
             _descriptor.vertexAttribs ~= mixin(format("initStruct.%s[]", vif.name));
@@ -295,11 +299,28 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
                     metaDepthStencilOutputFields!MS.length;
         static assert(numDS == 0 || numDS == 1,
                 MS.stringof~" has too many depth-stencil targets (should be one at most)");
-        foreach(dof; metaDepthOutputFields!MS) {
+        foreach (dof; metaDepthOutputFields!MS) {
             alias Fmt = Formatted!(dof.FormatType);
             _descriptor.depthStencil = some(DepthStencilDesc(
-                        Fmt.Surface.surfaceType,
-                        mixin(format("initStruct.%s", dof.name))));
+                Fmt.Surface.surfaceType, mixin(format("initStruct.%s", dof.name))
+            ));
+        }
+        foreach (sof; metaStencilOutputFields!MS) {
+            alias Fmt = Formatted!(sof.FormatType);
+            _descriptor.depthStencil = some(DepthStencilDesc(
+                Fmt.Surface.surfaceType, mixin(format("initStruct.%s", dof.name))
+            ));
+        }
+        foreach (sof; metaDepthStencilOutputFields!MS) {
+            alias Fmt = Formatted!(sof.FormatType);
+            _descriptor.depthStencil = some(DepthStencilDesc(
+                Fmt.Surface.surfaceType,
+                mixin(format("initStruct.%s[0]", dof.name)), mixin(format("initStruct.%s[1]", dof.name))
+            ));
+        }
+        foreach (i, sf; metaScissorFields!MS) {
+            static assert(i == 0, "one scissor field allowed");
+            _descriptor.scissor = true;
         }
     }
 
@@ -368,7 +389,8 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
                                     metaColorOutputFields,
                                     metaDepthOutputFields,
                                     metaStencilOutputFields,
-                                    metaDepthStencilOutputFields;
+                                    metaDepthStencilOutputFields,
+                                    metaScissorFields;
         import std.format : format;
         import std.traits : Fields;
 
@@ -399,11 +421,16 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
             res.pixelTargets.depth = mixin(format("dataStruct.%s", dof.name));
         }
         foreach (sof; metaStencilOutputFields!MS) {
-            res.pixelTargets.stencil = mixin(format("dataStruct.%s", sof.name));
+            res.pixelTargets.stencil = mixin(format("dataStruct.%s[0]", sof.name));
+            res.stencilRef = mixin(format("dataStruct.%s[1]", sof.name));
         }
         foreach (dsof; metaDepthStencilOutputFields!MS) {
-            res.pixelTargets.depth = mixin(format("dataStruct.%s", dsof.name));
-            res.pixelTargets.stencil = mixin(format("dataStruct.%s", dsof.name));
+            res.pixelTargets.depth = mixin(format("dataStruct.%s[0]", dsof.name));
+            res.pixelTargets.stencil = mixin(format("dataStruct.%s[0]", dsof.name));
+            res.stencilRef = mixin(format("dataStruct.%s[1]", sof.name));
+        }
+        foreach (sf; metaScissorFields!MS) {
+            res.scissor = mixin(format("dataStruct.%s", sf.name));
         }
         return res;
     }

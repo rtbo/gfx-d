@@ -64,6 +64,8 @@ struct Encoder {
         auto dataSet = pso.makeDataSet(data); // TODO make data set cached member of pso;
         _cmdBuf.bindPipelineState(pso);
         _cmdBuf.bindVertexBuffers(dataSet.vertexBuffers);
+        _cmdBuf.bindPixelTargets(dataSet.pixelTargets);
+        _cmdBuf.setRefValues(dataSet.blendRef, dataSet.stencilRef);
         _cmdBuf.bindConstantBuffers(dataSet.constantBlocks);
         _cmdBuf.bindResourceViews(dataSet.resourceViews);
         _cmdBuf.bindSamplers(dataSet.samplers);
