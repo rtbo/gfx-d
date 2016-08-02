@@ -1,7 +1,7 @@
 module gfx.backend.gl3.command;
 
 import gfx.backend.gl3 : GlDevice;
-import gfx.backend.gl3.state : setRasterizer;
+import gfx.backend.gl3.state : setRasterizer, bindBlend, bindBlendSlot;
 import gfx.backend.gl3.buffer : GlBuffer, GlVertexBuffer;
 import gfx.backend.gl3.program;
 import gfx.backend.gl3.pso : GlPipelineState, OutputMerger;
@@ -187,6 +187,38 @@ class SetStencilTestCommand : Command {
         pso.unload();
     }
 }
+
+
+class SetBlendStateCommand : Command {
+    Rc!RawPipelineState pso;
+    this(RawPipelineState pso) {
+        this.pso = pso;
+    }
+    final void execute(GlDevice device) {
+        assert(pso.loaded);
+        if (!pso.pinned) pso.pinResources(device);
+
+        if (device.caps.separateBlendSlots) {
+            foreach (ct; pso.descriptor.colorTargets) {
+                bindBlendSlot(ct.info, ct.slot);
+            }
+        }
+        else {
+            foreach (ct; pso.descriptor.colorTargets) {
+                if (ct.slot == 0) {
+                    bindBlend(ct.info);
+                    break;
+                }
+            }
+        }
+
+        unload();
+    }
+    final void unload() {
+        pso.unload();
+    }
+}
+
 
 class BindProgramCommand : Command {
     Rc!Program prog;
@@ -651,6 +683,7 @@ class GlCommandBuffer : CommandBuffer {
         _commands ~= new BindProgramCommand(pso.program);
         _commands ~= new SetRasterizerCommand(pso.descriptor.rasterizer);
         _commands ~= new SetDepthStateCommand(pso);
+        _commands ~= new SetBlendStateCommand(pso);
     }
 
     final void bindVertexBuffers(VertexBufferSet set) {

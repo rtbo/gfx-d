@@ -63,7 +63,8 @@ struct Caps {
         bool, "instanceBase", 1,
         bool, "instanceRate", 1,
         bool, "vertexBase", 1,
-        byte, "", 3,
+        bool, "separateBlendSlots", 1,
+        byte, "", 2,
     ));
 }
 

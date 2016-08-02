@@ -10,7 +10,7 @@ import gfx.core.view : RenderTargetView, DepthStencilView, ShaderResourceView;
 import gfx.core.pso :   StructField, PipelineDescriptor, ColorInfo,
                         VertexAttribDesc, ConstantBlockDesc,
                         ResourceViewDesc, SamplerDesc, ColorTargetDesc;
-import gfx.core.state : ColorFlags, ColorMask, Depth, Stencil;
+import gfx.core.state : ColorFlags, ColorMask, Depth, Stencil, Blend;
 
 import std.typecons : Tuple, tuple;
 
@@ -35,6 +35,16 @@ struct GfxStencil {
     Stencil value;
 }
 
+/// UDA struct to associate blend state to blend targets at compile time
+struct GfxColorMask {
+    ColorMask value;
+}
+
+/// UDA struct to associate blend state to blend targets at compile time
+struct GfxBlend {
+    Blend value;
+}
+
 
 
 // input attributes
@@ -55,6 +65,9 @@ struct ResourceSampler {}
 
 // output targets
 struct ColorOutput(T) if (isFormatted!T) {
+    alias FormatType = T;
+}
+struct BlendOutput(T) if (isFormatted!T) {
     alias FormatType = T;
 }
 struct DepthOutput(T) if (isFormatted!T) {
@@ -87,6 +100,9 @@ template InitType(MF) if (isMetaField!MF)
         alias InitType = SamplerDesc;
     }
     else static if (isMetaColorOutputField!MF) {
+        alias InitType = ColorTargetDesc;
+    }
+    else static if (isMetaBlendOutputField!MF) {
         alias InitType = ColorTargetDesc;
     }
     else static if (isMetaDepthOutputField!MF) {
@@ -124,6 +140,9 @@ template DataType(MF) if (isMetaField!MF)
     else static if (isMetaColorOutputField!MF) {
         alias DataType = Rc!(RenderTargetView!(MF.FormatType));
     }
+    else static if (isMetaBlendOutputField!MF) {
+        alias DataType = Rc!(RenderTargetView!(MF.FormatType));
+    }
     else static if (isMetaDepthOutputField!MF) {
         alias DataType = Rc!(DepthStencilView!(MF.FormatType));
     }
@@ -148,6 +167,7 @@ template isMetaField(MF) {
                         isMetaResourceViewField!MF ||
                         isMetaResourceSamplerField!MF ||
                         isMetaColorOutputField!MF ||
+                        isMetaBlendOutputField!MF ||
                         isMetaDepthOutputField!MF ||
                         isMetaStencilOutputField!MF ||
                         isMetaDepthStencilOutputField!MF ||
@@ -225,6 +245,14 @@ alias metaColorOutputFields(MS) = metaResolveFields!(MS, isMetaColorOutputField,
 
 
 
+template isMetaBlendOutputField(MF) {
+    enum isMetaBlendOutputField = is(MF == BlendOutput!T, T);
+}
+alias MetaBlendOutputField(MS, string f) = MetaFormattedField!(MS, f);
+alias metaBlendOutputFields(MS) = metaResolveFields!(MS, isMetaBlendOutputField, MetaBlendOutputField);
+
+
+
 template isMetaDepthOutputField(MF) {
     enum isMetaDepthOutputField = is(MF == DepthOutput!T, T);
 }
@@ -263,6 +291,7 @@ alias metaScissorFields(MS) = metaResolveFields!(MS, isMetaScissorField, MetaSci
 template isMetaFormattedField(MF) {
     enum isMetaFormattedField =     isMetaResourceViewField!MF ||
                                     isMetaColorOutputField!MF ||
+                                    isMetaBlendOutputField!MF ||
                                     isMetaDepthOutputField!MF ||
                                     isMetaStencilOutputField!MF ||
                                     isMetaDepthStencilOutputField!MF;
@@ -336,7 +365,19 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
         import gfx.core.format : format;
         enum InitValue = ColorTargetDesc(
             resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
-            format!(MF.FormatType), ColorInfo.from(cast(ColorMask)ColorFlags.All)
+            format!(MF.FormatType), ColorInfo(
+                resolveUDAValue!(GfxColorMask, MS, field, ColorMask, ColorMask(ColorFlags.All))
+            )
+        );
+    }
+    else static if (isMetaBlendOutputField!MF) {
+        import gfx.core.format : format;
+        enum InitValue = ColorTargetDesc(
+            resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
+            format!(MF.FormatType), ColorInfo(
+                resolveUDAValue!(GfxColorMask, MS, field, ColorMask, ColorMask(ColorFlags.All)),
+                resolveUDAValue!(GfxBlend, MS, field, Blend, Blend.init)
+            )
         );
     }
     else static if (isMetaDepthOutputField!MF) {
@@ -494,6 +535,8 @@ version(unittest) {
     static assert(resolveGfxSlot!(TestNoUDA,	"col") == ubyte.max);
     static assert(resolveGfxName!(TestMixedUDA, "pos") == "a_Pos");
     static assert(resolveGfxSlot!(TestMixedUDA,	"col") == 1);
+    static assert(resolveGfxName!(TestMixedUDA, "col") == "col");
+    static assert(resolveGfxSlot!(TestMixedUDA, "pos") == ubyte.max);
 }
 
 

@@ -107,6 +107,7 @@ struct ContextInfo {
         res.caps.instanceBase = res.versionOrExtensionSupported(4, 2, "GL_ARB_base_instance");
         res.caps.instanceRate = res.versionOrExtensionSupported(3, 3, "GL_ARB_instanced_arrays");
         res.caps.vertexBase = res.versionOrExtensionSupported(3, 2, "GL_ARB_draw_elements_base_vertex");
+        res.caps.separateBlendSlots = res.versionOrExtensionSupported(4, 0, "GL_ARB_draw_buffers_blend");
 
         res.glCaps.samplerObject = res.versionOrExtensionSupported(3, 3, "GL_ARB_sampler_objects");
         res.glCaps.textureStorage = res.versionOrExtensionSupported(4, 2, "GL_ARB_texture_storage") &&

@@ -15,14 +15,13 @@ import gfx.core :   Device, Resource, ResourceHolder, Primitive, Rect,
                     maxVertexAttribs, maxColorTargets, AttribMask, ColorTargetMask;
 import gfx.core.rc : Rc, rcCode, RefCounted;
 import gfx.core.typecons : Option, none, some;
-import gfx.core.state : Rasterizer, ColorMask, ColorFlags, BlendChannel, Blend;
+import gfx.core.state : Rasterizer, ColorMask, ColorFlags, BlendChannel, Blend, Depth, Stencil;
 import gfx.core.format : Format, SurfaceType, Formatted;
 import gfx.core.buffer : RawBuffer;
 import gfx.core.texture : Sampler;
 import gfx.core.program : Program, VarType, ProgramVars;
 import gfx.core.view : RawShaderResourceView, RawRenderTargetView, RawDepthStencilView;
 import gfx.core.pso.meta : isMetaStruct;
-import s = gfx.core.state;
 
 
 // descriptor structs
@@ -61,19 +60,21 @@ struct SamplerDesc {
 
 struct ColorInfo {
     ColorMask mask;
-    Option!BlendChannel color;
-    Option!BlendChannel alpha;
+    Option!Blend blend;
 
-    static ColorInfo from(ColorMask mask) {
-        return ColorInfo(mask, none!BlendChannel, none!BlendChannel);
+    this (ColorMask mask) {
+        this.mask = mask;
+        this.blend = none!Blend;
     }
 
-    static ColorInfo from(Blend blend) {
-        ColorInfo info;
-        info.mask = ColorFlags.All;
-        info.color = blend.color;
-        info.alpha = blend.alpha;
-        return info;
+    this(Blend blend) {
+        this.mask = ColorMask(ColorFlags.All);
+        this.blend = some(blend);
+    }
+
+    this(ColorMask mask, Blend blend) {
+        this.mask = mask;
+        this.blend = some(blend);
     }
 }
 
@@ -88,18 +89,18 @@ struct ColorTargetDesc {
 struct DepthStencilDesc {
     SurfaceType surface;
 
-    Option!(s.Depth) depth;
-    Option!(s.Stencil) stencil;
+    Option!Depth depth;
+    Option!Stencil stencil;
 
-    this(SurfaceType surface, s.Depth depth) {
+    this(SurfaceType surface, Depth depth) {
         this.surface = surface;
         this.depth = some(depth);
     }
-    this(SurfaceType surface, s.Stencil stencil) {
+    this(SurfaceType surface, Stencil stencil) {
         this.surface = surface;
         this.stencil = some(stencil);
     }
-    this(SurfaceType surface, s.Depth depth, s.Stencil stencil) {
+    this(SurfaceType surface, Depth depth, Stencil stencil) {
         this.surface = surface;
         this.depth = some(depth);
         this.stencil = some(stencil);
@@ -274,6 +275,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
                                     metaResourceViewFields,
                                     metaResourceSamplerFields,
                                     metaColorOutputFields,
+                                    metaBlendOutputFields,
                                     metaDepthOutputFields,
                                     metaStencilOutputFields,
                                     metaDepthStencilOutputFields,
@@ -294,6 +296,9 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
         foreach (cof; metaColorOutputFields!MS) {
             _descriptor.colorTargets ~= mixin(format("initStruct.%s", cof.name));
         }
+        foreach (bof; metaBlendOutputFields!MS) {
+            _descriptor.colorTargets ~= mixin(format("initStruct.%s", bof.name));
+        }
         enum numDS = metaDepthOutputFields!MS.length +
                     metaStencilOutputFields!MS.length +
                     metaDepthStencilOutputFields!MS.length;
@@ -308,7 +313,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
         foreach (sof; metaStencilOutputFields!MS) {
             alias Fmt = Formatted!(sof.FormatType);
             _descriptor.depthStencil = some(DepthStencilDesc(
-                Fmt.Surface.surfaceType, mixin(format("initStruct.%s", dof.name))
+                Fmt.Surface.surfaceType, mixin(format("initStruct.%s", sof.name))
             ));
         }
         foreach (sof; metaDepthStencilOutputFields!MS) {
@@ -387,6 +392,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
                                     metaResourceViewFields,
                                     metaResourceSamplerFields,
                                     metaColorOutputFields,
+                                    metaBlendOutputFields,
                                     metaDepthOutputFields,
                                     metaStencilOutputFields,
                                     metaDepthStencilOutputFields,
@@ -414,8 +420,11 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
         foreach (rsf; metaResourceSamplerFields!MS) {
             res.samplers.add(mixin(format("dataStruct.%s", rsf.name)));
         }
-        foreach (rtf; metaColorOutputFields!MS) {
-            res.pixelTargets.addColor(mixin(format("dataStruct.%s", rtf.name)));
+        foreach (cof; metaColorOutputFields!MS) {
+            res.pixelTargets.addColor(mixin(format("dataStruct.%s", cof.name)));
+        }
+        foreach (bof; metaBlendOutputFields!MS) {
+            res.pixelTargets.addColor(mixin(format("dataStruct.%s", bof.name)));
         }
         foreach (dof; metaDepthOutputFields!MS) {
             res.pixelTargets.depth = mixin(format("dataStruct.%s", dof.name));
