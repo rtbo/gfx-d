@@ -12,6 +12,7 @@
 	},
 	"subPackages": [
 		"./examples/triangle",
-		"./examples/crate"
+		"./examples/crate",
+		"./examples/stencil"
 	]
 }

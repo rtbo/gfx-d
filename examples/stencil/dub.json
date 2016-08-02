@@ -1,0 +1,16 @@
+{
+	"name": "stencil",
+	"authors": [
+		"Remi Thebault"
+	],
+	"description": "gfx-d stencil example",
+	"copyright": "Copyright © 2016, Remi Thebault",
+	"license": "MIT",
+	"targetType": "executable",
+	"stringImportPaths": ["shaders"],
+    "dependencies": {
+        "gfx-d" : { "path": "../../"  },
+        "derelict-glfw3" : "~>3.1.0",
+        "derelict-gl3" : "~>1.0.18"
+    }
+}
