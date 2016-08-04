@@ -115,83 +115,6 @@ struct Scissor {
 }
 
 
-template InitType(MF) if (isMetaField!MF)
-{
-    import std.traits : Fields;
-
-    static if (isMetaVertexInputField!MF) {
-        alias InitType = VertexAttribDesc[(Fields!(MF.VertexType)).length];
-    }
-    else static if (isMetaConstantBlockField!MF) {
-        alias InitType = ConstantBlockDesc;
-    }
-    else static if (isMetaResourceViewField!MF) {
-        alias InitType = ResourceViewDesc;
-    }
-    else static if (isMetaResourceSamplerField!MF) {
-        alias InitType = SamplerDesc;
-    }
-    else static if (isMetaColorOutputField!MF) {
-        alias InitType = ColorTargetDesc;
-    }
-    else static if (isMetaBlendOutputField!MF) {
-        alias InitType = ColorTargetDesc;
-    }
-    else static if (isMetaDepthOutputField!MF) {
-        alias InitType = Depth;
-    }
-    else static if (isMetaStencilOutputField!MF) {
-        alias InitType = Stencil;
-    }
-    else static if (isMetaDepthStencilOutputField!MF) {
-        alias InitType = Tuple!(Depth, Stencil);
-    }
-    else static if (isMetaScissorField!MF) {
-        alias InitType = void;
-    }
-    else {
-        static assert(false, "Unsupported pipeline meta type: "~MF.stringof);
-    }
-}
-
-
-template DataType(MF) if (isMetaField!MF)
-{
-    static if (isMetaVertexInputField!MF) {
-        alias DataType = Rc!(VertexBuffer!(MF.VertexType));
-    }
-    else static if (isMetaConstantBlockField!MF) {
-        alias DataType = Rc!(ConstBuffer!(MF.BlockType));
-    }
-    else static if (isMetaResourceViewField!MF) {
-        alias DataType = Rc!(ShaderResourceView!(MF.FormatType));
-    }
-    else static if (isMetaResourceSamplerField!MF) {
-        alias DataType = Rc!Sampler;
-    }
-    else static if (isMetaColorOutputField!MF) {
-        alias DataType = Rc!(RenderTargetView!(MF.FormatType));
-    }
-    else static if (isMetaBlendOutputField!MF) {
-        alias DataType = Rc!(RenderTargetView!(MF.FormatType));
-    }
-    else static if (isMetaDepthOutputField!MF) {
-        alias DataType = Rc!(DepthStencilView!(MF.FormatType));
-    }
-    else static if (isMetaStencilOutputField!MF) {
-        alias DataType = Tuple!(Rc!(DepthStencilView!(MF.FormatType)), ubyte[2]);
-    }
-    else static if (isMetaDepthStencilOutputField!MF) {
-        alias DataType = Tuple!(Rc!(DepthStencilView!(MF.FormatType)), ubyte[2]);
-    }
-    else static if (isMetaScissorField!MF) {
-        alias DataType = Rect;
-    }
-    else {
-        static assert(false, "Unsupported pipeline meta type: "~MF.stringof);
-    }
-}
-
 
 template isMetaField(MF) {
     enum isMetaField =  isMetaVertexInputField!MF ||
@@ -362,7 +285,7 @@ template metaResolveFields(MS, alias test, alias FieldTplt) if (isMetaStruct!MS)
 template InitValue(MS, string field) if (isMetaStruct!MS) {
 
     alias MF = FieldType!(MS, field);
-    alias IF = InitType!MF;
+    alias IF = MF.Init;
 
     static if (isMetaVertexInputField!MF) {
         string initCode() {
@@ -429,12 +352,12 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
 
 
 template InitTrait(MS, string field) if (isMetaStruct!MS) {
-    alias Type = InitType!(FieldType!(MS, field));
+    alias Type = FieldType!(MS, field).Init;
     enum defValue = InitValue!(MS, field);
 }
 
 template DataTrait(MS, string field) if (isMetaStruct!MS) {
-    alias Type = DataType!(FieldType!(MS, field));
+    alias Type = FieldType!(MS, field).Data;
 }
 
 
