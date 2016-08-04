@@ -49,38 +49,70 @@ struct GfxBlend {
 
 // input attributes
 struct VertexInput(T) {
+    import std.traits : Fields;
+
     alias VertexType = T;
+
+    alias Init = VertexAttribDesc[Fields!VertexType.length];
+    alias Data = Rc!(VertexBuffer!VertexType);
 }
 
 // constant blocks
 struct ConstantBlock(T) {
     alias BlockType = T;
+
+    alias Init = ConstantBlockDesc;
+    alias Data = Rc!(ConstBuffer!BlockType);
 }
 
 // resources
 struct ResourceView(T) if (isFormatted!T) {
     alias FormatType = T;
+
+    alias Init = ResourceViewDesc;
+    alias Data = Rc!(ShaderResourceView!FormatType);
 }
-struct ResourceSampler {}
+struct ResourceSampler {
+    alias Init = SamplerDesc;
+    alias Data = Rc!Sampler;
+}
 
 // output targets
 struct ColorOutput(T) if (isFormatted!T) {
     alias FormatType = T;
+
+    alias Init = ColorTargetDesc;
+    alias Data = Rc!(RenderTargetView!FormatType);
 }
 struct BlendOutput(T) if (isFormatted!T) {
     alias FormatType = T;
+
+    alias Init = ColorTargetDesc;
+    alias Data = Rc!(RenderTargetView!FormatType);
 }
 struct DepthOutput(T) if (isFormatted!T) {
     alias FormatType = T;
+
+    alias Init = Depth;
+    alias Data = Rc!(DepthStencilView!FormatType);
 }
 struct StencilOutput(T) if (isFormatted!T) {
     alias FormatType = T;
+
+    alias Init = Stencil;
+    alias Data = Tuple!(Rc!(DepthStencilView!FormatType), ubyte[2]);
 }
 struct DepthStencilOutput(T) if (isFormatted!T) {
     alias FormatType = T;
+
+    alias Init = Tuple!(Depth, Stencil);
+    alias Data = Tuple!(Rc!(DepthStencilView!FormatType), ubyte[2]);
 }
 
-struct Scissor {}
+struct Scissor {
+    alias Init = void;
+    alias Data = Rect;
+}
 
 
 template InitType(MF) if (isMetaField!MF)
