@@ -116,6 +116,74 @@ struct Scissor {
 
 
 
+template InitValue(MS, string field) if (isMetaStruct!MS) {
+
+    alias MF = FieldType!(MS, field);
+    alias IF = MF.Init;
+
+    static if (isMetaVertexInputField!MF) {
+        string initCode() {
+            import std.format : format;
+            alias gfxFields = GfxStructFields!(MF.VertexType);
+            string res = "[";
+            foreach(f; gfxFields) {
+                res ~= format("VertexAttribDesc(\"%s\", %s, " ~
+                            "StructField(VarType(BaseType.%s, %s, %s), %s, %s, %s, %s), 0),\n",
+                    f.gfxName, f.gfxSlot, f.vtBaseType, f.vtDim1, f.vtDim2,
+                    f.offset, f.size, f.alignment, MF.VertexType.sizeof);
+            }
+            return res ~ "]";
+        }
+        enum InitValue = mixin(initCode());
+    }
+    else static if (isMetaConstantBlockField!MF) {
+        enum InitValue = ConstantBlockDesc(resolveGfxName!(MS, field), resolveGfxSlot!(MS, field));
+    }
+    else static if (isMetaResourceViewField!MF) {
+        import gfx.core.format : format;
+        enum InitValue = ResourceViewDesc(
+            resolveGfxName!(MS, field), resolveGfxSlot!(MS, field), format!(MF.FormatType)
+        );
+    }
+    else static if (isMetaResourceSamplerField!MF) {
+        enum InitValue = SamplerDesc(
+            resolveGfxName!(MS, field), resolveGfxSlot!(MS, field)
+        );
+    }
+    else static if (isMetaColorOutputField!MF) {
+        import gfx.core.format : format;
+        enum InitValue = ColorTargetDesc(
+            resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
+            format!(MF.FormatType), ColorInfo(
+                resolveUDAValue!(GfxColorMask, MS, field, ColorMask, ColorMask(ColorFlags.All))
+            )
+        );
+    }
+    else static if (isMetaBlendOutputField!MF) {
+        import gfx.core.format : format;
+        enum InitValue = ColorTargetDesc(
+            resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
+            format!(MF.FormatType), ColorInfo(
+                resolveUDAValue!(GfxColorMask, MS, field, ColorMask, ColorMask(ColorFlags.All)),
+                resolveUDAValue!(GfxBlend, MS, field, Blend, Blend.init)
+            )
+        );
+    }
+    else static if (isMetaDepthOutputField!MF) {
+        enum InitValue = resolveUDAValue!(GfxDepth, MS, field, Depth, Depth.init);
+    }
+    else static if (isMetaStencilOutputField!MF) {
+        enum InitValue = resolveUDAValue!(GfxStencil, MS, field, Stencil, Stencil.init);
+    }
+    else static if (isMetaDepthStencilOutputField!MF) {
+        enum InitValue = tuple(
+            resolveUDAValue!(GfxDepth, MS, field, Depth, Depth.init),
+            resolveUDAValue!(GfxStencil, MS, field, Stencil, Stencil.init),
+        );
+    }
+}
+
+
 template isMetaField(MF) {
     enum isMetaField =  isMetaVertexInputField!MF ||
                         isMetaConstantBlockField!MF ||
@@ -135,6 +203,49 @@ template isMetaStruct(M) {
 
     enum isMetaStruct = allSatisfy!(isMetaField, Fields!M);
 }
+
+
+
+template InitTrait(MS, string field) if (isMetaStruct!MS) {
+    alias Type = FieldType!(MS, field).Init;
+    enum defValue = InitValue!(MS, field);
+}
+
+template DataTrait(MS, string field) if (isMetaStruct!MS) {
+    alias Type = FieldType!(MS, field).Data;
+}
+
+
+template PipelineStruct(MS, alias Trait, bool hasDefValue) if (isMetaStruct!MS) {
+    import std.traits : Fields, FieldNameTuple;
+    import std.format : format;
+
+    string fieldsCode() {
+        string res;
+        foreach(f; FieldNameTuple!MS) {
+            static if (!is(Trait!(MS, f).Type == void)) {
+                enum fieldCode = "Trait!(MS, \"%s\").Type %s".format(f, f);
+                static if (hasDefValue) {
+                    enum defVal = " = Trait!(MS, \"%s\").defValue".format(f);
+                }
+                else {
+                    enum defVal = "";
+                }
+                res ~= "%s%s;\n".format(fieldCode, defVal);
+            }
+        }
+        return res;
+    }
+
+    struct Struct {
+        mixin(fieldsCode());
+    }
+
+    alias PipelineStruct = Struct;
+}
+
+alias PipelineInit(M) = PipelineStruct!(M, InitTrait, true);
+alias PipelineData(M) = PipelineStruct!(M, DataTrait, false);
 
 
 
@@ -280,130 +391,6 @@ template metaResolveFields(MS, alias test, alias FieldTplt) if (isMetaStruct!MS)
 
     alias metaResolveFields = resolve!0;
 }
-
-
-template InitValue(MS, string field) if (isMetaStruct!MS) {
-
-    alias MF = FieldType!(MS, field);
-    alias IF = MF.Init;
-
-    static if (isMetaVertexInputField!MF) {
-        string initCode() {
-            import std.format : format;
-            alias gfxFields = GfxStructFields!(MF.VertexType);
-            string res = "[";
-            foreach(f; gfxFields) {
-                res ~= format("VertexAttribDesc(\"%s\", %s, " ~
-                            "StructField(VarType(BaseType.%s, %s, %s), %s, %s, %s, %s), 0),\n",
-                    f.gfxName, f.gfxSlot, f.vtBaseType, f.vtDim1, f.vtDim2,
-                    f.offset, f.size, f.alignment, MF.VertexType.sizeof);
-            }
-            return res ~ "]";
-        }
-        enum InitValue = mixin(initCode());
-    }
-    else static if (isMetaConstantBlockField!MF) {
-        enum InitValue = ConstantBlockDesc(resolveGfxName!(MS, field), resolveGfxSlot!(MS, field));
-    }
-    else static if (isMetaResourceViewField!MF) {
-        import gfx.core.format : format;
-        enum InitValue = ResourceViewDesc(
-            resolveGfxName!(MS, field), resolveGfxSlot!(MS, field), format!(MF.FormatType)
-        );
-    }
-    else static if (isMetaResourceSamplerField!MF) {
-        enum InitValue = SamplerDesc(
-            resolveGfxName!(MS, field), resolveGfxSlot!(MS, field)
-        );
-    }
-    else static if (isMetaColorOutputField!MF) {
-        import gfx.core.format : format;
-        enum InitValue = ColorTargetDesc(
-            resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
-            format!(MF.FormatType), ColorInfo(
-                resolveUDAValue!(GfxColorMask, MS, field, ColorMask, ColorMask(ColorFlags.All))
-            )
-        );
-    }
-    else static if (isMetaBlendOutputField!MF) {
-        import gfx.core.format : format;
-        enum InitValue = ColorTargetDesc(
-            resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
-            format!(MF.FormatType), ColorInfo(
-                resolveUDAValue!(GfxColorMask, MS, field, ColorMask, ColorMask(ColorFlags.All)),
-                resolveUDAValue!(GfxBlend, MS, field, Blend, Blend.init)
-            )
-        );
-    }
-    else static if (isMetaDepthOutputField!MF) {
-        enum InitValue = resolveUDAValue!(GfxDepth, MS, field, Depth, Depth.init);
-    }
-    else static if (isMetaStencilOutputField!MF) {
-        enum InitValue = resolveUDAValue!(GfxStencil, MS, field, Stencil, Stencil.init);
-    }
-    else static if (isMetaDepthStencilOutputField!MF) {
-        enum InitValue = tuple(
-            resolveUDAValue!(GfxDepth, MS, field, Depth, Depth.init),
-            resolveUDAValue!(GfxStencil, MS, field, Stencil, Stencil.init),
-        );
-    }
-}
-
-
-
-template InitTrait(MS, string field) if (isMetaStruct!MS) {
-    alias Type = FieldType!(MS, field).Init;
-    enum defValue = InitValue!(MS, field);
-}
-
-template DataTrait(MS, string field) if (isMetaStruct!MS) {
-    alias Type = FieldType!(MS, field).Data;
-}
-
-
-template PipelineStruct(MS, alias Trait, bool hasDefValue) if (isMetaStruct!MS) {
-    import std.traits : Fields, FieldNameTuple;
-    import std.format : format;
-
-    string fieldCode(string field)() {
-        return format("Trait!(MS, \"%s\").Type %s", field, field);
-    }
-
-    string fieldsCode() {
-        string res;
-        foreach(f; FieldNameTuple!MS) {
-            static if (!is(Trait!(MS, f).Type == void)) {
-                res ~= format("%s;\n", fieldCode!f());
-            }
-        }
-        return res;
-    }
-
-    static if (hasDefValue) {
-        string defValueCode() {
-            string res = "enum defValue = Struct (";
-            foreach(i, f; FieldNameTuple!MS) {
-                static if (!is(Trait!(MS, f).Type == void)) {
-                    res ~= format("Trait!(MS, \"%s\").defValue, ", f);
-                }
-            }
-            return res ~ ");";
-        }
-    }
-
-    struct Struct {
-        mixin(fieldsCode());
-
-        static if(hasDefValue) {
-            mixin(defValueCode());
-        }
-    }
-
-    alias PipelineStruct = Struct;
-}
-
-alias PipelineInit(M) = PipelineStruct!(M, InitTrait, true);
-alias PipelineData(M) = PipelineStruct!(M, DataTrait, false);
 
 
 template FieldIndex(StructT, string field) {

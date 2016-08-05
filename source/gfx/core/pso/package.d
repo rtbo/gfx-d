@@ -259,12 +259,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
     alias Init = PipelineInit!MS;
     alias Data = PipelineData!MS;
 
-    this(Program prog, Primitive primitive, Rasterizer rasterizer) {
-        super(prog, primitive, rasterizer);
-        initDescriptor(Init.defValue);
-    }
-
-    this(Program prog, Primitive primitive, Rasterizer rasterizer, Init initStruct) {
+    this(Program prog, Primitive primitive, Rasterizer rasterizer, Init initStruct=Init.init) {
         super(prog, primitive, rasterizer);
         initDescriptor(initStruct);
     }
