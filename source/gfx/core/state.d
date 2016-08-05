@@ -44,7 +44,7 @@ struct Rasterizer {
     Option!Offset offset;
     bool samples;
 
-    static Rasterizer newFill() {
+    @property static Rasterizer fill() {
         return Rasterizer(
             FrontFace.CounterClockWise,
             CullFace.None,
@@ -64,6 +64,12 @@ struct Rasterizer {
         Rasterizer res = this;
         res.offset = Offset(slope, units);
         return res;
+    }
+
+    Rasterizer withSamples() const {
+        Rasterizer res = this;
+        res.samples = true;
+        return  res;
     }
 }
 

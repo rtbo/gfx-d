@@ -44,7 +44,7 @@ immutable float[4] backColor = [0.1, 0.2, 0.3, 1.0];
 int main()
 {
     /// window with a color buffer and no depth/stencil buffer
-    auto window = rc(gfxGlfwWindow!Rgba8("gfx-d - Triangle", 640, 480));
+    auto window = rc(gfxGlfwWindow!Rgba8("gfx-d - Triangle", 640, 480, 4));
     auto colRtv = rc(window.colorSurface.viewAsRenderTarget());
     {
         auto vbuf = makeRc!(VertexBuffer!Vertex)(triangle);
@@ -53,7 +53,7 @@ int main()
             import("130-triangle.v.glsl"),
             import("130-triangle.f.glsl"),
         ));
-        auto pso = makeRc!PipeState(prog.obj, Primitive.Triangles, Rasterizer.newFill());
+        auto pso = makeRc!PipeState(prog.obj, Primitive.Triangles, Rasterizer.fill.withSamples());
 
         auto data = PipeState.Data.init;
         data.input = vbuf;

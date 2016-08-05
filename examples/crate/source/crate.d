@@ -141,7 +141,7 @@ Texture2D!Rgba8 loadTexture() {
 
 void main()
 {
-	auto window = rc(gfxGlfwWindow!(Rgba8, Depth)("gfx-d - Crate example", 640, 480));
+	auto window = rc(gfxGlfwWindow!(Rgba8, Depth)("gfx-d - Crate example", 640, 480, 4));
     auto colRtv = rc(window.colorSurface.viewAsRenderTarget());
     auto dsv = rc(window.depthStencilSurface.viewAsDepthStencil());
 
@@ -157,7 +157,7 @@ void main()
         import("330-crate.v.glsl"),
         import("330-crate.f.glsl"),
     ));
-    auto pso = makeRc!CratePipeline(prog.obj, Primitive.Triangles, Rasterizer.newFill());
+    auto pso = makeRc!CratePipeline(prog.obj, Primitive.Triangles, Rasterizer.fill.withSamples());
     auto data = CratePipeline.Data(
         vbuf, matBlk, nlBlk, ligBlk, srv, sampler, colRtv, dsv
     );

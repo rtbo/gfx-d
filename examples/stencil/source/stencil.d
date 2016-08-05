@@ -110,7 +110,7 @@ void main() {
     ));
     auto swvb = makeRc!(VertexBuffer!PTVertex)(square);
     auto sws = VertexBufferSlice(new IndexBuffer!ushort(squareIndices));
-    auto swpso = makeRc!(StencilWritePS)(swp.obj, Primitive.Triangles, Rasterizer.newFill());
+    auto swpso = makeRc!(StencilWritePS)(swp.obj, Primitive.Triangles, Rasterizer.fill);
     auto swdata = StencilWritePS.Data(
         swvb, cbv, rtv, StencilOutput!DepthStencil.Data(dsv, [1, 1])
     );
@@ -121,7 +121,7 @@ void main() {
     ));
     auto trvb = makeRc!(VertexBuffer!PCVertex)(triangle);
     auto trs = VertexBufferSlice(trvb.count);
-    auto trpso = makeRc!(TrianglePS)(trp.obj, Primitive.Triangles, Rasterizer.newFill());
+    auto trpso = makeRc!(TrianglePS)(trp.obj, Primitive.Triangles, Rasterizer.fill);
     auto trdata = TrianglePS.Data(
         trvb, rtv, StencilOutput!DepthStencil.Data(dsv, [1, 1])
     );
