@@ -112,8 +112,7 @@ void main() {
     auto sws = VertexBufferSlice(new IndexBuffer!ushort(squareIndices));
     auto swpso = makeRc!(StencilWritePS)(swp.obj, Primitive.Triangles, Rasterizer.newFill());
     auto swdata = StencilWritePS.Data(
-        // TODO: make use of tuple feasible instead of Tuple!(.....)
-        swvb, cbv, rtv, Tuple!(Rc!(DepthStencilView!DepthStencil), ubyte[2])(dsv, [ubyte(1), ubyte(1)])
+        swvb, cbv, rtv, StencilOutput!DepthStencil.Data(dsv, [1, 1])
     );
 
     auto trp = makeRc!Program(ShaderSet.vertexPixel(
@@ -124,8 +123,7 @@ void main() {
     auto trs = VertexBufferSlice(trvb.count);
     auto trpso = makeRc!(TrianglePS)(trp.obj, Primitive.Triangles, Rasterizer.newFill());
     auto trdata = TrianglePS.Data(
-        // TODO: make use of tuple feasible instead of Tuple!(.....)
-        trvb, rtv, Tuple!(Rc!(DepthStencilView!DepthStencil), ubyte[2])(dsv, [1, 1])
+        trvb, rtv, StencilOutput!DepthStencil.Data(dsv, [1, 1])
     );
 
     auto encoder = Encoder(window.device.makeCommandBuffer());
