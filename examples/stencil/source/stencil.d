@@ -89,9 +89,6 @@ Texture!STF makeChessboard() {
             data[r*32 + c] = oddR == oddC ? 0xff : 0x00;
         }
     }
-    foreach (r; 0 .. 32) {
-        //writeln(data[r*32 .. r*32 + 32]);
-    }
     TexUsageFlags usage = TextureUsage.ShaderResource;
     return new Texture2D!STF(usage, 1, 32, 32, [data]);
 }
