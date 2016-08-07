@@ -13,6 +13,7 @@
 	"subPackages": [
 		"./examples/triangle",
 		"./examples/crate",
-		"./examples/stencil"
+		"./examples/stencil",
+		"./examples/lense"
 	]
 }
