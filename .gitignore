@@ -12,13 +12,15 @@ __test__library__
 *.lib
 libgfx-d.a
 
-# examples executables
+# examples executables on linux
 examples/crate/gfx-d_crate
 examples/crate/crate
 examples/triangle/gfx-d_triangle
 examples/triangle/triangle
 examples/stencil/gfx-d_stencil
 examples/stencil/stencil
+examples/lense/gfx-d_lense
+examples/lense/lense
 
 # vscode files
 .vscode/launch.json
