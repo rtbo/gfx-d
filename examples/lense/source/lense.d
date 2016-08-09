@@ -169,15 +169,16 @@ Texture2D!Rgba8 loadCrateTexture() {
     import gfx.core.texture : TextureUsage, TexUsageFlags;
     import gfx.core.util : retypeSlice;
     import libjpeg.turbojpeg;
+    import core.stdc.config : c_ulong;
 
     auto jpeg = tjInitDecompress();
     auto jpegData = cast(ubyte[])(import("crate.jpg").dup);
     int w; int h; int subsamp;
-    if (tjDecompressHeader2(jpeg, jpegData.ptr, jpegData.length, &w, &h, &subsamp) == -1) {
+    if (tjDecompressHeader2(jpeg, jpegData.ptr, cast(c_ulong)jpegData.length, &w, &h, &subsamp) == -1) {
         throw new Exception("cannot decompress jpeg header");
     }
     auto bytes = new ubyte[w*h*4];
-    if (tjDecompress2(jpeg, jpegData.ptr, jpegData.length, bytes.ptr, w, 0, h, TJPF.TJPF_RGBA, TJFLAG_FASTDCT) == -1) {
+    if (tjDecompress2(jpeg, jpegData.ptr, cast(c_ulong)jpegData.length, bytes.ptr, w, 0, h, TJPF.TJPF_RGBA, TJFLAG_FASTDCT) == -1) {
         throw new Exception("cannot decompress jpeg");
     }
     tjDestroy(jpeg);
