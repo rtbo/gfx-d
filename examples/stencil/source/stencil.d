@@ -95,6 +95,20 @@ Texture!STF makeChessboard() {
 
 
 
+struct FPSProbe {
+    import std.datetime : StopWatch;
+
+    size_t frameCount;
+    StopWatch sw;
+
+    void start() { sw.start(); }
+    void tick() { frameCount += 1; }
+    @property float fps() const {
+        auto msecs = sw.peek().msecs();
+        return 1000f * frameCount / msecs;
+    }
+}
+
 void main() {
     auto window = rc(gfxGlfwWindow!(Rgba8, DepthStencil)("gfx-d - Stencil", 640, 480));
     auto rtv = rc(window.colorSurface.viewAsRenderTarget());
@@ -127,6 +141,10 @@ void main() {
 
     window.onKey = (int, int, int, int) { window.shouldClose = true; };
     window.onFbResize = (ushort w, ushort h) { encoder.setViewport(Rect(0, 0, w, h)); };
+
+    FPSProbe fps;
+    fps.start();
+
     while (!window.shouldClose) {
 
         encoder.clearStencil(dsv, 0x00);
@@ -139,5 +157,8 @@ void main() {
 
         window.swapBuffers();
         window.pollEvents();
+        fps.tick();
     }
+
+    writeln("FPS: ", fps.fps);
 }
