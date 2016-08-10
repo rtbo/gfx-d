@@ -90,14 +90,6 @@ int main()
             window.pollEvents();
 
             frameCount += 1;
-
-            version(Windows) {
-                // vsync is not always enabled with glfw on windows
-                // adding a sleep to limit frame rate to < 100 FPS
-                import core.thread : Thread;
-                import core.time : dur;
-                Thread.sleep( dur!"msecs"(10) );
-            }
         }
 
         auto ms = sw.peek().msecs();
