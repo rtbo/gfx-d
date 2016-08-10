@@ -6,7 +6,7 @@ import gfx.core.typecons : none, some;
 import gfx.core.format : Rgba8, Depth, newSwizzle;
 import gfx.core.buffer : VertexBuffer, IndexBuffer, VertexBufferSlice, ConstBuffer;
 import gfx.core.program : Program, ShaderSet;
-import gfx.core.texture : Texture2D, Sampler, FilterMethod, WrapMode;
+import gfx.core.texture : Texture2D, Sampler, SamplerInfo, FilterMethod, WrapMode;
 import gfx.core.draw : clearColor, Instance;
 import s = gfx.core.state : Rasterizer;
 import gfx.core.pso.meta;
@@ -148,7 +148,7 @@ void main()
     auto vbuf = makeRc!(VertexBuffer!Vertex)(crate);
     auto slice = VertexBufferSlice(new IndexBuffer!ushort(crateIndices));
     auto srv = rc(loadTexture().viewAsShaderResource(0, 0, newSwizzle()));
-    auto sampler = makeRc!Sampler(srv, FilterMethod.Anisotropic, WrapMode.init);
+    auto sampler = makeRc!Sampler(srv, SamplerInfo(FilterMethod.Anisotropic, WrapMode.init));
 
     auto matBlk = makeRc!(ConstBuffer!Matrices)(1);
     auto nlBlk = makeRc!(ConstBuffer!NumLights)(1);

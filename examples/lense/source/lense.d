@@ -6,7 +6,7 @@ import gfx.core.typecons : none, some;
 import gfx.core.format : Rgba8, Depth, newSwizzle;
 import gfx.core.buffer : VertexBuffer, IndexBuffer, VertexBufferSlice, ConstBuffer;
 import gfx.core.program : Program, ShaderSet;
-import gfx.core.texture : Texture, Texture2D, Sampler, FilterMethod, WrapMode;
+import gfx.core.texture : Texture, Texture2D, Sampler, SamplerInfo, FilterMethod, WrapMode;
 import gfx.core.view : ShaderResourceView, RenderTargetView, DepthStencilView;
 import gfx.core.draw : clearColor, Instance;
 import s = gfx.core.state : Rasterizer;
@@ -412,7 +412,7 @@ void main()
         makeRc!(VertexBuffer!VertexPNT)(crateVertices),
         VertexBufferSlice(new IndexBuffer!ushort(crateIndices)),
         makeRc!(ConstBuffer!Matrices)(1), ligBlk,
-        crateSrv, makeRc!Sampler(crateSrv, FilterMethod.Anisotropic, WrapMode.init),
+        crateSrv, makeRc!Sampler(crateSrv, SamplerInfo(FilterMethod.Anisotropic, WrapMode.init)),
         meshViews.colRtv, meshViews.depDsv
     );
     auto crateData = crate.data;
@@ -424,7 +424,7 @@ void main()
         makeRc!(VertexBuffer!VertexPNT)(gridVertices),
         VertexBufferSlice(squareVertices.length),
         makeRc!(ConstBuffer!Matrices)(1), ligBlk,
-        gridSrv, makeRc!Sampler(gridSrv, FilterMethod.Bilinear, WrapMode.init),
+        gridSrv, makeRc!Sampler(gridSrv, SamplerInfo(FilterMethod.Bilinear, WrapMode.init)),
         meshViews.colRtv, meshViews.depDsv
     );
     auto gridData = grid.data;
@@ -447,7 +447,7 @@ void main()
     auto lenseData = LensePipeline.Data(
         makeRc!(VertexBuffer!VertexPN)(lenseMeshData.vertices),
         makeRc!(ConstBuffer!Matrices)(1), ligBlk,
-        meshViews.colSrv, makeRc!Sampler(meshViews.colSrv, FilterMethod.Anisotropic, WrapMode.init),
+        meshViews.colSrv, makeRc!Sampler(meshViews.colSrv, SamplerInfo(FilterMethod.Anisotropic, WrapMode.init)),
         winRtv, winDsv
     );
 

@@ -178,6 +178,32 @@ struct SamplerInfo {
     Lod[2] lodRange;
     Option!Comparison comparison;
     PackedColor border;
+
+    this(FilterMethod filter, WrapMode mode) {
+        this.filter = filter;
+        this.wrapMode = [mode, mode, mode];
+        this.lodBias = Lod(0);
+        this.lodRange = [Lod(-8000), Lod(8000)];
+    }
+
+    SamplerInfo withComparison(Comparison comparison) {
+        import gfx.core.typecons : some;
+        auto res = this;
+        res.comparison = some(comparison);
+        return res;
+    }
+
+    SamplerInfo withBorder(in float[4] color) {
+        auto res = this;
+        res.border = PackedColor(color);
+        return res;
+    }
+
+    SamplerInfo withBorder(in uint color) {
+        auto res = this;
+        res.border = PackedColor(color);
+        return res;
+    }
 }
 
 class Sampler : ResourceHolder {
@@ -186,14 +212,6 @@ class Sampler : ResourceHolder {
     private Rc!SamplerRes _res;
     private Rc!RawShaderResourceView _srv;
     private SamplerInfo _info;
-
-    this (RawShaderResourceView srv, FilterMethod filter, WrapMode mode) {
-        _srv = srv;
-        _info.filter = filter;
-        _info.wrapMode = [mode, mode, mode];
-        _info.lodBias = Lod(0);
-        _info.lodRange = [Lod(-8000), Lod(8000)];
-    }
 
     this (RawShaderResourceView srv, SamplerInfo info) {
         _srv = srv;
