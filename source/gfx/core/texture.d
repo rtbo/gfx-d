@@ -186,21 +186,21 @@ struct SamplerInfo {
         this.lodRange = [Lod(-8000), Lod(8000)];
     }
 
-    SamplerInfo withComparison(Comparison comparison) {
+    SamplerInfo withComparison(Comparison comparison) const {
         import gfx.core.typecons : some;
-        auto res = this;
+        SamplerInfo res = this;
         res.comparison = some(comparison);
         return res;
     }
 
-    SamplerInfo withBorder(in float[4] color) {
-        auto res = this;
+    SamplerInfo withBorder(in float[4] color) const {
+        SamplerInfo res = this;
         res.border = PackedColor(color);
         return res;
     }
 
-    SamplerInfo withBorder(in uint color) {
-        auto res = this;
+    SamplerInfo withBorder(in uint color) const {
+        SamplerInfo res = this;
         res.border = PackedColor(color);
         return res;
     }
