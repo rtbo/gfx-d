@@ -6,7 +6,7 @@ import std.traits : fullyQualifiedName;
 
 interface RefCounted {
     // the reference count
-    @property int rc() const
+    @property int refCount() const
     out(res) { assert(res >= 0); }
 
     // increment the reference count
@@ -18,25 +18,29 @@ interface RefCounted {
 
     // drop the underlying resource
     void drop()
-    in { assert(rc == 0); }
+    in { assert(refCount == 0); }
 }
 
 
 enum rcCode = "
-    private int rc_=0;
+    private int _refCount=0;
 
-    public @property int rc() const { return rc_; }
+    public @property int refCount() const { return _refCount; }
 
     public void addRef() {
-        rc_ += 1;
+        _refCount += 1;
+        // uncomment to instrument
+        //import std.stdio : writeln;
+        //writeln(\"addRef \", typeof(this).stringof, \" \", _refCount);
     }
 
     public void release() {
-        rc_ -= 1;
-        if (!rc_) {
-            // uncomment to instrument
-            // import std.stdio : writeln;
-            // writeln(\"dropping \", typeof(this).stringof);
+        // uncomment to instrument
+        _refCount -= 1;
+        //import std.stdio : writeln;
+        //writeln(\"release \", typeof(this).stringof, \" \", _refCount);
+        if (!_refCount) {
+            //writeln(\"dropping \", typeof(this).stringof);
             drop();
         }
     }";
