@@ -190,6 +190,8 @@ class RawWindow : RefCounted {
     {
         setupGlContext();
         setupColor(colorSurf);
+        glfwWindowHint(GLFW_DEPTH_BITS, 0);
+        glfwWindowHint(GLFW_STENCIL_BITS, 0);
         setupMisc(samples);
         setupWindow(title, width, height);
     }
@@ -218,10 +220,6 @@ class RawWindow : RefCounted {
         glfwWindowHint(GLFW_BLUE_BITS,      colSurf.blueBits);
         glfwWindowHint(GLFW_ALPHA_BITS,     colSurf.alphaBits);
         glfwWindowHint(GLFW_SRGB_CAPABLE,   colSurf.hasChannel(ChannelType.Srgb));
-
-        // forget previous setup
-        glfwWindowHint(GLFW_DEPTH_BITS, 0);
-        glfwWindowHint(GLFW_STENCIL_BITS, 0);
     }
 
     private void setupDs(SurfaceType dsSurf) {
