@@ -21,6 +21,8 @@ examples/stencil/gfx-d_stencil
 examples/stencil/stencil
 examples/lense/gfx-d_lense
 examples/lense/lense
+examples/shadow/gfx-d_shadow
+examples/shadow/shadow
 
 # vscode files
 .vscode/launch.json
