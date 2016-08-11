@@ -13,7 +13,7 @@ uniform Matrices {
 };
 
 void main() {
-	v_Normal = (u_normalMat * vec4(a_Normal, 0.0)).xyz;
+	v_Normal = mat3(u_normalMat) * a_Normal;
 	v_TexCoord = a_TexCoord;
     gl_Position = u_mvpMat * vec4(a_Pos, 1.0);
 }
