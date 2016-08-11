@@ -297,6 +297,10 @@ void main() {
     auto winRtv = window.colorSurface.viewAsRenderTarget().rc;
     auto winDsv = window.depthStencilSurface.viewAsDepthStencil().rc;
 
+    auto shadowProg = makeRc!Program(ShaderSet.vertexPixel(
+        import("330-shadow.v.glsl"), import("330-shadow.f.glsl")
+    ));
+
     auto sc = new Scene(window.device, winRtv, winDsv).rc;
 
     auto encoder = Encoder(window.device.makeCommandBuffer());

@@ -2,18 +2,17 @@
 
 in vec3 a_Pos;
 in vec3 a_Normal;
-in vec2 a_TexCoord;
 
+out vec3 v_Position;
 out vec3 v_Normal;
-out vec2 v_TexCoord;
 
-uniform Matrices {
-	mat4 u_mvpMat;
-	mat4 u_normalMat;
+uniform VsLocals {
+	mat4 u_MVP;
+	mat4 u_Model;
 };
 
 void main() {
-	v_Normal = (u_normalMat * vec4(a_Normal, 0.0)).xyz;
-	v_TexCoord = a_TexCoord;
-    gl_Position = u_mvpMat * vec4(a_Pos, 1.0);
+	v_Normal = mat3(u_Model) * a_Normal;
+	v_Position = (u_Model * vec4(a_Pos, 1.0)).xyz;
+    gl_Position = u_MVP * vec4(a_Pos, 1.0);
 }
