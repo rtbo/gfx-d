@@ -340,7 +340,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
                 auto var = vars.attributes
                         .find!(v => v.name == at.name)
                         .takeOne();
-                enforce(!var.empty, format("cannot find attribute %s in pipeline", at.name));
+                enforce(!var.empty, format("cannot find attribute %s in pipeline %s", at.name, MS.stringof));
                 at.slot = var.front.loc;
             }
             foreach(ref cb; _descriptor.constantBlocks) {
@@ -348,7 +348,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
                 auto var = vars.constBuffers
                         .find!(b => b.name == cb.name)
                         .takeOne();
-                enforce(!var.empty, format("cannot find block %s in pipeline", cb.name));
+                enforce(!var.empty, format("cannot find block %s in pipeline %s", cb.name, MS.stringof));
                 cb.slot = var.front.loc;
             }
             foreach(ref srv; _descriptor.resourceViews) {
@@ -356,7 +356,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
                 auto var = vars.textures
                         .find!(v => v.name == srv.name)
                         .takeOne();
-                enforce(!var.empty, format("cannot find texture %s in pipeline", srv.name));
+                enforce(!var.empty, format("cannot find texture %s in pipeline %s", srv.name, MS.stringof));
                 srv.slot = var.front.loc;
             }
             foreach(ref sampler; _descriptor.samplers) {
@@ -364,7 +364,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
                 auto var = vars.samplers
                         .find!(v => v.name == sampler.name)
                         .takeOne();
-                enforce(!var.empty, format("cannot find sampler %s in pipeline", sampler.name));
+                enforce(!var.empty, format("cannot find sampler %s in pipeline %s", sampler.name, MS.stringof));
                 sampler.slot = var.front.slot;
             }
             foreach(ref ct; _descriptor.colorTargets) {
@@ -372,7 +372,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
                 auto var = vars.outputs
                         .find!(v => v.name == ct.name)
                         .takeOne();
-                enforce(!var.empty, format("cannot find color target %s in pipeline", ct.name));
+                enforce(!var.empty, format("cannot find color target %s in pipeline %s", ct.name, MS.stringof));
                 ct.slot = var.front.index;
             }
             enforce(!_descriptor.needsToFetchSlots);
