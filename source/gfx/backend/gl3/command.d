@@ -253,9 +253,11 @@ class BindVertexBuffersCommand : Command {
         if (!pso.pinned) pso.pinResources(device);
         foreach (i, vbuf; set.buffers) {
             if (!vbuf.pinned) vbuf.pinResources(device);
-            unsafeCast!GlVertexBuffer(vbuf.res).bindWithAttrib(
-                    pso.descriptor.vertexAttribs[i],
-                    device.caps.instanceRate);
+            if (pso.descriptor.vertexAttribs[i].slot != ubyte.max) {
+                unsafeCast!GlVertexBuffer(vbuf.res).bindWithAttrib(
+                        pso.descriptor.vertexAttribs[i],
+                        device.caps.instanceRate);
+            }
         }
         unload();
     }

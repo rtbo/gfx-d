@@ -340,8 +340,10 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
                 auto var = vars.attributes
                         .find!(v => v.name == at.name)
                         .takeOne();
-                enforce(!var.empty, format("cannot find attribute %s in pipeline %s", at.name, MS.stringof));
-                at.slot = var.front.loc;
+                if (!var.empty) {
+                    at.slot = var.front.loc;
+                }
+                //enforce(!var.empty, format("cannot find attribute %s in pipeline %s", at.name, MS.stringof));
             }
             foreach(ref cb; _descriptor.constantBlocks) {
                 if (cb.slot != ubyte.max) continue;
@@ -375,7 +377,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
                 enforce(!var.empty, format("cannot find color target %s in pipeline %s", ct.name, MS.stringof));
                 ct.slot = var.front.index;
             }
-            enforce(!_descriptor.needsToFetchSlots);
+            //enforce(!_descriptor.needsToFetchSlots);
         }
         _res = device.factory.makePipeline(_prog.obj, _descriptor);
     }
