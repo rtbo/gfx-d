@@ -309,7 +309,7 @@ void main() {
     auto meshPso = makeRc!MeshPipeline(meshProg.obj, Primitive.Triangles, Rasterizer.fill.withSamples());
 
     auto sc = new Scene(window.device, winRtv, winDsv).rc;
-    immutable bool parallelLightCmds = true;
+    immutable bool parallelLightCmds = false;
 
     auto encoder = Encoder(window.device.makeCommandBuffer());
 
@@ -328,6 +328,12 @@ void main() {
     encoder.updateConstBuffer(sc.lightBlk, lights);
     encoder.flush(window.device);
 
+
+    // will quit on any key hit (as well as on close by 'x' click)
+    window.onKey = (int, int, int, int) {
+        window.shouldClose = true;
+    };
+
     FPSProbe fps;
     fps.start();
 
@@ -337,8 +343,8 @@ void main() {
         if (parallelLightCmds) {
             import std.parallelism : parallel;
 
-            foreach (light; parallel(sc.lights)) {
-                foreach (m; sc.meshes) {
+            foreach (ref light; parallel(sc.lights)) {
+                foreach (ref m; sc.meshes) {
                     immutable locals = ShadowVsLocals (
                         columnMajor(light.projMat * light.viewMat * m.modelMat)
                     );
@@ -346,13 +352,13 @@ void main() {
                     light.encoder.draw!ShadowPipeMeta(m.slice, shadowPso, m.shadowData);
                 }
             }
-            foreach (light; sc.lights) {
+            foreach (ref light; sc.lights) {
                 light.encoder.flush(window.device);
             }
         }
         else {
-            foreach (light; sc.lights) {
-                foreach (m; sc.meshes) {
+            foreach (ref light; sc.lights) {
+                foreach (ref m; sc.meshes) {
                     immutable locals = ShadowVsLocals (
                         columnMajor(light.projMat * light.viewMat * m.modelMat)
                     );
@@ -365,7 +371,7 @@ void main() {
         encoder.clear!Rgba8(winRtv, background);
         encoder.clearDepth(winDsv, 1f);
 
-        foreach (m; sc.meshes) {
+        foreach (ref m; sc.meshes) {
             immutable locals = MeshVsLocals (
                 columnMajor(viewProjMat * m.modelMat),
                 columnMajor(m.modelMat),
@@ -380,6 +386,7 @@ void main() {
         window.swapBuffers();
         window.pollEvents();
 
+        sc.tick();
         fps.tick();
     }
 

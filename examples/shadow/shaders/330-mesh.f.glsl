@@ -16,12 +16,12 @@ uniform PsLocals {
 };
 
 //TODO: structured buffer
-uniform b_Lights {
+uniform Lights {
 	Light u_Lights[MAX_LIGHTS];
 };
 
 // an array of shadows, one per light
-uniform sampler2DArrayShadow t_Shadow;
+uniform sampler2DArrayShadow u_Shadow;
 
 in vec3 v_Normal;
 in vec3 v_Position;
@@ -40,7 +40,7 @@ void main() {
 		light_local.xyw = (light_local.xyz/light_local.w + 1.0) / 2.0;
 		light_local.z = i;
 		// do the lookup, using HW PCF and comparison
-		float shadow = texture(t_Shadow, light_local);
+		float shadow = texture(u_Shadow, light_local);
 		// compute Lambertian diffuse term
 		vec3 light_dir = normalize(light.pos.xyz - v_Position);
 		float diffuse = max(0.0, dot(normal, light_dir));
