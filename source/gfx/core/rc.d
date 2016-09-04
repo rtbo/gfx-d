@@ -22,28 +22,8 @@ interface RefCounted {
 }
 
 
-enum rcCode = "
-    private int _refCount=0;
+public enum rcCode = buildRcCode();
 
-    public @property int refCount() const { return _refCount; }
-
-    public void addRef() {
-        _refCount += 1;
-        // uncomment to instrument
-        //import std.stdio : writeln;
-        //writeln(\"addRef \", typeof(this).stringof, \" \", _refCount);
-    }
-
-    public void release() {
-        // uncomment to instrument
-        _refCount -= 1;
-        //import std.stdio : writeln;
-        //writeln(\"release \", typeof(this).stringof, \" \", _refCount);
-        if (!_refCount) {
-            //writeln(\"dropping \", typeof(this).stringof);
-            drop();
-        }
-    }";
 
 
 Rc!T makeRc (T, Args...)(Args args) if (is(T:RefCounted)) {
@@ -101,6 +81,152 @@ template Rc(T) if (is(T:RefCounted)) {
 
     }
 
+}
+
+
+private string buildRcCode() {
+    version(rcAtomic) {
+        return "
+            private shared int _refCount=0;
+
+            public @property int refCount() const { return _refCount; }
+
+            public void addRef() {
+                import core.atomic : cas;
+                int oldRc = void;
+                do {
+                    oldRc = _refCount;
+                }
+                while(!cas(&_refCount, oldRc, oldRc+1));
+                version(rcDebug) {
+                    import std.stdio : writefln;
+                    writefln(\"addRef %s: %s\", typeof(this).stringof, oldRc+1);
+                }
+            }
+
+            public void release() {
+                import core.atomic : cas;
+                int oldRc = void;
+                do {
+                    oldRc = _refCount;
+                }
+                while(!cas(&_refCount, oldRc, oldRc-1));
+                version(rcDebug) {
+                    import std.stdio : writefln;
+                    writefln(\"release %s: %s\", typeof(this).stringof, oldRc-1);
+                }
+                if (oldRc == 1) {
+                    version(rcDebug) {
+                        import std.stdio : writefln;
+                        writefln(\"drop %s\", typeof(this).stringof);
+                    }
+                    drop();
+                }
+            }";
+    }
+    else {
+        return "
+            private int _refCount=0;
+
+            public @property int refCount() const { return _refCount; }
+
+            public void addRef() {
+                _refCount += 1;
+                version(rcDebug) {
+                    import std.stdio : writefln;
+                    writefln(\"addRef %s: %s\", typeof(this).stringof, refCount);
+                }
+            }
+
+            public void release() {
+                _refCount -= 1;
+                version(rcDebug) {
+                    import std.stdio : writefln;
+                    writefln(\"release %s: %s\", typeof(this).stringof, refCount);
+                }
+                if (!refCount) {
+                    version(rcDebug) {
+                        import std.stdio : writefln;
+                        writefln(\"drop %s\", typeof(this).stringof);
+                    }
+                    drop();
+                }
+            }";
+    }
+}
+
+
+version(unittest) {
+
+    import std.stdio : writeln;
+
+    int rcCount = 0;
+    int structCount = 0;
+
+    class RcClass : RefCounted {
+        mixin(rcCode);
+
+        this() {
+            rcCount += 1;
+        }
+
+        void drop() {
+            rcCount -= 1;
+        }
+    }
+
+    struct RcStruct {
+        Rc!RcClass obj;
+    }
+
+    struct RcArrStruct {
+        Rc!RcClass[] objs;
+
+        ~this() {
+            foreach(ref o; objs) {
+                o = Rc!RcClass.init;
+            }
+        }
+    }
+
+    struct RcArrIndStruct {
+        RcStruct[] objs;
+
+        ~this() {
+            foreach(ref o; objs) {
+                o = RcStruct.init;
+            }
+        }
+    }
+
+    unittest {
+        {
+            auto arr = RcArrStruct([makeRc!RcClass(), makeRc!RcClass()]);
+            assert(rcCount == 2);
+            foreach(obj; arr.objs) {
+                assert(rcCount == 2);
+            }
+            assert(rcCount == 2);
+        }
+        assert(rcCount == 0);
+    }
+
+
+    unittest {
+        {
+            auto obj = makeRc!RcClass();
+            assert(rcCount == 1);
+        }
+        assert(rcCount == 0);
+    }
+
+    unittest {
+        {
+            auto obj = RcStruct(makeRc!RcClass());
+            assert(rcCount == 1);
+        }
+        assert(rcCount == 0);
+    }
 }
 
 
