@@ -215,7 +215,7 @@ struct RawDataSet {
     SamplerSet samplers;
     PixelTargetSet pixelTargets;
     Rect scissor;
-    float[4] blendRef;
+    float[4] blendRef = [0, 0, 0, 0];
     ubyte[2] stencilRef;
 }
 
