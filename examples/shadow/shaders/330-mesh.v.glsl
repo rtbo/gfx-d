@@ -1,4 +1,5 @@
-#version 330
+#version 330 core
+
 
 in vec3 a_Pos;
 in vec3 a_Normal;
@@ -6,10 +7,12 @@ in vec3 a_Normal;
 out vec3 v_Position;
 out vec3 v_Normal;
 
+
 uniform VsLocals {
 	mat4 u_MVP;
 	mat4 u_Model;
 };
+
 
 void main() {
 	v_Normal = mat3(u_Model) * a_Normal;

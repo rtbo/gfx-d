@@ -1,4 +1,4 @@
-#version 330
+#version 330 core
 
 const int MAX_LIGHTS = 5;
 
