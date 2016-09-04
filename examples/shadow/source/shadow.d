@@ -322,7 +322,7 @@ void main() {
     );
 
     auto sc = new Scene(window.device, winRtv, winDsv).rc;
-    immutable bool parallelLightCmds = false;
+    immutable bool parallelLightCmds = true;
 
     auto encoder = Encoder(window.device.makeCommandBuffer());
 

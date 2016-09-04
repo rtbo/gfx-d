@@ -8,6 +8,7 @@
 	"license": "MIT",
 	"targetType": "executable",
 	"stringImportPaths": ["shaders"],
+	"versions": ["rcAtomic"],
     "dependencies": {
         "gfx-d" : { "path": "../../"  },
         "derelict-glfw3" : "~>3.1.0",
