@@ -86,10 +86,13 @@ template Rc(T) if (is(T:RefCounted)) {
 
 private string buildRcCode() {
     version(rcAtomic) {
-        return "
+        enum lockFree = "
             private shared int _refCount=0;
 
-            public @property int refCount() const { return _refCount; }
+            public @property int refCount() const {
+                import core.atomic : atomicLoad;
+                return atomicLoad(_refCount);
+            }
 
             public void addRef() {
                 import core.atomic : cas;
@@ -123,6 +126,7 @@ private string buildRcCode() {
                     drop();
                 }
             }";
+        return lockFree;
     }
     else {
         return "
