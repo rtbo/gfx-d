@@ -1,6 +1,6 @@
 module gfx.core.view;
 
-import gfx.core : Device, Resource, ResourceHolder, MaybeBuiltin;
+import gfx.core : Device, Resource, ResourceHolder, MaybeBuiltin, Size;
 import gfx.core.typecons : Option;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.factory : Factory;
@@ -103,6 +103,11 @@ abstract class RawRenderTargetView : ResourceHolder, MaybeBuiltin {
     mixin(rcCode);
 
     Rc!RenderTargetViewRes _res;
+    Size _size;
+
+    this(Size size) {
+        _size = size;
+    }
 
     @property bool builtin() const {
         return false;
@@ -111,10 +116,18 @@ abstract class RawRenderTargetView : ResourceHolder, MaybeBuiltin {
     final @property inout(RenderTargetViewRes) res() inout {
         return _res.obj;
     }
+
+    final @property Size size() const {
+        return _size;
+    }
 }
 
 abstract class RenderTargetView(T) : RawRenderTargetView if (isFormatted!T) {
     alias Fmt = Formatted!T;
+
+    this(Size size) {
+        super(size);
+    }
 }
 
 class TextureRenderTargetView(T) : RenderTargetView!T {
@@ -124,6 +137,7 @@ class TextureRenderTargetView(T) : RenderTargetView!T {
     Option!ubyte _layer;
 
     this(Texture!T tex, ubyte level, Option!ubyte layer) {
+        super(Size(tex.width, tex.height));
         _tex = tex;
         _level = level;
         _layer = layer;
@@ -149,6 +163,7 @@ class SurfaceRenderTargetView(T) : RenderTargetView!T {
     Rc!(Surface!T) _surf;
 
     this(Surface!T surf) {
+        super(surf.size);
         _surf = surf;
     }
 
@@ -172,6 +187,12 @@ abstract class RawDepthStencilView : ResourceHolder, MaybeBuiltin {
     mixin(rcCode);
 
     Rc!DepthStencilViewRes _res;
+    Size _size;
+
+    this(Size size) {
+        _size = size;
+    }
+
 
     @property bool builtin() const {
         return false;
@@ -180,10 +201,18 @@ abstract class RawDepthStencilView : ResourceHolder, MaybeBuiltin {
     final @property inout(DepthStencilViewRes) res() inout {
         return _res.obj;
     }
+
+    final @property Size size() const {
+        return _size;
+    }
 }
 
 abstract class DepthStencilView(T) : RawDepthStencilView if (isFormatted!T) {
     alias Fmt = Formatted!T;
+
+    this(Size size) {
+        super(size);
+    }
 }
 
 class TextureDepthStencilView(T) : DepthStencilView!T {
@@ -194,6 +223,7 @@ class TextureDepthStencilView(T) : DepthStencilView!T {
     DSVReadOnlyFlags _flags;
 
     this(Texture!T tex, ubyte level, Option!ubyte layer, DSVReadOnlyFlags flags) {
+        super(Size(tex.width, tex.height));
         _tex = tex;
         _level = level;
         _layer = layer;
@@ -220,6 +250,7 @@ class SurfaceDepthStencilView(T) : DepthStencilView!T {
     Rc!(Surface!T) _surf;
 
     this(Surface!T surf) {
+        super(surf.size);
         _surf = surf;
     }
 

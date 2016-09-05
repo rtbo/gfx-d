@@ -1,7 +1,7 @@
 module gfx.window.glfw;
 
 import gfx.backend.gl3 :    GlDevice, createGlDevice;
-import gfx.core :           Device;
+import gfx.core :           Device, Size;
 import gfx.core.rc :        RefCounted, Rc, rcCode;
 import gfx.core.format :    isFormatted, Formatted, SurfaceType, ChannelType,
                             isRender, isDepth, isStencil, isDepthOrStencil, hasDepthOrStencilSurface,
@@ -57,7 +57,7 @@ extern(C)
 private void handleSize(GLFWwindow* window, int width, int height) nothrow {
     RawWindow w = cast(RawWindow)glfwGetWindowUserPointer(window);
     if (w && w._resizeDg) {
-        try { w._resizeDg(cast(ushort)width, cast(ushort)height); }
+        try { w._resizeDg(Size(cast(ushort)width, cast(ushort)height)); }
         catch(Exception) {}
     }
 }
@@ -66,7 +66,7 @@ extern(C)
 private void handleFbSize(GLFWwindow* window, int width, int height) nothrow {
     RawWindow w = cast(RawWindow)glfwGetWindowUserPointer(window);
     if (w && w._fbResizeDg) {
-        try { w._fbResizeDg(cast(ushort)width, cast(ushort)height); }
+        try { w._fbResizeDg(Size(cast(ushort)width, cast(ushort)height)); }
         catch(Exception) {}
     }
 }
@@ -152,8 +152,8 @@ private void handleScroll(GLFWwindow* window, double xoff, double yoff) nothrow 
 
 // window event types
 alias CloseDg = void delegate ();
-alias ResizeDg = void delegate (ushort width, ushort height);
-alias FbResizeDg = void delegate (ushort width, ushort height);
+alias ResizeDg = void delegate (Size size);
+alias FbResizeDg = void delegate (Size size);
 alias IconifyDg = void delegate (Flag!"iconified" inconified);
 alias FocusDg = void delegate (Flag!"focused" focused);
 
@@ -186,25 +186,25 @@ class RawWindow : RefCounted {
     private ScrollDg _scrollDg;
 
     /// constructor without depth/stencil buffer
-    this(string title, ushort width, ushort height, ubyte samples, SurfaceType colorSurf)
+    this(string title, Size size, ubyte samples, SurfaceType colorSurf)
     {
         setupGlContext();
         setupColor(colorSurf);
         glfwWindowHint(GLFW_DEPTH_BITS, 0);
         glfwWindowHint(GLFW_STENCIL_BITS, 0);
         setupMisc(samples);
-        setupWindow(title, width, height);
+        setupWindow(title, size);
     }
 
     /// constructor with a depth and/or stencil buffer
-    this(string title, ushort width, ushort height, ubyte samples,
+    this(string title, Size size, ubyte samples,
             SurfaceType colorSurf, SurfaceType dsSurf)
     {
         setupGlContext();
         setupColor(colorSurf);
         setupDs(dsSurf);
         setupMisc(samples);
-        setupWindow(title, width, height);
+        setupWindow(title, size);
     }
 
     private void setupGlContext() {
@@ -233,11 +233,11 @@ class RawWindow : RefCounted {
         glfwWindowHint(GLFW_DOUBLEBUFFER,   1);
     }
 
-    private void setupWindow(string title, ushort width, ushort height) {
+    private void setupWindow(string title, Size size) {
         import std.exception : enforce;
         import std.string : toStringz;
 
-        _window = glfwCreateWindow(width, height, toStringz(title), null, null);
+        _window = glfwCreateWindow(size.w, size.h, toStringz(title), null, null);
         enforce(_window);
         glfwSetWindowUserPointer(_window, cast(void*)this);
 
@@ -355,16 +355,11 @@ class RawWindow : RefCounted {
     }
 
 
-    final @property ushort width() const {
-        int width, h;
-        glfwGetFramebufferSize(cast(GLFWwindow*)_window, &width, &h);
-        return cast(ushort)width;
-    }
-
-    final @property ushort height() const {
-        int w, height;
-        glfwGetFramebufferSize(cast(GLFWwindow*)_window, &w, &height);
-        return cast(ushort)height;
+    final @property Size size() const {
+        int w =void;
+        int h =void;
+        glfwGetFramebufferSize(cast(GLFWwindow*)_window, &w, &h);
+        return Size(cast(ushort)w, cast(ushort)h);
     }
 
 
@@ -400,24 +395,28 @@ class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthOrStencilSurfa
     import gfx.core.format : hasRenderSurface;
 
     this(string title, ushort width, ushort height, ubyte samples=0) {
+        this(title, Size(width, height), samples);
+    }
+
+    this(string title, Size size, ubyte samples=0) {
         import gfx.core.format : format;
         import gfx.core.surface : BuiltinSurface;
 
         immutable colF = format!Col;
         static if (DepSten.length == 0) {
-            super(title, width, height, samples, colF.surface);
+            super(title, size, samples, colF.surface);
         }
         else static if (DepSten.length == 1) {
             immutable dsF = format!(DepSten[0]);
-            super(title, width, height, samples, colF.surface, dsF.surface);
+            super(title, size, samples, colF.surface, dsF.surface);
         }
         else {
             static assert(false, "supplied to many buffer configurations");
         }
 
-        _colorSurface = new BuiltinSurface!Col(device.builtinSurface, width, height, samples);
+        _colorSurface = new BuiltinSurface!Col(device.builtinSurface, size, samples);
         static if (DepSten.length == 1) {
-            _depthStencilSurface = new BuiltinSurface!(DepSten[0])(device.builtinSurface, width, height, samples);
+            _depthStencilSurface = new BuiltinSurface!(DepSten[0])(device.builtinSurface, size, samples);
         }
     }
 

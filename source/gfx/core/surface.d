@@ -1,6 +1,6 @@
 module gfx.core.surface;
 
-import gfx.core : Device, Resource, ResourceHolder, MaybeBuiltin;
+import gfx.core : Device, Resource, ResourceHolder, MaybeBuiltin, Size;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.factory : Factory;
 import gfx.core.format : isFormatted, Formatted, Format, Swizzle, isRenderSurface, isDepthOrStencilSurface;
@@ -23,7 +23,7 @@ interface SurfaceRes : Resource {
 
 /// surface that is created by the window
 interface BuiltinSurfaceRes : SurfaceRes {
-    void updateSize(ushort w, ushort w);
+    void updateSize(Size s);
 }
 
 abstract class RawSurface : ResourceHolder, MaybeBuiltin {
@@ -31,15 +31,13 @@ abstract class RawSurface : ResourceHolder, MaybeBuiltin {
 
     Rc!SurfaceRes _res;
     SurfUsageFlags _usage;
-    ushort _width;
-    ushort _height;
+    Size _size;
     Format _format;
     ubyte _samples;
 
-    this(SurfUsageFlags usage, ushort width, ushort height, Format format, ubyte samples) {
+    this(SurfUsageFlags usage, Size size, Format format, ubyte samples) {
         _usage = usage;
-        _width = width;
-        _height = height;
+        _size = size;
         _format = format;
         _samples = samples;
     }
@@ -50,8 +48,7 @@ abstract class RawSurface : ResourceHolder, MaybeBuiltin {
     final void pinResources(Device device) {
         Factory.SurfaceCreationDesc desc;
         desc.usage = _usage;
-        desc.width = _width;
-        desc.height = _height;
+        desc.size = _size;
         desc.format = _format;
         desc.samples = _samples;
         _res = device.factory.makeSurface(desc);
@@ -64,6 +61,10 @@ abstract class RawSurface : ResourceHolder, MaybeBuiltin {
     @property bool builtin() const {
         return false;
     }
+
+    final @property Size size() const {
+        return _size;
+    }
 }
 
 
@@ -73,7 +74,7 @@ class Surface(T) : RawSurface if (isFormatted!T) {
     static assert (isRenderSurface!(Fmt.Surface) || isDepthOrStencilSurface!(Fmt.Surface),
             "what is this surface for?");
 
-    this(ushort width, ushort height, ubyte samples) {
+    this(Size size, ubyte samples) {
         import gfx.core.format : format;
         SurfUsageFlags usage;
         static if (isRenderSurface!(Fmt.Surface)) {
@@ -82,7 +83,7 @@ class Surface(T) : RawSurface if (isFormatted!T) {
         static if (isDepthOrStencilSurface!(Fmt.Surface)) {
             usage |= SurfaceUsage.DepthStencil;
         }
-        super(usage, width, height, format!T(), samples);
+        super(usage, size, format!T(), samples);
     }
 
     final RenderTargetView!T viewAsRenderTarget() {
@@ -98,15 +99,15 @@ class Surface(T) : RawSurface if (isFormatted!T) {
 
 class BuiltinSurface(T) : Surface!T
 {
-    this(BuiltinSurfaceRes res, ushort width, ushort height, ubyte samples) {
-        super(width, height, samples);
+    this(BuiltinSurfaceRes res, Size size, ubyte samples) {
+        super(size, samples);
         _res = res;
     }
 
-    final void updateSize(ushort width, ushort height) {
+    final void updateSize(Size size) {
         import gfx.core.util : unsafeCast;
-        _width = width; _height = height;
-        unsafeCast!BuiltinSurfaceRes(_res.obj).updateSize(width, height);
+        _size = size;
+        unsafeCast!BuiltinSurfaceRes(_res.obj).updateSize(size);
     }
 
     final override @property bool builtin() const {

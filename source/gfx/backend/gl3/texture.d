@@ -2,6 +2,7 @@ module gfx.backend.gl3.texture;
 
 import gfx.backend.gl3.buffer : GlBuffer;
 import gfx.backend.gl3.view : GlShaderResourceView;
+import gfx.core : Size;
 import gfx.core.rc : Rc, rcCode;
 import gfx.core.format : Format, SurfaceType, ChannelType;
 import gfx.core.texture;
@@ -213,15 +214,15 @@ class GlSurface : SurfaceRes {
 
     GLuint _name;
     GLenum _internalFormat;
-    ushort _width;
-    ushort _height;
-    ubyte _samples;
+    GLsizei _width;
+    GLsizei _height;
+    GLsizei _samples;
 
     /// constructor for regular surface
     this(Factory.SurfaceCreationDesc desc) {
         _internalFormat = formatToGlInternalFormat(desc.format);
-        _width = desc.width;
-        _height = desc.height;
+        _width = desc.size.w;
+        _height = desc.size.h;
         _samples = desc.samples;
 
         glGenRenderbuffers(1, &_name);
@@ -246,9 +247,9 @@ class GlSurface : SurfaceRes {
     }
 
     final @property GLuint name() const { return _name; }
-    final @property ushort width() const { return _width; }
-    final @property ushort height() const { return _height; }
-    final @property ubyte samples() const { return _samples; }
+    final @property GLsizei width() const { return _width; }
+    final @property GLsizei height() const { return _height; }
+    final @property GLsizei samples() const { return _samples; }
 }
 
 
@@ -262,9 +263,9 @@ class GlBuiltinSurface : GlSurface, BuiltinSurfaceRes {
     final override void drop() {}
     final override void bind() {}
 
-    final void updateSize(ushort width, ushort height) {
-        _width = width;
-        _height = height;
+    final void updateSize(Size s) {
+        _width = s.w;
+        _height = s.h;
     }
 
 }

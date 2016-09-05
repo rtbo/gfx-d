@@ -84,4 +84,13 @@ interface Device : RefCounted {
 /// a rectangle of screen
 struct Rect {
     ushort x; ushort y; ushort w; ushort h;
+
+    @property uint area() const { return w*h; }
+}
+
+/// a rectangle size
+struct Size {
+    ushort w; ushort h;
+
+    @property uint area() const { return w*h; }
 }
