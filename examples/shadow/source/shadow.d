@@ -352,12 +352,22 @@ void main() {
 
 
         encoder.setViewport(Rect(0, 0, 1024, 1024));
+
         if (parallelLightCmds) {
+
             import std.parallelism : parallel;
 
+            // Only RefCounted.refCount is thread safe because resources are shared between lights.
+            // All other data access is unsynchronized.
+            // To achieve parallelism, we only populate the light encoder
+
             foreach (light; parallel(sc.lights)) {
-                encoder.clearDepth(light.shadow, 1);
+
+                light.encoder.clearDepth(light.shadow, 1);
+
                 foreach (m; sc.meshes) {
+
+                    // We modify a local copy of the mesh's shadowData (m is not a ref).
                     m.shadowData.output = light.shadow;
 
                     immutable locals = ShadowVsLocals (
@@ -366,6 +376,7 @@ void main() {
                     light.encoder.updateConstBuffer(m.shadowData.locals, locals);
                     light.encoder.draw!ShadowPipeMeta(m.slice, shadowPso, m.shadowData);
                 }
+
             }
 
             encoder.flush(window.device);
