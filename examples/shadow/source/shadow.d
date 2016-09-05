@@ -182,7 +182,7 @@ class Scene : RefCounted {
             import gfx.core.texture : TextureUsage, TexUsageFlags, Texture2DArray;
 
             TexUsageFlags usage = TextureUsage.DepthStencil | TextureUsage.ShaderResource;
-            return new Texture2DArray!Depth(usage, 1, 512, 512, maxNumLights);
+            return new Texture2DArray!Depth(usage, 1, 1024, 1024, maxNumLights);
         }
         auto shadowTex = makeShadowTex().rc;
         auto shadowSrv = shadowTex.viewAsShaderResource(0, 0, newSwizzle()).rc;
@@ -351,7 +351,7 @@ void main() {
     while (!window.shouldClose) {
 
 
-        encoder.setViewport(Rect(0, 0, 512, 512));
+        encoder.setViewport(Rect(0, 0, 1024, 1024));
         if (parallelLightCmds) {
             import std.parallelism : parallel;
 
