@@ -64,7 +64,8 @@ struct Caps {
         bool, "instanceRate", 1,
         bool, "vertexBase", 1,
         bool, "separateBlendSlots", 1,
-        byte, "", 2,
+        bool, "srgbFramebuffer", 1,
+        byte, "", 1,
     ));
 }
 
