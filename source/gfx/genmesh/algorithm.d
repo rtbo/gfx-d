@@ -1,6 +1,6 @@
-module gfx.meshgen.algorithm;
+module gfx.genmesh.algorithm;
 
-import gfx.meshgen.poly;
+import gfx.genmesh.poly;
 
 import std.range : isInputRange, ElementType;
 

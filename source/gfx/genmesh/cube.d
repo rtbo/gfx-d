@@ -1,6 +1,6 @@
-module gfx.meshgen.cube;
+module gfx.genmesh.cube;
 
-import gfx.meshgen.poly;
+import gfx.genmesh.poly;
 
 import std.typecons : Flag, Yes;
 
@@ -44,7 +44,7 @@ struct CubeGen(Flag!"normals" normals) {
             }
         }
 
-        import gfx.meshgen.algorithm : vertexMap;
+        import gfx.genmesh.algorithm : vertexMap;
 
         return maskFace().vertexMap!((ubyte m) {
             immutable x = (m & 0b100) ? 1f : -1f;
@@ -89,7 +89,7 @@ auto cubeGen(Flag!"normals" normals = Yes.normals)() {
 
 
 unittest {
-    import gfx.meshgen.algorithm;
+    import gfx.genmesh.algorithm;
     import std.algorithm : map, each;
     import std.stdio;
 

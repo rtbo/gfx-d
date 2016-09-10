@@ -1,4 +1,4 @@
-module gfx.meshgen.poly;
+module gfx.genmesh.poly;
 
 import std.typecons : Flag, Yes, No;
 
