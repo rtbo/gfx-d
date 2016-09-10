@@ -130,95 +130,49 @@ void eachVertex(alias fun, FT)(in FT face) if (isFace!FT)
 
 
 /// turn a range of undertermined face type into a range of triangles
-auto triangulate(FR)(FR faceRange) if (isInputRange!FR && isFace!(ElementType!FR)) {
-    return TriangulateResult!FR(faceRange);
-}
-
-private struct TriangulateResult(FR) {
-
-    import std.range : isForwardRange;
-
+auto triangulate(FR)(FR faceRange) if (isInputRange!FR && isFace!(ElementType!FR))
+{
     alias FT = ElementType!FR;
-    static assert (isFace!FT);
+    alias VT = VertexType!FT;
 
-    alias VT = VertexType!(FT);
-
-    FR faceRange;
-    Triangle!VT[] buf;
-
-    this(FR faceRange) {
-        this.faceRange = faceRange;
-        pushTriangles(this.faceRange.front);
-    }
-
-    // for save
-    this(FR faceRange, Triangle!VT[] buf) {
-        this.faceRange = faceRange;
-        this.buf = buf;
-    }
-
-    private void pushTriangles(in FT face) {
-        face.eachTriangle!((t) { buf ~= t; });
-    }
-
-    @property auto front() {
-        assert(buf.length);
-        return buf[0];
-    }
-
-    void popFront() {
-        assert(buf.length);
-        buf = buf[1 .. $];
-        if (!buf.length) {
-            faceRange.popFront();
-            if (!faceRange.empty) {
-                pushTriangles(faceRange.front);
-            }
-        }
-    }
-
-    @property bool empty() {
-        return buf.length == 0 && faceRange.empty;
-    }
-
-    static if (isForwardRange!FR) {
-        @property auto save() {
-            return typeof(this)(faceRange.save, buf.dup);
-        }
-    }
+    return DecompResult!(FR, Triangle!VT, eachTriangle)(faceRange);
 }
 
 
+/// turn a range of undertermined face type into a range of vertices
 auto vertices(FR)(FR faceRange) if (isInputRange!FR && isFace!(ElementType!FR))
 {
-    return VerticesResult!FR(faceRange);
+    alias FT = ElementType!FR;
+    alias VT = VertexType!FT;
+
+    return DecompResult!(FR, VT, eachVertex)(faceRange);
 }
 
-private struct VerticesResult(FR) {
+
+// TODO: bidir and random access
+private struct DecompResult(FR, TargetType, alias eachAlgo) {
 
     import std.range : isForwardRange;
 
     alias FT = ElementType!FR;
-    static assert (isFace!FT);
-
-    alias VT = VertexType!(FT);
+    static assert(isFace!FT);
 
     FR faceRange;
-    VT[] buf;
+    TargetType[] buf;
 
     this(FR faceRange) {
         this.faceRange = faceRange;
-        pushVertices(this.faceRange.front);
+        decomp(this.faceRange.front);
     }
 
     // for save
-    this(FR faceRange, VT[] buf) {
+    this(FR faceRange, TargetType[] buf) {
         this.faceRange = faceRange;
         this.buf = buf;
     }
 
-    private void pushVertices(in FT face) {
-        face.eachVertex!((t) { buf ~= t; });
+    private void decomp(in FT face) {
+        eachAlgo!((t) { buf ~= t; })(face);
     }
 
     @property auto front() {
@@ -232,7 +186,7 @@ private struct VerticesResult(FR) {
         if (!buf.length) {
             faceRange.popFront();
             if (!faceRange.empty) {
-                pushVertices(faceRange.front);
+                decomp(faceRange.front);
             }
         }
     }
