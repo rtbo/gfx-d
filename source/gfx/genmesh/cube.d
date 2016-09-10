@@ -6,9 +6,13 @@ import std.typecons : Flag, Yes;
 
 
 
+auto genCube(Flag!"normals" normals = Yes.normals)() {
+    return CubeGenerator!normals.init;
+}
+
 /// cube face generator
 /// pass Yes.normals as parameter to get vertices normals
-struct CubeGen(Flag!"normals" normals) {
+struct CubeGenerator(Flag!"normals" normals) {
 
     alias GV = GenVertex!normals;
 
@@ -83,10 +87,6 @@ struct CubeGen(Flag!"normals" normals) {
 }
 
 
-auto cubeGen(Flag!"normals" normals = Yes.normals)() {
-    return CubeGen!normals.init;
-}
-
 
 unittest {
     import gfx.genmesh.algorithm;
@@ -98,7 +98,7 @@ unittest {
         float[3] normal;
         float[2] texCoord;
     }
-    cubeGen()
+    genCube()
             .map!(f => quad(
                 Vertex(f[0].p, f[0].n, [0f, 0f]),
                 Vertex(f[1].p, f[1].n, [0f, 1f]),
