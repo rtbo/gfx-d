@@ -40,7 +40,6 @@ immutable triangle = [
 immutable float[4] backColor = [0.1, 0.2, 0.3, 1.0];
 
 
-
 int main()
 {
     /// window with a color buffer and no depth/stencil buffer

@@ -109,48 +109,6 @@ alias BlitPipeline = PipelineState!BlitPipeMeta;
 alias LensePipeline = PipelineState!LensePipeMeta;
 
 
-immutable crateVertices = [
-    // top (0, 0, 1)
-    VertexPNT([-1, -1,  1],    [ 0,  0,  1],   [0, 0]),
-    VertexPNT([ 1, -1,  1],    [ 0,  0,  1],   [1, 0]),
-    VertexPNT([ 1,  1,  1],    [ 0,  0,  1],   [1, 1]),
-    VertexPNT([-1,  1,  1],    [ 0,  0,  1],   [0, 1]),
-    // bottom (0, 0, -1)
-    VertexPNT([-1,  1, -1],    [ 0,  0, -1],   [1, 0]),
-    VertexPNT([ 1,  1, -1],    [ 0,  0, -1],   [0, 0]),
-    VertexPNT([ 1, -1, -1],    [ 0,  0, -1],   [0, 1]),
-    VertexPNT([-1, -1, -1],    [ 0,  0, -1],   [1, 1]),
-    // right (1, 0, 0)
-    VertexPNT([ 1, -1, -1],    [ 1,  0,  0],   [0, 0]),
-    VertexPNT([ 1,  1, -1],    [ 1,  0,  0],   [1, 0]),
-    VertexPNT([ 1,  1,  1],    [ 1,  0,  0],   [1, 1]),
-    VertexPNT([ 1, -1,  1],    [ 1,  0,  0],   [0, 1]),
-    // left (-1, 0, 0)
-    VertexPNT([-1, -1,  1],    [-1,  0,  0],   [1, 0]),
-    VertexPNT([-1,  1,  1],    [-1,  0,  0],   [0, 0]),
-    VertexPNT([-1,  1, -1],    [-1,  0,  0],   [0, 1]),
-    VertexPNT([-1, -1, -1],    [-1,  0,  0],   [1, 1]),
-    // front (0, 1, 0)
-    VertexPNT([ 1,  1, -1],    [ 0,  1,  0],   [1, 0]),
-    VertexPNT([-1,  1, -1],    [ 0,  1,  0],   [0, 0]),
-    VertexPNT([-1,  1,  1],    [ 0,  1,  0],   [0, 1]),
-    VertexPNT([ 1,  1,  1],    [ 0,  1,  0],   [1, 1]),
-    // back (0, -1, 0)
-    VertexPNT([ 1, -1,  1],    [ 0, -1,  0],   [0, 0]),
-    VertexPNT([-1, -1,  1],    [ 0, -1,  0],   [1, 0]),
-    VertexPNT([-1, -1, -1],    [ 0, -1,  0],   [1, 1]),
-    VertexPNT([ 1, -1, -1],    [ 0, -1,  0],   [0, 1]),
-];
-
-immutable ushort[] crateIndices = [
-     0,  1,  2,  2,  3,  0, // top
-     4,  5,  6,  6,  7,  4, // bottom
-     8,  9, 10, 10, 11,  8, // right
-    12, 13, 14, 14, 15, 12, // left
-    16, 17, 18, 18, 19, 16, // front
-    20, 21, 22, 22, 23, 20, // back
-];
-
 immutable squareVertices = [
     VertexPT([-1, -1, 0], [0, 0]),
     VertexPT([ 1, -1, 0], [1, 0]),
@@ -392,6 +350,22 @@ struct FPSProbe {
 
 void main()
 {
+    import gfx.genmesh.cube : genCube;
+    import gfx.genmesh.poly : quad;
+    import gfx.genmesh.algorithm;
+    import std.algorithm : map;
+
+    auto crate = genCube()
+            .map!(f => quad(
+                VertexPNT(f[0].p, f[0].n, [0f, 0f]),
+                VertexPNT(f[1].p, f[1].n, [1f, 0f]),
+                VertexPNT(f[2].p, f[2].n, [1f, 1f]),
+                VertexPNT(f[3].p, f[3].n, [0f, 1f]),
+            ))
+            .triangulate()
+            .vertices()
+            .indexCollectMesh();
+
     enum winW = 640; enum winH = 480;
     enum aspect = float(winW) / float(winH);
 
@@ -408,14 +382,14 @@ void main()
     auto ligBlk = makeRc!(ConstBuffer!Light)(1);
 
     auto crateSrv = rc(loadCrateTexture().viewAsShaderResource(0, 0, newSwizzle()));
-    auto crate = Mesh(
-        makeRc!(VertexBuffer!VertexPNT)(crateVertices),
-        VertexBufferSlice(new IndexBuffer!ushort(crateIndices)),
+    auto crateMesh = Mesh(
+        makeRc!(VertexBuffer!VertexPNT)(crate.vertices),
+        VertexBufferSlice(new IndexBuffer!ushort(crate.indices)),
         makeRc!(ConstBuffer!Matrices)(1), ligBlk,
         crateSrv, makeRc!Sampler(crateSrv, SamplerInfo(FilterMethod.Anisotropic, WrapMode.init)),
         meshViews.colRtv, meshViews.depDsv
     );
-    auto crateData = crate.data;
+    auto crateData = crateMesh.data;
     import std.algorithm : map;
     import std.array : array;
     auto gridVertices = squareVertices.map!(v => VertexPNT(v.pos, [0, 0, 1], v.texCoord)).array;
@@ -512,8 +486,8 @@ void main()
         // draw grid and crate into texture
         encoder.setViewport(Rect(0, 0, 2*winW, 2*winH));
         encoder.draw!MeshPipeMeta(grid.slice, meshPso, gridData);
-        updateMatrices(crateTransform.get, crate.matBlk);
-        encoder.draw!MeshPipeMeta(crate.slice, meshPso, crateData);
+        updateMatrices(crateTransform.get, crateMesh.matBlk);
+        encoder.draw!MeshPipeMeta(crateMesh.slice, meshPso, crateData);
 
         // blit texture to window
         encoder.setViewport(Rect(0, 0, winW, winH));

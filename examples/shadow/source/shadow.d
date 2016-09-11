@@ -95,49 +95,6 @@ alias MeshPipeline = PipelineState!MeshPipeMeta;
 immutable float[4] background = [0.1, 0.2, 0.3, 1.0];
 
 
-immutable cubeVertices = [
-    // top (0, 0, 1)
-    Vertex([-1, -1,  1],    [ 0,  0,  1]),
-    Vertex([ 1, -1,  1],    [ 0,  0,  1]),
-    Vertex([ 1,  1,  1],    [ 0,  0,  1]),
-    Vertex([-1,  1,  1],    [ 0,  0,  1]),
-    // bottom (0, 0, -1)
-    Vertex([-1,  1, -1],    [ 0,  0, -1]),
-    Vertex([ 1,  1, -1],    [ 0,  0, -1]),
-    Vertex([ 1, -1, -1],    [ 0,  0, -1]),
-    Vertex([-1, -1, -1],    [ 0,  0, -1]),
-    // right (1, 0, 0)
-    Vertex([ 1, -1, -1],    [ 1,  0,  0]),
-    Vertex([ 1,  1, -1],    [ 1,  0,  0]),
-    Vertex([ 1,  1,  1],    [ 1,  0,  0]),
-    Vertex([ 1, -1,  1],    [ 1,  0,  0]),
-    // left (-1, 0, 0)
-    Vertex([-1, -1,  1],    [-1,  0,  0]),
-    Vertex([-1,  1,  1],    [-1,  0,  0]),
-    Vertex([-1,  1, -1],    [-1,  0,  0]),
-    Vertex([-1, -1, -1],    [-1,  0,  0]),
-    // front (0, 1, 0)
-    Vertex([ 1,  1, -1],    [ 0,  1,  0]),
-    Vertex([-1,  1, -1],    [ 0,  1,  0]),
-    Vertex([-1,  1,  1],    [ 0,  1,  0]),
-    Vertex([ 1,  1,  1],    [ 0,  1,  0]),
-    // back (0, -1, 0)
-    Vertex([ 1, -1,  1],    [ 0, -1,  0]),
-    Vertex([-1, -1,  1],    [ 0, -1,  0]),
-    Vertex([-1, -1, -1],    [ 0, -1,  0]),
-    Vertex([ 1, -1, -1],    [ 0, -1,  0]),
-];
-
-immutable ushort[] cubeIndices = [
-     0,  1,  2,  2,  3,  0, // top
-     4,  5,  6,  6,  7,  4, // bottom
-     8,  9, 10, 10, 11,  8, // right
-    12, 13, 14, 14, 15, 12, // left
-    16, 17, 18, 18, 19, 16, // front
-    20, 21, 22, 22, 23, 20, // back
-];
-
-
 immutable planeVertices = [
     Vertex([-1, -1,  0],    [ 0,  0,  1]),
     Vertex([ 1, -1,  0],    [ 0,  0,  1]),
@@ -175,6 +132,9 @@ class Scene : RefCounted {
     Mesh[]                      meshes;
 
     this(Device device, RenderTargetView!Rgba8 winRtv, DepthStencilView!Depth winDsv) {
+        import gfx.genmesh.cube : genCube;
+        import gfx.genmesh.poly : quad;
+        import gfx.genmesh.algorithm;
         import std.algorithm : map;
         import std.array : array;
 
@@ -210,8 +170,14 @@ class Scene : RefCounted {
             makeLight(1, [-5, 7, 10], [0.65, 0.5, 0.5, 1], 45),
         ];
 
-        auto cubeBuf = makeRc!(VertexBuffer!Vertex)(cubeVertices);
-        auto cubeSlice = VertexBufferSlice(new IndexBuffer!ushort(cubeIndices));
+        auto cube = genCube()
+                .vertexMap!(v => Vertex(v.p, v.n))
+                .triangulate()
+                .vertices()
+                .indexCollectMesh();
+
+        auto cubeBuf = makeRc!(VertexBuffer!Vertex)(cube.vertices);
+        auto cubeSlice = VertexBufferSlice(new IndexBuffer!ushort(cube.indices));
         auto planeBuf = makeRc!(VertexBuffer!Vertex)(planeVertices.map!(
             v => Vertex((vec3(v.pos)*7).vector, v.normal)
         ).array());

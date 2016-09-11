@@ -70,49 +70,6 @@ struct CratePipeMeta {
 alias CratePipeline = PipelineState!CratePipeMeta;
 
 
-immutable crate = [
-    // top (0, 0, 1)
-    Vertex([-1, -1,  1],    [ 0,  0,  1],   [0, 0]),
-    Vertex([ 1, -1,  1],    [ 0,  0,  1],   [1, 0]),
-    Vertex([ 1,  1,  1],    [ 0,  0,  1],   [1, 1]),
-    Vertex([-1,  1,  1],    [ 0,  0,  1],   [0, 1]),
-    // bottom (0, 0, -1)
-    Vertex([-1,  1, -1],    [ 0,  0, -1],   [1, 0]),
-    Vertex([ 1,  1, -1],    [ 0,  0, -1],   [0, 0]),
-    Vertex([ 1, -1, -1],    [ 0,  0, -1],   [0, 1]),
-    Vertex([-1, -1, -1],    [ 0,  0, -1],   [1, 1]),
-    // right (1, 0, 0)
-    Vertex([ 1, -1, -1],    [ 1,  0,  0],   [0, 0]),
-    Vertex([ 1,  1, -1],    [ 1,  0,  0],   [1, 0]),
-    Vertex([ 1,  1,  1],    [ 1,  0,  0],   [1, 1]),
-    Vertex([ 1, -1,  1],    [ 1,  0,  0],   [0, 1]),
-    // left (-1, 0, 0)
-    Vertex([-1, -1,  1],    [-1,  0,  0],   [1, 0]),
-    Vertex([-1,  1,  1],    [-1,  0,  0],   [0, 0]),
-    Vertex([-1,  1, -1],    [-1,  0,  0],   [0, 1]),
-    Vertex([-1, -1, -1],    [-1,  0,  0],   [1, 1]),
-    // front (0, 1, 0)
-    Vertex([ 1,  1, -1],    [ 0,  1,  0],   [1, 0]),
-    Vertex([-1,  1, -1],    [ 0,  1,  0],   [0, 0]),
-    Vertex([-1,  1,  1],    [ 0,  1,  0],   [0, 1]),
-    Vertex([ 1,  1,  1],    [ 0,  1,  0],   [1, 1]),
-    // back (0, -1, 0)
-    Vertex([ 1, -1,  1],    [ 0, -1,  0],   [0, 0]),
-    Vertex([-1, -1,  1],    [ 0, -1,  0],   [1, 0]),
-    Vertex([-1, -1, -1],    [ 0, -1,  0],   [1, 1]),
-    Vertex([ 1, -1, -1],    [ 0, -1,  0],   [0, 1]),
-];
-
-immutable ushort[] crateIndices = [
-     0,  1,  2,  2,  3,  0, // top
-     4,  5,  6,  6,  7,  4, // bottom
-     8,  9, 10, 10, 11,  8, // right
-    12, 13, 14, 14, 15, 12, // left
-    16, 17, 18, 18, 19, 16, // front
-    20, 21, 22, 22, 23, 20, // back
-];
-
-
 immutable float[4] backColor = [0.1, 0.2, 0.3, 1.0];
 
 
@@ -141,12 +98,28 @@ Texture2D!Rgba8 loadTexture() {
 
 void main()
 {
+    import gfx.genmesh.cube : genCube;
+    import gfx.genmesh.poly : quad;
+    import gfx.genmesh.algorithm;
+    import std.algorithm : map;
+
 	auto window = rc(gfxGlfwWindow!(Rgba8, Depth)("gfx-d - Crate example", 640, 480, 4));
     auto colRtv = rc(window.colorSurface.viewAsRenderTarget());
     auto dsv = rc(window.depthStencilSurface.viewAsDepthStencil());
 
-    auto vbuf = makeRc!(VertexBuffer!Vertex)(crate);
-    auto slice = VertexBufferSlice(new IndexBuffer!ushort(crateIndices));
+    auto crate = genCube()
+            .map!(f => quad(
+                Vertex(f[0].p, f[0].n, [0f, 0f]),
+                Vertex(f[1].p, f[1].n, [1f, 0f]),
+                Vertex(f[2].p, f[2].n, [1f, 1f]),
+                Vertex(f[3].p, f[3].n, [0f, 1f]),
+            ))
+            .triangulate()
+            .vertices()
+            .indexCollectMesh();
+
+    auto vbuf = makeRc!(VertexBuffer!Vertex)(crate.vertices);
+    auto slice = VertexBufferSlice(new IndexBuffer!ushort(crate.indices));
     auto srv = rc(loadTexture().viewAsShaderResource(0, 0, newSwizzle()));
     auto sampler = makeRc!Sampler(srv, SamplerInfo(FilterMethod.Anisotropic, WrapMode.init));
 
