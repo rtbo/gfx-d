@@ -2,7 +2,8 @@ module gfx.genmesh.algorithm;
 
 import gfx.genmesh.poly;
 
-import std.range : isInputRange, ElementType;
+import std.range : isInputRange, isOutputRange, ElementType;
+import std.traits : isIntegral;
 
 
 /// map a single face to another face of same shape with all elements mapped by the passed function.
@@ -40,6 +41,8 @@ auto vertexMap(alias fun, FR)(FR faceRange) if (isInputRange!FR && isFace!(Eleme
 }
 
 private struct VertexMapResult(alias vfun, FR) {
+    import std.range : isForwardRange, isBidirectionalRange, isRandomAccessRange, hasLength;
+
     FR faceRange;
     this (FR fr) { faceRange = fr; }
 
@@ -200,4 +203,167 @@ private struct DecompResult(FR, TargetType, alias eachAlgo) {
             return typeof(this)(faceRange.save, buf.dup);
         }
     }
+}
+
+
+template isIndexer(Indexer)
+{
+    enum isIndexer = is(typeof((Indexer indexer) // construction is unspecified
+    {
+        import std.array : appender;
+        import std.traits : Unqual;
+        alias I = Indexer.IndexType;
+        alias V = Indexer.VertexType;
+
+        V[] outVertices;
+        immutable i = indexer.index(V.init, appender(outVertices));
+
+        static assert(isIntegral!(typeof(i)));
+        static assert(is(Unqual!(typeof(i)) == Indexer.IndexType));
+    }));
+}
+
+// template defaultIndexer(VR) if (isInputRange!VR)
+// {
+//     enum defaultIndexer = LruIndexer!(ushort, ElementType!VR)(8);
+// }
+
+
+/// Index the input vertex range into a range of indices with the given Indexer.
+/// The shared vertices will be put into the given output range. (each vertex is given once)
+auto index(VR, VOR, Indexer)(VR vertexInRange, VOR vertexOutRange,
+                             Indexer indexer = LruIndexer!(ushort, ElementType!VR)(8))
+if (isInputRange!VR && !isFace!(ElementType!VR) &&
+    isOutputRange!(VOR, ElementType!VR) &&
+    isIndexer!Indexer && is(ElementType!VR == Indexer.VertexType))
+{
+    return IndexResult!(VR, VOR, Indexer)(vertexInRange, vertexOutRange, indexer);
+}
+
+private struct IndexResult(VR, VOR, Indexer) {
+
+    alias I = Indexer.IndexType;
+
+    VR vertexInRange;
+    VOR vertexOutRange;
+    Indexer indexer;
+
+    I idx = I.max;
+
+    this(VR vertexInRange, VOR vertexOutRange, Indexer indexer) {
+        this.vertexInRange = vertexInRange;
+        this.vertexOutRange = vertexOutRange;
+        this.indexer = indexer;
+
+        if (!vertexInRange.empty) {
+            this.idx = this.indexer.index(this.vertexInRange.front, this.vertexOutRange);
+        }
+        else {
+            this.idx = I.max;
+        }
+    }
+
+    @property I front() {
+        assert(idx != I.max);
+        return idx;
+    }
+
+    void popFront() {
+        vertexInRange.popFront();
+        if (!vertexInRange.empty) {
+            idx = indexer.index(vertexInRange.front, vertexOutRange);
+        }
+        else {
+            idx = I.max;
+        }
+    }
+
+    @property bool empty() {
+        return vertexInRange.empty;
+    }
+}
+
+
+
+/// least recently used indexer
+struct LruIndexer(IT, VT) {
+    import std.container : make, DList;
+    import std.typecons : Tuple;
+
+    alias IndexType = IT;
+    alias VertexType = VT;
+    alias IndexedType = Tuple!(IndexType, VertexType);
+
+    IndexType idx;
+    DList!IndexedType cache;
+    size_t cacheLen;
+    size_t maxCacheLen;
+
+    this (in size_t maxCacheLen) {
+        this.idx = 0;
+        this.cache = make!(DList!IndexedType)();
+        this.cacheLen = 0;
+        this.maxCacheLen = maxCacheLen;
+    }
+
+    /// index the given vertex.
+    /// returns the index. if the vertex was not indexed yet, vfun is called with the vertex as argument
+    IndexType index (VOR)(in VertexType vertex, VOR vertexOutRange)
+    if (isOutputRange!(VOR, VertexType))
+    {
+        import std.algorithm : find;
+        import std.range : take;
+        import std.stdio;
+
+        auto r = cache[].find!"a[1] == b"(vertex);
+
+        if (r.empty) {
+            // found new vertex
+            if (cacheLen == maxCacheLen) {
+                cache.removeBack();
+                cacheLen -= 1;
+            }
+
+            vertexOutRange.put(vertex);
+
+            immutable ind = idx++;
+            cache.insertFront(IndexedType(ind, vertex));
+            cacheLen += 1;
+
+            return ind;
+        }
+        else {
+            immutable indexed = r.front;
+            cache.linearRemove(r.take(1));
+            cache.insertFront(indexed);
+
+            return indexed[0];
+        }
+
+    }
+}
+
+unittest {
+    struct V { float[3] pos; }
+    static assert (isIndexer!(LruIndexer!(ushort, V)));
+}
+
+/// eagerly index all vertices in the given range and collect them
+/// into a struct that has an indices array member and a vertices array member
+auto indexCollectMesh(VR, Indexer)(VR vertexRange, Indexer indexer = LruIndexer!(ushort, ElementType!VR)(8))
+{
+    import std.array : array, appender;
+
+    alias VT = ElementType!VR;
+    alias IT = Indexer.IndexType;
+
+    struct Mesh {
+        IT[] indices;
+        VT[] vertices;
+    }
+
+    auto vertAppender = appender(VT[].init);
+    IT[] indices = vertexRange.index(vertAppender, indexer).array();
+
+    return Mesh(indices, vertAppender.data);
 }

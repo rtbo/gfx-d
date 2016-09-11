@@ -39,11 +39,11 @@ struct CubeGenerator(Flag!"normals" normals) {
         Quad!ubyte maskFace() {
             switch (fi) {
                 case 0: return quad!ubyte(0b001, 0b101, 0b111, 0b011);    // Z+
-                case 1: return quad!ubyte(0b000, 0b010, 0b110, 0b100);    // Z-
+                case 1: return quad!ubyte(0b100, 0b000, 0b010, 0b110);    // Z-
                 case 2: return quad!ubyte(0b011, 0b111, 0b110, 0b010);    // Y+
-                case 3: return quad!ubyte(0b001, 0b000, 0b100, 0b101);    // Y-
+                case 3: return quad!ubyte(0b101, 0b001, 0b000, 0b100);    // Y-
                 case 4: return quad!ubyte(0b101, 0b100, 0b110, 0b111);    // X+
-                case 5: return quad!ubyte(0b001, 0b011, 0b010, 0b000);    // X-
+                case 5: return quad!ubyte(0b000, 0b001, 0b011, 0b010);    // X-
                 default: assert(false);
             }
         }
@@ -87,10 +87,10 @@ struct CubeGenerator(Flag!"normals" normals) {
 }
 
 
-
+///
 unittest {
     import gfx.genmesh.algorithm;
-    import std.algorithm : map, each;
+    import std.algorithm : map, each, equal;
     import std.stdio;
 
     struct Vertex {
@@ -98,14 +98,25 @@ unittest {
         float[3] normal;
         float[2] texCoord;
     }
-    genCube()
+    auto cube = genCube()                               // faces of internal vertex type
+            .vertexMap!((v) {
+                return typeof(v)([2*v.p[0], 2*v.p[1], 2*v.p[2]], v.n);
+            })                                          // same face type with a transform (scaled by 2)
             .map!(f => quad(
                 Vertex(f[0].p, f[0].n, [0f, 0f]),
                 Vertex(f[1].p, f[1].n, [0f, 1f]),
                 Vertex(f[2].p, f[2].n, [1f, 1f]),
                 Vertex(f[3].p, f[3].n, [1f, 0f]),
-            ))
-            .triangulate()
-            .vertices()
-            .each!writeln;
+            ))                                          // faces with application vertex type (tex coord added)
+            .triangulate()                              // triangular faces (with app vertex type)
+            .vertices()                                 // application vertices
+            .indexCollectMesh();                      // mesh type with array members "indices" and "vertices"
+
+    // only the last step actually pull and transform the data all along the chain
+
+    foreach (f; 0 .. 6) {
+        immutable f6 = f*6;
+        immutable f4 = f*4;
+        assert(cube.indices[f6 .. f6+6].equal([f4, f4+1, f4+2, f4, f4+2, f4+3]));
+    }
 }
