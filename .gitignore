@@ -9,6 +9,7 @@ dub.selections.json
 # executables and libs
 __test__library__
 *.exe
+*.dll
 *.lib
 libgfx-d.a
 
