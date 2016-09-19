@@ -14,5 +14,6 @@
         "derelict-gl3" : "~>1.0.18",
 		"gl3n" : "~>1.3.1",
 		"img-d": "*"
-    }
+    },
+	"libs-windows-x86-dmd": [ "turbojpeg" ]
 }
