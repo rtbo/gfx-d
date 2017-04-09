@@ -1,5 +1,51 @@
 module gfx.foundation.util;
 
+import std.meta : AliasSeq;
+
+/// Integer range that is known at compile time and that unrolls foreach loops.
+template staticRange(int from, int to, int step = 1)
+        if (((step > 0 && from <= to) || (step < 0 && from >= to)) && ((to - from) % step == 0))
+{
+    static if (from == to)
+    {
+        alias staticRange = AliasSeq!();
+    }
+    else
+    {
+        alias staticRange = AliasSeq!(from, staticRange!(from + step, to, step));
+    }
+}
+
+unittest
+{
+    int[] vals;
+    foreach (v; staticRange!(0, 18, 3))
+    {
+        enum vv = v;
+        vals ~= vv;
+    }
+    assert(vals == [0, 3, 6, 9, 12, 15]);
+
+    vals = [];
+    foreach (v; staticRange!(4, 8))
+    {
+        enum vv = v;
+        vals ~= vv;
+    }
+    assert(vals == [4, 5, 6, 7]);
+
+    vals = [];
+    foreach (v; staticRange!(8, 4, -1))
+    {
+        enum vv = v;
+        vals ~= vv;
+    }
+    assert(vals == [8, 7, 6, 5]);
+
+    // test rejection because of unfitting step
+    static assert(!__traits(compiles, staticRange!(0, 11, 3)));
+}
+
 
 /// down cast of a reference to a child class reference
 /// runtime check is disabled in release build
