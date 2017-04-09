@@ -8,6 +8,7 @@ U unsafeCast(U, T)(T obj)
             (is(U==class) || is(U==interface)) &&
             is(U : T))
 {
+    if (!obj) return null;
     debug {
         auto uObj = cast(U)obj;
         assert(uObj, "unsafeCast from "~T.stringof~" to "~U.stringof~" failed");
@@ -29,6 +30,7 @@ const(U) unsafeCast(U, T)(const(T) obj)
             (is(U==class) || is(U==interface)) &&
             is(U : T))
 {
+    if (!obj) return null;
     debug {
         auto uObj = cast(const(U))obj;
         assert(uObj, "unsafeCast from "~T.stringof~" to "~U.stringof~" failed");
