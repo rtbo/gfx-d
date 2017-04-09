@@ -101,17 +101,19 @@ void reinit(T, K)(ref T[K] arr) if (is(T == struct))
 
 
 
-/// A string that can be mixed-in a class declaration to implement RefCounted.
-/// Disposable implementation is not given.
-/// Whether or not rcCode is atomic depend if version(rcAtomic) is set or not.
 version(rcAtomic)
 {
-    enum rcCode = atomicRcCode;
+    private enum rcAtomicFlag = Yes.atomic;
 }
 else
 {
-    enum rcCode = unatomicRcCode;
+    private enum rcAtomicFlag = No.atomic;
 }
+
+/// A string that can be mixed-in a class declaration to implement RefCounted.
+/// Disposable implementation is not given.
+/// Whether or not rcCode is atomic depend if version(rcAtomic) is set or not.
+enum rcCode = buildRcCode!(rcAtomicFlag)();
 
 /// Always atomic version of rcCode.
 enum atomicRcCode = buildRcCode!(Yes.atomic)();
