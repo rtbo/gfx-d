@@ -1,18 +1,18 @@
 module shadow;
 
-import gfx.core : Primitive, Rect, Device;
-import gfx.core.rc : rc, makeRc, Rc, rcCode, RefCounted;
-import gfx.core.typecons : none, some;
-import gfx.core.format : Rgba8, Depth, newSwizzle;
-import gfx.core.buffer : VertexBuffer, IndexBuffer, VertexBufferSlice, ConstBuffer;
-import gfx.core.program : Program, ShaderSet;
-import gfx.core.texture : Texture, Texture2D, Sampler, SamplerInfo, FilterMethod, WrapMode;
-import gfx.core.view : ShaderResourceView, RenderTargetView, DepthStencilView;
-import gfx.core.draw : clearColor, Instance;
-import s = gfx.core.state : Rasterizer;
-import gfx.core.pso.meta;
-import gfx.core.pso : PipelineState;
-import gfx.core.encoder : Encoder;
+import gfx.device : Primitive, Rect, Device;
+import gfx.foundation.rc : rc, makeRc, Rc, rcCode, RefCounted;
+import gfx.foundation.typecons : none, some;
+import gfx.pipeline.format : Rgba8, Depth, newSwizzle;
+import gfx.pipeline.buffer : VertexBuffer, IndexBuffer, VertexBufferSlice, ConstBuffer;
+import gfx.pipeline.program : Program, ShaderSet;
+import gfx.pipeline.texture : Texture, Texture2D, Sampler, SamplerInfo, FilterMethod, WrapMode;
+import gfx.pipeline.view : ShaderResourceView, RenderTargetView, DepthStencilView;
+import gfx.pipeline.draw : clearColor, Instance;
+import s = gfx.pipeline.state : Rasterizer;
+import gfx.pipeline.pso.meta;
+import gfx.pipeline.pso : PipelineState;
+import gfx.pipeline.encoder : Encoder;
 import gfx.window.glfw : Window, gfxGlfwWindow;
 
 import gl3n.linalg : mat4, mat3, vec3, vec4, quat, Vector;
@@ -139,7 +139,7 @@ class Scene : RefCounted {
         import std.array : array;
 
         auto makeShadowTex() {
-            import gfx.core.texture : TextureUsage, TexUsageFlags, Texture2DArray;
+            import gfx.pipeline.texture : TextureUsage, TexUsageFlags, Texture2DArray;
 
             TexUsageFlags usage = TextureUsage.DepthStencil | TextureUsage.ShaderResource;
             return new Texture2DArray!Depth(usage, 1, 1024, 1024, maxNumLights);
@@ -154,7 +154,7 @@ class Scene : RefCounted {
         enum far = 20f;
 
         auto makeLight(ubyte layer, float[3] pos, float[4] color, float fov) {
-            import gfx.core.texture : DSVReadOnlyFlags;
+            import gfx.pipeline.texture : DSVReadOnlyFlags;
             return Light(
                 vec4(pos, 1),
                 mat4.look_at(vec3(pos), vec3(0, 0, 0), vec3(0, 0, 1)),

@@ -1,13 +1,13 @@
 module gfx.window.glfw;
 
-import gfx.backend.gl3 :    GlDevice, createGlDevice;
-import gfx.core :           Device, Size;
-import gfx.core.rc :        RefCounted, Rc, rcCode;
-import gfx.core.format :    isFormatted, Formatted, SurfaceType, ChannelType,
+import gfx.device.gl3 :    GlDevice, createGlDevice;
+import gfx.device :           Device, Size;
+import gfx.foundation.rc :        RefCounted, Rc, rcCode;
+import gfx.pipeline.format :    isFormatted, Formatted, SurfaceType, ChannelType,
                             isRender, isDepth, isStencil, isDepthOrStencil, hasDepthOrStencilSurface,
                             redBits, greenBits, blueBits, alphaBits, depthBits, stencilBits,
                             hasChannel;
-import gfx.core.surface :   Surface;
+import gfx.pipeline.surface :   Surface;
 
 import derelict.glfw3.glfw3;
 import derelict.opengl3.gl3;
@@ -392,15 +392,15 @@ class RawWindow : RefCounted {
 
 class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthOrStencilSurface, DepSten)) {
 
-    import gfx.core.format : hasRenderSurface;
+    import gfx.pipeline.format : hasRenderSurface;
 
     this(string title, ushort width, ushort height, ubyte samples=0) {
         this(title, Size(width, height), samples);
     }
 
     this(string title, Size size, ubyte samples=0) {
-        import gfx.core.format : format;
-        import gfx.core.surface : BuiltinSurface;
+        import gfx.pipeline.format : format;
+        import gfx.pipeline.surface : BuiltinSurface;
 
         immutable colF = format!Col;
         static if (DepSten.length == 0) {

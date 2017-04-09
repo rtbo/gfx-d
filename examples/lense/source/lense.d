@@ -1,18 +1,18 @@
 module lense;
 
-import gfx.core : Primitive, Rect;
-import gfx.core.rc : rc, makeRc, Rc;
-import gfx.core.typecons : none, some;
-import gfx.core.format : Rgba8, Depth, newSwizzle;
-import gfx.core.buffer : VertexBuffer, IndexBuffer, VertexBufferSlice, ConstBuffer;
-import gfx.core.program : Program, ShaderSet;
-import gfx.core.texture : Texture, Texture2D, Sampler, SamplerInfo, FilterMethod, WrapMode;
-import gfx.core.view : ShaderResourceView, RenderTargetView, DepthStencilView;
-import gfx.core.draw : clearColor, Instance;
-import s = gfx.core.state : Rasterizer;
-import gfx.core.pso.meta;
-import gfx.core.pso : PipelineState;
-import gfx.core.encoder : Encoder;
+import gfx.device : Primitive, Rect;
+import gfx.foundation.rc : rc, makeRc, Rc;
+import gfx.foundation.typecons : none, some;
+import gfx.pipeline.format : Rgba8, Depth, newSwizzle;
+import gfx.pipeline.buffer : VertexBuffer, IndexBuffer, VertexBufferSlice, ConstBuffer;
+import gfx.pipeline.program : Program, ShaderSet;
+import gfx.pipeline.texture : Texture, Texture2D, Sampler, SamplerInfo, FilterMethod, WrapMode;
+import gfx.pipeline.view : ShaderResourceView, RenderTargetView, DepthStencilView;
+import gfx.pipeline.draw : clearColor, Instance;
+import s = gfx.pipeline.state : Rasterizer;
+import gfx.pipeline.pso.meta;
+import gfx.pipeline.pso : PipelineState;
+import gfx.pipeline.encoder : Encoder;
 import gfx.window.glfw : gfxGlfwWindow;
 
 import gl3n.linalg : mat4, mat3, vec3, vec4;
@@ -124,8 +124,8 @@ immutable float[4] backColor = [0.1, 0.2, 0.3, 1.0];
 
 
 Texture2D!Rgba8 loadCrateTexture() {
-    import gfx.core.texture : TextureUsage, TexUsageFlags;
-    import gfx.core.util : retypeSlice;
+    import gfx.pipeline.texture : TextureUsage, TexUsageFlags;
+    import gfx.foundation.util : retypeSlice;
     import libjpeg.turbojpeg;
     import core.stdc.config : c_ulong;
 
@@ -147,7 +147,7 @@ Texture2D!Rgba8 loadCrateTexture() {
 }
 
 Texture2D!Rgba8 makeGridTexture(in ushort w, in ushort h) {
-    import gfx.core.texture : TextureUsage, TexUsageFlags;
+    import gfx.pipeline.texture : TextureUsage, TexUsageFlags;
     enum num = 12;
     immutable wn = w / num;
     immutable hn = h / num;
@@ -172,8 +172,8 @@ struct MeshViews {
     Rc!(ShaderResourceView!Depth)   depSrv;
 
     static MeshViews make(in ushort w, in ushort h) {
-        import gfx.core.texture : TextureUsage, TexUsageFlags;
-        import gfx.core.view : DSVReadOnly, DSVReadOnlyFlags;
+        import gfx.pipeline.texture : TextureUsage, TexUsageFlags;
+        import gfx.pipeline.view : DSVReadOnly, DSVReadOnlyFlags;
 
         Texture!Fmt makeTexture(Fmt)(in ushort w, in ushort h, TextureUsage usage) {
             TexUsageFlags usageFl = TextureUsage.ShaderResource | usage;

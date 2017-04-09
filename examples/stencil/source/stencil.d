@@ -1,18 +1,18 @@
 module stencil;
 
-import gfx.core : Rect, Primitive;
-import gfx.core.rc : Rc, rc, makeRc;
-import gfx.core.typecons : Option, none, some;
-import gfx.core.format : Rgba8, DepthStencil, R8, Unorm, newSwizzle;
-import gfx.core.buffer : VertexBuffer, IndexBuffer, VertexBufferSlice;
-import gfx.core.texture : Texture, Texture2D, TextureUsage, TexUsageFlags;
-import gfx.core.program : ShaderSet, Program;
-import gfx.core.pso.meta;
-import gfx.core.pso : PipelineDescriptor, PipelineState, VertexBufferSet;
-import gfx.core.state : Rasterizer, Stencil, Comparison, StencilOp, ColorFlags, ColorMask;
-import gfx.core.draw : Instance;
-import gfx.core.encoder : Encoder;
-import gfx.core.view : DepthStencilView;
+import gfx.device : Size, Rect, Primitive;
+import gfx.foundation.rc : Rc, rc, makeRc;
+import gfx.foundation.typecons : Option, none, some;
+import gfx.pipeline.format : Rgba8, DepthStencil, R8, Unorm, newSwizzle;
+import gfx.pipeline.buffer : VertexBuffer, IndexBuffer, VertexBufferSlice;
+import gfx.pipeline.texture : Texture, Texture2D, TextureUsage, TexUsageFlags;
+import gfx.pipeline.program : ShaderSet, Program;
+import gfx.pipeline.pso.meta;
+import gfx.pipeline.pso : PipelineDescriptor, PipelineState, VertexBufferSet;
+import gfx.pipeline.state : Rasterizer, Stencil, Comparison, StencilOp, ColorFlags, ColorMask;
+import gfx.pipeline.draw : Instance;
+import gfx.pipeline.encoder : Encoder;
+import gfx.pipeline.view : DepthStencilView;
 
 import gfx.window.glfw : gfxGlfwWindow;
 
@@ -140,7 +140,7 @@ void main() {
     auto encoder = Encoder(window.device.makeCommandBuffer());
 
     window.onKey = (int, int, int, int) { window.shouldClose = true; };
-    window.onFbResize = (ushort w, ushort h) { encoder.setViewport(Rect(0, 0, w, h)); };
+    window.onFbResize = (Size s) { encoder.setViewport(Rect(0, 0, s.w, s.h)); };
 
     FPSProbe fps;
     fps.start();
