@@ -644,7 +644,7 @@ class GlCommandBuffer : CommandBuffer {
         _fbo = fbo;
     }
 
-    final void drop() {
+    final void dispose() {
         _cache = GlCommandCache.init;
         import std.algorithm : each;
         _commands.each!(cmd => cmd.unload());

@@ -56,7 +56,7 @@ abstract class RawBuffer : ResourceHolder {
         _size = size; _initData = initData;
     }
 
-    final void drop() {
+    final void dispose() {
         _res.unload();
     }
 

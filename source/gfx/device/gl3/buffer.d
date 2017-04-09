@@ -69,7 +69,7 @@ class GlBuffer : BufferRes {
         glBufferData(_target, _size, ptr, _usage);
     }
 
-    final void drop() {
+    final void dispose() {
         glDeleteBuffers(1, &_name);
     }
     final void bind() {

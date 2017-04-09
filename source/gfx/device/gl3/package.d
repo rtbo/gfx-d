@@ -74,7 +74,7 @@ class GlDevice : Device {
         glBindVertexArray(_vao);
     }
 
-    final void drop() {
+    final void dispose() {
         glDeleteVertexArrays(1, &_vao);
         glDeleteFramebuffers(1, &_fbo);
         _builtinSurf.unload();

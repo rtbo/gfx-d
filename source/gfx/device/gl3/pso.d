@@ -46,7 +46,7 @@ class GlPipelineState : PipelineStateRes {
     final @property ref const(VertexAttribDesc[]) input() const { return _input; }
     final @property ref const(OutputMerger) output() const { return _output; }
 
-    final void drop() {
+    final void dispose() {
         _prog.unload();
     }
 

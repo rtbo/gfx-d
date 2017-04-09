@@ -224,7 +224,7 @@ class Scene : RefCounted {
         ];
     }
 
-    void drop() {
+    void dispose() {
         foreach(ref l; lights) {
             l.shadow.unload();
             l.encoder = Encoder.init;

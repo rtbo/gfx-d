@@ -218,7 +218,7 @@ class Sampler : ResourceHolder {
         _info = info;
     }
 
-    final void drop() {
+    final void dispose() {
         _res.unload();
         _srv.unload();
     }
@@ -258,7 +258,7 @@ abstract class RawTexture : ResourceHolder {
         }
     }
 
-    final void drop() {
+    final void dispose() {
         _res.unload();
     }
 

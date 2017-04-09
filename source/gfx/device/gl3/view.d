@@ -37,7 +37,7 @@ class GlBufferShaderResourceView : GlShaderResourceView {
         glTexBuffer(GL_TEXTURE_BUFFER, _internalFormat, _buf.name);
     }
 
-    final void drop() {
+    final void dispose() {
         _buf.unload();
         glDeleteBuffers(1, &_texName);
     }
@@ -64,7 +64,7 @@ class GlTextureShaderResourceView : GlShaderResourceView {
         _tex = unsafeCast!GlTexture(tex.res);
     }
 
-    final void drop() {
+    final void dispose() {
         _tex.unload();
     }
 
@@ -105,7 +105,7 @@ class GlTextureTargetView : GlTargetView {
         _layer = desc.layer;
     }
 
-    final void drop() {
+    final void dispose() {
         _tex.unload();
     }
 
@@ -130,7 +130,7 @@ class GlSurfaceTargetView : GlTargetView {
         _surf = surf;
     }
 
-    final void drop() {
+    final void dispose() {
         _surf.unload();
     }
 

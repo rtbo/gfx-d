@@ -151,13 +151,13 @@ struct ResourceSet(ElemT, string fieldName) if (is(ElemT : RefCounted))
     mixin(format("@property inout(ElemT)[] %s() inout { return _elems; }", fieldName));
 
     void add(ElemT elem) {
-        elem.addRef();
+        elem.retain();
         _elems ~= elem;
     }
 
     this(this) {
         import std.algorithm : each;
-        _elems.each!(e => e.addRef());
+        _elems.each!(e => e.retain());
     }
     ~this() {
         import std.algorithm : each;
@@ -194,7 +194,7 @@ struct PixelTargetSet {
     /// Add a color view to the specified slot
     void addColor(RawRenderTargetView view) {
         takeSize(view.size);
-        view.addRef();
+        view.retain();
         colors ~= view;
     }
 
@@ -216,7 +216,7 @@ struct PixelTargetSet {
 
     this(this) {
         import std.algorithm : each;
-        colors.each!(rtv => rtv.addRef());
+        colors.each!(rtv => rtv.retain());
     }
 
     ~this() {
@@ -262,7 +262,7 @@ abstract class RawPipelineState : ResourceHolder {
 
     final @property const(PipelineDescriptor) descriptor() const { return _descriptor; }
 
-    final void drop() {
+    final void dispose() {
         _prog.unload();
         _res.unload();
     }

@@ -254,7 +254,7 @@ class RawWindow : RefCounted {
     }
 
 
-    void drop() {
+    void dispose() {
         _device.unload();
     }
 
@@ -420,7 +420,7 @@ class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthOrStencilSurfa
         }
     }
 
-    override void drop() {
+    override void dispose() {
         _colorSurface.unload();
         static if (DepSten.length == 1) {
             _depthStencilSurface.unload();
@@ -429,7 +429,7 @@ class Window(Col, DepSten...) : RawWindow if (allSatisfy!(hasDepthOrStencilSurfa
             _depthSurface.unload();
             _stencilSurface.unload();
         }
-        super.drop();
+        super.dispose();
     }
 
     static assert(hasRenderSurface!Col, Col.stringof~" is not a valid color format");

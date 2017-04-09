@@ -385,7 +385,7 @@ class GlShader : ShaderRes {
         }
     }
 
-    void drop() {
+    void dispose() {
         glDeleteShader(_name);
     }
 
@@ -429,7 +429,7 @@ class GlProgram : ProgramRes {
         }
     }
 
-    final void drop() {
+    final void dispose() {
         glDeleteProgram(_name);
     }
 

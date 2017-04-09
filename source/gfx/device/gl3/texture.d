@@ -79,7 +79,7 @@ class GlSamplerWithObj : GlSampler {
         }
     }
 
-    final void drop() {
+    final void dispose() {
         glDeleteSamplers(1, &_sampler);
     }
 
@@ -98,7 +98,7 @@ class GlSamplerWithoutObj : GlSampler {
         _info = info;
         _target = unsafeCast!GlShaderResourceView(srv).target;
     }
-    final void drop() {}
+    final void dispose() {}
     final override void bind(ubyte) {
         if (_info.filter == FilterMethod.Anisotropic) {
             glTexParameteri(_target, GL_TEXTURE_MAX_ANISOTROPY_EXT, _info.anisotropyMax);
@@ -238,7 +238,7 @@ class GlSurface : SurfaceRes {
     /// constructor for builtin surface
     private this(Flag!"builtin") {}
 
-    void drop() {
+    void dispose() {
         glDeleteRenderbuffers(1, &_name);
     }
 
@@ -260,7 +260,7 @@ class GlBuiltinSurface : GlSurface, BuiltinSurfaceRes {
         super(Yes.builtin);
     }
 
-    final override void drop() {}
+    final override void dispose() {}
     final override void bind() {}
 
     final void updateSize(Size s) {
@@ -289,7 +289,7 @@ abstract class GlTexture : TextureRes {
         glGenTextures(1, &_name);
     }
 
-    final void drop() {
+    final void dispose() {
         glDeleteTextures(1, &_name);
     }
     final void bind() {

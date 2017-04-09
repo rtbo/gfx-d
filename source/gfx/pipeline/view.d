@@ -38,7 +38,7 @@ abstract class RawShaderResourceView : ResourceHolder {
 
     final @property inout(ShaderResourceViewRes) res() inout { return _res.obj; }
 
-    void drop() {
+    void dispose() {
         _res.unload();
     }
 }
@@ -55,9 +55,9 @@ class BufferShaderResourceView(T) : ShaderResourceView!T if (isFormatted!T) {
         _buf = buf;
     }
 
-    final override void drop() {
+    final override void dispose() {
         _buf.unload();
-        super.drop();
+        super.dispose();
     }
 
     final void pinResources(Device device) {
@@ -82,9 +82,9 @@ class TextureShaderResourceView(T) : ShaderResourceView!T if(isFormatted!T) {
         _swizzle = swizzle;
     }
 
-    final override void drop() {
+    final override void dispose() {
         _tex.unload();
-        super.drop();
+        super.dispose();
     }
 
     final void pinResources(Device device) {
@@ -152,7 +152,7 @@ class TextureRenderTargetView(T) : RenderTargetView!T {
         _res = device.factory.makeRenderTargetView(_tex.obj, desc);
     }
 
-    final void drop() {
+    final void dispose() {
         _tex.unload();
         _res.unload();
     }
@@ -172,7 +172,7 @@ class SurfaceRenderTargetView(T) : RenderTargetView!T {
         _res = device.factory.makeRenderTargetView(_surf.obj);
     }
 
-    final void drop() {
+    final void dispose() {
         _surf.unload();
         _res.unload();
     }
@@ -239,7 +239,7 @@ class TextureDepthStencilView(T) : DepthStencilView!T {
         _res = device.factory.makeDepthStencilView(_tex.obj, desc);
     }
 
-    final void drop() {
+    final void dispose() {
         _tex.unload();
         _res.unload();
     }
@@ -259,7 +259,7 @@ class SurfaceDepthStencilView(T) : DepthStencilView!T {
         _res = device.factory.makeDepthStencilView(_surf.obj);
     }
 
-    final void drop() {
+    final void dispose() {
         _surf.unload();
         _res.unload();
     }

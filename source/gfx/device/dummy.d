@@ -15,7 +15,7 @@ import gfx.pipeline.draw : CommandBuffer;
 
 class DummyDevice : Device {
     mixin(rcCode);
-    void drop() {}
+    void dispose() {}
 
     @property string name() const { return "dummy"; }
     @property Caps caps() const {
@@ -84,27 +84,27 @@ class DummyFactory : Factory {
 
 class DummyTexture : TextureRes {
     mixin(rcCode);
-    void drop() {}
+    void dispose() {}
     void bind() {}
     void update(in ImageSliceInfo slice, const(ubyte)[] data) {}
 }
 
 class DummyBuffer : BufferRes {
     mixin(rcCode);
-    void drop() {}
+    void dispose() {}
     void bind() {}
     void update(size_t buffer, const(ubyte)[] data) {}
 }
 
 class DummyShader : ShaderRes {
     mixin(rcCode);
-    void drop() {}
+    void dispose() {}
     @property ShaderStage stage() const { return ShaderStage.Vertex; }
 }
 
 class DummyProgram : ProgramRes {
     mixin(rcCode);
-    void drop() {}
+    void dispose() {}
     void bind() {}
     ProgramVars fetchVars() const {
         return ProgramVars.init;

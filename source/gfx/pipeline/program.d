@@ -317,12 +317,12 @@ struct ShaderSet {
         this.shaders = shaders;
 
         import std.algorithm : each;
-        this.shaders.each!(s => s.addRef());
+        this.shaders.each!(s => s.retain());
     }
 
     this(this) {
         import std.algorithm: each;
-        this.shaders.each!(s => s.addRef());
+        this.shaders.each!(s => s.retain());
     }
 
     ~this() {
@@ -373,7 +373,7 @@ class Shader : ResourceHolder {
         _res = device.factory.makeShader(_stage, _code);
     }
 
-    final void drop() {
+    final void dispose() {
         _res.unload();
     }
 }
@@ -387,13 +387,13 @@ class Program : ResourceHolder {
     this(Shader[] shaders) {
         import std.algorithm : each;
         _shaders = shaders;
-        _shaders.each!(s => s.addRef());
+        _shaders.each!(s => s.retain());
     }
 
     this(ShaderSet shaderSet) {
         import std.algorithm : each;
         _shaders = shaderSet.shaders;
-        _shaders.each!(s => s.addRef());
+        _shaders.each!(s => s.retain());
     }
 
     final @property inout(ProgramRes) res() inout { return _res; }
@@ -414,7 +414,7 @@ class Program : ResourceHolder {
     }
 
 
-    final void drop() {
+    final void dispose() {
         import std.algorithm : each;
         _shaders.each!(s => s.release()); // in case pinResources was not called
         _shaders = [];

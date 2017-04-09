@@ -54,7 +54,7 @@ abstract class RawSurface : ResourceHolder, MaybeBuiltin {
         _res = device.factory.makeSurface(desc);
     }
 
-    final void drop() {
+    final void dispose() {
         _res.unload();
     }
 
