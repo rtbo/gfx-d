@@ -146,7 +146,6 @@ class SetDepthStateCommand : Command {
         else {
             glDisable(GL_DEPTH_TEST);
         }
-        unload();
     }
     final void unload() {
         pso.unload();
@@ -179,8 +178,6 @@ class SetStencilTestCommand : Command {
             if (cull != CullFace.Front) bindSide(GL_FRONT, stencil.front, stencilRef[0]);
             if (cull != CullFace.Back) bindSide(GL_BACK, stencil.back, stencilRef[1]);
         }
-
-        unload();
     }
 
     final void unload() {
@@ -211,8 +208,6 @@ class SetBlendStateCommand : Command {
                 }
             }
         }
-
-        unload();
     }
     final void unload() {
         pso.unload();
@@ -229,8 +224,6 @@ class BindProgramCommand : Command {
         assert(prog.loaded);
         if (!prog.pinned) prog.pinResources(device);
         prog.res.bind();
-
-        unload();
     }
 
     final void unload() {
@@ -259,9 +252,7 @@ class BindVertexBuffersCommand : Command {
                         device.caps.instanceRate);
             }
         }
-        unload();
     }
-
     final void unload() {
         set = VertexBufferSet.init;
         pso.unload();
@@ -276,7 +267,6 @@ class BindConstantBuffersCommand : Command {
         this.set = set;
         this.pso = pso;
     }
-
     final void execute(GlDevice device) {
         import gfx.core.util : unsafeCast;
         assert(pso.loaded);
@@ -286,10 +276,7 @@ class BindConstantBuffersCommand : Command {
             immutable bufName = unsafeCast!GlBuffer(buf.res).name;
             glBindBufferBase(GL_UNIFORM_BUFFER, pso.descriptor.constantBlocks[i].slot, bufName);
         }
-
-        unload();
     }
-
     final void unload() {
        	set = ConstantBlockSet.init;
         pso.unload();
@@ -313,7 +300,6 @@ class BindResourceViewsCommand : Command {
             glActiveTexture(cast(GLenum)(GL_TEXTURE0+pso.descriptor.resourceViews[i].slot));
             srv.res.bind();
         }
-        unload();
     }
     final void unload() {
         pso.unload();
@@ -339,7 +325,6 @@ class BindSamplersCommand : Command {
             if (!sampler.pinned) sampler.pinResources(device);
             unsafeCast!GlSampler(sampler.res).bind(pso.descriptor.samplers[i].slot);
         }
-        unload();
     }
     final void unload() {
         pso.unload();
@@ -396,10 +381,7 @@ class BindPixelTargetsCommand(bool withPSO) : Command {
         if (targets.stencil.loaded) {
             bindTarget(targets.stencil.obj, GL_STENCIL_ATTACHMENT);
         }
-
-        unload();
     }
-
     final void unload() {
         targets = PixelTargetSet.init;
         static if (withPSO) {
@@ -438,8 +420,6 @@ class BindBufferCommand : Command {
         if (!buf.pinned) buf.pinResources(device);
 
         buf.res.bind();
-
-        unload();
     }
 
     final void unload() {
@@ -460,7 +440,6 @@ class UpdateBufferCommand : Command {
         assert(buf.loaded);
         if (!buf.pinned) buf.pinResources(device);
         buf.res.update(offset, data);
-        unload();
     }
 
     final void unload() {
@@ -483,7 +462,6 @@ class UpdateTextureCommand : Command {
         assert(tex.loaded);
         if (!tex.pinned) tex.pinResources(device);
         tex.res.update(info, data);
-        unload();
     }
 
     final void unload() {
@@ -510,7 +488,6 @@ class GenerateMipmapCommand : Command {
         immutable name = res.texName;
         glBindTexture(target, name);
         glGenerateMipmap(target);
-        unload();
     }
 
     final void unload() {

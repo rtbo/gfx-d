@@ -106,6 +106,7 @@ class GlDevice : Device {
         import std.algorithm : each;
         auto cmds = unsafeCast!GlCommandBuffer(buffer).retrieve();
         cmds.each!(cmd => cmd.execute(this));
+        cmds.each!(cmd => cmd.unload());
     }
 }
 
