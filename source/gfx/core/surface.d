@@ -99,7 +99,10 @@ class Surface(T) : RawSurface if (isFormatted!T) {
 
 class BuiltinSurface(T) : Surface!T
 {
-    this(BuiltinSurfaceRes res, Size size, ubyte samples) {
+    this(BuiltinSurfaceRes res, Size size, ubyte samples)
+    in { assert(res, "gfx-d: a valid resource must be provided to BuiltinSurface"); }
+    body
+    {
         super(size, samples);
         _res = res;
     }
