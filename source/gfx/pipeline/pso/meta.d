@@ -1,6 +1,5 @@
 module gfx.pipeline.pso.meta;
 
-import gfx.device : Rect;
 import gfx.foundation.rc : Rc;
 import gfx.pipeline.format : SurfaceType, ChannelType, Format, Formatted, isFormatted;
 import gfx.pipeline.program : BaseType, VarType, varBaseType, varDim1, varDim2;
@@ -111,7 +110,7 @@ struct DepthStencilOutput(T) if (isFormatted!T) {
 
 struct Scissor {
     alias Init = void;
-    alias Data = Rect;
+    alias Data = ushort[4];
 }
 
 

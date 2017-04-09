@@ -1,6 +1,6 @@
 module lense;
 
-import gfx.device : Primitive, Rect;
+import gfx.device : Primitive;
 import gfx.foundation.rc : rc, makeRc, Rc;
 import gfx.foundation.typecons : none, some;
 import gfx.pipeline.format : Rgba8, Depth, newSwizzle;
@@ -484,13 +484,13 @@ void main()
         encoder.clearDepth(meshViews.depDsv, 1f);
 
         // draw grid and crate into texture
-        encoder.setViewport(Rect(0, 0, 2*winW, 2*winH));
+        encoder.setViewport(0, 0, 2*winW, 2*winH);
         encoder.draw!MeshPipeMeta(grid.slice, meshPso, gridData);
         updateMatrices(crateTransform.get, crateMesh.matBlk);
         encoder.draw!MeshPipeMeta(crateMesh.slice, meshPso, crateData);
 
         // blit texture to window
-        encoder.setViewport(Rect(0, 0, winW, winH));
+        encoder.setViewport(0, 0, winW, winH);
         encoder.draw!BlitPipeMeta(blitSlice, blitPso, blitData);
 
         // draw lense

@@ -2,7 +2,6 @@ module gfx.device.gl3.texture;
 
 import gfx.device.gl3.buffer : GlBuffer;
 import gfx.device.gl3.view : GlShaderResourceView;
-import gfx.device : Size;
 import gfx.foundation.rc : Rc, rcCode;
 import gfx.pipeline.format : Format, SurfaceType, ChannelType;
 import gfx.pipeline.texture;
@@ -221,8 +220,8 @@ class GlSurface : SurfaceRes {
     /// constructor for regular surface
     this(Factory.SurfaceCreationDesc desc) {
         _internalFormat = formatToGlInternalFormat(desc.format);
-        _width = desc.size.w;
-        _height = desc.size.h;
+        _width = desc.size[0];
+        _height = desc.size[1];
         _samples = desc.samples;
 
         glGenRenderbuffers(1, &_name);
@@ -263,9 +262,9 @@ class GlBuiltinSurface : GlSurface, BuiltinSurfaceRes {
     final override void dispose() {}
     final override void bind() {}
 
-    final void updateSize(Size s) {
-        _width = s.w;
-        _height = s.h;
+    final void updateSize(ushort w, ushort h) {
+        _width = w;
+        _height = h;
     }
 
 }

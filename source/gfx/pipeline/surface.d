@@ -1,6 +1,6 @@
 module gfx.pipeline.surface;
 
-import gfx.device : Device, Resource, ResourceHolder, MaybeBuiltin, Size;
+import gfx.device : Device, Resource, ResourceHolder, MaybeBuiltin;
 import gfx.foundation.rc : Rc, rcCode;
 import gfx.device.factory : Factory;
 import gfx.pipeline.format : isFormatted, Formatted, Format, Swizzle, isRenderSurface, isDepthOrStencilSurface;
@@ -23,7 +23,7 @@ interface SurfaceRes : Resource {
 
 /// surface that is created by the window
 interface BuiltinSurfaceRes : SurfaceRes {
-    void updateSize(Size s);
+    void updateSize(ushort w, ushort h);
 }
 
 abstract class RawSurface : ResourceHolder, MaybeBuiltin {
@@ -31,13 +31,13 @@ abstract class RawSurface : ResourceHolder, MaybeBuiltin {
 
     Rc!SurfaceRes _res;
     SurfUsageFlags _usage;
-    Size _size;
+    ushort[2] _size;
     Format _format;
     ubyte _samples;
 
-    this(SurfUsageFlags usage, Size size, Format format, ubyte samples) {
+    this(SurfUsageFlags usage, ushort w, ushort h, Format format, ubyte samples) {
         _usage = usage;
-        _size = size;
+        _size = [w, h];
         _format = format;
         _samples = samples;
     }
@@ -62,9 +62,12 @@ abstract class RawSurface : ResourceHolder, MaybeBuiltin {
         return false;
     }
 
-    final @property Size size() const {
+    final @property ushort[2] size() const {
         return _size;
     }
+
+    final @property ushort width() const { return _size[0]; }
+    final @property ushort height() const { return _size[1]; }
 }
 
 
@@ -74,7 +77,7 @@ class Surface(T) : RawSurface if (isFormatted!T) {
     static assert (isRenderSurface!(Fmt.Surface) || isDepthOrStencilSurface!(Fmt.Surface),
             "what is this surface for?");
 
-    this(Size size, ubyte samples) {
+    this(ushort w, ushort h, ubyte samples) {
         import gfx.pipeline.format : format;
         SurfUsageFlags usage;
         static if (isRenderSurface!(Fmt.Surface)) {
@@ -83,7 +86,7 @@ class Surface(T) : RawSurface if (isFormatted!T) {
         static if (isDepthOrStencilSurface!(Fmt.Surface)) {
             usage |= SurfaceUsage.DepthStencil;
         }
-        super(usage, size, format!T(), samples);
+        super(usage, w, h, format!T(), samples);
     }
 
     final RenderTargetView!T viewAsRenderTarget() {
@@ -99,18 +102,18 @@ class Surface(T) : RawSurface if (isFormatted!T) {
 
 class BuiltinSurface(T) : Surface!T
 {
-    this(BuiltinSurfaceRes res, Size size, ubyte samples)
+    this(BuiltinSurfaceRes res, ushort w, ushort h, ubyte samples)
     in { assert(res, "gfx-d: a valid resource must be provided to BuiltinSurface"); }
     body
     {
-        super(size, samples);
+        super(w, h, samples);
         _res = res;
     }
 
-    final void updateSize(Size size) {
+    final void updateSize(ushort w, ushort h) {
         import gfx.foundation.util : unsafeCast;
         _size = size;
-        unsafeCast!BuiltinSurfaceRes(_res.obj).updateSize(size);
+        unsafeCast!BuiltinSurfaceRes(_res.obj).updateSize(w, h);
     }
 
     final override @property bool builtin() const {

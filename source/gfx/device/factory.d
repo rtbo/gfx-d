@@ -1,6 +1,5 @@
 module gfx.device.factory;
 
-import gfx.device : Size;
 import gfx.foundation.typecons : Option;
 import gfx.pipeline.buffer : BufferRes, RawBuffer, BufferRole, BufferUsage;
 import gfx.pipeline.format : Format, ChannelType, Swizzle;
@@ -35,7 +34,7 @@ interface Factory {
     struct SurfaceCreationDesc {
         SurfUsageFlags usage;
         Format format;
-        Size size;
+        ushort[2] size;
         ubyte samples;
     }
     SurfaceRes makeSurface(SurfaceCreationDesc desc);

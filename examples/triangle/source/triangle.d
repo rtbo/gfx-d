@@ -1,6 +1,6 @@
 module triangle;
 
-import gfx.device : Size, Rect, Primitive;
+import gfx.device : Primitive;
 import gfx.foundation.rc : Rc, rc, makeRc;
 import gfx.foundation.typecons : Option, none, some;
 import gfx.pipeline.format : Rgba8, Depth32F;
@@ -65,8 +65,8 @@ int main()
             window.shouldClose = true;
         };
 
-        window.onFbResize = (Size s) {
-            encoder.setViewport(Rect(0, 0, s.w, s.h));
+        window.onFbResize = (ushort w, ushort h) {
+            encoder.setViewport(0, 0, w, h);
         };
 
         import std.datetime : StopWatch;

@@ -266,6 +266,7 @@ abstract class RawTexture : ResourceHolder {
     final @property TextureType type() const { return _type; }
     final @property TexUsageFlags usage() const { return _usage; }
     final @property ImageInfo imgInfo() const { return _imgInfo; }
+    final @property ushort[2] size() const { return [ width, height]; }
     final @property ushort width() const { return _imgInfo.width; }
     final @property ushort height() const { return _imgInfo.width; }
     final @property ushort depth() const { return _imgInfo.depth; }

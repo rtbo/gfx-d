@@ -5,7 +5,7 @@ import gfx.device.gl3.state : setRasterizer, bindBlend, bindBlendSlot;
 import gfx.device.gl3.buffer : GlBuffer, GlVertexBuffer;
 import gfx.device.gl3.program;
 import gfx.device.gl3.pso : GlPipelineState, OutputMerger;
-import gfx.device : maxVertexAttribs, maxColorTargets, AttribMask, ColorTargetMask, Rect, Primitive;
+import gfx.device : maxVertexAttribs, maxColorTargets, AttribMask, ColorTargetMask, Primitive;
 import gfx.foundation.typecons : Option, some, none;
 import gfx.pipeline.draw : CommandBuffer, ClearColor, Instance;
 import gfx.foundation.rc : Rc, rcCode;
@@ -102,23 +102,30 @@ class SetDrawColorBuffersCommand : Command {
 }
 
 class SetViewportCommand : Command {
-    Rect rect;
-    this(Rect rect) { this.rect = rect; }
+    ushort x, y, w, h;
+    this(ushort x, ushort y, ushort w, ushort h) {
+        this.x = x; this.y = y; this.w = w; this.h = h;
+    }
     final void execute(GlDevice device) {
-        glViewport(rect.x, rect.y, rect.w, rect.h);
+        glViewport(x, y, w, h);
     }
     final void unload() {}
 }
 
 class SetScissorCommand : Command {
-    Option!Rect rect;
-    this(Option!Rect rect) { this.rect = rect; }
+    ushort x, y, w, h;
+    bool enabled;
+
+    this(ushort x, ushort y, ushort w, ushort h) {
+        this.x = x; this.y = y; this.w = w; this.h = h;
+        enabled = true;
+    }
+    this() {}
 
     final void execute(GlDevice device) {
-        if (rect.isSome) {
-            auto r = rect.get();
+        if (enabled) {
             glEnable(GL_SCISSOR_TEST);
-            glScissor(r.x, r.y, r.w, r.h);
+            glScissor(x, y, w, h);
         }
         else {
             glDisable(GL_SCISSOR_TEST);
@@ -721,16 +728,17 @@ class GlCommandBuffer : CommandBuffer {
         _commands ~= new BindBufferCommand(buf);
     }
 
-    final void setViewport(Rect r) {
-        _commands ~= new SetViewportCommand(r);
+    final void setViewport(ushort x, ushort y, ushort w, ushort h) {
+        _commands ~= new SetViewportCommand(x, y, w, h);
     }
 
-    final void setScissor(Rect r) {
-        Option!Rect or;
+    final void setScissor(ushort x, ushort y, ushort w, ushort h) {
         if (_cache.pso.loaded && _cache.pso.descriptor.scissor) {
-            or = r;
+            _commands ~= new SetScissorCommand(x, y, w, h);
         }
-        _commands ~= new SetScissorCommand(or);
+        else {
+            _commands ~= new SetScissorCommand;
+        }
     }
 
     final void setRefValues(float[4] blend, ubyte[2] stencil) {

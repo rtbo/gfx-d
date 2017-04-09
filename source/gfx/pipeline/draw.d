@@ -1,6 +1,5 @@
 module gfx.pipeline.draw;
 
-import gfx.device : Rect;
 import gfx.foundation.rc : RefCounted;
 import gfx.foundation.typecons : SafeUnion, Option;
 import gfx.pipeline.buffer : RawBuffer, IndexType;
@@ -86,9 +85,9 @@ interface CommandBuffer : RefCounted {
     /// Bind an index buffer
     void bindIndex(RawBuffer, IndexType);
     /// Set viewport rect
-    void setViewport(Rect);
+    void setViewport(ushort x, ushort y, ushort w, ushort h);
     /// Set scissor rectangle
-    void setScissor(Rect);
+    void setScissor(ushort x, ushort y, ushort w, ushort h);
     /// Set reference values for the blending and stencil front/back
     void setRefValues(float[4] blend, ubyte[2] stencil);
     /// Update a vertex/index/uniform buffer

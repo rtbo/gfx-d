@@ -11,7 +11,7 @@
 /// for other backends, the pipeline switch is emulated
 module gfx.pipeline.pso;
 
-import gfx.device : Device, Resource, ResourceHolder, Primitive, Rect, Size,
+import gfx.device : Device, Resource, ResourceHolder, Primitive,
                     maxVertexAttribs, maxColorTargets, AttribMask, ColorTargetMask;
 import gfx.foundation.rc : Rc, rcCode, RefCounted;
 import gfx.foundation.typecons : Option, none, some;
@@ -183,11 +183,11 @@ struct PixelTargetSet {
     Rc!RawDepthStencilView stencil;
 
     /// Rendering dimensions
-    Size size;
+    ushort[2] size;
 
-    private void takeSize(Size size) {
+    private void takeSize(ushort[2] size) {
         import std.exception : enforce;
-        enforce(this.size.area == 0 || this.size == size);
+        enforce(!this.size[0] || !this.size[1] || this.size == size);
         this.size = size;
     }
 
@@ -232,7 +232,7 @@ struct RawDataSet {
     ResourceViewSet resourceViews;
     SamplerSet samplers;
     PixelTargetSet pixelTargets;
-    Rect scissor;
+    ushort[4] scissor;
     float[4] blendRef = [0, 0, 0, 0];
     ubyte[2] stencilRef;
 }

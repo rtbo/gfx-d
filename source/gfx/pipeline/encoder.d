@@ -1,6 +1,6 @@
 module gfx.pipeline.encoder;
 
-import gfx.device : Device, Rect;
+import gfx.device : Device;
 import gfx.foundation.rc : Rc;
 import gfx.foundation.typecons : Option, some, none;
 import gfx.pipeline.draw : CommandBuffer, clearColor, Instance;
@@ -35,8 +35,8 @@ struct Encoder {
         _cmdBuf.clearDepthStencil(view, some(depth), some(stencil));
     }
 
-    void setViewport(Rect rect) {
-        _cmdBuf.setViewport(rect);
+    void setViewport(ushort x, ushort y, ushort w, ushort h) {
+        _cmdBuf.setViewport(x, y, w, h);
     }
 
     void updateBuffer(T)(Buffer!T buf, in T[] data, in size_t offset) {

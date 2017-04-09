@@ -1,6 +1,6 @@
 module shadow;
 
-import gfx.device : Primitive, Rect, Device;
+import gfx.device : Primitive, Device;
 import gfx.foundation.rc : rc, makeRc, Rc, rcCode, RefCounted;
 import gfx.foundation.typecons : none, some;
 import gfx.pipeline.format : Rgba8, Depth, newSwizzle;
@@ -317,7 +317,7 @@ void main() {
     while (!window.shouldClose) {
 
 
-        encoder.setViewport(Rect(0, 0, 1024, 1024));
+        encoder.setViewport(0, 0, 1024, 1024);
 
         if (parallelLightCmds) {
 
@@ -365,7 +365,7 @@ void main() {
             }
         }
 
-        encoder.setViewport(Rect(0, 0, winW, winH));
+        encoder.setViewport(0, 0, winW, winH);
         encoder.clear!Rgba8(winRtv, background);
         encoder.clearDepth(winDsv, 1f);
 
