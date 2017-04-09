@@ -103,10 +103,21 @@ void reinit(T, K)(ref T[K] arr) if (is(T == struct))
 
 /// A string that can be mixed-in a class declaration to implement RefCounted.
 /// Disposable implementation is not given.
-enum rcCode = buildRcCode!(No.atomic)();
+/// Whether or not rcCode is atomic depend if version(rcAtomic) is set or not.
+version(rcAtomic)
+{
+    enum rcCode = atomicRcCode;
+}
+else
+{
+    enum rcCode = unatomicRcCode;
+}
 
-/// Atomic version of rcCode.
+/// Always atomic version of rcCode.
 enum atomicRcCode = buildRcCode!(Yes.atomic)();
+
+/// Never atomic version of rcCode
+enum unatomicRcCode = buildRcCode!(No.atomic)();
 
 /// Helper that build a new instance of T and returns it within a Rc!T
 template makeRc(T) if (is(T : RefCounted))
@@ -247,7 +258,7 @@ private string buildRcCode(Flag!"atomic" atomic)()
 
             public override void release()
             {
-                import core.atomic : cas;
+                import core.atomic : atomicOp;
                 immutable rc = atomicOp!"-="(_refCount, 1);
 
                 version(rcDebug)
