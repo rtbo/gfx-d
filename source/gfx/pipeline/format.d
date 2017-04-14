@@ -265,12 +265,11 @@ mixin(formatCode_32bit!(uint, Uint)());
 mixin(formatCode_32bit!(int, Int)());
 mixin(formatCode_32bit!(float, Float)());
 
-version(unittest) {
-    alias Fmt = Formatted!(float[4]);
-    static assert(is(Fmt.Surface == R32_G32_B32_A32));
-    static assert(is(Fmt.Channel == Float));
-    static assert(is(Fmt.View == float[4]));
-}
+
+private alias FmtFloat4 = Formatted!(float[4]);
+static assert(is(FmtFloat4.Surface == R32_G32_B32_A32));
+static assert(is(FmtFloat4.Channel == Float));
+static assert(is(FmtFloat4.View == float[4]));
 
 
 

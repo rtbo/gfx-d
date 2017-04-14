@@ -345,7 +345,9 @@ private string buildRcCode(Flag!"atomic" atomic)()
 }
 
 
-version(unittest)
+// using version(unittest) instead of private creates link errors
+// in test builds in apps/libs depending on gfx-d (??)
+private
 {
     import std.stdio : writeln;
 
