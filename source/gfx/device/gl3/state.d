@@ -42,7 +42,7 @@ GLenum factorToGl(in Factor f) {
                 case BlendValue.ConstAlpha:     return GL_CONSTANT_ALPHA;
             }
         case Factor.OneMinus:
-            final switch (f.getZeroPlus()) {
+            final switch (f.getOneMinus()) {
                 case BlendValue.SourceColor:    return GL_ONE_MINUS_SRC_COLOR;
                 case BlendValue.SourceAlpha:    return GL_ONE_MINUS_SRC_ALPHA;
                 case BlendValue.DestColor:      return GL_ONE_MINUS_DST_COLOR;
