@@ -260,7 +260,7 @@ abstract class RawPipelineState : ResourceHolder {
 
     final @property inout(Program) program() inout { return _prog.obj; }
 
-    final @property const(PipelineDescriptor) descriptor() const { return _descriptor; }
+    final @property ref inout(PipelineDescriptor) descriptor() inout { return _descriptor; }
 
     final void dispose() {
         _prog.unload();
@@ -400,6 +400,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
         _res = device.factory.makePipeline(_prog.obj, _descriptor);
     }
 
+    mixin(paramPropertiesCode!MS());
 
     final RawDataSet makeDataSet(Data dataStruct) {
         import gfx.pipeline.pso.meta :  metaVertexInputFields,
@@ -422,7 +423,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
         // this how link is made between all structs
 
         foreach (vif; metaVertexInputFields!MS) {
-            foreach (i, va; Fields!(vif.VertexType)) {
+            foreach (va; Fields!(vif.VertexType)) {
                 res.vertexBuffers.add(mixin(format("dataStruct.%s", vif.name)));
             }
         }
@@ -460,5 +461,83 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
 
 }
 
+private:
 
+string paramPropertiesCode(MS)()
+if (isMetaStruct!MS)
+{
+    import gfx.pipeline.pso.meta :  metaVertexInputFields,
+                                metaConstantBlockFields,
+                                metaResourceViewFields,
+                                metaResourceSamplerFields,
+                                metaColorOutputFields,
+                                metaBlendOutputFields,
+                                metaDepthOutputFields,
+                                metaStencilOutputFields,
+                                metaDepthStencilOutputFields,
+                                metaScissorFields;
+    import std.format : format;
+    import std.traits : Fields, FieldNameTuple;
+
+    string code;
+    int ind;
+    foreach (vif; metaVertexInputFields!MS) {
+        code ~= format("final @property ref inout(VertexAttribDesc) %s(string f)() inout {\n", vif.name);
+        alias Names = FieldNameTuple!(vif.VertexType);
+        alias Types = Fields!(vif.VertexType);
+        foreach (fi, va; Types) {
+            code ~= format(`%sstatic if (f == "%s") {`, fi?"else ":"", Names[fi]);
+            code ~= format("\n     return _descriptor.vertexAttribs[%s];\n", ind++);
+            code ~= "}\n";
+        }
+        static if (Types.length) {
+            code ~= "else {\n";
+            code ~= format(`   static assert(false, "unknwon field \"%s."~f~"\"");`, vif.name);
+            code ~= "\n}\n";
+        }
+        code ~= "}\n";
+    }
+    foreach (fi, cbf; metaConstantBlockFields!MS) {
+        code ~= format("final @property ref inout(ConstantBlockDesc) %s() inout {\n", cgf.name);
+        code ~= format("    return _descriptor.constantBlocks[%s];\n", fi);
+        code ~= "}\n";
+    }
+    foreach (fi, rvf; metaResourceViewFields!MS) {
+        code ~= format("final @property ref inout(ResourceViewDesc) %s() inout {\n", rvf.name);
+        code ~= format("    return _descriptor.resourceViews[%s];\n", fi);
+        code ~= "}\n";
+    }
+    foreach (fi, cbf; metaResourceSamplerFields!MS) {
+        code ~= format("final @property ref inout(SamplerDesc) %s() inout {\n", cbf.name);
+        code ~= format("    return _descriptor.samplers[%s];\n", fi);
+        code ~= "}\n";
+    }
+    ind = 0;
+    foreach (cof; metaColorOutputFields!MS) {
+        code ~= format("final @property ref inout(ColorTargetDesc) %s() inout {\n", cof.name);
+        code ~= format("    return _descriptor.colorTargets[%s];\n", ind++);
+        code ~= "}\n";
+    }
+    foreach (bof; metaBlendOutputFields!MS) {
+        code ~= format("final @property ref inout(ColorTargetDesc) %s() inout {\n", bof.name);
+        code ~= format("    return _descriptor.colorTargets[%s];\n", ind++);
+        code ~= "}\n";
+    }
+    foreach (dsof; metaDepthOutputFields!MS) {
+        code ~= format("final @property ref inout(DepthStencilDesc) %s() inout {\n", dsof.name);
+        code ~= format("    return _descriptor.depthStencil.get();\n");
+        code ~= "}\n";
+    }
+    foreach (dsof; metaStencilOutputFields!MS) {
+        code ~= format("final @property ref inout(DepthStencilDesc) %s() inout {\n", dsof.name);
+        code ~= format("    return _descriptor.depthStencil.get();\n");
+        code ~= "}\n";
+    }
+    foreach (dsof; metaDepthStencilOutputFields!MS) {
+        code ~= format("final @property ref inout(DepthStencilDesc) %s() inout {\n", dsof.name);
+        code ~= format("    return _descriptor.depthStencil.get();\n");
+        code ~= "}\n";
+    }
+    return code;
+}
 
