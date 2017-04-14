@@ -271,18 +271,18 @@ abstract class RawPipelineState : ResourceHolder {
 
 class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
 {
-    import gfx.pipeline.pso.meta : PipelineInit, PipelineData;
+    import gfx.pipeline.pso.meta : PipelineParam, PipelineData;
     import std.traits : Fields, FieldNameTuple;
 
-    alias Init = PipelineInit!MS;
+    alias Param = PipelineParam!MS;
     alias Data = PipelineData!MS;
 
-    this(Program prog, Primitive primitive, Rasterizer rasterizer, Init initStruct=Init.init) {
+    this(Program prog, Primitive primitive, Rasterizer rasterizer, Param paramStruct=Param.init) {
         super(prog, primitive, rasterizer);
-        initDescriptor(initStruct);
+        initDescriptor(paramStruct);
     }
 
-    private void initDescriptor(in Init initStruct) {
+    private void initDescriptor(in Param paramStruct) {
         import gfx.pipeline.pso.meta :  metaVertexInputFields,
                                     metaConstantBlockFields,
                                     metaResourceViewFields,
@@ -295,22 +295,22 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
                                     metaScissorFields;
         import std.format : format;
         foreach (vif; metaVertexInputFields!MS) {
-            _descriptor.vertexAttribs ~= mixin(format("initStruct.%s[]", vif.name));
+            _descriptor.vertexAttribs ~= mixin(format("paramStruct.%s[]", vif.name));
         }
         foreach (cbf; metaConstantBlockFields!MS) {
-            _descriptor.constantBlocks ~= mixin(format("initStruct.%s", cbf.name));
+            _descriptor.constantBlocks ~= mixin(format("paramStruct.%s", cbf.name));
         }
         foreach (rvf; metaResourceViewFields!MS) {
-            _descriptor.resourceViews ~= mixin(format("initStruct.%s", rvf.name));
+            _descriptor.resourceViews ~= mixin(format("paramStruct.%s", rvf.name));
         }
         foreach (rsf; metaResourceSamplerFields!MS) {
-            _descriptor.samplers ~= mixin(format("initStruct.%s", rsf.name));
+            _descriptor.samplers ~= mixin(format("paramStruct.%s", rsf.name));
         }
         foreach (cof; metaColorOutputFields!MS) {
-            _descriptor.colorTargets ~= mixin(format("initStruct.%s", cof.name));
+            _descriptor.colorTargets ~= mixin(format("paramStruct.%s", cof.name));
         }
         foreach (bof; metaBlendOutputFields!MS) {
-            _descriptor.colorTargets ~= mixin(format("initStruct.%s", bof.name));
+            _descriptor.colorTargets ~= mixin(format("paramStruct.%s", bof.name));
         }
         enum numDS = metaDepthOutputFields!MS.length +
                     metaStencilOutputFields!MS.length +
@@ -320,20 +320,20 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
         foreach (dof; metaDepthOutputFields!MS) {
             alias Fmt = Formatted!(dof.FormatType);
             _descriptor.depthStencil = some(DepthStencilDesc(
-                Fmt.Surface.surfaceType, mixin(format("initStruct.%s", dof.name))
+                Fmt.Surface.surfaceType, mixin(format("paramStruct.%s", dof.name))
             ));
         }
         foreach (sof; metaStencilOutputFields!MS) {
             alias Fmt = Formatted!(sof.FormatType);
             _descriptor.depthStencil = some(DepthStencilDesc(
-                Fmt.Surface.surfaceType, mixin(format("initStruct.%s", sof.name))
+                Fmt.Surface.surfaceType, mixin(format("paramStruct.%s", sof.name))
             ));
         }
         foreach (sof; metaDepthStencilOutputFields!MS) {
             alias Fmt = Formatted!(sof.FormatType);
             _descriptor.depthStencil = some(DepthStencilDesc(
                 Fmt.Surface.surfaceType,
-                mixin(format("initStruct.%s[0]", dof.name)), mixin(format("initStruct.%s[1]", dof.name))
+                mixin(format("paramStruct.%s[0]", dof.name)), mixin(format("paramStruct.%s[1]", dof.name))
             ));
         }
         foreach (i, sf; metaScissorFields!MS) {

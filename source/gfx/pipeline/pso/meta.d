@@ -52,7 +52,7 @@ struct VertexInput(T) {
 
     alias VertexType = T;
 
-    alias Init = VertexAttribDesc[Fields!VertexType.length];
+    alias Param = VertexAttribDesc[Fields!VertexType.length];
     alias Data = Rc!(VertexBuffer!VertexType);
 }
 
@@ -60,7 +60,7 @@ struct VertexInput(T) {
 struct ConstantBlock(T) {
     alias BlockType = T;
 
-    alias Init = ConstantBlockDesc;
+    alias Param = ConstantBlockDesc;
     alias Data = Rc!(ConstBuffer!BlockType);
 }
 
@@ -68,11 +68,11 @@ struct ConstantBlock(T) {
 struct ResourceView(T) if (isFormatted!T) {
     alias FormatType = T;
 
-    alias Init = ResourceViewDesc;
+    alias Param = ResourceViewDesc;
     alias Data = Rc!(ShaderResourceView!FormatType);
 }
 struct ResourceSampler {
-    alias Init = SamplerDesc;
+    alias Param = SamplerDesc;
     alias Data = Rc!Sampler;
 }
 
@@ -80,45 +80,45 @@ struct ResourceSampler {
 struct ColorOutput(T) if (isFormatted!T) {
     alias FormatType = T;
 
-    alias Init = ColorTargetDesc;
+    alias Param = ColorTargetDesc;
     alias Data = Rc!(RenderTargetView!FormatType);
 }
 struct BlendOutput(T) if (isFormatted!T) {
     alias FormatType = T;
 
-    alias Init = ColorTargetDesc;
+    alias Param = ColorTargetDesc;
     alias Data = Rc!(RenderTargetView!FormatType);
 }
 struct DepthOutput(T) if (isFormatted!T) {
     alias FormatType = T;
 
-    alias Init = Depth;
+    alias Param = Depth;
     alias Data = Rc!(DepthStencilView!FormatType);
 }
 struct StencilOutput(T) if (isFormatted!T) {
     alias FormatType = T;
 
-    alias Init = Stencil;
+    alias Param = Stencil;
     alias Data = Tuple!(Rc!(DepthStencilView!FormatType), ubyte[2]);
 }
 struct DepthStencilOutput(T) if (isFormatted!T) {
     alias FormatType = T;
 
-    alias Init = Tuple!(Depth, Stencil);
+    alias Param = Tuple!(Depth, Stencil);
     alias Data = Tuple!(Rc!(DepthStencilView!FormatType), ubyte[2]);
 }
 
 struct Scissor {
-    alias Init = void;
+    alias Param = void;
     alias Data = ushort[4];
 }
 
 
 
-template InitValue(MS, string field) if (isMetaStruct!MS) {
+template ParamInitValue(MS, string field) if (isMetaStruct!MS) {
 
     alias MF = FieldType!(MS, field);
-    alias IF = MF.Init;
+    alias IF = MF.Param;
 
     static if (isMetaVertexInputField!MF) {
         string initCode() {
@@ -133,25 +133,25 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
             }
             return res ~ "]";
         }
-        enum InitValue = mixin(initCode());
+        enum ParamInitValue = mixin(initCode());
     }
     else static if (isMetaConstantBlockField!MF) {
-        enum InitValue = ConstantBlockDesc(resolveGfxName!(MS, field), resolveGfxSlot!(MS, field));
+        enum ParamInitValue = ConstantBlockDesc(resolveGfxName!(MS, field), resolveGfxSlot!(MS, field));
     }
     else static if (isMetaResourceViewField!MF) {
         import gfx.pipeline.format : format;
-        enum InitValue = ResourceViewDesc(
+        enum ParamInitValue = ResourceViewDesc(
             resolveGfxName!(MS, field), resolveGfxSlot!(MS, field), format!(MF.FormatType)
         );
     }
     else static if (isMetaResourceSamplerField!MF) {
-        enum InitValue = SamplerDesc(
+        enum ParamInitValue = SamplerDesc(
             resolveGfxName!(MS, field), resolveGfxSlot!(MS, field)
         );
     }
     else static if (isMetaColorOutputField!MF) {
         import gfx.pipeline.format : format;
-        enum InitValue = ColorTargetDesc(
+        enum ParamInitValue = ColorTargetDesc(
             resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
             format!(MF.FormatType), ColorInfo(
                 resolveUDAValue!(GfxColorMask, MS, field, ColorMask, ColorMask(ColorFlags.All))
@@ -160,7 +160,7 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
     }
     else static if (isMetaBlendOutputField!MF) {
         import gfx.pipeline.format : format;
-        enum InitValue = ColorTargetDesc(
+        enum ParamInitValue = ColorTargetDesc(
             resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
             format!(MF.FormatType), ColorInfo(
                 resolveUDAValue!(GfxColorMask, MS, field, ColorMask, ColorMask(ColorFlags.All)),
@@ -169,13 +169,13 @@ template InitValue(MS, string field) if (isMetaStruct!MS) {
         );
     }
     else static if (isMetaDepthOutputField!MF) {
-        enum InitValue = resolveUDAValue!(GfxDepth, MS, field, Depth, Depth.init);
+        enum ParamInitValue = resolveUDAValue!(GfxDepth, MS, field, Depth, Depth.init);
     }
     else static if (isMetaStencilOutputField!MF) {
-        enum InitValue = resolveUDAValue!(GfxStencil, MS, field, Stencil, Stencil.init);
+        enum ParamInitValue = resolveUDAValue!(GfxStencil, MS, field, Stencil, Stencil.init);
     }
     else static if (isMetaDepthStencilOutputField!MF) {
-        enum InitValue = tuple(
+        enum ParamInitValue = tuple(
             resolveUDAValue!(GfxDepth, MS, field, Depth, Depth.init),
             resolveUDAValue!(GfxStencil, MS, field, Stencil, Stencil.init),
         );
@@ -205,9 +205,9 @@ template isMetaStruct(M) {
 
 
 
-template InitTrait(MS, string field) if (isMetaStruct!MS) {
-    alias Type = FieldType!(MS, field).Init;
-    enum defValue = InitValue!(MS, field);
+template ParamTrait(MS, string field) if (isMetaStruct!MS) {
+    alias Type = FieldType!(MS, field).Param;
+    enum defValue = ParamInitValue!(MS, field);
 }
 
 template DataTrait(MS, string field) if (isMetaStruct!MS) {
@@ -243,9 +243,8 @@ template PipelineStruct(MS, alias Trait, bool hasDefValue) if (isMetaStruct!MS) 
     alias PipelineStruct = Struct;
 }
 
-alias PipelineInit(M) = PipelineStruct!(M, InitTrait, true);
-alias PipelineData(M) = PipelineStruct!(M, DataTrait, false);
-
+alias PipelineParam(MS) = PipelineStruct!(MS, ParamTrait, true);
+alias PipelineData(MS) = PipelineStruct!(MS, DataTrait, false);
 
 
 // input attributes
