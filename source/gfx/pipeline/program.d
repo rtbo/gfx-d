@@ -312,7 +312,7 @@ struct ShaderSet {
     private Type type;
     private Shader[] shaders;
 
-    this(Type type, Shader[] shaders) {
+    private this(Type type, Shader[] shaders) {
         this.type = type;
         this.shaders = shaders;
 
