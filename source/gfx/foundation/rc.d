@@ -241,13 +241,13 @@ private string buildRcCode(Flag!"atomic" atomic)()
         return q{
             private shared size_t _refCount=0;
 
-            public override @property size_t refCount() const
+            public final override @property size_t refCount() const
             {
                 import core.atomic : atomicLoad;
                 return atomicLoad(_refCount);
             }
 
-            public override void retain()
+            public final override void retain()
             {
                 import core.atomic : atomicOp;
                 immutable rc = atomicOp!"+="(_refCount, 1);
@@ -258,7 +258,7 @@ private string buildRcCode(Flag!"atomic" atomic)()
                 }
             }
 
-            public override void release()
+            public final override void release()
             {
                 import core.atomic : atomicOp;
                 immutable rc = atomicOp!"-="(_refCount, 1);
@@ -279,7 +279,7 @@ private string buildRcCode(Flag!"atomic" atomic)()
                 }
             }
 
-            public override typeof(this) rcLock()
+            public final override typeof(this) rcLock()
             {
                 import core.atomic : atomicLoad, cas;
                 while (1)
@@ -297,9 +297,9 @@ private string buildRcCode(Flag!"atomic" atomic)()
         return q{
             private size_t _refCount=0;
 
-            public override @property size_t refCount() const { return _refCount; }
+            public final override @property size_t refCount() const { return _refCount; }
 
-            public override void retain()
+            public final override void retain()
             {
                 _refCount += 1;
                 version(rcDebug)
@@ -309,7 +309,7 @@ private string buildRcCode(Flag!"atomic" atomic)()
                 }
             }
 
-            public override void release()
+            public final override void release()
             {
                 _refCount -= 1;
                 version(rcDebug)
@@ -328,7 +328,7 @@ private string buildRcCode(Flag!"atomic" atomic)()
                 }
             }
 
-            public override typeof(this) rcLock()
+            public final override typeof(this) rcLock()
             {
                 if (_refCount)
                 {
