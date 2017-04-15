@@ -498,7 +498,7 @@ if (isMetaStruct!MS)
         code ~= "}\n";
     }
     foreach (fi, cbf; metaConstantBlockFields!MS) {
-        code ~= format("final @property ref inout(ConstantBlockDesc) %s() inout {\n", cgf.name);
+        code ~= format("final @property ref inout(ConstantBlockDesc) %s() inout {\n", cbf.name);
         code ~= format("    return _descriptor.constantBlocks[%s];\n", fi);
         code ~= "}\n";
     }
