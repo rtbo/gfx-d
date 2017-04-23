@@ -82,8 +82,7 @@ void release(T, K)(ref T[K] arr) if (is(T : RefCounted))
 /// Useful if the struct release resource in its destructor.
 void reinit(T)(ref T[] arr) if (is(T == struct))
 {
-    foreach(ref t; arr)
-    {
+    foreach(ref t; arr) {
         t = T.init;
     }
     arr = null;
@@ -92,8 +91,7 @@ void reinit(T)(ref T[] arr) if (is(T == struct))
 /// Useful if the struct release resource in its destructor.
 void reinit(T, K)(ref T[K] arr) if (is(T == struct))
 {
-    foreach(k, ref t; arr)
-    {
+    foreach(k, ref t; arr) {
         t = T.init;
     }
     arr = null;
@@ -187,8 +185,7 @@ struct Rc(T) if (is(T:RefCounted))
     /// Reset the resource.
     void unload()
     {
-        if(_obj)
-        {
+        if(_obj) {
             _obj.release();
             _obj = null;
         }
@@ -251,10 +248,9 @@ private string buildRcCode(Flag!"atomic" atomic)()
             {
                 import core.atomic : atomicOp;
                 immutable rc = atomicOp!"+="(_refCount, 1);
-                version(rcDebug)
-                {
+                debug(rc) {
                     import std.experimental.logger : logf;
-                    logf("retain %s: %s", typeof(this).stringof, oldRc+1);
+                    logf("retain %s: %s", typeof(this).stringof, rc);
                 }
             }
 
@@ -263,15 +259,12 @@ private string buildRcCode(Flag!"atomic" atomic)()
                 import core.atomic : atomicOp;
                 immutable rc = atomicOp!"-="(_refCount, 1);
 
-                version(rcDebug)
-                {
+                debug(rc) {
                     import std.experimental.logger : logf;
                     logf("release %s: %s", typeof(this).stringof, rc);
                 }
-                if (rc == 0)
-                {
-                    version(rcDebug)
-                    {
+                if (rc == 0) {
+                    debug(rc) {
                         import std.experimental.logger : logf;
                         logf("dispose %s", typeof(this).stringof);
                     }
@@ -282,12 +275,21 @@ private string buildRcCode(Flag!"atomic" atomic)()
             public final override typeof(this) rcLock()
             {
                 import core.atomic : atomicLoad, cas;
-                while (1)
-                {
+                while (1) {
                     immutable c = atomicLoad(_refCount);
 
-                    if (c == 0) return null;
-                    if (cas(&_refCount, c, c+1)) return this;
+                    if (c == 0) {
+                        debug(rc) {
+                            logf("rcLock %s: %s", typeof(this).stringof, c);
+                        }
+                        return null;
+                    }
+                    if (cas(&_refCount, c, c+1)) {
+                        debug(rc) {
+                            logf("rcLock %s: %s", typeof(this).stringof, c+1);
+                        }
+                        return this;
+                    }
                 }
             }
         };
@@ -302,8 +304,7 @@ private string buildRcCode(Flag!"atomic" atomic)()
             public final override void retain()
             {
                 _refCount += 1;
-                version(rcDebug)
-                {
+                debug(rc) {
                     import std.experimental.logger : logf;
                     logf("retain %s: %s", typeof(this).stringof, refCount);
                 }
@@ -312,15 +313,12 @@ private string buildRcCode(Flag!"atomic" atomic)()
             public final override void release()
             {
                 _refCount -= 1;
-                version(rcDebug)
-                {
+                debug(rc) {
                     import std.experimental.logger : logf;
                     logf("release %s: %s", typeof(this).stringof, refCount);
                 }
-                if (!refCount)
-                {
-                    version(rcDebug)
-                    {
+                if (!refCount) {
+                    debug(rc) {
                         import std.experimental.logger : logf;
                         logf("dispose %s", typeof(this).stringof);
                     }
@@ -330,13 +328,19 @@ private string buildRcCode(Flag!"atomic" atomic)()
 
             public final override typeof(this) rcLock()
             {
-                if (_refCount)
-                {
+                if (_refCount) {
                     ++_refCount;
+                    debug(rc) {
+                        import std.experimental.logger : logf;
+                        logf("rcLock %s: %s", typeof(this).stringof, _refCount);
+                    }
                     return this;
                 }
-                else
-                {
+                else {
+                    debug(rc) {
+                        import std.experimental.logger : logf;
+                        logf("rcLock %s: %s", typeof(this).stringof, _refCount);
+                    }
                     return null;
                 }
             }
@@ -380,8 +384,7 @@ private
 
         ~this()
         {
-            foreach(ref o; objs)
-            {
+            foreach(ref o; objs) {
                 o = Rc!RcClass.init;
             }
         }
@@ -393,20 +396,19 @@ private
 
         ~this()
         {
-            foreach(ref o; objs)
-            {
+            foreach(ref o; objs) {
                 o = RcStruct.init;
             }
         }
     }
+
 
     unittest
     {
         {
             auto arr = RcArrStruct([makeRc!RcClass(), makeRc!RcClass()]);
             assert(rcCount == 2);
-            foreach(obj; arr.objs)
-            {
+            foreach(obj; arr.objs) {
                 assert(rcCount == 2);
             }
             assert(rcCount == 2);
@@ -431,6 +433,34 @@ private
             assert(rcCount == 1);
         }
         assert(rcCount == 0);
+    }
+
+    unittest
+    {
+        Weak!RcClass weak;
+        {
+            auto locked = weak.lock();
+            assert(!locked.loaded);
+        }
+        {
+            auto rc = makeRc!RcClass();
+            assert(rcCount == 1);
+            assert(rc.refCount == 1);
+            weak = Weak!RcClass(rc);
+            assert(rc.refCount == 1);
+            {
+                auto locked = weak.lock();
+                assert(locked.loaded);
+                assert(rc.refCount == 2);
+            }
+            assert(rc.refCount == 1);
+        }
+        assert(rcCount == 0);
+        assert(weak.disposed);
+        {
+            auto locked = weak.lock();
+            assert(!locked.loaded);
+        }
     }
 }
 
