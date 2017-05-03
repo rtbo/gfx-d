@@ -401,10 +401,15 @@ template SafeUnion(Specs...) {
 
     string ctorsInject() {
         import std.conv : to;
+        import std.uni : toUpper;
+        import std.utf : stride;
         string s;
         foreach(spec; FieldSpecs) {
+            immutable fstCharLen = stride(spec.name);
             immutable fts = fieldTypes!spec();
-            s ~= format("static SafeUnion make%s(", spec.name);
+            s ~= format("static SafeUnion make%s%s(",
+                toUpper(spec.name[0 .. fstCharLen]), spec.name[fstCharLen .. $]
+            );
             foreach(i, T; spec.Types) {
                 string ind;
                 if(spec.Types.length > 1) {
@@ -514,38 +519,36 @@ template SafeUnion(Specs...) {
 
 
 
-unittest {
-    // SafeUnion.match cannot compile with LDC: link error about the lambda
+unittest
+{
+    alias Option(T) = SafeUnion!(
+        "Some", T,
+        "None"
+    );
 
-    // alias Option(T) = SafeUnion!(
-    //     "Some", T,
-    //     "None"
-    // );
+    alias ContType = SafeUnion!(
+        "Single",
+        "Vector", size_t,
+        "Matrix", bool, size_t, size_t,
+    );
 
-    // alias ContType = SafeUnion!(
-    //     "Single",
-    //     "Vector", size_t,
-    //     "Matrix", bool, size_t, size_t,
-    // );
+    alias OptionInt = Option!int;
 
-    // alias OptionInt = Option!int;
+    auto sing = ContType.makeSingle();
+    auto vec = ContType.makeVector(3);
+    auto mat = ContType.makeMatrix(true, 4, 4);
 
-    // auto sing = ContType.makeSingle();
-    // auto vec = ContType.makeVector(3);
-    // auto mat = ContType.makeMatrix(true, 4, 4);
-
-    // sing.match!(
-    //     "Single", () {},
-    //     "Vector", (size_t d) { assert(false); },
-    //     "Matrix", (bool cm, size_t d1, size_t d2) { assert(false); },
-    // )();
-    // vec.match!(
-    //     "Vector", (size_t d) { assert(d == 3); },
-    //     "default", () { assert(false); },
-    // )();
-    // mat.match!(
-    //     "Vector", (size_t d) { assert(false); },
-    //     "default", () {},
-    // )();
+    sing.match!(
+        "Single", () {},
+        "Vector", (size_t d) { assert(false); },
+        "Matrix", (bool cm, size_t d1, size_t d2) { assert(false); },
+    )();
+    vec.match!(
+        "Vector", (size_t d) { assert(d == 3); },
+        "default", () { assert(false); },
+    )();
+    mat.match!(
+        "Vector", (size_t d) { assert(false); },
+        "default", () {},
+    )();
 }
-
