@@ -1,19 +1,10 @@
 module shadow;
 
-import gfx.device : Device;
-import gfx.foundation.rc : rc, makeRc, Rc, rcCode, RefCounted;
-import gfx.foundation.typecons : none, some;
-import gfx.pipeline.format : Rgba8, Depth, newSwizzle;
-import gfx.pipeline.buffer : VertexBuffer, IndexBuffer, VertexBufferSlice, ConstBuffer;
-import gfx.pipeline.program : Program, ShaderSet;
-import gfx.pipeline.texture : Texture, Texture2D, Sampler, SamplerInfo, FilterMethod, WrapMode;
-import gfx.pipeline.view : ShaderResourceView, RenderTargetView, DepthStencilView;
-import gfx.pipeline.draw : clearColor, Instance;
-import s = gfx.pipeline.state : Rasterizer;
-import gfx.pipeline.pso.meta;
-import gfx.pipeline.pso : PipelineState, Primitive;
-import gfx.pipeline.encoder : Encoder;
-import gfx.window.glfw : Window, gfxGlfwWindow;
+import gfx.device;
+import gfx.foundation.rc;
+import gfx.foundation.typecons;
+import gfx.pipeline;
+import gfx.window.glfw;
 
 import gl3n.linalg : mat4, mat3, vec3, vec4, quat, Vector;
 
@@ -57,7 +48,7 @@ struct ShadowPipeMeta {
     @GfxName("Locals")
     ConstantBlock!ShadowVsLocals    locals;
 
-    @GfxDepth(s.Depth.lessEqualWrite)
+    @GfxDepth(DepthTest.lessEqualWrite)
     DepthOutput!Depth               output;
 }
 
@@ -83,7 +74,7 @@ struct MeshPipeMeta {
     @GfxName("o_Color")
     ColorOutput!Rgba8               colorOutput;
 
-    @GfxDepth(s.Depth.lessEqualWrite)
+    @GfxDepth(DepthTest.lessEqualWrite)
     DepthOutput!Depth               depthOutput;
 }
 
@@ -148,7 +139,7 @@ class Scene : RefCounted {
         auto shadowSrv = shadowTex.viewAsShaderResource(0, 0, newSwizzle()).rc;
         auto shadowSampler = new Sampler(shadowSrv,
                     SamplerInfo(FilterMethod.bilinear, WrapMode.clamp)
-                    .withComparison(s.Comparison.lessEqual)).rc;
+                    .withComparison(Comparison.lessEqual)).rc;
 
         enum near = 1f;
         enum far = 20f;

@@ -1,19 +1,10 @@
 module stencil;
 
-import gfx.foundation.rc : Rc, rc, makeRc;
-import gfx.foundation.typecons : Option, none, some;
-import gfx.pipeline.format : Rgba8, DepthStencil, R8, Unorm, newSwizzle;
-import gfx.pipeline.buffer : VertexBuffer, IndexBuffer, VertexBufferSlice;
-import gfx.pipeline.texture : Texture, Texture2D, TextureUsage, TexUsageFlags;
-import gfx.pipeline.program : ShaderSet, Program;
-import gfx.pipeline.pso.meta;
-import gfx.pipeline.pso : PipelineDescriptor, PipelineState, VertexBufferSet, Primitive;
-import gfx.pipeline.state : Rasterizer, Stencil, Comparison, StencilOp, ColorFlags, ColorMask;
-import gfx.pipeline.draw : Instance;
-import gfx.pipeline.encoder : Encoder;
-import gfx.pipeline.view : DepthStencilView;
+import gfx.foundation.rc;
+import gfx.foundation.typecons;
+import gfx.pipeline;
 
-import gfx.window.glfw : gfxGlfwWindow;
+import gfx.window.glfw;
 
 import std.typecons : Tuple, tuple;
 import std.stdio : writeln;
@@ -38,7 +29,11 @@ struct StencilWriteMeta {
     ColorOutput!Rgba8           color;
 
     // 0x01 mask: we only care on the first bitplane
-    @GfxStencil(Stencil(Comparison.always, 0x01, [StencilOp.replace, StencilOp.replace, StencilOp.replace]))
+    @GfxStencil(StencilTest(
+        Comparison.always, 0x01, [
+            StencilOp.replace, StencilOp.replace, StencilOp.replace
+        ]
+    ))
     StencilOutput!DepthStencil  stencil;
 }
 
@@ -49,7 +44,7 @@ struct TriangleMeta {
     ColorOutput!Rgba8           color;
 
     // 0x01 mask: we only care on the first bitplane
-    @GfxStencil(Stencil(Comparison.equal, 0x01, [StencilOp.keep, StencilOp.keep, StencilOp.keep]))
+    @GfxStencil(StencilTest(Comparison.equal, 0x01, [StencilOp.keep, StencilOp.keep, StencilOp.keep]))
     StencilOutput!DepthStencil  stencil;
 }
 

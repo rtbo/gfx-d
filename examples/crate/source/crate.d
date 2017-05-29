@@ -1,17 +1,9 @@
 module crate;
 
-import gfx.foundation.rc : rc, makeRc;
-import gfx.foundation.typecons : none, some;
-import gfx.pipeline.format : Rgba8, Depth, newSwizzle;
-import gfx.pipeline.buffer : VertexBuffer, IndexBuffer, VertexBufferSlice, ConstBuffer;
-import gfx.pipeline.program : Program, ShaderSet;
-import gfx.pipeline.texture : Texture2D, Sampler, SamplerInfo, FilterMethod, WrapMode;
-import gfx.pipeline.draw : clearColor, Instance;
-import s = gfx.pipeline.state : Rasterizer;
-import gfx.pipeline.pso.meta;
-import gfx.pipeline.pso : PipelineState, Primitive;
-import gfx.pipeline.encoder : Encoder;
-import gfx.window.glfw : gfxGlfwWindow;
+import gfx.foundation.rc;
+import gfx.foundation.typecons;
+import gfx.pipeline;
+import gfx.window.glfw;
 
 import gl3n.linalg : mat4, mat3, vec3, vec4;
 import derelict.opengl3.gl3;
@@ -62,7 +54,7 @@ struct CratePipeMeta {
     @GfxName("o_Color")
     ColorOutput!Rgba8       outColor;
 
-    @GfxDepth(s.Depth.lessEqualWrite)
+    @GfxDepth(DepthTest.lessEqualWrite)
     DepthOutput!Depth       outDepth;
 }
 

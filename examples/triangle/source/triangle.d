@@ -1,17 +1,10 @@
 module triangle;
 
-import gfx.foundation.rc : Rc, rc, makeRc;
-import gfx.foundation.typecons : Option, none, some;
-import gfx.pipeline.format : Rgba8, Depth32F;
-import gfx.pipeline.buffer : VertexBuffer, VertexBufferSlice;
-import gfx.pipeline.program : ShaderSet, Program;
-import gfx.pipeline.pso.meta;
-import gfx.pipeline.pso : Primitive, PipelineDescriptor, PipelineState, VertexBufferSet;
-import gfx.pipeline.state : Rasterizer;
-import gfx.pipeline.draw : clearColor, Instance;
-import gfx.pipeline.encoder : Encoder;
+import gfx.foundation.rc;
+import gfx.foundation.typecons;
+import gfx.pipeline;
 
-import gfx.window.glfw : gfxGlfwWindow;
+import gfx.window.glfw;
 
 import std.stdio : writeln;
 
@@ -22,8 +15,10 @@ struct Vertex {
 }
 
 struct PipeMeta {
-                        VertexInput!Vertex input;
-    @GfxName("o_Color") ColorOutput!Rgba8 output;
+    VertexInput!Vertex input;
+
+    @GfxName("o_Color")
+    ColorOutput!Rgba8 output;
 }
 
 alias PipeState = PipelineState!PipeMeta;
