@@ -2,7 +2,7 @@ module gfx.device.gl3.state;
 
 import gfx.foundation.typecons : Option;
 import gfx.pipeline.state :     Rasterizer, FrontFace, CullFace, RasterMethod, Offset,
-                            Blend, BlendValue, Equation, Factor, ColorFlags;
+                            Blend, Equation, Factor, ColorFlags;
 import gfx.pipeline.pso : ColorInfo;
 
 import derelict.opengl3.gl3;
@@ -28,28 +28,24 @@ GLenum equationToGl(in Equation eq) {
 
 
 GLenum factorToGl(in Factor f) {
-    final switch (f.tag) {
-        case Factor.zero:                       return GL_ZERO;
-        case Factor.one:                        return GL_ONE;
-        case Factor.sourceAlphaSaturated:       return GL_SRC_ALPHA_SATURATE;
-        case Factor.zeroPlus:
-            final switch (f.getZeroPlus()) {
-                case BlendValue.sourceColor:    return GL_SRC_COLOR;
-                case BlendValue.sourceAlpha:    return GL_SRC_ALPHA;
-                case BlendValue.destColor:      return GL_DST_COLOR;
-                case BlendValue.destAlpha:      return GL_DST_ALPHA;
-                case BlendValue.constColor:     return GL_CONSTANT_COLOR;
-                case BlendValue.constAlpha:     return GL_CONSTANT_ALPHA;
-            }
-        case Factor.oneMinus:
-            final switch (f.getOneMinus()) {
-                case BlendValue.sourceColor:    return GL_ONE_MINUS_SRC_COLOR;
-                case BlendValue.sourceAlpha:    return GL_ONE_MINUS_SRC_ALPHA;
-                case BlendValue.destColor:      return GL_ONE_MINUS_DST_COLOR;
-                case BlendValue.destAlpha:      return GL_ONE_MINUS_DST_ALPHA;
-                case BlendValue.constColor:     return GL_ONE_MINUS_CONSTANT_COLOR;
-                case BlendValue.constAlpha:     return GL_ONE_MINUS_CONSTANT_ALPHA;
-            }
+    final switch (f) {
+        case Factor.zero:               return GL_ZERO;
+        case Factor.one:                return GL_ONE;
+        case Factor.srcAlphaSaturated:  return GL_SRC_ALPHA_SATURATE;
+
+        case Factor.zeroPlusSrcColor:   return GL_SRC_COLOR;
+        case Factor.zeroPlusSrcAlpha:   return GL_SRC_ALPHA;
+        case Factor.zeroPlusDestColor:  return GL_DST_COLOR;
+        case Factor.zeroPlusDestAlpha:  return GL_DST_ALPHA;
+        case Factor.zeroPlusConstColor: return GL_CONSTANT_COLOR;
+        case Factor.zeroPlusConstAlpha: return GL_CONSTANT_ALPHA;
+
+        case Factor.oneMinusSrcColor:   return GL_ONE_MINUS_SRC_COLOR;
+        case Factor.oneMinusSrcAlpha:   return GL_ONE_MINUS_SRC_ALPHA;
+        case Factor.oneMinusDestColor:  return GL_ONE_MINUS_DST_COLOR;
+        case Factor.oneMinusDestAlpha:  return GL_ONE_MINUS_DST_ALPHA;
+        case Factor.oneMinusConstColor: return GL_ONE_MINUS_CONSTANT_COLOR;
+        case Factor.oneMinusConstAlpha: return GL_ONE_MINUS_CONSTANT_ALPHA;
     }
 }
 

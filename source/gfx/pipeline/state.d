@@ -179,28 +179,31 @@ enum Equation {
     max,
 }
 
-enum BlendValue {
-    sourceColor,
-    sourceAlpha,
-    destColor,
-    destAlpha,
-    constColor,
-    constAlpha,
+enum Factor
+{
+    zero,
+    one,
+    srcAlphaSaturated,
+
+    zeroPlusSrcColor,
+    zeroPlusSrcAlpha,
+    zeroPlusDestColor,
+    zeroPlusDestAlpha,
+    zeroPlusConstColor,
+    zeroPlusConstAlpha,
+
+    oneMinusSrcColor,
+    oneMinusSrcAlpha,
+    oneMinusDestColor,
+    oneMinusDestAlpha,
+    oneMinusConstColor,
+    oneMinusConstAlpha,
 }
-
-
-alias Factor = SafeUnion!(
-    "zero",
-    "one",
-    "sourceAlphaSaturated",
-    "zeroPlus", BlendValue,
-    "oneMinus", BlendValue,
-);
 
 struct BlendChannel {
     Equation equation   = Equation.add;
-    Factor source       = Factor.makeOne();
-    Factor destination  = Factor.makeOne();
+    Factor source       = Factor.one;
+    Factor destination  = Factor.one;
 }
 
 struct Blend {
