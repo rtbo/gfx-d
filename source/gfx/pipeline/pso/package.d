@@ -18,7 +18,7 @@ import gfx.pipeline.buffer : RawBuffer;
 import gfx.pipeline.format : Format, SurfaceType, Formatted;
 import gfx.pipeline.program : Program, VarType, ProgramVars;
 import gfx.pipeline.pso.meta : isMetaStruct;
-import gfx.pipeline.state : Rasterizer, ColorMask, ColorFlags, BlendChannel, Blend, Depth, Stencil;
+import gfx.pipeline.state : Rasterizer, ColorMask, ColorFlags, BlendChannel, Blend, DepthTest, StencilTest;
 import gfx.pipeline.texture : Sampler;
 import gfx.pipeline.view : RawShaderResourceView, RawRenderTargetView, RawDepthStencilView;
 
@@ -105,18 +105,18 @@ struct ColorTargetDesc {
 struct DepthStencilDesc {
     SurfaceType surface;
 
-    Option!Depth depth;
-    Option!Stencil stencil;
+    Option!DepthTest depth;
+    Option!StencilTest stencil;
 
-    this(SurfaceType surface, Depth depth) {
+    this(SurfaceType surface, DepthTest depth) {
         this.surface = surface;
         this.depth = some(depth);
     }
-    this(SurfaceType surface, Stencil stencil) {
+    this(SurfaceType surface, StencilTest stencil) {
         this.surface = surface;
         this.stencil = some(stencil);
     }
-    this(SurfaceType surface, Depth depth, Stencil stencil) {
+    this(SurfaceType surface, DepthTest depth, StencilTest stencil) {
         this.surface = surface;
         this.depth = some(depth);
         this.stencil = some(stencil);
@@ -193,9 +193,9 @@ struct PixelTargetSet {
     /// Array of color target views
     RawRenderTargetView[] colors;
 
-    /// Depth target view
+    /// DepthTest target view
     Rc!RawDepthStencilView depth;
-    /// Stencil target view
+    /// StencilTest target view
     Rc!RawDepthStencilView stencil;
 
     /// Rendering dimensions

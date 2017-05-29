@@ -4,14 +4,14 @@ import gfx.foundation.rc : Rc, rcCode;
 import gfx.foundation.typecons : Option;
 import gfx.pipeline.program : Program;
 import gfx.pipeline.pso;
-import gfx.pipeline.state : Stencil, Depth, Color, Blend;
+import gfx.pipeline.state : StencilTest, DepthTest, Color, Blend;
 
 import derelict.opengl3.gl3;
 
 
 struct OutputMerger {
-    Option!Stencil stencil;
-    Option!Depth depth;
+    Option!StencilTest stencil;
+    Option!DepthTest depth;
     ColorTargetMask mask;
     Color[maxColorTargets] colors;
 }

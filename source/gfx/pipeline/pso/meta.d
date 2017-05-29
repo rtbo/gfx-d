@@ -9,7 +9,7 @@ import gfx.pipeline.view : RenderTargetView, DepthStencilView, ShaderResourceVie
 import gfx.pipeline.pso :   StructField, PipelineDescriptor, ColorInfo,
                         VertexAttribDesc, ConstantBlockDesc,
                         ResourceViewDesc, SamplerDesc, ColorTargetDesc;
-import gfx.pipeline.state : ColorFlags, ColorMask, Depth, Stencil, Blend;
+import gfx.pipeline.state : ColorFlags, ColorMask, DepthTest, StencilTest, Blend;
 
 import std.typecons : Tuple, tuple;
 
@@ -26,12 +26,12 @@ struct GfxSlot {
 
 /// UDA struct to associate depth state to depth targets at compile time
 struct GfxDepth {
-    Depth value;
+    DepthTest value;
 }
 
 /// UDA struct to associate stencil state to stencil targets at compile time
 struct GfxStencil {
-    Stencil value;
+    StencilTest value;
 }
 
 /// UDA struct to associate blend state to blend targets at compile time
@@ -92,19 +92,19 @@ struct BlendOutput(T) if (isFormatted!T) {
 struct DepthOutput(T) if (isFormatted!T) {
     alias FormatType = T;
 
-    alias Param = Depth;
+    alias Param = DepthTest;
     alias Data = Rc!(DepthStencilView!FormatType);
 }
 struct StencilOutput(T) if (isFormatted!T) {
     alias FormatType = T;
 
-    alias Param = Stencil;
+    alias Param = StencilTest;
     alias Data = Tuple!(Rc!(DepthStencilView!FormatType), ubyte[2]);
 }
 struct DepthStencilOutput(T) if (isFormatted!T) {
     alias FormatType = T;
 
-    alias Param = Tuple!(Depth, Stencil);
+    alias Param = Tuple!(DepthTest, StencilTest);
     alias Data = Tuple!(Rc!(DepthStencilView!FormatType), ubyte[2]);
 }
 
@@ -169,15 +169,15 @@ template ParamInitValue(MS, string field) if (isMetaStruct!MS) {
         );
     }
     else static if (isMetaDepthOutputField!MF) {
-        enum ParamInitValue = resolveUDAValue!(GfxDepth, MS, field, Depth, Depth.init);
+        enum ParamInitValue = resolveUDAValue!(GfxDepth, MS, field, DepthTest, DepthTest.init);
     }
     else static if (isMetaStencilOutputField!MF) {
-        enum ParamInitValue = resolveUDAValue!(GfxStencil, MS, field, Stencil, Stencil.init);
+        enum ParamInitValue = resolveUDAValue!(GfxStencil, MS, field, StencilTest, StencilTest.init);
     }
     else static if (isMetaDepthStencilOutputField!MF) {
         enum ParamInitValue = tuple(
-            resolveUDAValue!(GfxDepth, MS, field, Depth, Depth.init),
-            resolveUDAValue!(GfxStencil, MS, field, Stencil, Stencil.init),
+            resolveUDAValue!(GfxDepth, MS, field, DepthTest, DepthTest.init),
+            resolveUDAValue!(GfxStencil, MS, field, StencilTest, StencilTest.init),
         );
     }
 }

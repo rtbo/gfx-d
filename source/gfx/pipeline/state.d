@@ -134,7 +134,7 @@ struct StencilSide {
 
 
 /// Complete stencil state, specifying how to handle the front and back side of a face.
-struct Stencil {
+struct StencilTest {
     StencilSide front;
     StencilSide back;
 
@@ -151,14 +151,14 @@ struct Stencil {
 }
 
 /// Depth test state.
-struct Depth {
+struct DepthTest {
     /// Comparison function to use.
     Comparison fun = Comparison.always;
     /// Specify whether to write to the depth buffer or not.
     bool write = false;
 
-    enum lessEqualWrite = Depth(Comparison.lessEqual, true);
-    enum lessEqualTest = Depth(Comparison.lessEqual, false);
+    enum lessEqualWrite = DepthTest(Comparison.lessEqual, true);
+    enum lessEqualTest = DepthTest(Comparison.lessEqual, false);
 }
 
 enum Equation {
