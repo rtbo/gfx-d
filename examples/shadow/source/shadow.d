@@ -1,6 +1,6 @@
 module shadow;
 
-import gfx.device : Primitive, Device;
+import gfx.device : Device;
 import gfx.foundation.rc : rc, makeRc, Rc, rcCode, RefCounted;
 import gfx.foundation.typecons : none, some;
 import gfx.pipeline.format : Rgba8, Depth, newSwizzle;
@@ -11,7 +11,7 @@ import gfx.pipeline.view : ShaderResourceView, RenderTargetView, DepthStencilVie
 import gfx.pipeline.draw : clearColor, Instance;
 import s = gfx.pipeline.state : Rasterizer;
 import gfx.pipeline.pso.meta;
-import gfx.pipeline.pso : PipelineState;
+import gfx.pipeline.pso : PipelineState, Primitive;
 import gfx.pipeline.encoder : Encoder;
 import gfx.window.glfw : Window, gfxGlfwWindow;
 
@@ -141,14 +141,14 @@ class Scene : RefCounted {
         auto makeShadowTex() {
             import gfx.pipeline.texture : TextureUsage, TexUsageFlags, Texture2DArray;
 
-            TexUsageFlags usage = TextureUsage.DepthStencil | TextureUsage.ShaderResource;
+            TexUsageFlags usage = TextureUsage.depthStencil | TextureUsage.shaderResource;
             return new Texture2DArray!Depth(usage, 1, 1024, 1024, maxNumLights);
         }
         auto shadowTex = makeShadowTex().rc;
         auto shadowSrv = shadowTex.viewAsShaderResource(0, 0, newSwizzle()).rc;
         auto shadowSampler = new Sampler(shadowSrv,
-                    SamplerInfo(FilterMethod.Bilinear, WrapMode.Clamp)
-                    .withComparison(s.Comparison.LessEqual)).rc;
+                    SamplerInfo(FilterMethod.bilinear, WrapMode.clamp)
+                    .withComparison(s.Comparison.lessEqual)).rc;
 
         enum near = 1f;
         enum far = 20f;
@@ -273,7 +273,7 @@ void main() {
     auto shadowProg = makeRc!Program(ShaderSet.vertexPixel(
         import("330-shadow.v.glsl"), import("330-shadow.f.glsl")
     ));
-    auto shadowPso = makeRc!ShadowPipeline(shadowProg.obj, Primitive.Triangles,
+    auto shadowPso = makeRc!ShadowPipeline(shadowProg.obj, Primitive.triangles,
             Rasterizer.fill .withSamples()
                             .withCullBack()
                             .withOffset(2.0, 1)
@@ -282,7 +282,7 @@ void main() {
     auto meshProg = makeRc!Program(ShaderSet.vertexPixel(
         import("330-mesh.v.glsl"), import("330-mesh.f.glsl")
     ));
-    auto meshPso = makeRc!MeshPipeline(meshProg.obj, Primitive.Triangles,
+    auto meshPso = makeRc!MeshPipeline(meshProg.obj, Primitive.triangles,
             Rasterizer.fill .withSamples()
                             .withCullBack()
     );

@@ -8,28 +8,6 @@ import gfx.pipeline.surface : BuiltinSurfaceRes;
 import std.traits;
 
 
-immutable size_t maxVertexAttribs = 16;
-immutable size_t maxColorTargets = 4;
-
-alias AttribMask = ushort;
-alias ColorTargetMask = ubyte;
-
-static assert(maxVertexAttribs <= 8*AttribMask.sizeof);
-static assert(maxColorTargets <= 8*ColorTargetMask.sizeof);
-
-
-enum Primitive {
-    Points,
-    Lines,
-    LineStrip,
-    Triangles,
-    TriangleStrip,
-}
-
-enum IndexType {
-    U16, U32,
-}
-
 
 interface Resource : RefCounted {}
 

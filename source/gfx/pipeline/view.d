@@ -13,9 +13,9 @@ import std.typecons : BitFlags;
 
 
 enum DSVReadOnly {
-    None = 0,
-    Depth = 1,
-    Stencil = 2,
+    none = 0,
+    depth = 1,
+    stencil = 2,
 }
 alias DSVReadOnlyFlags = BitFlags!DSVReadOnly;
 

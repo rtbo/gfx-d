@@ -13,35 +13,35 @@ import std.experimental.logger;
 
 GLenum roleToGlTarget(in BufferRole role) {
     final switch(role) {
-        case BufferRole.Vertex: return GL_ARRAY_BUFFER;
-        case BufferRole.Index: return GL_ELEMENT_ARRAY_BUFFER;
-        case BufferRole.Constant: return GL_UNIFORM_BUFFER;
-        case BufferRole.ShaderResource: return GL_TEXTURE_BUFFER;
+        case BufferRole.vertex: return GL_ARRAY_BUFFER;
+        case BufferRole.index: return GL_ELEMENT_ARRAY_BUFFER;
+        case BufferRole.constant: return GL_UNIFORM_BUFFER;
+        case BufferRole.shaderResource: return GL_TEXTURE_BUFFER;
     }
 }
 
 GLenum usageToGl(in BufferUsage usage) {
     final switch(usage) {
-        case BufferUsage.GpuOnly:
-        case BufferUsage.Const: return GL_STATIC_DRAW;
-        case BufferUsage.Dynamic: return GL_DYNAMIC_DRAW;
-        case BufferUsage.CpuOnly: return GL_STREAM_DRAW;
+        case BufferUsage.gpuOnly:
+        case BufferUsage.constant: return GL_STATIC_DRAW;
+        case BufferUsage.dynamic: return GL_DYNAMIC_DRAW;
+        case BufferUsage.cpuOnly: return GL_STREAM_DRAW;
     }
 }
 
 GLenum baseTypeToGl(in BaseType type) {
     final switch(type) {
-        case BaseType.I32: return GL_INT;
-        case BaseType.U32: return GL_UNSIGNED_INT;
-        case BaseType.F32: return GL_FLOAT;
-        case BaseType.F64: return GL_DOUBLE;
-        case BaseType.Bool: return GL_UNSIGNED_BYTE;
+        case BaseType.i32: return GL_INT;
+        case BaseType.u32: return GL_UNSIGNED_INT;
+        case BaseType.f32: return GL_FLOAT;
+        case BaseType.f64: return GL_DOUBLE;
+        case BaseType.boolean: return GL_UNSIGNED_BYTE;
     }
 }
 
 
 GlBuffer makeBufferImpl(in Factory.BufferCreationDesc desc, const(ubyte)[] data) {
-    if (desc.role == BufferRole.Vertex) {
+    if (desc.role == BufferRole.vertex) {
         return new GlVertexBuffer(desc, data);
     }
     else {
@@ -89,7 +89,7 @@ class GlBuffer : BufferRes {
 class GlVertexBuffer : GlBuffer {
 
     this(in Factory.BufferCreationDesc desc, const(ubyte)[] data) {
-        assert(desc.role == BufferRole.Vertex);
+        assert(desc.role == BufferRole.vertex);
         super(desc, data);
     }
 
@@ -104,11 +104,11 @@ class GlVertexBuffer : GlBuffer {
         auto offset = cast(const(GLvoid)*)attrib.field.offset;
         immutable stride = cast(GLint)attrib.field.stride;
         switch (attrib.field.type.baseType) {
-            case BaseType.I32:
-            case BaseType.U32:
+            case BaseType.i32:
+            case BaseType.u32:
                 glVertexAttribIPointer(attrib.slot, count, glType, stride, offset);
                 break;
-            case BaseType.F32:
+            case BaseType.f32:
                 glVertexAttribPointer(attrib.slot, count, glType, GL_FALSE, stride, offset);
                 break;
             default:

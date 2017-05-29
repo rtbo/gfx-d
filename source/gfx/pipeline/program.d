@@ -7,38 +7,38 @@ import std.typecons : BitFlags, Flag;
 import std.experimental.logger;
 
 enum ShaderStage {
-    Vertex, Geometry, Pixel,
+    vertex, geometry, pixel,
 }
 
 enum ShaderUsage {
-    None = 0,
-    Vertex = 1,
-    Geometry = 2,
-    Pixel = 4,
+    none = 0,
+    vertex = 1,
+    geometry = 2,
+    pixel = 4,
 }
 alias ShaderUsageFlags = BitFlags!ShaderUsage;
 
 ShaderUsage toUsage(in ShaderStage stage) {
     final switch(stage) {
-    case ShaderStage.Vertex: return ShaderUsage.Vertex;
-    case ShaderStage.Geometry: return ShaderUsage.Geometry;
-    case ShaderStage.Pixel: return ShaderUsage.Pixel;
+    case ShaderStage.vertex: return ShaderUsage.vertex;
+    case ShaderStage.geometry: return ShaderUsage.geometry;
+    case ShaderStage.pixel: return ShaderUsage.pixel;
     }
 }
 
 enum BaseType {
-    I32, U32, F32, F64, Bool
+    i32, u32, f32, f64, boolean
 }
 
 enum MatrixOrder {
-    ColumnMajor, RowMajor,
+    columnMajor, rowMajor,
 }
 
 struct VarType {
     BaseType baseType;
     ubyte dim1 = 1;
     ubyte dim2 = 1;
-    MatrixOrder order = MatrixOrder.ColumnMajor;
+    MatrixOrder order = MatrixOrder.columnMajor;
 
     // scalar ctor
     this(in BaseType baseType) {
@@ -66,13 +66,13 @@ struct VarType {
     @property size_t size() const {
         size_t baseSize() {
             final switch(baseType) {
-            case BaseType.I32:
-            case BaseType.U32:
-            case BaseType.F32:
+            case BaseType.i32:
+            case BaseType.u32:
+            case BaseType.f32:
                 return 4;
-            case BaseType.F64:
+            case BaseType.f64:
                 return 8;
-            case BaseType.Bool:
+            case BaseType.boolean:
                 return 1;
             }
         }
@@ -101,23 +101,23 @@ template isVarBaseType(T) {
 }
 
 // multi purpose template
-private template VarTypeTemplate(T, MatrixOrder order=MatrixOrder.ColumnMajor)
+private template VarTypeTemplate(T, MatrixOrder order=MatrixOrder.columnMajor)
 {
     template baseType(T) {
         static if (is(T == int)) {
-            enum baseType = BaseType.I32;
+            enum baseType = BaseType.i32;
         }
         else static if (is(T == uint)) {
-            enum baseType = BaseType.U32;
+            enum baseType = BaseType.u32;
         }
         else static if (is(T == float)) {
-            enum baseType = BaseType.F32;
+            enum baseType = BaseType.f32;
         }
         else static if (is(T == double)) {
-            enum baseType = BaseType.F64;
+            enum baseType = BaseType.f64;
         }
         else static if (is(T == bool)) {
-            enum baseType = BaseType.Bool;
+            enum baseType = BaseType.boolean;
         }
     }
 
@@ -185,7 +185,7 @@ template varDim2(T) {
 }
 
 version(unittest) {
-    static assert(varBaseType!int == BaseType.I32);
+    static assert(varBaseType!int == BaseType.i32);
     static assert( isScalarVarType!float);
     static assert(!isVectorVarType!float);
     static assert(!isMatrixVarType!float);
@@ -200,7 +200,7 @@ version(unittest) {
 
     unittest {
         immutable vt = varType!(int[4]);
-        assert(vt.baseType == BaseType.I32);
+        assert(vt.baseType == BaseType.i32);
         assert(vt.dim1 == 4);
         assert(vt.dim2 == 1);
         assert(!vt.isScalar);
@@ -232,23 +232,23 @@ struct ConstBufferVar {
 }
 
 enum TextureVarType {
-    Buffer, D1, D1Array,
-    D2, D2Array, D2Multisample, D2ArrayMultisample,
-    D3, Cube, CubeArray
+    Buffer, d1, d1Array,
+    d2, d2Array, d2Multisample, d2ArrayMultisample,
+    d3, cube, cubeArray
 }
 bool canSample(in TextureVarType tt) {
     final switch(tt) {
         case TextureVarType.Buffer:
-        case TextureVarType.D2Multisample:
-        case TextureVarType.D2ArrayMultisample:
+        case TextureVarType.d2Multisample:
+        case TextureVarType.d2ArrayMultisample:
             return false;
-        case TextureVarType.D1:
-        case TextureVarType.D1Array:
-        case TextureVarType.D2:
-        case TextureVarType.D2Array:
-        case TextureVarType.D3:
-        case TextureVarType.Cube:
-        case TextureVarType.CubeArray:
+        case TextureVarType.d1:
+        case TextureVarType.d1Array:
+        case TextureVarType.d2:
+        case TextureVarType.d2Array:
+        case TextureVarType.d3:
+        case TextureVarType.cube:
+        case TextureVarType.cubeArray:
             return true;
     }
 }
@@ -306,8 +306,8 @@ struct ProgramVars {
 
 struct ShaderSet {
     private enum Type {
-        VertexPixel,
-        VertexGeometryPixel,
+        vertexPixel,
+        vertexGeometryPixel,
     }
     private Type type;
     private Shader[] shaders;
@@ -331,16 +331,16 @@ struct ShaderSet {
     }
 
     static ShaderSet vertexPixel(string vertexCode, string pixelCode) {
-        auto vs = new Shader(ShaderStage.Vertex, vertexCode);
-        auto ps = new Shader(ShaderStage.Pixel, pixelCode);
-        return ShaderSet(Type.VertexPixel, [vs, ps]);
+        auto vs = new Shader(ShaderStage.vertex, vertexCode);
+        auto ps = new Shader(ShaderStage.pixel, pixelCode);
+        return ShaderSet(Type.vertexPixel, [vs, ps]);
     }
 
     static ShaderSet vertexGeometryPixel(string vertexCode, string geomCode, string pixelCode) {
-        auto vs = new Shader(ShaderStage.Vertex, vertexCode);
-        auto gs = new Shader(ShaderStage.Geometry, geomCode);
-        auto ps = new Shader(ShaderStage.Pixel, pixelCode);
-        return ShaderSet(Type.VertexGeometryPixel, [vs, gs, ps]);
+        auto vs = new Shader(ShaderStage.vertex, vertexCode);
+        auto gs = new Shader(ShaderStage.geometry, geomCode);
+        auto ps = new Shader(ShaderStage.pixel, pixelCode);
+        return ShaderSet(Type.vertexGeometryPixel, [vs, gs, ps]);
     }
 }
 

@@ -70,7 +70,7 @@ struct Encoder {
         _cmdBuf.bindResourceViews(dataSet.resourceViews);
         _cmdBuf.bindSamplers(dataSet.samplers);
 
-        if(slice.type == IndexType.None) {
+        if(slice.type == IndexType.none) {
             _cmdBuf.draw(cast(uint)(slice.start+slice.baseVertex), cast(uint)slice.end, none!Instance);
         }
         else {

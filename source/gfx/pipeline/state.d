@@ -6,11 +6,11 @@ import std.typecons : BitFlags, Yes;
 
 
 enum FrontFace {
-    ClockWise, CounterClockWise,
+    cw, ccw,
 }
 
 enum CullFace {
-    None, Front, Back,
+    none, front, back,
 }
 
 /// Width of a line.
@@ -46,8 +46,8 @@ struct Rasterizer {
 
     @property static Rasterizer fill() {
         return Rasterizer(
-            FrontFace.CounterClockWise,
-            CullFace.None,
+            FrontFace.ccw,
+            CullFace.none,
             RasterMethod.makeFill(),
             none!Offset,
             false
@@ -56,7 +56,7 @@ struct Rasterizer {
 
     Rasterizer withCullBack() const {
         Rasterizer res = this;
-        res.cullFace = CullFace.Back;
+        res.cullFace = CullFace.back;
         return res;
     }
 
@@ -78,58 +78,58 @@ struct Rasterizer {
 /// A pixel-wise comparison function.
 enum Comparison {
     /// `false`
-    Never,
+    never,
     /// `x < y`
-    Less,
+    less,
     /// `x <= y`
-    LessEqual,
+    lessEqual,
     /// `x == y`
-    Equal,
+    equal,
     /// `x >= y`
-    GreaterEqual,
+    greaterEqual,
     /// `x > y`
-    Greater,
+    greater,
     /// `x != y`
-    NotEqual,
+    notEqual,
     /// `true`
-    Always,
+    always,
 }
 
 /// Stencil mask operation.
 enum StencilOp {
     /// Keep the current value in the stencil buffer (no change).
-    Keep,
+    keep,
     /// Set the value in the stencil buffer to zero.
-    Zero,
+    zero,
     /// Set the stencil buffer value to `value` from `StencilSide`
-    Replace,
+    replace,
     /// Increment the stencil buffer value, clamping to its maximum value.
-    IncrementClamp,
+    incrementClamp,
     /// Increment the stencil buffer value, wrapping around to 0 on overflow.
-    IncrementWrap,
+    incrementWrap,
     /// Decrement the stencil buffer value, clamping to its minimum value.
-    DecrementClamp,
+    decrementClamp,
     /// Decrement the stencil buffer value, wrapping around to the maximum value on overflow.
-    DecrementWrap,
+    decrementWrap,
     /// Bitwise invert the current value in the stencil buffer.
-    Invert,
+    invert,
 }
 
 /// Complete stencil state for a given side of a face.
 struct StencilSide {
     /// Comparison function to use to determine if the stencil test passes.
-    Comparison fun          = Comparison.Always;
+    Comparison fun          = Comparison.always;
     /// A mask that is ANDd with both the stencil buffer value and the reference value when they
     /// are read before doing the stencil test.
     ubyte maskRead          = ubyte.max;
     /// A mask that is ANDd with the stencil value before writing to the stencil buffer.
     ubyte maskWrite         = ubyte.max;
     /// What operation to do if the stencil test fails.
-    StencilOp opFail        = StencilOp.Keep;
+    StencilOp opFail        = StencilOp.keep;
     /// What operation to do if the stenil test passes but the depth test fails.
-    StencilOp opDepthFail   = StencilOp.Keep;
+    StencilOp opDepthFail   = StencilOp.keep;
     /// What operation to do if both the depth and stencil test pass.
-    StencilOp opPass        = StencilOp.Keep;
+    StencilOp opPass        = StencilOp.keep;
 }
 
 
@@ -153,52 +153,52 @@ struct Stencil {
 /// Depth test state.
 struct Depth {
     /// Comparison function to use.
-    Comparison fun = Comparison.Always;
+    Comparison fun = Comparison.always;
     /// Specify whether to write to the depth buffer or not.
     bool write = false;
 
-    enum lessEqualWrite = Depth(Comparison.LessEqual, true);
-    enum lessEqualTest = Depth(Comparison.LessEqual, false);
+    enum lessEqualWrite = Depth(Comparison.lessEqual, true);
+    enum lessEqualTest = Depth(Comparison.lessEqual, false);
 }
 
 enum Equation {
     /// Adds source and destination.
     /// Source and destination are multiplied by blending parameters before addition.
-    Add,
+    add,
     /// Subtracts destination from source.
     /// Source and destination are multiplied by blending parameters before subtraction.
-    Sub,
+    sub,
     /// Subtracts source from destination.
     /// Source and destination are multiplied by blending parameters before subtraction.
-    RevSub,
+    revSub,
     /// Component-wise minimum value of source and destination.
     /// Blending parameters are ignored.
-    Min,
+    min,
     /// Component-wise maximum value of source and destination.
     /// Blending parameters are ignored.
-    Max,
+    max,
 }
 
 enum BlendValue {
-    SourceColor,
-    SourceAlpha,
-    DestColor,
-    DestAlpha,
-    ConstColor,
-    ConstAlpha,
+    sourceColor,
+    sourceAlpha,
+    destColor,
+    destAlpha,
+    constColor,
+    constAlpha,
 }
 
 
 alias Factor = SafeUnion!(
-    "Zero",
-    "One",
-    "SourceAlphaSaturated",
-    "ZeroPlus", BlendValue,
-    "OneMinus", BlendValue,
+    "zero",
+    "one",
+    "sourceAlphaSaturated",
+    "zeroPlus", BlendValue,
+    "oneMinus", BlendValue,
 );
 
 struct BlendChannel {
-    Equation equation   = Equation.Add;
+    Equation equation   = Equation.add;
     Factor source       = Factor.makeOne();
     Factor destination  = Factor.makeOne();
 }
@@ -224,12 +224,12 @@ struct Blend {
 
 
 enum ColorFlags: ubyte {
-    None        = 0x00,
-    Red         = 0x01,
-    Green       = 0x02,
-    Blue        = 0x04,
-    Alpha       = 0x08,
-    All         = 0x0f,
+    none        = 0x00,
+    red         = 0x01,
+    green       = 0x02,
+    blue        = 0x04,
+    alpha       = 0x08,
+    all         = 0x0f,
 }
 alias ColorMask = BitFlags!(ColorFlags, Yes.unsafe);
 
@@ -237,7 +237,7 @@ alias ColorMask = BitFlags!(ColorFlags, Yes.unsafe);
 /// The state of an active color render target
 struct Color {
     /// Color mask to use.
-    ColorMask mask      = cast(ColorMask)ColorFlags.All;
+    ColorMask mask      = cast(ColorMask)ColorFlags.all;
     /// Optional blending.
     Option!Blend blend  = none!Blend;
 }

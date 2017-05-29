@@ -8,24 +8,24 @@ import gfx.pipeline.view : ShaderResourceView, BufferShaderResourceView;
 
 
 enum BufferRole {
-    Vertex,
-    Index,
-    Constant,        // uniform blocks
-    ShaderResource,  // storage for texture
+    vertex,
+    index,
+    constant,        // uniform blocks
+    shaderResource,  // storage for texture
 }
 
 enum BufferUsage {
-    GpuOnly,
-    Const,
-    Dynamic,
-    CpuOnly,
+    gpuOnly,
+    constant,
+    dynamic,
+    cpuOnly,
 }
 
 enum MapAccess {
-    None,
-    Readable,
-    Writable,
-    RW
+    none,
+    readable,
+    writable,
+    rw
 }
 
 
@@ -108,25 +108,25 @@ class Buffer(T) : RawPlainBuffer {
 
 class VertexBuffer(T) : Buffer!T {
     this(const(T)[] data) {
-        super(BufferRole.Vertex, BufferUsage.Const, MapAccess.None, data);
+        super(BufferRole.vertex, BufferUsage.constant, MapAccess.none, data);
     }
 }
 
 class IndexBuffer(T) : Buffer!T if (isIndexType!T) {
     this(const(T)[] data) {
-        super(BufferRole.Index, BufferUsage.Const, MapAccess.None, data);
+        super(BufferRole.index, BufferUsage.constant, MapAccess.none, data);
     }
 }
 
 class ConstBuffer(T) : Buffer!T {
     this(size_t num=1) {
-        super(BufferRole.Constant, BufferUsage.Dynamic, MapAccess.None, num);
+        super(BufferRole.constant, BufferUsage.dynamic, MapAccess.none, num);
     }
 }
 
 class ShaderResourceBuffer(T) : Buffer!T if (isFormatted!T) {
     this(in BufferUsage usage, in MapAccess access, in const(T)[] data) {
-        super(BufferRole.ShaderResource, usage, access, data);
+        super(BufferRole.shaderResource, usage, access, data);
     }
 
     final ShaderResourceView!T viewAsShaderResource() {
@@ -136,7 +136,7 @@ class ShaderResourceBuffer(T) : Buffer!T if (isFormatted!T) {
 
 
 enum IndexType {
-    None, U16, U32,
+    none, u16, u32,
 }
 
 /// Represents a slice into a vertex buffer. This is how index buffers are to be used
@@ -153,17 +153,17 @@ struct VertexBufferSlice {
 
     this(T)(IndexBuffer!T ibuf) {
         static if (is(T == ushort)) {
-            type = IndexType.U16;
+            type = IndexType.u16;
         }
         else static if (is(T == uint)) {
-            type = IndexType.U32;
+            type = IndexType.u32;
         }
         end = ibuf.count;
         buffer = ibuf;
     }
 
     this(size_t count) {
-        type = IndexType.None;
+        type = IndexType.none;
         end = count;
     }
 }

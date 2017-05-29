@@ -1,11 +1,10 @@
 module gfx.device.gl3.pso;
 
-import gfx.device : maxVertexAttribs, maxColorTargets, AttribMask, ColorTargetMask;
 import gfx.foundation.rc : Rc, rcCode;
 import gfx.foundation.typecons : Option;
-import gfx.pipeline.state : Stencil, Depth, Color, Blend;
-import gfx.pipeline.pso : PipelineStateRes, PipelineDescriptor, VertexAttribDesc;
 import gfx.pipeline.program : Program;
+import gfx.pipeline.pso;
+import gfx.pipeline.state : Stencil, Depth, Color, Blend;
 
 import derelict.opengl3.gl3;
 

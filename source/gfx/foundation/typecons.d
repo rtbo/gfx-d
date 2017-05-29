@@ -112,8 +112,19 @@ template SafeUnion(Specs...) {
     import std.format : format;
 
     template FieldSpec(string n, T...) {
-        alias name = n;
+        enum name = n;
         alias Types = T;
+        enum upperName = buildUpperName();
+
+        string buildUpperName() {
+            import std.uni : toUpper;
+            import std.utf : stride;
+
+            immutable fstCharLen = stride(name);
+            return format("%s%s",
+                toUpper(name[0 .. fstCharLen]), name[fstCharLen .. $]
+            );
+        }
     }
 
     alias FieldSpecs = parseSpecs!Specs;
@@ -401,15 +412,10 @@ template SafeUnion(Specs...) {
 
     string ctorsInject() {
         import std.conv : to;
-        import std.uni : toUpper;
-        import std.utf : stride;
         string s;
         foreach(spec; FieldSpecs) {
-            immutable fstCharLen = stride(spec.name);
             immutable fts = fieldTypes!spec();
-            s ~= format("static SafeUnion make%s%s(",
-                toUpper(spec.name[0 .. fstCharLen]), spec.name[fstCharLen .. $]
-            );
+            s ~= format("static SafeUnion make%s(", spec.upperName);
             foreach(i, T; spec.Types) {
                 string ind;
                 if(spec.Types.length > 1) {
@@ -446,7 +452,7 @@ template SafeUnion(Specs...) {
     string testsInject() {
         string s;
         foreach(spec; FieldSpecs) {
-            s ~= "@property bool is"~spec.name~"() const {\n";
+            s ~= "@property bool is"~spec.upperName~"() const {\n";
             s ~= "    return tag == Tag_."~spec.name~";\n";
             s ~= "}\n";
         }
@@ -456,8 +462,8 @@ template SafeUnion(Specs...) {
     string gettersInject() {
         string s;
         foreach(spec; TypedFieldSpecs) {
-            s ~= "@property "~fieldType!spec()~" get"~spec.name~"() const {\n";
-            s ~= "    assert(is"~spec.name~");\n";
+            s ~= "@property "~fieldType!spec()~" get"~spec.upperName~"() const {\n";
+            s ~= "    assert(is"~spec.upperName~");\n";
             s ~= "    return data_.memb"~spec.name~";\n";
             s ~= "}\n";
         }
@@ -522,14 +528,14 @@ template SafeUnion(Specs...) {
 unittest
 {
     alias Option(T) = SafeUnion!(
-        "Some", T,
-        "None"
+        "some", T,
+        "none"
     );
 
     alias ContType = SafeUnion!(
-        "Single",
-        "Vector", size_t,
-        "Matrix", bool, size_t, size_t,
+        "single",
+        "vector", size_t,
+        "matrix", bool, size_t, size_t,
     );
 
     alias OptionInt = Option!int;
@@ -539,16 +545,16 @@ unittest
     auto mat = ContType.makeMatrix(true, 4, 4);
 
     sing.match!(
-        "Single", () {},
-        "Vector", (size_t d) { assert(false); },
-        "Matrix", (bool cm, size_t d1, size_t d2) { assert(false); },
+        "single", () {},
+        "vector", (size_t d) { assert(false); },
+        "matrix", (bool cm, size_t d1, size_t d2) { assert(false); },
     )();
     vec.match!(
-        "Vector", (size_t d) { assert(d == 3); },
+        "vector", (size_t d) { assert(d == 3); },
         "default", () { assert(false); },
     )();
     mat.match!(
-        "Vector", (size_t d) { assert(false); },
+        "vector", (size_t d) { assert(false); },
         "default", () {},
     )();
 }

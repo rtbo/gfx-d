@@ -5,20 +5,9 @@ import gfx.device.gl3.state : setRasterizer, bindBlend, bindBlendSlot;
 import gfx.device.gl3.buffer : GlBuffer, GlVertexBuffer;
 import gfx.device.gl3.program;
 import gfx.device.gl3.pso : GlPipelineState, OutputMerger;
-import gfx.device : maxVertexAttribs, maxColorTargets, AttribMask, ColorTargetMask, Primitive;
 import gfx.foundation.typecons : Option, some, none;
-import gfx.pipeline.draw : CommandBuffer, ClearColor, Instance;
 import gfx.foundation.rc : Rc, rcCode;
-import gfx.pipeline.program : Program;
-import gfx.pipeline.buffer : RawBuffer, IndexType;
-import gfx.pipeline.texture : RawTexture, ImageSliceInfo;
-import gfx.pipeline.pso :   RawPipelineState, VertexBufferSet, ConstantBlockSet,
-                        ResourceViewSet, SamplerSet, PixelTargetSet,
-                        VertexAttribDesc, ConstantBlockDesc;
-import gfx.pipeline.state : Rasterizer, CullFace;
-import gfx.pipeline.view : RawShaderResourceView, RawRenderTargetView, RawDepthStencilView;
-import gfx.pipeline.format : ChannelType, SurfaceType;
-import gfx.pipeline.state : Comparison, Depth, Stencil, StencilOp, StencilSide;
+import gfx.pipeline;
 
 import derelict.opengl3.gl3;
 
@@ -27,37 +16,37 @@ import std.experimental.logger;
 
 GLenum primitiveToGl(in Primitive primitive) {
     final switch (primitive) {
-        case Primitive.Points:          return GL_POINTS;
-        case Primitive.Lines:           return GL_LINES;
-        case Primitive.LineStrip:       return GL_LINE_STRIP;
-        case Primitive.Triangles:       return GL_TRIANGLES;
-        case Primitive.TriangleStrip:   return GL_TRIANGLE_STRIP;
+        case Primitive.points:          return GL_POINTS;
+        case Primitive.lines:           return GL_LINES;
+        case Primitive.lineStrip:       return GL_LINE_STRIP;
+        case Primitive.triangles:       return GL_TRIANGLES;
+        case Primitive.triangleStrip:   return GL_TRIANGLE_STRIP;
     }
 }
 
 GLenum comparisonToGl(in Comparison fun) {
     final switch (fun) {
-        case Comparison.Never:          return GL_NEVER;
-        case Comparison.Less:           return GL_LESS;
-        case Comparison.LessEqual:      return GL_LEQUAL;
-        case Comparison.Equal:          return GL_EQUAL;
-        case Comparison.GreaterEqual:   return GL_GEQUAL;
-        case Comparison.Greater:        return GL_GREATER;
-        case Comparison.NotEqual:       return GL_NOTEQUAL;
-        case Comparison.Always:         return GL_ALWAYS;
+        case Comparison.never:          return GL_NEVER;
+        case Comparison.less:           return GL_LESS;
+        case Comparison.lessEqual:      return GL_LEQUAL;
+        case Comparison.equal:          return GL_EQUAL;
+        case Comparison.greaterEqual:   return GL_GEQUAL;
+        case Comparison.greater:        return GL_GREATER;
+        case Comparison.notEqual:       return GL_NOTEQUAL;
+        case Comparison.always:         return GL_ALWAYS;
     }
 }
 
 GLenum operationToGl(in StencilOp op) {
     final switch (op) {
-        case StencilOp.Keep:            return GL_KEEP;
-        case StencilOp.Zero:            return GL_ZERO;
-        case StencilOp.Replace:         return GL_REPLACE;
-        case StencilOp.IncrementClamp:  return GL_INCR;
-        case StencilOp.IncrementWrap:   return GL_INCR_WRAP;
-        case StencilOp.DecrementClamp:  return GL_DECR;
-        case StencilOp.DecrementWrap:   return GL_DECR_WRAP;
-        case StencilOp.Invert:          return GL_INVERT;
+        case StencilOp.keep:            return GL_KEEP;
+        case StencilOp.zero:            return GL_ZERO;
+        case StencilOp.replace:         return GL_REPLACE;
+        case StencilOp.incrementClamp:  return GL_INCR;
+        case StencilOp.incrementWrap:   return GL_INCR_WRAP;
+        case StencilOp.decrementClamp:  return GL_DECR;
+        case StencilOp.decrementWrap:   return GL_DECR_WRAP;
+        case StencilOp.invert:          return GL_INVERT;
     }
 }
 
@@ -182,8 +171,8 @@ class SetStencilTestCommand : Command {
                 );
             }
             immutable cull = pso.descriptor.rasterizer.cullFace;
-            if (cull != CullFace.Front) bindSide(GL_FRONT, stencil.front, stencilRef[0]);
-            if (cull != CullFace.Back) bindSide(GL_BACK, stencil.back, stencilRef[1]);
+            if (cull != CullFace.front) bindSide(GL_FRONT, stencil.front, stencilRef[0]);
+            if (cull != CullFace.back) bindSide(GL_BACK, stencil.back, stencilRef[1]);
         }
     }
 
@@ -723,7 +712,7 @@ class GlCommandBuffer : CommandBuffer {
     }
 
     final void bindIndex(RawBuffer buf, IndexType ind) {
-        assert(ind != IndexType.None);
+        assert(ind != IndexType.none);
         _cache.indexType = ind;
         _commands ~= new BindBufferCommand(buf);
     }
@@ -793,15 +782,15 @@ class GlCommandBuffer : CommandBuffer {
     final void drawIndexed(uint start, uint count, uint base, Option!Instance instances) {
         // TODO instanced drawings
         assert(_cache.pso.loaded, "must bind pso before draw calls");
-        assert(_cache.indexType != IndexType.None, "must bind index before indexed draw calls");
+        assert(_cache.indexType != IndexType.none, "must bind index before indexed draw calls");
         GLenum index;
         size_t offset;
         switch(_cache.indexType) {
-            case IndexType.U16:
+            case IndexType.u16:
                 index = GL_UNSIGNED_SHORT;
                 offset = start*2;
                 break;
-            case IndexType.U32:
+            case IndexType.u32:
                 index = GL_UNSIGNED_INT;
                 offset = start*4;
                 break;

@@ -1,6 +1,5 @@
 module crate;
 
-import gfx.device : Primitive;
 import gfx.foundation.rc : rc, makeRc;
 import gfx.foundation.typecons : none, some;
 import gfx.pipeline.format : Rgba8, Depth, newSwizzle;
@@ -10,7 +9,7 @@ import gfx.pipeline.texture : Texture2D, Sampler, SamplerInfo, FilterMethod, Wra
 import gfx.pipeline.draw : clearColor, Instance;
 import s = gfx.pipeline.state : Rasterizer;
 import gfx.pipeline.pso.meta;
-import gfx.pipeline.pso : PipelineState;
+import gfx.pipeline.pso : PipelineState, Primitive;
 import gfx.pipeline.encoder : Encoder;
 import gfx.window.glfw : gfxGlfwWindow;
 
@@ -91,7 +90,7 @@ Texture2D!Rgba8 loadTexture() {
     tjDestroy(jpeg);
 
     auto pixels = retypeSlice!(ubyte[4])(bytes);
-    TexUsageFlags usage = TextureUsage.ShaderResource;
+    TexUsageFlags usage = TextureUsage.shaderResource;
     return new Texture2D!Rgba8(usage, 1, cast(ushort)w, cast(ushort)h, [pixels]);
 }
 
@@ -121,7 +120,7 @@ void main()
     auto vbuf = makeRc!(VertexBuffer!Vertex)(crate.vertices);
     auto slice = VertexBufferSlice(new IndexBuffer!ushort(crate.indices));
     auto srv = rc(loadTexture().viewAsShaderResource(0, 0, newSwizzle()));
-    auto sampler = makeRc!Sampler(srv, SamplerInfo(FilterMethod.Anisotropic, WrapMode.init));
+    auto sampler = makeRc!Sampler(srv, SamplerInfo(FilterMethod.anisotropic, WrapMode.init));
 
     auto matBlk = makeRc!(ConstBuffer!Matrices)(1);
     auto nlBlk = makeRc!(ConstBuffer!NumLights)(1);
@@ -130,7 +129,7 @@ void main()
         import("330-crate.v.glsl"),
         import("330-crate.f.glsl"),
     ));
-    auto pso = makeRc!CratePipeline(prog.obj, Primitive.Triangles, Rasterizer.fill.withSamples());
+    auto pso = makeRc!CratePipeline(prog.obj, Primitive.triangles, Rasterizer.fill.withSamples());
     auto data = CratePipeline.Data(
         vbuf, matBlk, nlBlk, ligBlk, srv, sampler, colRtv, dsv
     );

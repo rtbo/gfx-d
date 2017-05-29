@@ -12,38 +12,38 @@ import std.typecons : BitFlags;
 import std.experimental.logger;
 
 enum TextureType {
-    D1, D1Array,
-    D2, D2Array,
-    D2Multisample, D2ArrayMultisample,
-    D3, Cube, CubeArray
+    d1, d1Array,
+    d2, d2Array,
+    d2Multisample, d2ArrayMultisample,
+    d3, cube, cubeArray
 }
 
 bool isCube(in TextureType tt) {
-    return tt == TextureType.Cube || tt == TextureType.CubeArray;
+    return tt == TextureType.cube || tt == TextureType.cubeArray;
 }
 
 
 enum TextureUsage {
-    None = 0,
-    RenderTarget = 1,
-    DepthStencil = 2,
-    ShaderResource = 4,
-    UnorderedAccess = 8,
+    none = 0,
+    renderTarget = 1,
+    depthStencil = 2,
+    shaderResource = 4,
+    unorderedAccess = 8,
 }
 alias TexUsageFlags = BitFlags!TextureUsage;
 
 enum CubeFace {
-    None,
-    PosX, NegX,
-    PosY, NegY,
-    PosZ, NegZ,
+    none,
+    posX, negX,
+    posY, negY,
+    posZ, negZ,
 }
 
 /// an array of faces in the order that is expected during cube initialization
 immutable cubeFaces = [
-    CubeFace.PosX, CubeFace.NegX,
-    CubeFace.PosY, CubeFace.NegY,
-    CubeFace.PosZ, CubeFace.NegZ,
+    CubeFace.posX, CubeFace.negX,
+    CubeFace.posY, CubeFace.negY,
+    CubeFace.posZ, CubeFace.negZ,
 ];
 
 struct ImageSliceInfo {
@@ -77,7 +77,7 @@ struct ImageInfo {
         return ImageSliceInfo(
             0, 0, 0,
             w, h, d,
-            level, CubeFace.None,
+            level, CubeFace.none,
         );
     }
 }
@@ -86,13 +86,13 @@ struct ImageInfo {
 enum WrapMode {
     /// Tile the texture. That is, sample the coordinate modulo `1.0`. This is
     /// the default.
-    Tile,
+    tile,
     /// Mirror the texture. Like tile, but uses abs(coord) before the modulo.
-    Mirror,
+    mirror,
     /// Clamp the texture to the value at `0.0` or `1.0` respectively.
-    Clamp,
+    clamp,
     /// Use border color.
-    Border,
+    border,
 }
 
 /// Wrapper for the level of detail of a texture
@@ -148,17 +148,17 @@ struct PackedColor {
 /// ingrained by many years of public use of inaccurate terminology.
 enum FilterMethod {
     /// The dumbest filtering possible, nearest-neighbor interpolation.
-    Scale,
+    scale,
     /// Add simple mipmapping.
-    Mipmap,
+    mipmap,
     /// Sample multiple texels within a single mipmap level to increase
     /// quality.
-    Bilinear,
+    bilinear,
     /// Sample multiple texels across two mipmap levels to increase quality.
-    Trilinear,
+    trilinear,
     /// Anisotropic filtering with a given "max", must be between 1 and 16,
     /// inclusive.
-    Anisotropic
+    anisotropic
 }
 
 
@@ -253,7 +253,7 @@ abstract class RawTexture : ResourceHolder {
         _format = format;
         _texelSize = texelSize;
         _initData = initData;
-        if (!(_usage & (TextureUsage.ShaderResource | TextureUsage.UnorderedAccess))) {
+        if (!(_usage & (TextureUsage.shaderResource | TextureUsage.unorderedAccess))) {
             warningf("Building texture without need for sampling. A surface may be more efficient.");
         }
     }
@@ -328,62 +328,62 @@ abstract class Texture(TexelF) : RawTexture if (isFormatted!TexelF) {
 
 class Texture1D(TexelF) : Texture!TexelF {
     this(TexUsageFlags usage, ubyte levels, ushort width, const(Texel)[][] texels=[]) {
-        super(TextureType.D1, usage, ImageInfo(width, 1, 1, 1, levels), 1, texels);
+        super(TextureType.d1, usage, ImageInfo(width, 1, 1, 1, levels), 1, texels);
     }
 }
 
 class Texture1DArray(TexelF) : Texture!TexelF {
     this(TexUsageFlags usage, ubyte levels, ushort width, ushort numSlices, const(Texel)[][] texels=[]) {
-        super(TextureType.D1Array, usage, ImageInfo(width, 1, 1, numSlices, levels), 1, texels);
+        super(TextureType.d1Array, usage, ImageInfo(width, 1, 1, numSlices, levels), 1, texels);
     }
 }
 
 class Texture2D(TexelF) : Texture!TexelF {
     this(TexUsageFlags usage, ubyte levels, ushort width, ushort height, const(Texel)[][] texels=[]) {
-        super(TextureType.D2, usage, ImageInfo(width, height, 1, 1, levels), 1, texels);
+        super(TextureType.d2, usage, ImageInfo(width, height, 1, 1, levels), 1, texels);
     }
 }
 
 class Texture2DArray(TexelF) : Texture!TexelF {
     this(TexUsageFlags usage, ubyte levels, ushort width, ushort height, ushort numSlices, const(Texel)[][] texels=[]) {
-        super(TextureType.D2Array, usage, ImageInfo(width, height, 1, numSlices, levels), 1, texels);
+        super(TextureType.d2Array, usage, ImageInfo(width, height, 1, numSlices, levels), 1, texels);
     }
 }
 
 class Texture2DMultisample(TexelF) : Texture!TexelF {
     this(TexUsageFlags usage, ubyte levels, ushort width, ushort height, ubyte samples, const(Texel)[][] texels=[]) {
-        super(TextureType.D2Multisample, usage, ImageInfo(width, height, 1, 1, levels), samples, texels);
+        super(TextureType.d2Multisample, usage, ImageInfo(width, height, 1, 1, levels), samples, texels);
     }
 }
 
 class Texture2DArrayMultisample(TexelF) : Texture!TexelF {
     this(TexUsageFlags usage, ubyte levels, ushort width, ushort height, ushort numSlices, ubyte samples, const(Texel)[][] texels=[]) {
-        super(TextureType.D2ArrayMultisample, usage, ImageInfo(width, height, 1, numSlices, levels), samples, texels);
+        super(TextureType.d2ArrayMultisample, usage, ImageInfo(width, height, 1, numSlices, levels), samples, texels);
     }
 }
 
 class Texture3D(TexelF) : Texture!TexelF {
     this(TexUsageFlags usage, ubyte levels, ushort width, ushort height, ushort depth, const(Texel)[][] texels=[]) {
-        super(TextureType.D3, usage, ImageInfo(width, height, depth, 1, levels), 1, texels);
+        super(TextureType.d3, usage, ImageInfo(width, height, depth, 1, levels), 1, texels);
     }
 }
 
 class TextureCube(TexelF) : Texture!TexelF {
     this(TexUsageFlags usage, ubyte levels, ushort width, const(Texel)[][] texels=[]) {
-        super(TextureType.Cube, usage, ImageInfo(width, width, 6, 1, levels), 1, texels);
+        super(TextureType.cube, usage, ImageInfo(width, width, 6, 1, levels), 1, texels);
     }
 }
 
 class TextureCubeArray(TexelF) : Texture!TexelF {
     this(TexUsageFlags usage, ubyte levels, ushort width, ushort numSlices, const(Texel)[][] texels=[]) {
-        super(TextureType.CubeArray, usage, ImageInfo(width, width, 6, numSlices, levels), 1, texels);
+        super(TextureType.cubeArray, usage, ImageInfo(width, width, 6, numSlices, levels), 1, texels);
     }
 }
 unittest {
     import gfx.device.dummy;
     import gfx.pipeline.format : Rgba8;
     auto ctx = new DummyFactory;
-    TexUsageFlags usage = TextureUsage.ShaderResource;
+    TexUsageFlags usage = TextureUsage.shaderResource;
     auto tex = new TextureCube!Rgba8(usage, 3, 1);
 }
 

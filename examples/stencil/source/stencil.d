@@ -1,6 +1,5 @@
 module stencil;
 
-import gfx.device : Primitive;
 import gfx.foundation.rc : Rc, rc, makeRc;
 import gfx.foundation.typecons : Option, none, some;
 import gfx.pipeline.format : Rgba8, DepthStencil, R8, Unorm, newSwizzle;
@@ -8,7 +7,7 @@ import gfx.pipeline.buffer : VertexBuffer, IndexBuffer, VertexBufferSlice;
 import gfx.pipeline.texture : Texture, Texture2D, TextureUsage, TexUsageFlags;
 import gfx.pipeline.program : ShaderSet, Program;
 import gfx.pipeline.pso.meta;
-import gfx.pipeline.pso : PipelineDescriptor, PipelineState, VertexBufferSet;
+import gfx.pipeline.pso : PipelineDescriptor, PipelineState, VertexBufferSet, Primitive;
 import gfx.pipeline.state : Rasterizer, Stencil, Comparison, StencilOp, ColorFlags, ColorMask;
 import gfx.pipeline.draw : Instance;
 import gfx.pipeline.encoder : Encoder;
@@ -35,11 +34,11 @@ struct StencilWriteMeta {
     ResourceView!STF            tex;
 
     @GfxName("o_Color")
-    @GfxColorMask(ColorMask(ColorFlags.None))  // disable rendering in color buffer (default is 'All')
+    @GfxColorMask(ColorMask(ColorFlags.none))  // disable rendering in color buffer (default is 'All')
     ColorOutput!Rgba8           color;
 
     // 0x01 mask: we only care on the first bitplane
-    @GfxStencil(Stencil(Comparison.Always, 0x01, [StencilOp.Replace, StencilOp.Replace, StencilOp.Replace]))
+    @GfxStencil(Stencil(Comparison.always, 0x01, [StencilOp.replace, StencilOp.replace, StencilOp.replace]))
     StencilOutput!DepthStencil  stencil;
 }
 
@@ -50,7 +49,7 @@ struct TriangleMeta {
     ColorOutput!Rgba8           color;
 
     // 0x01 mask: we only care on the first bitplane
-    @GfxStencil(Stencil(Comparison.Equal, 0x01, [StencilOp.Keep, StencilOp.Keep, StencilOp.Keep]))
+    @GfxStencil(Stencil(Comparison.equal, 0x01, [StencilOp.keep, StencilOp.keep, StencilOp.keep]))
     StencilOutput!DepthStencil  stencil;
 }
 
@@ -89,7 +88,7 @@ Texture!STF makeChessboard() {
             data[r*32 + c] = oddR == oddC ? 0xff : 0x00;
         }
     }
-    TexUsageFlags usage = TextureUsage.ShaderResource;
+    TexUsageFlags usage = TextureUsage.shaderResource;
     return new Texture2D!STF(usage, 1, 32, 32, [data]);
 }
 
@@ -121,7 +120,7 @@ void main() {
     ));
     auto swvb = makeRc!(VertexBuffer!PTVertex)(square);
     auto sws = VertexBufferSlice(new IndexBuffer!ushort(squareIndices));
-    auto swpso = makeRc!(StencilWritePS)(swp.obj, Primitive.Triangles, Rasterizer.fill);
+    auto swpso = makeRc!(StencilWritePS)(swp.obj, Primitive.triangles, Rasterizer.fill);
     auto swdata = StencilWritePS.Data(
         swvb, cbv, rtv, StencilOutput!DepthStencil.Data(dsv, [1, 1])
     );
@@ -132,7 +131,7 @@ void main() {
     ));
     auto trvb = makeRc!(VertexBuffer!PCVertex)(triangle);
     auto trs = VertexBufferSlice(trvb.count);
-    auto trpso = makeRc!(TrianglePS)(trp.obj, Primitive.Triangles, Rasterizer.fill);
+    auto trpso = makeRc!(TrianglePS)(trp.obj, Primitive.triangles, Rasterizer.fill);
     auto trdata = TrianglePS.Data(
         trvb, rtv, StencilOutput!DepthStencil.Data(dsv, [1, 1])
     );

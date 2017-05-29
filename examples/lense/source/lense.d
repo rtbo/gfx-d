@@ -1,6 +1,5 @@
 module lense;
 
-import gfx.device : Primitive;
 import gfx.foundation.rc : rc, makeRc, Rc;
 import gfx.foundation.typecons : none, some;
 import gfx.pipeline.format : Rgba8, Depth, newSwizzle;
@@ -11,7 +10,7 @@ import gfx.pipeline.view : ShaderResourceView, RenderTargetView, DepthStencilVie
 import gfx.pipeline.draw : clearColor, Instance;
 import s = gfx.pipeline.state : Rasterizer;
 import gfx.pipeline.pso.meta;
-import gfx.pipeline.pso : PipelineState;
+import gfx.pipeline.pso : PipelineState, Primitive;
 import gfx.pipeline.encoder : Encoder;
 import gfx.window.glfw : gfxGlfwWindow;
 
@@ -142,7 +141,7 @@ Texture2D!Rgba8 loadCrateTexture() {
     tjDestroy(jpeg);
 
     auto pixels = retypeSlice!(ubyte[4])(bytes);
-    TexUsageFlags usage = TextureUsage.ShaderResource;
+    TexUsageFlags usage = TextureUsage.shaderResource;
     return new Texture2D!Rgba8(usage, 1, cast(ushort)w, cast(ushort)h, [pixels]);
 }
 
@@ -161,7 +160,7 @@ Texture2D!Rgba8 makeGridTexture(in ushort w, in ushort h) {
             texels[r*w+c] = val;
         }
     }
-    TexUsageFlags usage = TextureUsage.ShaderResource;
+    TexUsageFlags usage = TextureUsage.shaderResource;
     return new Texture2D!Rgba8(usage, 1, w, h, [texels]);
 }
 
@@ -176,12 +175,12 @@ struct MeshViews {
         import gfx.pipeline.view : DSVReadOnly, DSVReadOnlyFlags;
 
         Texture!Fmt makeTexture(Fmt)(in ushort w, in ushort h, TextureUsage usage) {
-            TexUsageFlags usageFl = TextureUsage.ShaderResource | usage;
+            TexUsageFlags usageFl = TextureUsage.shaderResource | usage;
             return new Texture2D!Fmt(usageFl, 1, w, h);
         }
 
-        auto colT = rc(makeTexture!Rgba8(w, h, TextureUsage.RenderTarget));
-        auto depT = rc(makeTexture!Depth(w, h, TextureUsage.DepthStencil));
+        auto colT = rc(makeTexture!Rgba8(w, h, TextureUsage.renderTarget));
+        auto depT = rc(makeTexture!Depth(w, h, TextureUsage.depthStencil));
         immutable fl = DSVReadOnlyFlags.init;
 
         return MeshViews (
@@ -377,7 +376,7 @@ void main()
     auto meshProg = makeRc!Program(ShaderSet.vertexPixel(
         import("330-mesh.v.glsl"), import("330-mesh.f.glsl"),
     ));
-    auto meshPso = makeRc!MeshPipeline(meshProg, Primitive.Triangles, Rasterizer.fill);
+    auto meshPso = makeRc!MeshPipeline(meshProg, Primitive.triangles, Rasterizer.fill);
 
     auto ligBlk = makeRc!(ConstBuffer!Light)(1);
 
@@ -386,7 +385,7 @@ void main()
         makeRc!(VertexBuffer!VertexPNT)(crate.vertices),
         VertexBufferSlice(new IndexBuffer!ushort(crate.indices)),
         makeRc!(ConstBuffer!Matrices)(1), ligBlk,
-        crateSrv, makeRc!Sampler(crateSrv, SamplerInfo(FilterMethod.Anisotropic, WrapMode.init)),
+        crateSrv, makeRc!Sampler(crateSrv, SamplerInfo(FilterMethod.anisotropic, WrapMode.init)),
         meshViews.colRtv, meshViews.depDsv
     );
     auto crateData = crateMesh.data;
@@ -398,7 +397,7 @@ void main()
         makeRc!(VertexBuffer!VertexPNT)(gridVertices),
         VertexBufferSlice(squareVertices.length),
         makeRc!(ConstBuffer!Matrices)(1), ligBlk,
-        gridSrv, makeRc!Sampler(gridSrv, SamplerInfo(FilterMethod.Bilinear, WrapMode.init)),
+        gridSrv, makeRc!Sampler(gridSrv, SamplerInfo(FilterMethod.bilinear, WrapMode.init)),
         meshViews.colRtv, meshViews.depDsv
     );
     auto gridData = grid.data;
@@ -406,7 +405,7 @@ void main()
     auto blitProg = makeRc!Program(ShaderSet.vertexPixel(
         import("330-blit.v.glsl"), import("330-blit.f.glsl")
     ));
-    auto blitPso = makeRc!BlitPipeline(blitProg, Primitive.Triangles, Rasterizer.fill);
+    auto blitPso = makeRc!BlitPipeline(blitProg, Primitive.triangles, Rasterizer.fill);
     auto blitSlice = VertexBufferSlice(squareVertices.length);
     auto blitData = BlitPipeline.Data(
         makeRc!(VertexBuffer!VertexPT)(squareVertices), meshViews.colSrv, winRtv
@@ -415,13 +414,13 @@ void main()
     auto lenseProg = makeRc!Program(ShaderSet.vertexPixel(
         import("330-lense.v.glsl"), import("330-lense.f.glsl")
     ));
-    auto lensePso = makeRc!LensePipeline(lenseProg, Primitive.Triangles, Rasterizer.fill);
+    auto lensePso = makeRc!LensePipeline(lenseProg, Primitive.triangles, Rasterizer.fill);
     auto lenseMeshData = makeLense(1, 3);
     auto lenseSlice = VertexBufferSlice(new IndexBuffer!ushort(lenseMeshData.indices));
     auto lenseData = LensePipeline.Data(
         makeRc!(VertexBuffer!VertexPN)(lenseMeshData.vertices),
         makeRc!(ConstBuffer!Matrices)(1), ligBlk,
-        meshViews.colSrv, makeRc!Sampler(meshViews.colSrv, SamplerInfo(FilterMethod.Anisotropic, WrapMode.init)),
+        meshViews.colSrv, makeRc!Sampler(meshViews.colSrv, SamplerInfo(FilterMethod.anisotropic, WrapMode.init)),
         winRtv, winDsv
     );
 

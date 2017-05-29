@@ -21,7 +21,7 @@ interface Factory {
 
 
     struct TextureCreationDesc {
-        TextureType type = TextureType.D1;
+        TextureType type = TextureType.d1;
         TexUsageFlags usage;
         Format format;
         ImageInfo imgInfo;

@@ -10,18 +10,18 @@ import derelict.opengl3.gl3;
 
 GLenum frontFaceToGl(in FrontFace ff) {
     final switch(ff) {
-        case FrontFace.ClockWise: return GL_CW;
-        case FrontFace.CounterClockWise: return GL_CCW;
+        case FrontFace.cw: return GL_CW;
+        case FrontFace.ccw: return GL_CCW;
     }
 }
 
 GLenum equationToGl(in Equation eq) {
     final switch(eq) {
-        case Equation.Add:      return GL_FUNC_ADD;
-        case Equation.Sub:      return GL_FUNC_SUBTRACT;
-        case Equation.RevSub:   return GL_FUNC_REVERSE_SUBTRACT;
-        case Equation.Min:      return GL_MIN;
-        case Equation.Max:      return GL_MAX;
+        case Equation.add:      return GL_FUNC_ADD;
+        case Equation.sub:      return GL_FUNC_SUBTRACT;
+        case Equation.revSub:   return GL_FUNC_REVERSE_SUBTRACT;
+        case Equation.min:      return GL_MIN;
+        case Equation.max:      return GL_MAX;
     }
 }
 
@@ -29,26 +29,26 @@ GLenum equationToGl(in Equation eq) {
 
 GLenum factorToGl(in Factor f) {
     final switch (f.tag) {
-        case Factor.Zero:                       return GL_ZERO;
-        case Factor.One:                        return GL_ONE;
-        case Factor.SourceAlphaSaturated:       return GL_SRC_ALPHA_SATURATE;
-        case Factor.ZeroPlus:
+        case Factor.zero:                       return GL_ZERO;
+        case Factor.one:                        return GL_ONE;
+        case Factor.sourceAlphaSaturated:       return GL_SRC_ALPHA_SATURATE;
+        case Factor.zeroPlus:
             final switch (f.getZeroPlus()) {
-                case BlendValue.SourceColor:    return GL_SRC_COLOR;
-                case BlendValue.SourceAlpha:    return GL_SRC_ALPHA;
-                case BlendValue.DestColor:      return GL_DST_COLOR;
-                case BlendValue.DestAlpha:      return GL_DST_ALPHA;
-                case BlendValue.ConstColor:     return GL_CONSTANT_COLOR;
-                case BlendValue.ConstAlpha:     return GL_CONSTANT_ALPHA;
+                case BlendValue.sourceColor:    return GL_SRC_COLOR;
+                case BlendValue.sourceAlpha:    return GL_SRC_ALPHA;
+                case BlendValue.destColor:      return GL_DST_COLOR;
+                case BlendValue.destAlpha:      return GL_DST_ALPHA;
+                case BlendValue.constColor:     return GL_CONSTANT_COLOR;
+                case BlendValue.constAlpha:     return GL_CONSTANT_ALPHA;
             }
-        case Factor.OneMinus:
+        case Factor.oneMinus:
             final switch (f.getOneMinus()) {
-                case BlendValue.SourceColor:    return GL_ONE_MINUS_SRC_COLOR;
-                case BlendValue.SourceAlpha:    return GL_ONE_MINUS_SRC_ALPHA;
-                case BlendValue.DestColor:      return GL_ONE_MINUS_DST_COLOR;
-                case BlendValue.DestAlpha:      return GL_ONE_MINUS_DST_ALPHA;
-                case BlendValue.ConstColor:     return GL_ONE_MINUS_CONSTANT_COLOR;
-                case BlendValue.ConstAlpha:     return GL_ONE_MINUS_CONSTANT_ALPHA;
+                case BlendValue.sourceColor:    return GL_ONE_MINUS_SRC_COLOR;
+                case BlendValue.sourceAlpha:    return GL_ONE_MINUS_SRC_ALPHA;
+                case BlendValue.destColor:      return GL_ONE_MINUS_DST_COLOR;
+                case BlendValue.destAlpha:      return GL_ONE_MINUS_DST_ALPHA;
+                case BlendValue.constColor:     return GL_ONE_MINUS_CONSTANT_COLOR;
+                case BlendValue.constAlpha:     return GL_ONE_MINUS_CONSTANT_ALPHA;
             }
     }
 }
@@ -85,14 +85,14 @@ void setRasterizer(in Rasterizer rasterizer) {
     glFrontFace(frontFaceToGl(rasterizer.frontFace));
 
     final switch (rasterizer.cullFace) {
-        case CullFace.None:
+        case CullFace.none:
             glDisable(GL_CULL_FACE);
             break;
-        case CullFace.Front:
+        case CullFace.front:
             glEnable(GL_CULL_FACE);
             glCullFace(GL_FRONT);
             break;
-        case CullFace.Back:
+        case CullFace.back:
             glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);
             break;
@@ -127,10 +127,10 @@ void bindBlend(in ColorInfo info) {
         glDisable(GL_BLEND);
     }
     glColorMask(
-        (info.mask & ColorFlags.Red) ? GL_TRUE : GL_FALSE,
-        (info.mask & ColorFlags.Green) ? GL_TRUE : GL_FALSE,
-        (info.mask & ColorFlags.Blue) ? GL_TRUE : GL_FALSE,
-        (info.mask & ColorFlags.Alpha) ? GL_TRUE : GL_FALSE,
+        (info.mask & ColorFlags.red) ? GL_TRUE : GL_FALSE,
+        (info.mask & ColorFlags.green) ? GL_TRUE : GL_FALSE,
+        (info.mask & ColorFlags.blue) ? GL_TRUE : GL_FALSE,
+        (info.mask & ColorFlags.alpha) ? GL_TRUE : GL_FALSE,
     );
 }
 
@@ -154,9 +154,9 @@ void bindBlendSlot(ColorInfo info, ubyte slot) {
         glDisablei(GL_BLEND, buf);
     }
     glColorMaski(buf,
-        (info.mask & ColorFlags.Red) ? GL_TRUE : GL_FALSE,
-        (info.mask & ColorFlags.Green) ? GL_TRUE : GL_FALSE,
-        (info.mask & ColorFlags.Blue) ? GL_TRUE : GL_FALSE,
-        (info.mask & ColorFlags.Alpha) ? GL_TRUE : GL_FALSE,
+        (info.mask & ColorFlags.red) ? GL_TRUE : GL_FALSE,
+        (info.mask & ColorFlags.green) ? GL_TRUE : GL_FALSE,
+        (info.mask & ColorFlags.blue) ? GL_TRUE : GL_FALSE,
+        (info.mask & ColorFlags.alpha) ? GL_TRUE : GL_FALSE,
     );
 }

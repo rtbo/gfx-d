@@ -14,11 +14,11 @@ import std.exception : enforce, assumeUnique;
 
 GLenum stageToGlType(in ShaderStage stage) {
     final switch(stage) {
-        case ShaderStage.Vertex:
+        case ShaderStage.vertex:
             return GL_VERTEX_SHADER;
-        case ShaderStage.Geometry:
+        case ShaderStage.geometry:
             return GL_GEOMETRY_SHADER;
-        case ShaderStage.Pixel:
+        case ShaderStage.pixel:
             return GL_FRAGMENT_SHADER;
     }
 }
@@ -111,8 +111,8 @@ GLint getProgramOutputInt(in GLuint prog, in GLuint ind, in GLenum pname) {
 
 
 enum StorageType {
-    Unknown,
-    Var, Sampler,
+    unknown,
+    var, sampler,
 }
 struct Storage {
     StorageType type;
@@ -129,7 +129,7 @@ struct Storage {
 
     static Storage makeVar(VarType varType) {
         Storage res;
-        res.type = StorageType.Var;
+        res.type = StorageType.var;
         res.varType = varType;
         return res;
     }
@@ -137,7 +137,7 @@ struct Storage {
     static Storage makeSampler(BaseType baseType, TextureVarType texType,
                 Flag!"compare" compareSampler, Flag!"rect" rectSampler) {
         Storage res;
-        res.type = StorageType.Sampler;
+        res.type = StorageType.sampler;
         res.baseType = baseType;
         res.texType = texType;
         res.rectSampler = rectSampler;
@@ -149,79 +149,79 @@ struct Storage {
 
 Storage glTypeToStorage(in GLenum type) {
     switch(type) {
-        case GL_FLOAT                        : return Storage.makeVar(VarType(BaseType.F32,  1, 1));
-        case GL_FLOAT_VEC2                   : return Storage.makeVar(VarType(BaseType.F32,  2, 1));
-        case GL_FLOAT_VEC3                   : return Storage.makeVar(VarType(BaseType.F32,  3, 1));
-        case GL_FLOAT_VEC4                   : return Storage.makeVar(VarType(BaseType.F32,  4, 1));
+        case GL_FLOAT                        : return Storage.makeVar(VarType(BaseType.f32,  1, 1));
+        case GL_FLOAT_VEC2                   : return Storage.makeVar(VarType(BaseType.f32,  2, 1));
+        case GL_FLOAT_VEC3                   : return Storage.makeVar(VarType(BaseType.f32,  3, 1));
+        case GL_FLOAT_VEC4                   : return Storage.makeVar(VarType(BaseType.f32,  4, 1));
 
-        case GL_INT                          : return Storage.makeVar(VarType(BaseType.I32,  1, 1));
-        case GL_INT_VEC2                     : return Storage.makeVar(VarType(BaseType.I32,  2, 1));
-        case GL_INT_VEC3                     : return Storage.makeVar(VarType(BaseType.I32,  3, 1));
-        case GL_INT_VEC4                     : return Storage.makeVar(VarType(BaseType.I32,  4, 1));
+        case GL_INT                          : return Storage.makeVar(VarType(BaseType.i32,  1, 1));
+        case GL_INT_VEC2                     : return Storage.makeVar(VarType(BaseType.i32,  2, 1));
+        case GL_INT_VEC3                     : return Storage.makeVar(VarType(BaseType.i32,  3, 1));
+        case GL_INT_VEC4                     : return Storage.makeVar(VarType(BaseType.i32,  4, 1));
 
-        case GL_UNSIGNED_INT                 : return Storage.makeVar(VarType(BaseType.U32,  1, 1));
-        case GL_UNSIGNED_INT_VEC2            : return Storage.makeVar(VarType(BaseType.U32,  2, 1));
-        case GL_UNSIGNED_INT_VEC3            : return Storage.makeVar(VarType(BaseType.U32,  3, 1));
-        case GL_UNSIGNED_INT_VEC4            : return Storage.makeVar(VarType(BaseType.U32,  4, 1));
+        case GL_UNSIGNED_INT                 : return Storage.makeVar(VarType(BaseType.u32,  1, 1));
+        case GL_UNSIGNED_INT_VEC2            : return Storage.makeVar(VarType(BaseType.u32,  2, 1));
+        case GL_UNSIGNED_INT_VEC3            : return Storage.makeVar(VarType(BaseType.u32,  3, 1));
+        case GL_UNSIGNED_INT_VEC4            : return Storage.makeVar(VarType(BaseType.u32,  4, 1));
 
-        case GL_BOOL                         : return Storage.makeVar(VarType(BaseType.Bool, 1, 1));
-        case GL_BOOL_VEC2                    : return Storage.makeVar(VarType(BaseType.Bool, 2, 1));
-        case GL_BOOL_VEC3                    : return Storage.makeVar(VarType(BaseType.Bool, 3, 1));
-        case GL_BOOL_VEC4                    : return Storage.makeVar(VarType(BaseType.Bool, 4, 1));
+        case GL_BOOL                         : return Storage.makeVar(VarType(BaseType.boolean, 1, 1));
+        case GL_BOOL_VEC2                    : return Storage.makeVar(VarType(BaseType.boolean, 2, 1));
+        case GL_BOOL_VEC3                    : return Storage.makeVar(VarType(BaseType.boolean, 3, 1));
+        case GL_BOOL_VEC4                    : return Storage.makeVar(VarType(BaseType.boolean, 4, 1));
 
-        case GL_FLOAT_MAT2                   : return Storage.makeVar(VarType(BaseType.F32,  2, 2));
-        case GL_FLOAT_MAT3                   : return Storage.makeVar(VarType(BaseType.F32,  3, 3));
-        case GL_FLOAT_MAT4                   : return Storage.makeVar(VarType(BaseType.F32,  4, 4));
+        case GL_FLOAT_MAT2                   : return Storage.makeVar(VarType(BaseType.f32,  2, 2));
+        case GL_FLOAT_MAT3                   : return Storage.makeVar(VarType(BaseType.f32,  3, 3));
+        case GL_FLOAT_MAT4                   : return Storage.makeVar(VarType(BaseType.f32,  4, 4));
 
-        case GL_FLOAT_MAT2x3                 : return Storage.makeVar(VarType(BaseType.F32,  2, 3));
-        case GL_FLOAT_MAT2x4                 : return Storage.makeVar(VarType(BaseType.F32,  2, 4));
-        case GL_FLOAT_MAT3x2                 : return Storage.makeVar(VarType(BaseType.F32,  3, 2));
-        case GL_FLOAT_MAT3x4                 : return Storage.makeVar(VarType(BaseType.F32,  3, 4));
-        case GL_FLOAT_MAT4x2                 : return Storage.makeVar(VarType(BaseType.F32,  4, 2));
-        case GL_FLOAT_MAT4x3                 : return Storage.makeVar(VarType(BaseType.F32,  4, 3));
+        case GL_FLOAT_MAT2x3                 : return Storage.makeVar(VarType(BaseType.f32,  2, 3));
+        case GL_FLOAT_MAT2x4                 : return Storage.makeVar(VarType(BaseType.f32,  2, 4));
+        case GL_FLOAT_MAT3x2                 : return Storage.makeVar(VarType(BaseType.f32,  3, 2));
+        case GL_FLOAT_MAT3x4                 : return Storage.makeVar(VarType(BaseType.f32,  3, 4));
+        case GL_FLOAT_MAT4x2                 : return Storage.makeVar(VarType(BaseType.f32,  4, 2));
+        case GL_FLOAT_MAT4x3                 : return Storage.makeVar(VarType(BaseType.f32,  4, 3));
 
         // TODO: double matrices
 
-        case GL_SAMPLER_1D                   : return Storage.makeSampler(BaseType.F32, TextureVarType.D1,
+        case GL_SAMPLER_1D                   : return Storage.makeSampler(BaseType.f32, TextureVarType.d1,
                                                                             No.compare,     No.rect);
-        case GL_SAMPLER_1D_ARRAY             : return Storage.makeSampler(BaseType.F32, TextureVarType.D1Array,
+        case GL_SAMPLER_1D_ARRAY             : return Storage.makeSampler(BaseType.f32, TextureVarType.d1Array,
                                                                             No.compare,     No.rect);
-        case GL_SAMPLER_1D_SHADOW            : return Storage.makeSampler(BaseType.F32, TextureVarType.D1,
+        case GL_SAMPLER_1D_SHADOW            : return Storage.makeSampler(BaseType.f32, TextureVarType.d1,
                                                                             Yes.compare,    No.rect);
-        case GL_SAMPLER_1D_ARRAY_SHADOW      : return Storage.makeSampler(BaseType.F32, TextureVarType.D1Array,
+        case GL_SAMPLER_1D_ARRAY_SHADOW      : return Storage.makeSampler(BaseType.f32, TextureVarType.d1Array,
                                                                             Yes.compare,    No.rect);
 
-        case GL_SAMPLER_2D                   : return Storage.makeSampler(BaseType.F32, TextureVarType.D2,
+        case GL_SAMPLER_2D                   : return Storage.makeSampler(BaseType.f32, TextureVarType.d2,
                                                                             No.compare,     No.rect);
-        case GL_SAMPLER_2D_ARRAY             : return Storage.makeSampler(BaseType.F32, TextureVarType.D2Array,
+        case GL_SAMPLER_2D_ARRAY             : return Storage.makeSampler(BaseType.f32, TextureVarType.d2Array,
                                                                             No.compare,     No.rect);
-        case GL_SAMPLER_2D_SHADOW            : return Storage.makeSampler(BaseType.F32, TextureVarType.D2,
+        case GL_SAMPLER_2D_SHADOW            : return Storage.makeSampler(BaseType.f32, TextureVarType.d2,
                                                                             Yes.compare,    No.rect);
-        case GL_SAMPLER_2D_MULTISAMPLE       : return Storage.makeSampler(BaseType.F32, TextureVarType.D2Multisample,
+        case GL_SAMPLER_2D_MULTISAMPLE       : return Storage.makeSampler(BaseType.f32, TextureVarType.d2Multisample,
                                                                             No.compare,     No.rect);
-        case GL_SAMPLER_2D_RECT              : return Storage.makeSampler(BaseType.F32, TextureVarType.D2,
+        case GL_SAMPLER_2D_RECT              : return Storage.makeSampler(BaseType.f32, TextureVarType.d2,
                                                                             No.compare,     Yes.rect);
-        case GL_SAMPLER_2D_ARRAY_SHADOW      : return Storage.makeSampler(BaseType.F32, TextureVarType.D2Array,
+        case GL_SAMPLER_2D_ARRAY_SHADOW      : return Storage.makeSampler(BaseType.f32, TextureVarType.d2Array,
                                                                             Yes.compare,    No.rect);
-        case GL_SAMPLER_2D_MULTISAMPLE_ARRAY : return Storage.makeSampler(BaseType.F32,
-                                                                            TextureVarType.D2ArrayMultisample,
+        case GL_SAMPLER_2D_MULTISAMPLE_ARRAY : return Storage.makeSampler(BaseType.f32,
+                                                                            TextureVarType.d2ArrayMultisample,
                                                                             No.compare,     No.rect);
-        case GL_SAMPLER_2D_RECT_SHADOW       : return Storage.makeSampler(BaseType.F32, TextureVarType.D2,
+        case GL_SAMPLER_2D_RECT_SHADOW       : return Storage.makeSampler(BaseType.f32, TextureVarType.d2,
                                                                             Yes.compare,    Yes.rect);
 
-        case GL_SAMPLER_3D                   : return Storage.makeSampler(BaseType.F32, TextureVarType.D3,
+        case GL_SAMPLER_3D                   : return Storage.makeSampler(BaseType.f32, TextureVarType.d3,
                                                                             No.compare,     No.rect);
 
-        case GL_SAMPLER_CUBE                 : return Storage.makeSampler(BaseType.F32, TextureVarType.Cube,
+        case GL_SAMPLER_CUBE                 : return Storage.makeSampler(BaseType.f32, TextureVarType.cube,
                                                                             No.compare,     No.rect);
-        case GL_SAMPLER_CUBE_MAP_ARRAY       : return Storage.makeSampler(BaseType.F32, TextureVarType.CubeArray,
+        case GL_SAMPLER_CUBE_MAP_ARRAY       : return Storage.makeSampler(BaseType.f32, TextureVarType.cubeArray,
                                                                             No.compare,     No.rect);
-        case GL_SAMPLER_CUBE_SHADOW          : return Storage.makeSampler(BaseType.F32, TextureVarType.Cube,
+        case GL_SAMPLER_CUBE_SHADOW          : return Storage.makeSampler(BaseType.f32, TextureVarType.cube,
                                                                             Yes.compare,    No.rect);
-        case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW: return Storage.makeSampler(BaseType.F32, TextureVarType.CubeArray,
+        case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW: return Storage.makeSampler(BaseType.f32, TextureVarType.cubeArray,
                                                                             Yes.compare,    No.rect);
 
-        case GL_INT_SAMPLER_BUFFER           : return Storage.makeSampler(BaseType.I32, TextureVarType.Buffer,
+        case GL_INT_SAMPLER_BUFFER           : return Storage.makeSampler(BaseType.i32, TextureVarType.Buffer,
                                                                             No.compare,     No.rect);
         default:
             return Storage.init;
@@ -242,7 +242,7 @@ AttributeVar[] queryAttributes(in GLuint prog) {
 
         immutable locType = getProgramResourceInts(prog, GL_PROGRAM_INPUT, i, [GL_LOCATION, GL_TYPE]);
         immutable storage = glTypeToStorage(locType[1]);
-        enforce(storage.type == StorageType.Var);
+        enforce(storage.type == StorageType.var);
 
         res[i] = AttributeVar(name, cast(ubyte)locType[0], storage.varType);
     }
@@ -276,7 +276,7 @@ out ConstVar[] consts, out ConstVar[][] blockVars, out TextureVar[] textures, ou
         immutable arraySize = getProgramResourceInt(prog, GL_UNIFORM, i, GL_ARRAY_SIZE);
 
         immutable storage = glTypeToStorage(type);
-        if(storage.type == StorageType.Var) {
+        if(storage.type == StorageType.var) {
             auto var = ConstVar(name, cast(ubyte)location, cast(ubyte)arraySize, storage.varType);
             immutable index = getProgramResourceInt(prog, GL_UNIFORM, i, GL_BLOCK_INDEX);
             if(supportsUbo && index != -1) {
@@ -349,7 +349,7 @@ OutputVar[] queryOutputs(GLuint prog) {
         immutable location = getProgramResourceInt(prog, GL_PROGRAM_OUTPUT, i, GL_LOCATION);
 
         immutable storage = glTypeToStorage(type);
-        enforce(storage.type == StorageType.Var);
+        enforce(storage.type == StorageType.var);
 
         res[i] = OutputVar(name, cast(ubyte)location, storage.varType);
     }
@@ -423,7 +423,7 @@ class GlProgram : ProgramRes {
         }
 
         //_usage = shaders.map!(s => s.stage)
-        //    .fold!((u, s) => u | s.toUsage())(ShaderUsage.None);
+        //    .fold!((u, s) => u | s.toUsage())(ShaderUsage.none);
         foreach(sh; shaders) {
             _usage |= sh.stage.toUsage();
         }

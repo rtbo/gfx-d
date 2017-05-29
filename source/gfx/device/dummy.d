@@ -99,7 +99,7 @@ class DummyBuffer : BufferRes {
 class DummyShader : ShaderRes {
     mixin(rcCode);
     void dispose() {}
-    @property ShaderStage stage() const { return ShaderStage.Vertex; }
+    @property ShaderStage stage() const { return ShaderStage.vertex; }
 }
 
 class DummyProgram : ProgramRes {

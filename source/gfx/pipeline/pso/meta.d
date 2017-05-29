@@ -154,7 +154,7 @@ template ParamInitValue(MS, string field) if (isMetaStruct!MS) {
         enum ParamInitValue = ColorTargetDesc(
             resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
             format!(MF.FormatType), ColorInfo(
-                resolveUDAValue!(GfxColorMask, MS, field, ColorMask, ColorMask(ColorFlags.All))
+                resolveUDAValue!(GfxColorMask, MS, field, ColorMask, ColorMask(ColorFlags.all))
             )
         );
     }
@@ -163,7 +163,7 @@ template ParamInitValue(MS, string field) if (isMetaStruct!MS) {
         enum ParamInitValue = ColorTargetDesc(
             resolveGfxName!(MS, field), resolveGfxSlot!(MS, field),
             format!(MF.FormatType), ColorInfo(
-                resolveUDAValue!(GfxColorMask, MS, field, ColorMask, ColorMask(ColorFlags.All)),
+                resolveUDAValue!(GfxColorMask, MS, field, ColorMask, ColorMask(ColorFlags.all)),
                 resolveUDAValue!(GfxBlend, MS, field, Blend, Blend.init)
             )
         );

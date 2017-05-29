@@ -10,9 +10,9 @@ import std.typecons : BitFlags;
 
 
 enum SurfaceUsage {
-    None            = 0,
-    RenderTarget    = 1,
-    DepthStencil    = 2,
+    none            = 0,
+    renderTarget    = 1,
+    depthStencil    = 2,
 }
 alias SurfUsageFlags = BitFlags!SurfaceUsage;
 
@@ -81,10 +81,10 @@ class Surface(T) : RawSurface if (isFormatted!T) {
         import gfx.pipeline.format : format;
         SurfUsageFlags usage;
         static if (isRenderSurface!(Fmt.Surface)) {
-            usage |= SurfaceUsage.RenderTarget;
+            usage |= SurfaceUsage.renderTarget;
         }
         static if (isDepthOrStencilSurface!(Fmt.Surface)) {
-            usage |= SurfaceUsage.DepthStencil;
+            usage |= SurfaceUsage.depthStencil;
         }
         super(usage, w, h, format!T(), samples);
     }

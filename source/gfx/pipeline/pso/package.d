@@ -11,18 +11,34 @@
 /// for other backends, the pipeline switch is emulated
 module gfx.pipeline.pso;
 
-import gfx.device : Device, Resource, ResourceHolder, Primitive,
-                    maxVertexAttribs, maxColorTargets, AttribMask, ColorTargetMask;
+import gfx.device : Device, Resource, ResourceHolder;
 import gfx.foundation.rc : Rc, rcCode, RefCounted;
 import gfx.foundation.typecons : Option, none, some;
-import gfx.pipeline.state : Rasterizer, ColorMask, ColorFlags, BlendChannel, Blend, Depth, Stencil;
-import gfx.pipeline.format : Format, SurfaceType, Formatted;
 import gfx.pipeline.buffer : RawBuffer;
-import gfx.pipeline.texture : Sampler;
+import gfx.pipeline.format : Format, SurfaceType, Formatted;
 import gfx.pipeline.program : Program, VarType, ProgramVars;
-import gfx.pipeline.view : RawShaderResourceView, RawRenderTargetView, RawDepthStencilView;
 import gfx.pipeline.pso.meta : isMetaStruct;
+import gfx.pipeline.state : Rasterizer, ColorMask, ColorFlags, BlendChannel, Blend, Depth, Stencil;
+import gfx.pipeline.texture : Sampler;
+import gfx.pipeline.view : RawShaderResourceView, RawRenderTargetView, RawDepthStencilView;
 
+
+immutable size_t maxVertexAttribs = 16;
+immutable size_t maxColorTargets = 4;
+
+alias AttribMask = ushort;
+alias ColorTargetMask = ubyte;
+
+static assert(maxVertexAttribs <= 8*AttribMask.sizeof);
+static assert(maxColorTargets <= 8*ColorTargetMask.sizeof);
+
+enum Primitive {
+    points,
+    lines,
+    lineStrip,
+    triangles,
+    triangleStrip,
+}
 
 // descriptor structs
 
@@ -68,7 +84,7 @@ struct ColorInfo {
     }
 
     this(Blend blend) {
-        this.mask = ColorMask(ColorFlags.All);
+        this.mask = ColorMask(ColorFlags.all);
         this.blend = some(blend);
     }
 

@@ -1,13 +1,12 @@
 module triangle;
 
-import gfx.device : Primitive;
 import gfx.foundation.rc : Rc, rc, makeRc;
 import gfx.foundation.typecons : Option, none, some;
 import gfx.pipeline.format : Rgba8, Depth32F;
 import gfx.pipeline.buffer : VertexBuffer, VertexBufferSlice;
 import gfx.pipeline.program : ShaderSet, Program;
 import gfx.pipeline.pso.meta;
-import gfx.pipeline.pso : PipelineDescriptor, PipelineState, VertexBufferSet;
+import gfx.pipeline.pso : Primitive, PipelineDescriptor, PipelineState, VertexBufferSet;
 import gfx.pipeline.state : Rasterizer;
 import gfx.pipeline.draw : clearColor, Instance;
 import gfx.pipeline.encoder : Encoder;
@@ -52,7 +51,7 @@ int main()
             import("130-triangle.v.glsl"),
             import("130-triangle.f.glsl"),
         ));
-        auto pso = makeRc!PipeState(prog.obj, Primitive.Triangles, Rasterizer.fill.withSamples());
+        auto pso = makeRc!PipeState(prog.obj, Primitive.triangles, Rasterizer.fill.withSamples());
 
         auto data = PipeState.Data.init;
         data.input = vbuf;

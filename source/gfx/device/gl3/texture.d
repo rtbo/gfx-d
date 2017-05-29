@@ -20,20 +20,20 @@ import std.experimental.logger;
 
 GLenum[2] filterToGl(FilterMethod filter) {
     final switch (filter) {                     // minification                 // magnification
-        case FilterMethod.Scale:        return [ GL_NEAREST,                    GL_NEAREST];
-        case FilterMethod.Mipmap:       return [ GL_NEAREST_MIPMAP_NEAREST,     GL_NEAREST];
-        case FilterMethod.Bilinear:     return [ GL_LINEAR_MIPMAP_NEAREST,      GL_LINEAR];
-        case FilterMethod.Trilinear:    return [ GL_LINEAR_MIPMAP_LINEAR,       GL_LINEAR];
-        case FilterMethod.Anisotropic:  return [ GL_LINEAR_MIPMAP_LINEAR,       GL_LINEAR];
+        case FilterMethod.scale:        return [ GL_NEAREST,                    GL_NEAREST];
+        case FilterMethod.mipmap:       return [ GL_NEAREST_MIPMAP_NEAREST,     GL_NEAREST];
+        case FilterMethod.bilinear:     return [ GL_LINEAR_MIPMAP_NEAREST,      GL_LINEAR];
+        case FilterMethod.trilinear:    return [ GL_LINEAR_MIPMAP_LINEAR,       GL_LINEAR];
+        case FilterMethod.anisotropic:  return [ GL_LINEAR_MIPMAP_LINEAR,       GL_LINEAR];
     }
 }
 
 GLenum wrapToGl(WrapMode wrap) {
     final switch (wrap) {
-        case WrapMode.Tile:     return GL_REPEAT;
-        case WrapMode.Mirror:   return GL_MIRRORED_REPEAT;
-        case WrapMode.Clamp:    return GL_CLAMP_TO_EDGE;
-        case WrapMode.Border:   return GL_CLAMP_TO_BORDER;
+        case WrapMode.tile:     return GL_REPEAT;
+        case WrapMode.mirror:   return GL_MIRRORED_REPEAT;
+        case WrapMode.clamp:    return GL_CLAMP_TO_EDGE;
+        case WrapMode.border:   return GL_CLAMP_TO_BORDER;
     }
 }
 
@@ -51,7 +51,7 @@ class GlSamplerWithObj : GlSampler {
     this(ShaderResourceViewRes, SamplerInfo info) {
         glGenSamplers(1, &_sampler);
 
-        if (info.filter == FilterMethod.Anisotropic) {
+        if (info.filter == FilterMethod.anisotropic) {
             glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, info.anisotropyMax);
         }
         immutable filter = filterToGl(info.filter);
@@ -99,7 +99,7 @@ class GlSamplerWithoutObj : GlSampler {
     }
     final void dispose() {}
     final override void bind(ubyte) {
-        if (_info.filter == FilterMethod.Anisotropic) {
+        if (_info.filter == FilterMethod.anisotropic) {
             glTexParameteri(_target, GL_TEXTURE_MAX_ANISOTROPY_EXT, _info.anisotropyMax);
         }
         immutable filter = filterToGl(_info.filter);
@@ -140,28 +140,28 @@ package TextureRes makeTextureImpl(in bool hasStorage, Factory.TextureCreationDe
     }
     GlTexture makeType() {
         final switch(desc.type) {
-        case TextureType.D1:
+        case TextureType.d1:
             return makeHasStorage!GlTexture1D(desc.imgInfo.levels, desc.imgInfo.width);
-        case TextureType.D1Array:
+        case TextureType.d1Array:
             return makeHasStorage!GlTexture2D(desc.imgInfo.levels, desc.imgInfo.width, desc.imgInfo.numSlices);
-        case TextureType.D2:
+        case TextureType.d2:
             return makeHasStorage!GlTexture2D(desc.imgInfo.levels, desc.imgInfo.width, desc.imgInfo.height);
-        case TextureType.D2Array:
+        case TextureType.d2Array:
             return makeHasStorage!GlTexture3D(desc.imgInfo.levels, desc.imgInfo.width, desc.imgInfo.height, desc.imgInfo.numSlices);
-        case TextureType.D3:
+        case TextureType.d3:
             return makeHasStorage!GlTexture3D(desc.imgInfo.levels, desc.imgInfo.width, desc.imgInfo.height, desc.imgInfo.depth);
-        case TextureType.D2Multisample:
+        case TextureType.d2Multisample:
             return makeHasStorage!GlTexture2DMultisample(desc.samples, true, desc.imgInfo.width, desc.imgInfo.height);
-        case TextureType.D2ArrayMultisample:
+        case TextureType.d2ArrayMultisample:
             return makeHasStorage!GlTexture3DMultisample(desc.samples, true, desc.imgInfo.width, desc.imgInfo.height, desc.imgInfo.numSlices);
-        case TextureType.Cube:
+        case TextureType.cube:
             if (hasStorage) {
                 return new GlTextureCube!true(desc.format, desc.imgInfo.levels, desc.imgInfo.width);
             }
             else {
                 return new GlTextureCube!false(desc.format, desc.imgInfo.levels, desc.imgInfo.width);
             }
-        case TextureType.CubeArray:
+        case TextureType.cubeArray:
             enforce(hasStorage, "opengl backend needs GL_ARB_texture_storage extension to instantiate cube arrays");
             return new GlTextureCubeArray(desc.format, desc.imgInfo.levels, desc.imgInfo.width, desc.imgInfo.numSlices);
         }
@@ -183,12 +183,12 @@ package TextureRes makeTextureImpl(in bool hasStorage, Factory.TextureCreationDe
                     auto imgData = data[(sl * faces + f) * mips + m];
                     auto sliceInfo = desc.imgInfo.levelSliceInfo(m);
                     switch(desc.type) {
-                    case TextureType.D1Array:
+                    case TextureType.d1Array:
                         assert(sliceInfo.height == 1);
                         sliceInfo.yoffset = cast(ushort)sl;
                         break;
-                    case TextureType.D2Array:
-                    case TextureType.CubeArray:
+                    case TextureType.d2Array:
+                    case TextureType.cubeArray:
                         assert(sliceInfo.depth == 1);
                         sliceInfo.zoffset = cast(ushort)sl;
                         break;
@@ -461,28 +461,28 @@ immutable glCubeFaces = [
 
 GLenum faceToGl(in CubeFace face) {
     final switch(face) {
-    case CubeFace.None: assert(false);
-    case CubeFace.PosX: return GL_TEXTURE_CUBE_MAP_POSITIVE_X;
-    case CubeFace.NegX: return GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
-    case CubeFace.PosY: return GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
-    case CubeFace.NegY: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
-    case CubeFace.PosZ: return GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
-    case CubeFace.NegZ: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+    case CubeFace.none: assert(false);
+    case CubeFace.posX: return GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+    case CubeFace.negX: return GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
+    case CubeFace.posY: return GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
+    case CubeFace.negY: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
+    case CubeFace.posZ: return GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
+    case CubeFace.negZ: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
     }
 }
 
 /// translate a face into the gl cube map array face index
 int faceIndex(in CubeFace face)
-in { assert(face != CubeFace.None); }
+in { assert(face != CubeFace.none); }
 body { return cast(int)face -1; }
 
 unittest {
-    assert(faceIndex(CubeFace.PosX) == 0);
-    assert(faceIndex(CubeFace.NegX) == 1);
-    assert(faceIndex(CubeFace.PosY) == 2);
-    assert(faceIndex(CubeFace.NegY) == 3);
-    assert(faceIndex(CubeFace.PosZ) == 4);
-    assert(faceIndex(CubeFace.NegZ) == 5);
+    assert(faceIndex(CubeFace.posX) == 0);
+    assert(faceIndex(CubeFace.negX) == 1);
+    assert(faceIndex(CubeFace.rosY) == 2);
+    assert(faceIndex(CubeFace.negY) == 3);
+    assert(faceIndex(CubeFace.posZ) == 4);
+    assert(faceIndex(CubeFace.negZ) == 5);
 }
 
 
@@ -491,7 +491,7 @@ class GlTextureCube(bool UseStorage) : GlTexture {
     GLsizei _levels;
 
     this(Format format, ubyte levels, ushort dim) {
-        super(TextureType.Cube, format);
+        super(TextureType.cube, format);
         bind();
         _dim = dim;
 
@@ -524,7 +524,7 @@ class GlTextureCubeArray : GlTexture {
     GLsizei _levels;
 
     this(Format format, ubyte levels, ushort dim, ushort slices) {
-        super(TextureType.Cube, format);
+        super(TextureType.cube, format);
         bind();
         _dim = dim;
         _slices = slices;
@@ -568,15 +568,15 @@ GLsizei mipmaps(GLsizei w, GLsizei h, GLsizei d) {
 
 package GLenum textureTypeToGlTarget(in TextureType type) {
     final switch(type) {
-    case TextureType.D1:                    return GL_TEXTURE_1D;
-    case TextureType.D1Array:               return GL_TEXTURE_1D_ARRAY;
-    case TextureType.D2:                    return GL_TEXTURE_2D;
-    case TextureType.D2Array:               return GL_TEXTURE_2D_ARRAY;
-    case TextureType.D2Multisample:         return GL_TEXTURE_2D_MULTISAMPLE;
-    case TextureType.D2ArrayMultisample:    return GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
-    case TextureType.D3:                    return GL_TEXTURE_3D;
-    case TextureType.Cube:                  return GL_TEXTURE_CUBE_MAP;
-    case TextureType.CubeArray:             return GL_TEXTURE_CUBE_MAP_ARRAY;
+    case TextureType.d1:                    return GL_TEXTURE_1D;
+    case TextureType.d1Array:               return GL_TEXTURE_1D_ARRAY;
+    case TextureType.d2:                    return GL_TEXTURE_2D;
+    case TextureType.d2Array:               return GL_TEXTURE_2D_ARRAY;
+    case TextureType.d2Multisample:         return GL_TEXTURE_2D_MULTISAMPLE;
+    case TextureType.d2ArrayMultisample:    return GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
+    case TextureType.d3:                    return GL_TEXTURE_3D;
+    case TextureType.cube:                  return GL_TEXTURE_CUBE_MAP;
+    case TextureType.cubeArray:             return GL_TEXTURE_CUBE_MAP_ARRAY;
     }
 }
 
