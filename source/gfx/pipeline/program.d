@@ -169,7 +169,7 @@ template isMatrixVarType(T) {
     enum isMatrixVarType = vtt.dim1 > 1 && vtt.dim2 > 1;
 }
 
-template varType(T, MatrixOrder order=MatrixOrder.ColumnMajor) {
+template varType(T, MatrixOrder order=MatrixOrder.columnMajor) {
     alias vtt = VarTypeTemplate!(T, order);
     enum varType = vtt.varType;
 }

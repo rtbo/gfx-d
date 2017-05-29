@@ -479,7 +479,7 @@ body { return cast(int)face -1; }
 unittest {
     assert(faceIndex(CubeFace.posX) == 0);
     assert(faceIndex(CubeFace.negX) == 1);
-    assert(faceIndex(CubeFace.rosY) == 2);
+    assert(faceIndex(CubeFace.posY) == 2);
     assert(faceIndex(CubeFace.negY) == 3);
     assert(faceIndex(CubeFace.posZ) == 4);
     assert(faceIndex(CubeFace.negZ) == 5);
