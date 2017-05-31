@@ -353,8 +353,6 @@ private string buildRcCode(Flag!"atomic" atomic)()
 // in test builds in apps/libs depending on gfx-d (??)
 private
 {
-    import std.stdio : writeln;
-
     int rcCount = 0;
     int structCount = 0;
 

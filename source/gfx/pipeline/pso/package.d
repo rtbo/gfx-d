@@ -22,6 +22,7 @@ import gfx.pipeline.state : Rasterizer, ColorMask, ColorFlags, BlendChannel, Ble
 import gfx.pipeline.texture : Sampler;
 import gfx.pipeline.view : RawShaderResourceView, RawRenderTargetView, RawDepthStencilView;
 
+import std.experimental.logger;
 
 immutable size_t maxVertexAttribs = 16;
 immutable size_t maxColorTargets = 4;
@@ -376,6 +377,9 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
                         .takeOne();
                 if (!var.empty) {
                     at.slot = var.front.loc;
+                }
+                else {
+                    errorf("Failure to find var with name %s", at.name);
                 }
                 //enforce(!var.empty, format("cannot find attribute %s in pipeline %s", at.name, MS.stringof));
             }

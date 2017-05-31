@@ -247,6 +247,9 @@ class BindVertexBuffersCommand : Command {
                         pso.descriptor.vertexAttribs[i],
                         device.caps.instanceRate);
             }
+            else {
+                warningf("bindVertexBuffers: unbound attrib");
+            }
         }
     }
     final void unload() {
