@@ -259,29 +259,101 @@ interface PipelineStateRes : Resource {
     void bind();
 }
 
-abstract class RawPipelineState : ResourceHolder {
+class RawPipelineState : ResourceHolder {
     mixin(rcCode);
 
-    PipelineDescriptor _descriptor;
+    private PipelineDescriptor _descriptor;
 
-    Rc!PipelineStateRes _res;
-    Rc!Program _prog;
+    private Rc!PipelineStateRes _res;
+    private Rc!Program _prog;
+    private string _name;
 
-    this(Program program, Primitive primitive, Rasterizer rasterizer) {
+    this (Program program, PipelineDescriptor descriptor, string name="")
+    {
+        _prog = program;
+        _descriptor = descriptor;
+        _name = name;
+    }
+
+    protected this(Program program, Primitive primitive, Rasterizer rasterizer, string name) {
         _prog = program;
         _descriptor.primitive = primitive;
         _descriptor.rasterizer = rasterizer;
+        _name = name;
     }
 
     final @property inout(PipelineStateRes) res() inout { return _res.obj; }
 
     final @property inout(Program) program() inout { return _prog.obj; }
 
+    final @property string name() const { return _name; }
+
     final @property ref inout(PipelineDescriptor) descriptor() inout { return _descriptor; }
 
     final void dispose() {
         _prog.unload();
         _res.unload();
+    }
+
+    final void pinResources(Device device) {
+        if (!_prog.pinned) _prog.pinResources(device);
+        if (_descriptor.needsToFetchSlots) {
+            import std.exception : enforce;
+            import std.algorithm : find;
+            import std.range : takeOne, empty, front;
+            import std.format : format;
+
+            enforce(device.caps.introspection);
+            ProgramVars vars = _prog.fetchVars();
+
+            foreach(ref at; _descriptor.vertexAttribs) {
+                if (at.slot != ubyte.max) continue;
+                auto var = vars.attributes
+                        .find!(v => v.name == at.name)
+                        .takeOne();
+                if (!var.empty) {
+                    at.slot = var.front.loc;
+                }
+                else {
+                    errorf("Failure to find var with name %s", at.name);
+                }
+                //enforce(!var.empty, format("cannot find attribute %s in pipeline %s", at.name, MS.stringof));
+            }
+            foreach(ref cb; _descriptor.constantBlocks) {
+                if (cb.slot != ubyte.max) continue;
+                auto var = vars.constBuffers
+                        .find!(b => b.name == cb.name)
+                        .takeOne();
+                enforce(!var.empty, format("cannot find block %s in pipeline %s", cb.name, _name));
+                cb.slot = var.front.loc;
+            }
+            foreach(ref srv; _descriptor.resourceViews) {
+                if (srv.slot != ubyte.max) continue;
+                auto var = vars.textures
+                        .find!(v => v.name == srv.name)
+                        .takeOne();
+                enforce(!var.empty, format("cannot find texture %s in pipeline %s", srv.name, _name));
+                srv.slot = var.front.loc;
+            }
+            foreach(ref sampler; _descriptor.samplers) {
+                if (sampler.slot != ubyte.max) continue;
+                auto var = vars.samplers
+                        .find!(v => v.name == sampler.name)
+                        .takeOne();
+                enforce(!var.empty, format("cannot find sampler %s in pipeline %s", sampler.name, _name));
+                sampler.slot = var.front.slot;
+            }
+            foreach(ref ct; _descriptor.colorTargets) {
+                if (ct.slot != ubyte.max) continue;
+                auto var = vars.outputs
+                        .find!(v => v.name == ct.name)
+                        .takeOne();
+                enforce(!var.empty, format("cannot find color target %s in pipeline %s", ct.name, _name));
+                ct.slot = var.front.index;
+            }
+            //enforce(!_descriptor.needsToFetchSlots);
+        }
+        _res = device.factory.makePipeline(_prog.obj, _descriptor);
     }
 }
 
@@ -295,7 +367,7 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
     alias Data = PipelineData!MS;
 
     this(Program prog, Primitive primitive, Rasterizer rasterizer, Param paramStruct=Param.init) {
-        super(prog, primitive, rasterizer);
+        super(prog, primitive, rasterizer, MS.stringof);
         initDescriptor(paramStruct);
     }
 
@@ -358,68 +430,6 @@ class PipelineState(MS) : RawPipelineState if (isMetaStruct!MS)
             _descriptor.scissor = true;
         }
     }
-
-    final void pinResources(Device device) {
-        if (!_prog.pinned) _prog.pinResources(device);
-        if (_descriptor.needsToFetchSlots) {
-            import std.exception : enforce;
-            import std.algorithm : find;
-            import std.range : takeOne, empty, front;
-            import std.format : format;
-
-            enforce(device.caps.introspection);
-            ProgramVars vars = _prog.fetchVars();
-
-            foreach(ref at; _descriptor.vertexAttribs) {
-                if (at.slot != ubyte.max) continue;
-                auto var = vars.attributes
-                        .find!(v => v.name == at.name)
-                        .takeOne();
-                if (!var.empty) {
-                    at.slot = var.front.loc;
-                }
-                else {
-                    errorf("Failure to find var with name %s", at.name);
-                }
-                //enforce(!var.empty, format("cannot find attribute %s in pipeline %s", at.name, MS.stringof));
-            }
-            foreach(ref cb; _descriptor.constantBlocks) {
-                if (cb.slot != ubyte.max) continue;
-                auto var = vars.constBuffers
-                        .find!(b => b.name == cb.name)
-                        .takeOne();
-                enforce(!var.empty, format("cannot find block %s in pipeline %s", cb.name, MS.stringof));
-                cb.slot = var.front.loc;
-            }
-            foreach(ref srv; _descriptor.resourceViews) {
-                if (srv.slot != ubyte.max) continue;
-                auto var = vars.textures
-                        .find!(v => v.name == srv.name)
-                        .takeOne();
-                enforce(!var.empty, format("cannot find texture %s in pipeline %s", srv.name, MS.stringof));
-                srv.slot = var.front.loc;
-            }
-            foreach(ref sampler; _descriptor.samplers) {
-                if (sampler.slot != ubyte.max) continue;
-                auto var = vars.samplers
-                        .find!(v => v.name == sampler.name)
-                        .takeOne();
-                enforce(!var.empty, format("cannot find sampler %s in pipeline %s", sampler.name, MS.stringof));
-                sampler.slot = var.front.slot;
-            }
-            foreach(ref ct; _descriptor.colorTargets) {
-                if (ct.slot != ubyte.max) continue;
-                auto var = vars.outputs
-                        .find!(v => v.name == ct.name)
-                        .takeOne();
-                enforce(!var.empty, format("cannot find color target %s in pipeline %s", ct.name, MS.stringof));
-                ct.slot = var.front.index;
-            }
-            //enforce(!_descriptor.needsToFetchSlots);
-        }
-        _res = device.factory.makePipeline(_prog.obj, _descriptor);
-    }
-
     mixin(paramPropertiesCode!MS());
 
     final RawDataSet makeDataSet(Data dataStruct) {
