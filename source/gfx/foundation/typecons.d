@@ -1,5 +1,7 @@
 module gfx.foundation.typecons;
 
+import std.range : ElementType, isInputRange;
+
 /// template that resolves to true if an object of type T can be assigned to null
 template isNullAssignable(T) {
     enum isNullAssignable =
@@ -10,9 +12,9 @@ template isNullAssignable(T) {
 }
 
 version(unittest) {
-    interface   ITest {}
-    class       CTest {}
-    struct      STest {}
+    private interface   ITest {}
+    private class       CTest {}
+    private struct      STest {}
     static assert( isNullAssignable!ITest);
     static assert( isNullAssignable!CTest);
     static assert(!isNullAssignable!STest);
@@ -27,33 +29,86 @@ Option!T some(T)(T val) {
 /// symbolic value that constructs an Option in none state
 enum none(T) = Option!(T).init;
 
+/// Check that init value yields a none
+unittest {
+    auto vopt = none!int;
+    assert(vopt.isNone);
+    vopt = 12;
+    assert(vopt.isSome);
+    assert(vopt == 12);
 
-struct Option(T) if (!isNullAssignable!T)
+    auto ropt = none!CTest;
+    assert(ropt.isNone);
+    assert(ropt._val is null);
+    ropt = new CTest;
+    assert(vopt.isSome);
+}
+
+auto option(R)(R input) if (isInputRange!R)
 {
-    private T _val          = T.init;
-    private bool _isSome    = false;
+    alias T = ElementType!R;
+    Option!T res;
 
-    this(inout T val) inout {
-        _val = val;
-        _isSome = true;
+    if (!input.empty) {
+        res = input.front;
+        input.popFront();
+        assert(input.empty, "attempt to build Option with more than one element)");
     }
 
-    @property bool isSome() const {
-        return _isSome;
-    }
+    return res;
+}
 
-    @property bool isNone() const {
-        return !_isSome;
-    }
 
-    void setNone() {
-        .destroy(_val);
-        _isSome = false;
-    }
+struct Option(T)
+{
+    private T _val = T.init;
 
-    void opAssign()(T val) {
-        _val = val;
-        _isSome = true;
+    static if (isNullAssignable!T) {
+        this(inout T val) inout {
+            _val = val;
+        }
+
+        @property bool isSome() const {
+            return _val !is null;
+        }
+
+        @property bool isNone() const {
+            return _val is null;
+        }
+
+        void setNone() {
+            _val = null;
+        }
+
+        void opAssign()(T val) {
+            _val = val;
+        }
+    }
+    else {
+        private bool _isSome    = false;
+
+        this(inout T val) inout {
+            _val = val;
+            _isSome = true;
+        }
+
+        @property bool isSome() const {
+            return _isSome;
+        }
+
+        @property bool isNone() const {
+            return !_isSome;
+        }
+
+        void setNone() {
+            .destroy(_val);
+            _isSome = false;
+        }
+
+        void opAssign()(T val) {
+            _val = val;
+            _isSome = true;
+        }
     }
 
     // casting to type that have implicit cast available (e.g Option!int to Option!uint)
@@ -67,8 +122,6 @@ struct Option(T) if (!isNullAssignable!T)
         assert(isSome, message);
         return _val;
     }
-
-    alias get this;
 
     template toString()
     {
@@ -99,8 +152,36 @@ struct Option(T) if (!isNullAssignable!T)
             }
         }
     }
-}
 
+    // range interface
+
+    @property bool empty() const {
+        return isNone;
+    }
+
+    @property size_t length() const {
+        return isSome ? 1 : 0;
+    }
+
+    @property void popFront() {
+        setNone();
+    }
+
+    static if (isNullAssignable!T) {
+        @property inout(T) front() inout {
+            return get;
+        }
+    }
+    else {
+        @property T front() const {
+            return get;
+        }
+    }
+
+    @property Option!T save() {
+        return isSome ? Option!T(_val) : none!T;
+    }
+}
 
 
 template SafeUnion(Specs...) {

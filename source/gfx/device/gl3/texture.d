@@ -71,7 +71,7 @@ class GlSamplerWithObj : GlSampler {
         if (info.comparison.isSome) {
             import gfx.device.gl3.command : comparisonToGl;
             glSamplerParameteri(_sampler, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-            glSamplerParameteri(_sampler, GL_TEXTURE_COMPARE_FUNC, comparisonToGl(info.comparison));
+            glSamplerParameteri(_sampler, GL_TEXTURE_COMPARE_FUNC, comparisonToGl(info.comparison.get));
         }
         else {
             glSamplerParameteri(_sampler, GL_TEXTURE_COMPARE_MODE, GL_NONE);
@@ -119,7 +119,7 @@ class GlSamplerWithoutObj : GlSampler {
         if (_info.comparison.isSome) {
             import gfx.device.gl3.command : comparisonToGl;
             glTexParameteri(_target, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-            glTexParameteri(_target, GL_TEXTURE_COMPARE_FUNC, comparisonToGl(_info.comparison));
+            glTexParameteri(_target, GL_TEXTURE_COMPARE_FUNC, comparisonToGl(_info.comparison.get));
         }
         else {
             glTexParameteri(_target, GL_TEXTURE_COMPARE_MODE, GL_NONE);

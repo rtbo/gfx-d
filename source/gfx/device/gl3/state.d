@@ -57,7 +57,7 @@ void setRasterMethod(in RasterMethod method, in Option!Offset offset) {
             glDisable(glOffset);
         }
         else {
-            glPolygonOffset(offset.slope, offset.units);
+            glPolygonOffset(offset.get.slope, offset.get.units);
             glEnable(glOffset);
 
         }
@@ -109,14 +109,14 @@ void bindBlend(in ColorInfo info) {
     if (info.blend.isSome) {
         glEnable(GL_BLEND);
         glBlendEquationSeparate(
-            equationToGl(info.blend.color.equation),
-            equationToGl(info.blend.alpha.equation),
+            equationToGl(info.blend.get.color.equation),
+            equationToGl(info.blend.get.alpha.equation),
         );
         glBlendFuncSeparate(
-            factorToGl(info.blend.color.source),
-            factorToGl(info.blend.color.destination),
-            factorToGl(info.blend.alpha.source),
-            factorToGl(info.blend.alpha.destination),
+            factorToGl(info.blend.get.color.source),
+            factorToGl(info.blend.get.color.destination),
+            factorToGl(info.blend.get.alpha.source),
+            factorToGl(info.blend.get.alpha.destination),
         );
     }
     else {
@@ -136,14 +136,14 @@ void bindBlendSlot(ColorInfo info, ubyte slot) {
     if (info.blend.isSome) {
         glEnablei(GL_BLEND, buf);
         glBlendEquationSeparateiARB(buf,
-            equationToGl(info.blend.color.equation),
-            equationToGl(info.blend.alpha.equation),
+            equationToGl(info.blend.get.color.equation),
+            equationToGl(info.blend.get.alpha.equation),
         );
         glBlendFuncSeparateiARB(buf,
-            factorToGl(info.blend.color.source),
-            factorToGl(info.blend.color.destination),
-            factorToGl(info.blend.alpha.source),
-            factorToGl(info.blend.alpha.destination),
+            factorToGl(info.blend.get.color.source),
+            factorToGl(info.blend.get.color.destination),
+            factorToGl(info.blend.get.alpha.source),
+            factorToGl(info.blend.get.alpha.destination),
         );
     }
     else {

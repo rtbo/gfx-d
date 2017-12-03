@@ -136,8 +136,8 @@ class SetDepthStateCommand : Command {
         auto depth = unsafeCast!GlPipelineState(pso.res).output.depth;
         if (depth.isSome) {
             glEnable(GL_DEPTH_TEST);
-            glDepthFunc(comparisonToGl(depth.fun));
-            glDepthMask(depth.write ? GL_TRUE : GL_FALSE);
+            glDepthFunc(comparisonToGl(depth.get.fun));
+            glDepthMask(depth.get.write ? GL_TRUE : GL_FALSE);
         }
         else {
             glDisable(GL_DEPTH_TEST);
@@ -171,8 +171,8 @@ class SetStencilTestCommand : Command {
                 );
             }
             immutable cull = pso.descriptor.rasterizer.cullFace;
-            if (cull != CullFace.front) bindSide(GL_FRONT, stencil.front, stencilRef[0]);
-            if (cull != CullFace.back) bindSide(GL_BACK, stencil.back, stencilRef[1]);
+            if (cull != CullFace.front) bindSide(GL_FRONT, stencil.get.front, stencilRef[0]);
+            if (cull != CullFace.back) bindSide(GL_BACK, stencil.get.back, stencilRef[1]);
         }
     }
 
@@ -552,7 +552,7 @@ class DrawCommand : Command {
         if (instances.isSome) {
             assert(device.caps.instanceDraw);
             glDrawArraysInstancedBaseInstance(
-                primitive, start, count, instances.count, instances.base
+                primitive, start, count, instances.get.count, instances.get.base
             );
         }
         else {
@@ -588,24 +588,24 @@ class DrawIndexedCommand : Command {
 
         if (instances.isSome) {
             assert(device.caps.instanceDraw);
-            if (baseVertex == 0 && instances.base == 0) {
+            if (baseVertex == 0 && instances.get.base == 0) {
                 glDrawElementsInstanced(
-                    primitive, count, indexType, offsetp, instances.count
+                    primitive, count, indexType, offsetp, instances.get.count
                 );
             }
-            else if (baseVertex != 0 && instances.base == 0) {
+            else if (baseVertex != 0 && instances.get.base == 0) {
                 glDrawElementsInstancedBaseVertex(
-                    primitive, count, indexType, offsetp, instances.count, baseVertex
+                    primitive, count, indexType, offsetp, instances.get.count, baseVertex
                 );
             }
-            else if (baseVertex == 0 && instances.base != 0) {
+            else if (baseVertex == 0 && instances.get.base != 0) {
                 glDrawElementsInstancedBaseInstance(
-                    primitive, count, indexType, offsetp, instances.count, instances.base
+                    primitive, count, indexType, offsetp, instances.get.count, instances.get.base
                 );
             }
             else {
                 glDrawElementsInstancedBaseVertexBaseInstance(
-                    primitive, count, indexType, offsetp, instances.count, baseVertex, instances.base
+                    primitive, count, indexType, offsetp, instances.get.count, baseVertex, instances.get.base
                 );
             }
         }
