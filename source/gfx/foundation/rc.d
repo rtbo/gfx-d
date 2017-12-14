@@ -53,14 +53,12 @@ void retain(T)(ref T[] arr) if (is(T : RefCounted))
 {
     import std.algorithm : each;
     arr.each!(el => el.retain());
-    arr = null;
 }
 /// Retain GC allocated associative array of ref-counted resources
 void retain(T, K)(ref T[K] arr) if (is(T : RefCounted))
 {
     import std.algorithm : each;
     arr.each!((k, el) { el.retain(); });
-    arr = null;
 }
 
 /// Release GC allocated array of ref-counted resources
