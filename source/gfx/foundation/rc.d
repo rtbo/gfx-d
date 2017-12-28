@@ -7,8 +7,12 @@ version(GfxRcAtomic)
     alias GfxRefCounted = AtomicRefCounted;
     enum gfxRcCode = atomicRcCode;
 }
-else
+else version(GfxRcMixed)
 {
+    alias GfxRefCounted = AtomicRefCounted;
+    enum gfxRcCode = mixedRcCode;
+}
+else {
     alias GfxRefCounted = RefCounted;
     enum gfxRcCode = rcCode;
 }
@@ -48,9 +52,17 @@ interface RefCounted : Disposable
 
 /// A atomic reference counted resource.
 /// Objects implementing this interface can be safely used as shared.
-/// Important note: AtomicRefCounted extends RefCounted (non-atomic). This imply the following:
+///
+/// Important note: AtomicRefCounted extends RefCounted (non-atomic).
+/// If it is implemented using mixedRcCode, then the following statements apply
 ///   - When the object is shared, the atomic reference count is used.
 ///   - When the object is not shared, the non-atomic reference count is used.
+///
+/// Although this sounds neat, it makes certain things quite difficult to implement
+/// Eg. having some rc in a parallel loop. (parallel spawns threads without any guard or lock
+/// - see the gfx-d:shadow example)
+/// For that reason, the atomicRcCode enum is available that implements both
+/// RefCounted and AtomicRefCounted atomically.
 interface AtomicRefCounted : RefCounted
 {
     /// Atomically load the number of active references.
@@ -81,13 +93,22 @@ enum isRefCounted(T) = isNonAtomicRefCounted!T || isAtomicRefCounted!T;
 
 
 /// A string that can be mixed-in a class declaration to implement RefCounted.
-enum rcCode = rcFuncs ~ q{
+enum rcCode = nonSharedNonAtomicMethods ~ q{
     private size_t _refCount=0;
 };
 
 /// A string that can be mixed-in a class declaration to implement AtomicRefCounted.
-enum atomicRcCode = rcFuncs ~ atomicRcFuncs ~ q{
+/// The RefCounted methods (non-shared) are implemented without atomicity.
+/// The AtomicRefCounted methods (shared) are implemented atomically.
+enum mixedRcCode = nonSharedNonAtomicMethods ~ sharedAtomicMethods ~ q{
     private size_t _refCount=0;
+};
+
+/// A string that can be mixed-in a class declaration to implement AtomicRefCounted.
+/// Both shared and non-shared methods are implemented atomically.
+/// This is useful for things such as a parallel loop
+enum atomicRcCode = nonSharedAtomicMethods ~ sharedAtomicMethods ~ q{
+    private shared size_t _refCount=0;
 };
 
 /// Dispose GC allocated array of resources
@@ -97,6 +118,7 @@ void dispose(R)(ref R[] arr) if (is(R : Disposable) && !isRefCounted!T)
     arr.each!(el => el.dispose());
     arr = null;
 }
+
 /// Dispose GC allocated associative array of resources
 void dispose(R, K)(ref R[K] arr) if (is(R : Disposable) && !isRefCounted!T)
 {
@@ -282,7 +304,7 @@ struct Weak(T) if (is(T : Disposable))
     }
 }
 
-private enum rcFuncs = q{
+private enum nonSharedNonAtomicMethods = q{
 
     public final override @property size_t refCount() const { return _refCount; }
 
@@ -331,7 +353,67 @@ private enum rcFuncs = q{
     }
 };
 
-private enum atomicRcFuncs = q{
+private enum nonSharedAtomicMethods = q{
+
+    public final override @property size_t refCount() const
+    {
+        import core.atomic : atomicLoad;
+        return atomicLoad(_refCount);
+    }
+
+    public final override void retain()
+    {
+        import core.atomic : atomicOp;
+        immutable rc = atomicOp!"+="(_refCount, 1);
+        debug(rc) {
+            import std.experimental.logger : logf;
+            logf("retain %s: %s", typeof(this).stringof, rc);
+        }
+    }
+
+    public final override void release()
+    {
+        import core.atomic : atomicOp;
+        immutable rc = atomicOp!"-="(_refCount, 1);
+
+        debug(rc) {
+            import std.experimental.logger : logf;
+            logf("release %s: %s", typeof(this).stringof, rc);
+        }
+        if (rc == 0) {
+            debug(rc) {
+                import std.experimental.logger : logf;
+                logf("dispose %s", typeof(this).stringof);
+            }
+            synchronized(this) {
+                this.dispose();
+            }
+        }
+    }
+
+    public final override typeof(this) rcLock()
+    {
+        import core.atomic : atomicLoad, cas;
+        while (1) {
+            immutable c = atomicLoad(_refCount);
+
+            if (c == 0) {
+                debug(rc) {
+                    logf("rcLock %s: %s", typeof(this).stringof, c);
+                }
+                return null;
+            }
+            if (cas(&_refCount, c, c+1)) {
+                debug(rc) {
+                    logf("rcLock %s: %s", typeof(this).stringof, c+1);
+                }
+                return this;
+            }
+        }
+    }
+};
+
+private enum sharedAtomicMethods = q{
 
     public final shared override @property size_t refCount() const
     {
