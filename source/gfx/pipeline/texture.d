@@ -2,7 +2,7 @@ module gfx.pipeline.texture;
 
 import gfx.device : Device, Resource, ResourceHolder;
 import gfx.foundation.typecons : Option, none;
-import gfx.foundation.rc : RefCounted, rcCode, Rc;
+import gfx.foundation.rc : GfxRefCounted, gfxRcCode, Rc;
 import gfx.device.factory : Factory;
 import gfx.pipeline.format : isFormatted, Formatted, Format, Swizzle;
 import gfx.pipeline.view : RawShaderResourceView, ShaderResourceView, RenderTargetView, DepthStencilView, DSVReadOnlyFlags;
@@ -207,7 +207,7 @@ struct SamplerInfo {
 }
 
 class Sampler : ResourceHolder {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     private Rc!SamplerRes _res;
     private Rc!RawShaderResourceView _srv;
@@ -234,7 +234,7 @@ class Sampler : ResourceHolder {
 /// Untyped abstract texture class.
 /// Applications must nstanciate directly typed ones such as Texture2D!Rgba8
 abstract class RawTexture : ResourceHolder {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     private Rc!TextureRes _res;
     private TextureType _type;

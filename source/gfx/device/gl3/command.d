@@ -6,7 +6,7 @@ import gfx.device.gl3.buffer : GlBuffer, GlVertexBuffer;
 import gfx.device.gl3.program;
 import gfx.device.gl3.pso : GlPipelineState, OutputMerger;
 import gfx.foundation.typecons : Option, some, none;
-import gfx.foundation.rc : Rc, rcCode;
+import gfx.foundation.rc : Rc, gfxRcCode;
 import gfx.pipeline;
 
 import derelict.opengl3.gl3;
@@ -633,7 +633,7 @@ struct GlCommandCache {
 
 
 class GlCommandBuffer : CommandBuffer {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     GLuint _fbo;
     GlCommandCache _cache;

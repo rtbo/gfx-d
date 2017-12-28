@@ -12,7 +12,7 @@
 module gfx.pipeline.pso;
 
 import gfx.device : Device, Resource, ResourceHolder;
-import gfx.foundation.rc : Rc, rcCode, RefCounted;
+import gfx.foundation.rc : Rc, gfxRcCode, GfxRefCounted;
 import gfx.foundation.typecons : Option, none, some;
 import gfx.pipeline.buffer : RawBuffer;
 import gfx.pipeline.format : Format, SurfaceType, Formatted;
@@ -160,7 +160,7 @@ struct PipelineDescriptor {
 
 // data structs
 
-struct ResourceSet(ElemT, string fieldName) if (is(ElemT : RefCounted))
+struct ResourceSet(ElemT, string fieldName) if (is(ElemT : GfxRefCounted))
 {
     import std.format : format;
 
@@ -260,7 +260,7 @@ interface PipelineStateRes : Resource {
 }
 
 class RawPipelineState : ResourceHolder {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     private PipelineDescriptor _descriptor;
 

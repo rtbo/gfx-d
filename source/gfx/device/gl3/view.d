@@ -2,7 +2,7 @@ module gfx.device.gl3.view;
 
 import gfx.device.gl3.buffer : GlBuffer;
 import gfx.device.gl3.texture : GlTexture, formatToGlInternalFormat;
-import gfx.foundation.rc : Rc, rcCode;
+import gfx.foundation.rc : Rc, gfxRcCode;
 import gfx.foundation.typecons : Option;
 import gfx.device.factory : Factory;
 import gfx.pipeline.format : Format;
@@ -15,7 +15,7 @@ import derelict.opengl3.gl3;
 
 
 abstract class GlShaderResourceView : ShaderResourceViewRes {
-    mixin(rcCode);
+    mixin(gfxRcCode);
     abstract @property GLenum target() const;
     abstract @property GLuint texName() const;
 }
@@ -83,7 +83,7 @@ class GlTextureShaderResourceView : GlShaderResourceView {
 
 
 abstract class GlTargetView : RenderTargetViewRes, DepthStencilViewRes {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     abstract void bind(GLenum point, GLenum attachment);
 }

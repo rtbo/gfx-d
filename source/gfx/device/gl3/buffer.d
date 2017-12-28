@@ -1,6 +1,6 @@
 module gfx.device.gl3.buffer;
 
-import gfx.foundation.rc : rcCode;
+import gfx.foundation.rc : gfxRcCode;
 import gfx.device.factory : Factory;
 import gfx.pipeline.program : BaseType;
 import gfx.pipeline.buffer : BufferRes, BufferRole, BufferUsage;
@@ -51,7 +51,7 @@ GlBuffer makeBufferImpl(in Factory.BufferCreationDesc desc, const(ubyte)[] data)
 
 
 class GlBuffer : BufferRes {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     GLuint _name;
     GLenum _target;

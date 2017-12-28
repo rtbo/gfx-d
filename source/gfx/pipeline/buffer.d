@@ -2,7 +2,7 @@ module gfx.pipeline.buffer;
 
 import gfx.device : Device, Resource, ResourceHolder;
 import gfx.device.factory : Factory;
-import gfx.foundation.rc : RefCounted, Rc, rcCode;
+import gfx.foundation.rc : GfxRefCounted, Rc, gfxRcCode;
 import gfx.pipeline.format : Formatted;
 import gfx.pipeline.view : ShaderResourceView, BufferShaderResourceView;
 
@@ -41,7 +41,7 @@ interface BufferRes : Resource {
 }
 
 abstract class RawBuffer : ResourceHolder {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     private Rc!BufferRes _res;
     private BufferRole _role;

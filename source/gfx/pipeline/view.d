@@ -2,7 +2,7 @@ module gfx.pipeline.view;
 
 import gfx.device : Device, Resource, ResourceHolder, MaybeBuiltin;
 import gfx.foundation.typecons : Option;
-import gfx.foundation.rc : Rc, rcCode;
+import gfx.foundation.rc : Rc, gfxRcCode;
 import gfx.device.factory : Factory;
 import gfx.pipeline.format : isFormatted, Formatted, Swizzle;
 import gfx.pipeline.buffer : ShaderResourceBuffer;
@@ -32,7 +32,7 @@ interface DepthStencilViewRes : Resource {}
 
 
 abstract class RawShaderResourceView : ResourceHolder {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     private Rc!ShaderResourceViewRes _res;
 
@@ -100,7 +100,7 @@ class TextureShaderResourceView(T) : ShaderResourceView!T if(isFormatted!T) {
 
 
 abstract class RawRenderTargetView : ResourceHolder, MaybeBuiltin {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     Rc!RenderTargetViewRes _res;
     ushort[2] _size;
@@ -184,7 +184,7 @@ class SurfaceRenderTargetView(T) : RenderTargetView!T {
 
 
 abstract class RawDepthStencilView : ResourceHolder, MaybeBuiltin {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     Rc!DepthStencilViewRes _res;
     ushort[2] _size;

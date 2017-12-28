@@ -1,7 +1,18 @@
 /// Reference counting module
 module gfx.foundation.rc;
 
-import std.typecons : Flag, Yes, No;
+/// definition of how the gfx package itself implements reference counting
+version(GfxRcAtomic)
+{
+    alias GfxRefCounted = AtomicRefCounted;
+    enum gfxRcCode = atomicRcCode;
+}
+else
+{
+    alias GfxRefCounted = RefCounted;
+    enum gfxRcCode = rcCode;
+}
+
 
 /// A resource that can be disposed
 interface Disposable
@@ -10,7 +21,9 @@ interface Disposable
     void dispose();
 }
 
-/// A reference counted resource
+/// A non-atomic reference counted resource.
+/// Objects implementing this interface should have exterior locking if used
+/// as shared.
 interface RefCounted : Disposable
 {
     /// The number of active references
@@ -33,15 +46,59 @@ interface RefCounted : Disposable
     in { assert(refCount == 0); } // add this additional contract
 }
 
+/// A atomic reference counted resource.
+/// Objects implementing this interface can be safely used as shared.
+/// Important note: AtomicRefCounted extends RefCounted (non-atomic). This imply the following:
+///   - When the object is shared, the atomic reference count is used.
+///   - When the object is not shared, the non-atomic reference count is used.
+interface AtomicRefCounted : RefCounted
+{
+    /// Atomically load the number of active references.
+    shared @property size_t refCount() const;
+
+    /// Atomically increment the reference count.
+    shared void retain();
+
+    /// Atomically decrement the reference count and dispose if it reaches zero.
+    /// The object is locked using its own mutex when dispose is called.
+    shared void release()
+    in { assert(refCount > 0); }
+
+    /// Get a copy of this RefCounted instance if the refCount >= 1.
+    /// This increases the refCount by 1. This should only be used to keep
+    /// weak reference and ensures that the resource is not disposed.
+    /// The operation is atomic.
+    shared shared(AtomicRefCounted) rcLock()
+    out(res) { assert((res && refCount >= 1) || (!res && !refCount)); }
+}
+
+/// compile time check that T can be ref counted non-atomically.
+enum isNonAtomicRefCounted(T) = is(T : RefCounted) && !is(T == shared);
+/// compile time check that T can be ref counted atomically.
+enum isAtomicRefCounted(T) = is(T : shared(AtomicRefCounted));
+/// compile time check that T can be ref counted (either shared or not)
+enum isRefCounted(T) = isNonAtomicRefCounted!T || isAtomicRefCounted!T;
+
+
+/// A string that can be mixed-in a class declaration to implement RefCounted.
+enum rcCode = rcFuncs ~ q{
+    private size_t _refCount=0;
+};
+
+/// A string that can be mixed-in a class declaration to implement AtomicRefCounted.
+enum atomicRcCode = rcFuncs ~ atomicRcFuncs ~ q{
+    private size_t _refCount=0;
+};
+
 /// Dispose GC allocated array of resources
-void dispose(R)(ref R[] arr) if (is(R : Disposable) && !is(R : RefCounted))
+void dispose(R)(ref R[] arr) if (is(R : Disposable) && !isRefCounted!T)
 {
     import std.algorithm : each;
     arr.each!(el => el.dispose());
     arr = null;
 }
 /// Dispose GC allocated associative array of resources
-void dispose(R, K)(ref R[K] arr) if (is(R : Disposable) && !is(R : RefCounted))
+void dispose(R, K)(ref R[K] arr) if (is(R : Disposable) && !isRefCounted!T)
 {
     import std.algorithm : each;
     arr.each!((k, el) { el.dispose(); });
@@ -49,27 +106,27 @@ void dispose(R, K)(ref R[K] arr) if (is(R : Disposable) && !is(R : RefCounted))
 }
 
 /// Retain GC allocated array of ref-counted resources
-void retain(T)(ref T[] arr) if (is(T : RefCounted))
+void retain(T)(ref T[] arr) if (isRefCounted!T)
 {
     import std.algorithm : each;
     arr.each!(el => el.retain());
 }
 /// Retain GC allocated associative array of ref-counted resources
-void retain(T, K)(ref T[K] arr) if (is(T : RefCounted))
+void retain(T, K)(ref T[K] arr) if (isRefCounted!T)
 {
     import std.algorithm : each;
     arr.each!((k, el) { el.retain(); });
 }
 
 /// Release GC allocated array of ref-counted resources
-void release(T)(ref T[] arr) if (is(T : RefCounted))
+void release(T)(ref T[] arr) if (isRefCounted!T)
 {
     import std.algorithm : each;
     arr.each!(el => el.release());
     arr = null;
 }
 /// Release GC allocated associative array of ref-counted resources
-void release(T, K)(ref T[K] arr) if (is(T : RefCounted))
+void release(T, K)(ref T[K] arr) if (isRefCounted!T)
 {
     import std.algorithm : each;
     arr.each!((k, el) { el.release(); });
@@ -95,30 +152,8 @@ void reinit(T, K)(ref T[K] arr) if (is(T == struct))
     arr = null;
 }
 
-
-
-version(rcAtomic)
-{
-    private enum rcAtomicFlag = Yes.atomic;
-}
-else
-{
-    private enum rcAtomicFlag = No.atomic;
-}
-
-/// A string that can be mixed-in a class declaration to implement RefCounted.
-/// Disposable implementation is not given.
-/// Whether or not rcCode is atomic depend if version(rcAtomic) is set or not.
-enum rcCode = buildRcCode!(rcAtomicFlag)();
-
-/// Always atomic version of rcCode.
-enum atomicRcCode = buildRcCode!(Yes.atomic)();
-
-/// Never atomic version of rcCode
-enum unatomicRcCode = buildRcCode!(No.atomic)();
-
 /// Helper that build a new instance of T and returns it within a Rc!T
-template makeRc(T) if (is(T : RefCounted))
+template makeRc(T) if (isRefCounted!T)
 {
     Rc!T makeRc(Args...)(Args args)
     {
@@ -127,45 +162,57 @@ template makeRc(T) if (is(T : RefCounted))
 }
 
 /// Helper that places an instance of T within a Rc!T
-template rc(T) if (is(T : RefCounted))
+template rc(T) if (isRefCounted!T)
 {
     Rc!T rc(T obj)
     {
-        return Rc!T(obj);
+        if (obj) {
+            return Rc!T(obj);
+        }
+        else {
+            return (Rc!T).init;
+        }
     }
 }
 
 /// Helper struct that manages the reference count of an object using RAII.
-struct Rc(T) if (is(T:RefCounted))
+struct Rc(T) if (isRefCounted!T)
 {
     private T _obj;
+    static if (is(T == interface) && is(T : AtomicRefCounted) && !is(T == shared)) {
+        // see https://issues.dlang.org/show_bug.cgi?id=18138
+        private alias HackT = RefCounted;
+    }
+    else {
+        private alias HackT = T;
+    }
 
     /// Build a Rc instance with the provided resource
     this(T obj)
     {
         assert(obj !is null);
         _obj = obj;
-        _obj.retain();
+        (cast(HackT)_obj).retain();
     }
 
     /// Postblit adds a reference to the held reference.
     this(this)
     {
-        if (_obj) _obj.retain();
+        if (_obj) (cast(HackT)_obj).retain();
     }
 
     /// Removes a reference to the held reference.
     ~this()
     {
-        if(_obj) _obj.release();
+        if(_obj) (cast(HackT)_obj).release();
     }
 
     /// Assign another resource. Release the previously held ref and retain the new one.
     void opAssign(T obj)
     {
-        if(_obj) _obj.release();
+        if(_obj) (cast(HackT)_obj).release();
         _obj = obj;
-        if(_obj) _obj.retain();
+        if(_obj) (cast(HackT)_obj).retain();
     }
 
     /// Check whether this Rc is assigned to a resource.
@@ -184,7 +231,7 @@ struct Rc(T) if (is(T:RefCounted))
     void unload()
     {
         if(_obj) {
-            _obj.release();
+            (cast(HackT)_obj).release();
             _obj = null;
         }
     }
@@ -199,6 +246,13 @@ struct Rc(T) if (is(T:RefCounted))
 struct Weak(T) if (is(T : Disposable))
 {
     private T _obj;
+    static if (is(T == interface) && is(T : AtomicRefCounted) && !is(T == shared)) {
+        // see https://issues.dlang.org/show_bug.cgi?id=18138
+        private alias HackT = RefCounted;
+    }
+    else {
+        private alias HackT = T;
+    }
 
     /// Build a Weak instance.
     this(T obj)
@@ -222,130 +276,136 @@ struct Weak(T) if (is(T : Disposable))
     Rc!T lock()
     {
         Rc!T rc;
-        rc._obj = _obj ? _obj.rcLock() : null;
+        rc._obj = _obj ? cast(T)((cast(HackT)_obj).rcLock()) : null;
         if (!rc._obj) _obj = null;
         return rc;
     }
 }
 
+private enum rcFuncs = q{
 
-private string buildRcCode(Flag!"atomic" atomic)()
-{
-    static if (atomic)
+    public final override @property size_t refCount() const { return _refCount; }
+
+    public final override void retain()
     {
-        return q{
-            private shared size_t _refCount=0;
-
-            public final override @property size_t refCount() const
-            {
-                import core.atomic : atomicLoad;
-                return atomicLoad(_refCount);
-            }
-
-            public final override void retain()
-            {
-                import core.atomic : atomicOp;
-                immutable rc = atomicOp!"+="(_refCount, 1);
-                debug(rc) {
-                    import std.experimental.logger : logf;
-                    logf("retain %s: %s", typeof(this).stringof, rc);
-                }
-            }
-
-            public final override void release()
-            {
-                import core.atomic : atomicOp;
-                immutable rc = atomicOp!"-="(_refCount, 1);
-
-                debug(rc) {
-                    import std.experimental.logger : logf;
-                    logf("release %s: %s", typeof(this).stringof, rc);
-                }
-                if (rc == 0) {
-                    debug(rc) {
-                        import std.experimental.logger : logf;
-                        logf("dispose %s", typeof(this).stringof);
-                    }
-                    dispose();
-                }
-            }
-
-            public final override typeof(this) rcLock()
-            {
-                import core.atomic : atomicLoad, cas;
-                while (1) {
-                    immutable c = atomicLoad(_refCount);
-
-                    if (c == 0) {
-                        debug(rc) {
-                            logf("rcLock %s: %s", typeof(this).stringof, c);
-                        }
-                        return null;
-                    }
-                    if (cas(&_refCount, c, c+1)) {
-                        debug(rc) {
-                            logf("rcLock %s: %s", typeof(this).stringof, c+1);
-                        }
-                        return this;
-                    }
-                }
-            }
-        };
+        _refCount += 1;
+        debug(rc) {
+            import std.experimental.logger : tracef;
+            tracef("retain %s: %s", typeof(this).stringof, refCount);
+        }
     }
-    else
+
+    public final override void release()
     {
-        return q{
-            private size_t _refCount=0;
-
-            public final override @property size_t refCount() const { return _refCount; }
-
-            public final override void retain()
-            {
-                _refCount += 1;
-                debug(rc) {
-                    import std.experimental.logger : logf;
-                    logf("retain %s: %s", typeof(this).stringof, refCount);
-                }
+        _refCount -= 1;
+        debug(rc) {
+            import std.experimental.logger : tracef;
+            tracef("release %s: %s", typeof(this).stringof, refCount);
+        }
+        if (!_refCount) {
+            debug(rc) {
+                import std.experimental.logger : tracef;
+                tracef("dispose %s", typeof(this).stringof);
             }
-
-            public final override void release()
-            {
-                _refCount -= 1;
-                debug(rc) {
-                    import std.experimental.logger : logf;
-                    logf("release %s: %s", typeof(this).stringof, refCount);
-                }
-                if (!refCount) {
-                    debug(rc) {
-                        import std.experimental.logger : logf;
-                        logf("dispose %s", typeof(this).stringof);
-                    }
-                    dispose();
-                }
-            }
-
-            public final override typeof(this) rcLock()
-            {
-                if (_refCount) {
-                    ++_refCount;
-                    debug(rc) {
-                        import std.experimental.logger : logf;
-                        logf("rcLock %s: %s", typeof(this).stringof, _refCount);
-                    }
-                    return this;
-                }
-                else {
-                    debug(rc) {
-                        import std.experimental.logger : logf;
-                        logf("rcLock %s: %s", typeof(this).stringof, _refCount);
-                    }
-                    return null;
-                }
-            }
-        };
+            dispose();
+        }
     }
-}
 
+    public final override typeof(this) rcLock()
+    {
+        if (_refCount) {
+            ++_refCount;
+            debug(rc) {
+                import std.experimental.logger : tracef;
+                tracef("rcLock %s: %s", typeof(this).stringof, _refCount);
+            }
+            return this;
+        }
+        else {
+            debug(rc) {
+                import std.experimental.logger : tracef;
+                tracef("rcLock %s: %s", typeof(this).stringof, _refCount);
+            }
+            return null;
+        }
+    }
+};
+
+private enum atomicRcFuncs = q{
+
+    public final shared override @property size_t refCount() const
+    {
+        import core.atomic : atomicLoad;
+        return atomicLoad(_refCount);
+    }
+
+    public final shared override void retain()
+    {
+        import core.atomic : atomicOp;
+        immutable rc = atomicOp!"+="(_refCount, 1);
+        debug(rc) {
+            import std.experimental.logger : logf;
+            logf("retain %s: %s", typeof(this).stringof, rc);
+        }
+    }
+
+    public final shared override void release()
+    {
+        import core.atomic : atomicOp;
+        immutable rc = atomicOp!"-="(_refCount, 1);
+
+        debug(rc) {
+            import std.experimental.logger : logf;
+            logf("release %s: %s", typeof(this).stringof, rc);
+        }
+        if (rc == 0) {
+            debug(rc) {
+                import std.experimental.logger : logf;
+                logf("dispose %s", typeof(this).stringof);
+            }
+            synchronized(this) {
+                import std.traits : Unqual;
+                // cast shared away
+                auto obj = cast(Unqual!(typeof(this)))this;
+                obj.dispose();
+            }
+        }
+    }
+
+    public final shared override shared(typeof(this)) rcLock()
+    {
+        import core.atomic : atomicLoad, cas;
+        while (1) {
+            immutable c = atomicLoad(_refCount);
+
+            if (c == 0) {
+                debug(rc) {
+                    logf("rcLock %s: %s", typeof(this).stringof, c);
+                }
+                return null;
+            }
+            if (cas(&_refCount, c, c+1)) {
+                debug(rc) {
+                    logf("rcLock %s: %s", typeof(this).stringof, c+1);
+                }
+                return this;
+            }
+        }
+    }
+};
+
+// private string numberizeCodeLines(string code) {
+//     import std.string : splitLines;
+//     import std.format : format;
+//     string res;
+//     auto lines = code.splitLines();
+//     foreach (i, l; lines) {
+//         res ~= format("%s. %s\n", i+1, l);
+//     }
+//     return res;
+// }
+
+// pragma(msg, numberizeCodeLines(atomicRcCode));
 
 // using version(unittest) instead of private creates link errors
 // in test builds in apps/libs depending on gfx-d (??)
@@ -459,15 +519,6 @@ private
         }
     }
 }
-
-
-template isRuntimeRc(T)
-{
-    enum isRuntimeRc = is(T : RefCounted);
-}
-
-static assert(isRuntimeRc!RefCounted);
-
 
 static if(false)
 {
@@ -681,18 +732,18 @@ static if(false)
             assert(disposeCount == 5);
         }
     }
-}
 
-private template hasMemberFunc(T, string fun)
-{
-    enum bool hasMemberFunc = is(typeof(
-    (inout int = 0)
+    private template hasMemberFunc(T, string fun)
     {
-        T t = T.init;
-        mixin("t."~fun~"();");
-    }));
-}
+        enum bool hasMemberFunc = is(typeof(
+        (inout int = 0)
+        {
+            T t = T.init;
+            mixin("t."~fun~"();");
+        }));
+    }
 
-static assert(hasMemberFunc!(RefCounted, "retain"));
-static assert(hasMemberFunc!(Disposable, "dispose"));
-static assert(!hasMemberFunc!(Disposable, "release"));
+    static assert(hasMemberFunc!(RefCounted, "retain"));
+    static assert(hasMemberFunc!(Disposable, "dispose"));
+    static assert(!hasMemberFunc!(Disposable, "release"));
+}

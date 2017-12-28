@@ -1,6 +1,6 @@
 module gfx.device.gl3.pso;
 
-import gfx.foundation.rc : Rc, rcCode;
+import gfx.foundation.rc : Rc, gfxRcCode;
 import gfx.foundation.typecons : Option;
 import gfx.pipeline.program : Program;
 import gfx.pipeline.pso;
@@ -17,7 +17,7 @@ struct OutputMerger {
 }
 
 class GlPipelineState : PipelineStateRes {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     Rc!Program _prog;
 

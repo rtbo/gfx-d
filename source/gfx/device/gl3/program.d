@@ -1,7 +1,7 @@
 module gfx.device.gl3.program;
 
 import gfx.device.factory : Factory;
-import gfx.foundation.rc : rcCode;
+import gfx.foundation.rc : gfxRcCode;
 import gfx.pipeline.program;
 import gfx.pipeline.error;
 
@@ -359,7 +359,7 @@ OutputVar[] queryOutputs(GLuint prog) {
 
 
 class GlShader : ShaderRes {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     GLuint _name;
     ShaderStage _stage;
@@ -395,7 +395,7 @@ class GlShader : ShaderRes {
 
 
 class GlProgram : ProgramRes {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     GLuint _name;
     bool _uboSupport;

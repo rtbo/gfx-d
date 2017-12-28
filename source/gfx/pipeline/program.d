@@ -1,7 +1,7 @@
 module gfx.pipeline.program;
 
 import gfx.device : Device, Resource, ResourceHolder;
-import gfx.foundation.rc : RefCounted, Rc, rcCode;
+import gfx.foundation.rc : GfxRefCounted, Rc, gfxRcCode;
 
 import std.typecons : BitFlags, Flag;
 import std.experimental.logger;
@@ -354,7 +354,7 @@ interface ProgramRes : Resource {
 }
 
 class Shader : ResourceHolder {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     Rc!ShaderRes _res;
     ShaderStage _stage;
@@ -379,7 +379,7 @@ class Shader : ResourceHolder {
 }
 
 class Program : ResourceHolder {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     Rc!ProgramRes _res;
     Shader[] _shaders;

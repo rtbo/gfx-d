@@ -2,7 +2,7 @@ module gfx.device.gl3.texture;
 
 import gfx.device.gl3.buffer : GlBuffer;
 import gfx.device.gl3.view : GlShaderResourceView;
-import gfx.foundation.rc : Rc, rcCode;
+import gfx.foundation.rc : Rc, gfxRcCode;
 import gfx.pipeline.format : Format, SurfaceType, ChannelType;
 import gfx.pipeline.texture;
 import gfx.pipeline.surface : SurfaceRes, BuiltinSurfaceRes;
@@ -39,7 +39,7 @@ GLenum wrapToGl(WrapMode wrap) {
 
 
 abstract class GlSampler : SamplerRes {
-    mixin (rcCode);
+    mixin (gfxRcCode);
 
     abstract void bind(ubyte slot);
 }
@@ -209,7 +209,7 @@ package TextureRes makeTextureImpl(in bool hasStorage, Factory.TextureCreationDe
 
 
 class GlSurface : SurfaceRes {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     GLuint _name;
     GLenum _internalFormat;
@@ -272,7 +272,7 @@ class GlBuiltinSurface : GlSurface, BuiltinSurfaceRes {
 
 
 abstract class GlTexture : TextureRes {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     GLuint _name;
     GLenum _target;

@@ -1,6 +1,6 @@
 module gfx.pipeline.draw;
 
-import gfx.foundation.rc : RefCounted;
+import gfx.foundation.rc : GfxRefCounted;
 import gfx.foundation.typecons : SafeUnion, Option;
 import gfx.pipeline.buffer : RawBuffer, IndexType;
 import gfx.pipeline.texture : RawTexture, ImageSliceInfo;
@@ -55,7 +55,7 @@ struct Instance {
 
 /// An interface of the abstract command buffer. It collects commands in an
 /// efficient API-specific manner, to be ready for execution on the device.
-interface CommandBuffer : RefCounted {
+interface CommandBuffer : GfxRefCounted {
     /+ /// Clone as an empty buffer
     CommandBuffer cloneEmpty() const;
     /// Reset the command buffer contents, retain the allocated storage

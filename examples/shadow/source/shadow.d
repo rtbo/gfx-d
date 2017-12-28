@@ -314,7 +314,7 @@ void main() {
 
             import std.parallelism : parallel;
 
-            // Only RefCounted.refCount is thread safe because resources are shared between lights.
+            // Only GfxRefCounted.refCount is thread safe because resources are shared between lights.
             // All other data access is unsynchronized.
             // To achieve parallelism, we only populate the light encoder
 

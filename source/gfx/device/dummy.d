@@ -2,7 +2,7 @@ module gfx.device.dummy;
 
 import gfx.device : Device, Caps;
 import gfx.device.factory : Factory;
-import gfx.foundation.rc : rcCode;
+import gfx.foundation.rc : gfxRcCode;
 import gfx.pipeline.format : Format;
 import gfx.pipeline.buffer : BufferRes, RawBuffer;
 import gfx.pipeline.texture : TextureRes, RawTexture, ImageSliceInfo, SamplerRes, SamplerInfo;
@@ -14,7 +14,7 @@ import gfx.pipeline.draw : CommandBuffer;
 
 
 class DummyDevice : Device {
-    mixin(rcCode);
+    mixin(gfxRcCode);
     void dispose() {}
 
     @property string name() const { return "dummy"; }
@@ -83,27 +83,27 @@ class DummyFactory : Factory {
 
 
 class DummyTexture : TextureRes {
-    mixin(rcCode);
+    mixin(gfxRcCode);
     void dispose() {}
     void bind() {}
     void update(in ImageSliceInfo slice, const(ubyte)[] data) {}
 }
 
 class DummyBuffer : BufferRes {
-    mixin(rcCode);
+    mixin(gfxRcCode);
     void dispose() {}
     void bind() {}
     void update(size_t buffer, const(ubyte)[] data) {}
 }
 
 class DummyShader : ShaderRes {
-    mixin(rcCode);
+    mixin(gfxRcCode);
     void dispose() {}
     @property ShaderStage stage() const { return ShaderStage.vertex; }
 }
 
 class DummyProgram : ProgramRes {
-    mixin(rcCode);
+    mixin(gfxRcCode);
     void dispose() {}
     void bind() {}
     ProgramVars fetchVars() const {

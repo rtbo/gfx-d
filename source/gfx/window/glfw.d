@@ -2,7 +2,7 @@ module gfx.window.glfw;
 
 import gfx.device.gl3 :    GlDevice, createGlDevice;
 import gfx.device :           Device;
-import gfx.foundation.rc :        RefCounted, Rc, rcCode;
+import gfx.foundation.rc :        GfxRefCounted, Rc, gfxRcCode;
 import gfx.pipeline.format :    isFormatted, Formatted, SurfaceType, ChannelType,
                             isRender, isDepth, isStencil, isDepthOrStencil, hasDepthOrStencilSurface,
                             redBits, greenBits, blueBits, alphaBits, depthBits, stencilBits,
@@ -166,8 +166,8 @@ alias MouseButtonDg = void delegate (int button, int action, int mods);
 alias ScrollDg = void delegate (double xoffset, double yoffset);
 
 
-class RawWindow : RefCounted {
-    mixin(rcCode);
+class RawWindow : GfxRefCounted {
+    mixin(gfxRcCode);
 
     private GLFWwindow *_window;
     private Rc!GlDevice _device;

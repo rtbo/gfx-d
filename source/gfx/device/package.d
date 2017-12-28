@@ -1,7 +1,7 @@
 module gfx.device;
 
 import gfx.device.factory : Factory;
-import gfx.foundation.rc : RefCounted;
+import gfx.foundation.rc : GfxRefCounted;
 import gfx.pipeline.draw : CommandBuffer;
 import gfx.pipeline.surface : BuiltinSurfaceRes;
 
@@ -9,9 +9,9 @@ import std.traits;
 
 
 
-interface Resource : RefCounted {}
+interface Resource : GfxRefCounted {}
 
-interface ResourceHolder : RefCounted {
+interface ResourceHolder : GfxRefCounted {
 
     @property inout(Resource) res() inout;
 
@@ -47,7 +47,7 @@ struct Caps {
     ));
 }
 
-interface Device : RefCounted {
+interface Device : GfxRefCounted {
 
     @property string name() const;
     @property Caps caps() const;

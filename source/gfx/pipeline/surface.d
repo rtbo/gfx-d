@@ -1,7 +1,7 @@
 module gfx.pipeline.surface;
 
 import gfx.device : Device, Resource, ResourceHolder, MaybeBuiltin;
-import gfx.foundation.rc : Rc, rcCode;
+import gfx.foundation.rc : Rc, gfxRcCode;
 import gfx.device.factory : Factory;
 import gfx.pipeline.format : isFormatted, Formatted, Format, Swizzle, isRenderSurface, isDepthOrStencilSurface;
 import gfx.pipeline.view : RenderTargetView, DepthStencilView;
@@ -27,7 +27,7 @@ interface BuiltinSurfaceRes : SurfaceRes {
 }
 
 abstract class RawSurface : ResourceHolder, MaybeBuiltin {
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     Rc!SurfaceRes _res;
     SurfUsageFlags _usage;

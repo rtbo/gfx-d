@@ -13,7 +13,7 @@ import gfx.device.gl3.pso : GlPipelineState;
 import gfx.device.gl3.command : GlCommandBuffer;
 
 import gfx.device : Device, Caps;
-import gfx.foundation.rc : rcCode, Rc;
+import gfx.foundation.rc : gfxRcCode, Rc;
 import gfx.device.factory : Factory;
 import gfx.pipeline.format : Format;
 import gfx.pipeline.buffer : BufferRes, RawBuffer;
@@ -49,7 +49,7 @@ struct GlCaps {
 
 class GlDevice : Device {
 
-    mixin(rcCode);
+    mixin(gfxRcCode);
 
     GlFactory _factory;
     ContextInfo _info;
