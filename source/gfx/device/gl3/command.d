@@ -11,8 +11,6 @@ import gfx.pipeline;
 
 import derelict.opengl3.gl3;
 
-import std.experimental.logger;
-
 
 GLenum primitiveToGl(in Primitive primitive) {
     final switch (primitive) {
@@ -248,7 +246,11 @@ class BindVertexBuffersCommand : Command {
                         device.caps.instanceRate);
             }
             else {
-                warningf("bindVertexBuffers: unbound attrib");
+                // if the same vertex type is used in different pipelines, it
+                // can be normal that a member does not bind to any attribute.
+                // Turning off the warning for now.
+                // import std.experimental.logger;
+                // warningf("bindVertexBuffers: unbound attrib %s", pso.descriptor.vertexAttribs[i].name);
             }
         }
     }
