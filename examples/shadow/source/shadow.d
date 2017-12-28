@@ -225,6 +225,7 @@ class Scene : RefCounted {
             m.meshData = MeshPipeline.Data.init;
             m.slice = VertexBufferSlice.init;
         }
+        lightBlk.unload();
     }
 
     void tick() {
@@ -312,11 +313,12 @@ void main() {
 
         if (parallelLightCmds) {
 
-            import std.parallelism : parallel;
 
-            // Only GfxRefCounted.refCount is thread safe because resources are shared between lights.
+            // Only GfxRefCounted.refCount has to be thread safe because resources are shared between lights.
             // All other data access is unsynchronized.
             // To achieve parallelism, we only populate the light encoder
+
+            import std.parallelism : parallel;
 
             foreach (light; parallel(sc.lights)) {
 
