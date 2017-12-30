@@ -216,9 +216,10 @@ struct Rc(T) if (isRefCounted!T)
     /// Build a Rc instance with the provided resource
     this(T obj)
     {
-        assert(obj !is null);
         _obj = obj;
-        (cast(HackT)_obj).retain();
+        if (obj) {
+            (cast(HackT)_obj).retain();
+        }
     }
 
     /// Postblit adds a reference to the held reference.
