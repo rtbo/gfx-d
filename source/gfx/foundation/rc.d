@@ -112,7 +112,7 @@ enum atomicRcCode = nonSharedAtomicMethods ~ sharedAtomicMethods ~ q{
 };
 
 /// Dispose GC allocated array of resources
-void disposeArray(R)(ref R[] arr) if (is(R : Disposable) && !isRefCounted!T)
+void disposeArray(T)(ref T[] arr) if (is(T : Disposable) && !isRefCounted!T)
 {
     import std.algorithm : each;
     arr.each!(el => el.dispose());
@@ -120,7 +120,7 @@ void disposeArray(R)(ref R[] arr) if (is(R : Disposable) && !isRefCounted!T)
 }
 
 /// Dispose GC allocated associative array of resources
-void disposeArray(R, K)(ref R[K] arr) if (is(R : Disposable) && !isRefCounted!T)
+void disposeArray(T, K)(ref T[K] arr) if (is(T : Disposable) && !isRefCounted!T)
 {
     import std.algorithm : each;
     arr.each!((k, el) { el.dispose(); });
