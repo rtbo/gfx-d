@@ -1,5 +1,7 @@
 module gfx.device.gl3.command;
 
+import derelict.opengl3.gl3;
+
 import gfx.device.gl3 : GlDevice;
 import gfx.device.gl3.state : setRasterizer, bindBlend, bindBlendSlot;
 import gfx.device.gl3.buffer : GlBuffer, GlVertexBuffer;
@@ -8,9 +10,6 @@ import gfx.device.gl3.pso : GlPipelineState, OutputMerger;
 import gfx.foundation.typecons : Option, some, none;
 import gfx.foundation.rc : Rc, gfxRcCode;
 import gfx.pipeline;
-
-import derelict.opengl3.gl3;
-
 
 GLenum primitiveToGl(in Primitive primitive) {
     final switch (primitive) {
@@ -634,7 +633,8 @@ struct GlCommandCache {
 }
 
 
-class GlCommandBuffer : CommandBuffer {
+class GlCommandBuffer : CommandBuffer
+{
     mixin(gfxRcCode);
 
     GLuint _fbo;
@@ -659,6 +659,7 @@ class GlCommandBuffer : CommandBuffer {
     }
 
     final void bindPipelineState(RawPipelineState pso) {
+        assert(pso, "Command.bindPipelineState called with invalid pipeline");
         _cache.pso = pso;
         _commands ~= new BindProgramCommand(pso.program);
         _commands ~= new SetRasterizerCommand(pso.descriptor.rasterizer);
@@ -717,6 +718,7 @@ class GlCommandBuffer : CommandBuffer {
     }
 
     final void bindIndex(RawBuffer buf, IndexType ind) {
+        assert(buf, "Command.bindIndex called with invalid buffer");
         assert(ind != IndexType.none);
         _cache.indexType = ind;
         _commands ~= new BindBufferCommand(buf);
@@ -747,18 +749,22 @@ class GlCommandBuffer : CommandBuffer {
     }
 
     final void updateBuffer(RawBuffer buffer, const(ubyte)[] data, size_t offset) {
+        assert(buffer, "CommandBuffer.updateBuffer called with invalid buffer");
         _commands ~= new UpdateBufferCommand(buffer, data, offset);
     }
 
     final void updateTexture(RawTexture tex, ImageSliceInfo info, const(ubyte)[] data) {
+        assert(tex, "Command.updateTexture called with invalid texture");
         _commands ~= new UpdateTextureCommand(tex, info, data);
     }
 
     final void generateMipmap(RawShaderResourceView view) {
+        assert(view, "Command.generateMipmap called with invalid view");
         _commands ~= new GenerateMipmapCommand(view);
     }
 
     final void clearColor(RawRenderTargetView view, ClearColor color) {
+        assert(view, "Command.clearColor called with invalid view");
         // TODO handle targets
         PixelTargetSet targets;
         targets.addColor(view);
@@ -767,6 +773,7 @@ class GlCommandBuffer : CommandBuffer {
     }
 
     final void clearDepthStencil(RawDepthStencilView view, Option!float depth, Option!ubyte stencil) {
+        assert(view, "Command.clearDepthStencil called with invalid view");
         PixelTargetSet targets;
         if (depth.isSome) {
             targets.depth = view;
