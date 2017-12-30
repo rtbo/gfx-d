@@ -197,6 +197,10 @@ template rc(T) if (isRefCounted!T)
     }
 }
 
+@property Rc!T nullRc(T)() if (isRefCounted!T) {
+    return Rc!T.init;
+}
+
 /// Helper struct that manages the reference count of an object using RAII.
 struct Rc(T) if (isRefCounted!T)
 {
