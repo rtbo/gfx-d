@@ -112,7 +112,7 @@ enum atomicRcCode = nonSharedAtomicMethods ~ sharedAtomicMethods ~ q{
 };
 
 /// Dispose GC allocated array of resources
-void dispose(R)(ref R[] arr) if (is(R : Disposable) && !isRefCounted!T)
+void disposeArray(R)(ref R[] arr) if (is(R : Disposable) && !isRefCounted!T)
 {
     import std.algorithm : each;
     arr.each!(el => el.dispose());
@@ -120,7 +120,7 @@ void dispose(R)(ref R[] arr) if (is(R : Disposable) && !isRefCounted!T)
 }
 
 /// Dispose GC allocated associative array of resources
-void dispose(R, K)(ref R[K] arr) if (is(R : Disposable) && !isRefCounted!T)
+void disposeArray(R, K)(ref R[K] arr) if (is(R : Disposable) && !isRefCounted!T)
 {
     import std.algorithm : each;
     arr.each!((k, el) { el.dispose(); });
@@ -128,27 +128,27 @@ void dispose(R, K)(ref R[K] arr) if (is(R : Disposable) && !isRefCounted!T)
 }
 
 /// Retain GC allocated array of ref-counted resources
-void retain(T)(ref T[] arr) if (isRefCounted!T)
+void retainArray(T)(ref T[] arr) if (isRefCounted!T)
 {
     import std.algorithm : each;
     arr.each!(el => el.retain());
 }
 /// Retain GC allocated associative array of ref-counted resources
-void retain(T, K)(ref T[K] arr) if (isRefCounted!T)
+void retainArray(T, K)(ref T[K] arr) if (isRefCounted!T)
 {
     import std.algorithm : each;
     arr.each!((k, el) { el.retain(); });
 }
 
 /// Release GC allocated array of ref-counted resources
-void release(T)(ref T[] arr) if (isRefCounted!T)
+void releaseArray(T)(ref T[] arr) if (isRefCounted!T)
 {
     import std.algorithm : each;
     arr.each!(el => el.release());
     arr = null;
 }
 /// Release GC allocated associative array of ref-counted resources
-void release(T, K)(ref T[K] arr) if (isRefCounted!T)
+void releaseArray(T, K)(ref T[K] arr) if (isRefCounted!T)
 {
     import std.algorithm : each;
     arr.each!((k, el) { el.release(); });
@@ -157,7 +157,7 @@ void release(T, K)(ref T[K] arr) if (isRefCounted!T)
 
 /// Reinitialises a GC allocated array of struct.
 /// Useful if the struct release resource in its destructor.
-void reinit(T)(ref T[] arr) if (is(T == struct))
+void reinitArray(T)(ref T[] arr) if (is(T == struct))
 {
     foreach(ref t; arr) {
         t = T.init;
@@ -166,7 +166,7 @@ void reinit(T)(ref T[] arr) if (is(T == struct))
 }
 /// Reinitialises a GC allocated associative array of struct.
 /// Useful if the struct release resource in its destructor.
-void reinit(T, K)(ref T[K] arr) if (is(T == struct))
+void reinitArray(T, K)(ref T[K] arr) if (is(T == struct))
 {
     foreach(k, ref t; arr) {
         t = T.init;
