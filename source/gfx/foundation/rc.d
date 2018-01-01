@@ -80,8 +80,12 @@ interface AtomicRefCounted : RefCounted
     /// This increases the refCount by 1. This should only be used to keep
     /// weak reference and ensures that the resource is not disposed.
     /// The operation is atomic.
-    shared shared(AtomicRefCounted) rcLock()
-    out(res) { assert((res && refCount >= 1) || (!res && !refCount)); }
+    shared shared(AtomicRefCounted) rcLock();
+    // out(res) {
+    //     assert((res && this.refCount >= 1) || (!res && !this.refCount));
+    // }
+    // this contract create a failure on ldc2:
+    // cannot implicitely convert shared(T) to const(AtomicRefCounted)
 }
 
 /// compile time check that T can be ref counted non-atomically.
