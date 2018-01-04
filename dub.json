@@ -1,0 +1,9 @@
+{
+	"name": "gfx-d",
+	"authors": [
+		"Rémi Thebault"
+	],
+	"description": "D graphics rendering library",
+	"copyright": "Copyright © 2016, Rémi Thebault",
+	"license": "MIT"
+}
