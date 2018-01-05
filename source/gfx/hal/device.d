@@ -2,6 +2,7 @@ module gfx.hal.device;
 
 import gfx.core.rc;
 import gfx.hal.memory;
+import gfx.hal.queue;
 
 struct DeviceFeatures {
 }
@@ -30,6 +31,7 @@ interface PhysicalDevice : AtomicRefCounted
     @property DeviceFeatures features();
     @property DeviceLimits limits();
     @property MemoryProperties memoryProperties();
+    @property QueueFamily[] queueFamilies();
 
     Device open();
 }

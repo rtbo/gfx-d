@@ -22,7 +22,8 @@ int main() {
         writefln("deviceId = %s", pd.deviceId);
         writefln("name = %s", pd.name);
         writefln("type = %s", pd.type);
-        writefln("mem props = %s", pd.memoryProperties());
+        writefln("mem props = %s", pd.memoryProperties);
+        writefln("queue families = %s", pd.queueFamilies);
     }
     return 0;
 }

@@ -29,6 +29,7 @@ import gfx.core.rc;
 import gfx.hal;
 import gfx.hal.device;
 import gfx.hal.memory;
+import gfx.hal.queue;
 
 class VulkanInstance : Instance
 {
@@ -128,6 +129,21 @@ class VulkanPhysicalDevice : PhysicalDevice
         return props;
     }
 
+    override @property QueueFamily[] queueFamilies()
+    {
+        import std.array : array, uninitializedArray;
+        uint count;
+        vkGetPhysicalDeviceQueueFamilyProperties(_vk, &count, null);
+
+        auto vkQueueFams = uninitializedArray!(VkQueueFamilyProperties[])(count);
+        vkGetPhysicalDeviceQueueFamilyProperties(_vk, &count, vkQueueFams.ptr);
+
+        import std.algorithm : map;
+        return vkQueueFams.map!(vk => QueueFamily(
+            queueCapFromVk(vk.queueFlags), vk.queueCount
+        )).array;
+    }
+
     override Device open() {
         return null;
     }
@@ -174,4 +190,16 @@ MemProps memPropsFromVk(in VkMemoryPropertyFlags vkFlags)
         props |= MemProps.lazilyAllocated;
     }
     return props;
+}
+
+QueueCap queueCapFromVk(in VkQueueFlags vkFlags)
+{
+    QueueCap caps = cast(QueueCap)0;
+    if (vkFlags & VK_QUEUE_GRAPHICS_BIT) {
+        caps |= QueueCap.graphics;
+    }
+    if (vkFlags & VK_QUEUE_COMPUTE_BIT) {
+        caps |= QueueCap.compute;
+    }
+    return caps;
 }
