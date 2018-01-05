@@ -2,12 +2,13 @@ module gfx.backend.vulkan;
 
 import erupted;
 
+import gfx.backend.vulkan.device;
+import gfx.backend.vulkan.error;
+
 /// Creates an Instance object with Vulkan backend
-VulkanInstance createVulkanInstance(bool loadPrimarySymbols=true)
+VulkanInstance createVulkanInstance()
 {
-    if (loadPrimarySymbols) {
-        DerelictErupted.load();
-    }
+    DerelictErupted.load();
 
     VkInstance vkInst;
 
@@ -18,18 +19,24 @@ VulkanInstance createVulkanInstance(bool loadPrimarySymbols=true)
     ici.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     ici.pApplicationInfo = &ai;
 
-    vkCreateInstance(&ici, null, &vkInst);
+    vulkanEnforce(vkCreateInstance(&ici, null, &vkInst), "Could not create Vulkan instance");
     loadInstanceLevelFunctions(vkInst);
     return new VulkanInstance(vkInst);
 }
 
-private:
+package:
 
 import gfx.core.rc;
 import gfx.hal;
 import gfx.hal.device;
 import gfx.hal.memory;
 import gfx.hal.queue;
+
+
+immutable deviceExtensions = [
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+];
+
 
 class VulkanInstance : Instance
 {
@@ -47,9 +54,11 @@ class VulkanInstance : Instance
     {
         import std.array : array, uninitializedArray;
         uint count;
-        vkEnumeratePhysicalDevices(_vk, &count, null);
+        vulkanEnforce(vkEnumeratePhysicalDevices(_vk, &count, null),
+                "Could not enumerate Vulkan devices");
         auto devices = uninitializedArray!(VkPhysicalDevice[])(count);
-        vkEnumeratePhysicalDevices(_vk, &count, devices.ptr);
+        vulkanEnforce(vkEnumeratePhysicalDevices(_vk, &count, devices.ptr),
+                "Could not enumerate Vulkan devices");
 
         import std.algorithm : map;
         return devices
@@ -144,8 +153,61 @@ class VulkanPhysicalDevice : PhysicalDevice
         )).array;
     }
 
-    override Device open() {
-        return null;
+    override Device open(in QueueRequest[] queues)
+    {
+        import std.algorithm : map, sort;
+        import std.array : array;
+        import std.exception : enforce;
+        import std.string : toStringz;
+
+        if (!queues.length) {
+            return null;
+        }
+
+        auto ordered = queues.dup;
+        ordered.sort!"a.familyIndex < b.familyIndex"();
+
+        struct Req {
+            uint fam;
+            float[] prios;
+        }
+
+        Req[] reqs = [ Req( ordered[0].familyIndex, [ ordered[0].priority ] ) ];
+        foreach (const qr; ordered[1 .. $]) {
+            if (qr.familyIndex == reqs[$-1].fam) {
+                reqs[$-1].prios ~= qr.priority;
+            }
+            else {
+                reqs ~= Req( qr.familyIndex, [ qr.priority ]);
+            }
+        }
+
+        const qcis = reqs.map!((Req r) {
+            VkDeviceQueueCreateInfo qci;
+            qci.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            qci.queueFamilyIndex = r.fam;
+            qci.queueCount = cast(uint)r.prios.length;
+            qci.pQueuePriorities = r.prios.ptr;
+            return qci;
+        }).array;
+
+        const extensions = deviceExtensions.map!toStringz.array;
+
+        VkDeviceCreateInfo ci;
+        ci.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        ci.queueCreateInfoCount = cast(uint)qcis.length;
+        ci.pQueueCreateInfos = qcis.ptr;
+        ci.enabledExtensionCount = cast(uint)extensions.length;
+        ci.ppEnabledExtensionNames = extensions.ptr;
+
+        VkDevice vkDev;
+        vulkanEnforce(vkCreateDevice(_vk, &ci, null, &vkDev),
+                "Vulkan device creation failed");
+
+        /// Check multiple devices ??
+        loadDeviceLevelFunctions(vkDev);
+
+        return new VulkanDevice(vkDev, this);
     }
 
     private VkPhysicalDevice _vk;

@@ -24,6 +24,8 @@ int main() {
         writefln("type = %s", pd.type);
         writefln("mem props = %s", pd.memoryProperties);
         writefln("queue families = %s", pd.queueFamilies);
+        auto dev = pd.open([QueueRequest(0, 0.5)]).rc;
     }
+
     return 0;
 }
