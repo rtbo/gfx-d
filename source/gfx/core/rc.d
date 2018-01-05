@@ -1,5 +1,5 @@
 /// Reference counting module
-module gfx.foundation.rc;
+module gfx.core.rc;
 
 /// definition of how the gfx package itself implements reference counting
 version(GfxRcAtomic)
