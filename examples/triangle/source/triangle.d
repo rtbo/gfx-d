@@ -2,12 +2,27 @@ module triangle;
 
 import erupted;
 
-import gfx.backend.vulkan;
+import gfx.backend.vulkan : createVulkanInstance;
 import gfx.core.rc;
+import gfx.hal.device;
 
+import std.stdio;
 
 int main() {
-    DerelictErupted.load();
     auto instance = createVulkanInstance().rc;
+
+    auto physicalDevices = instance.devices();
+    retainArray(physicalDevices);
+    scope(exit) releaseArray(physicalDevices);
+
+    foreach (pd; physicalDevices) {
+        writefln("apiVersion = %s", pd.apiVersion);
+        writefln("driverVersion = %s", pd.driverVersion);
+        writefln("vendorId = %s", pd.vendorId);
+        writefln("deviceId = %s", pd.deviceId);
+        writefln("name = %s", pd.name);
+        writefln("type = %s", pd.type);
+        writefln("mem props = %s", pd.memoryProperties());
+    }
     return 0;
 }

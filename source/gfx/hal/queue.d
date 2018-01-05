@@ -1,0 +1,1 @@
+module gfx.hal.queue;
