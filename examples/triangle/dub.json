@@ -1,0 +1,13 @@
+{
+	"name": "triangle",
+	"authors": [
+		"Remi Thebault"
+	],
+	"description": "gfx-d triangle example",
+	"copyright": "Copyright © 2016, Remi Thebault",
+	"license": "MIT",
+	"targetType": "executable",
+    "dependencies": {
+        "gfx" : { "path": "../../"  }
+    }
+}

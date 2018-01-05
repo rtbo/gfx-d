@@ -5,5 +5,14 @@
 	],
 	"description": "D graphics rendering library",
 	"copyright": "Copyright © 2016, Rémi Thebault",
-	"license": "MIT"
+	"license": "MIT",
+	"dependencies": {
+		"erupted": "~>1.6.11"
+	},
+	"subConfigurations": {
+		"erupted": "with-derelict-loader"
+	},
+	"subPackages": [
+		"examples/triangle"
+	]
 }
