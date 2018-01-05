@@ -131,31 +131,43 @@ void disposeArray(T, K)(ref T[K] arr) if (is(T : Disposable) && !isRefCounted!T)
     arr = null;
 }
 
+/// Cast hack to get around a bug in DMD front-end.
+/// Cast non shared atomic rc interfaces when calling retain or release.
+/// See https://issues.dlang.org/show_bug.cgi?id=18138
+template RcHack(T) if (isRefCounted!T) {
+    static if (is(T == interface) && is(T : AtomicRefCounted) && !is(T == shared)) {
+        alias RcHack = RefCounted;
+    }
+    else {
+        alias RcHack = T;
+    }
+}
+
 /// Retain GC allocated array of ref-counted resources
 void retainArray(T)(ref T[] arr) if (isRefCounted!T)
 {
     import std.algorithm : each;
-    arr.each!(el => el.retain());
+    arr.each!(el => (cast(RcHack!T)el).retain());
 }
 /// Retain GC allocated associative array of ref-counted resources
 void retainArray(T, K)(ref T[K] arr) if (isRefCounted!T)
 {
     import std.algorithm : each;
-    arr.each!((k, el) { el.retain(); });
+    arr.each!((k, el) { (cast(RcHack!T)el).retain(); });
 }
 
 /// Release GC allocated array of ref-counted resources
 void releaseArray(T)(ref T[] arr) if (isRefCounted!T)
 {
     import std.algorithm : each;
-    arr.each!(el => el.release());
+    arr.each!(el => (cast(RcHack!T)el).release());
     arr = null;
 }
 /// Release GC allocated associative array of ref-counted resources
 void releaseArray(T, K)(ref T[K] arr) if (isRefCounted!T)
 {
     import std.algorithm : each;
-    arr.each!((k, el) { el.release(); });
+    arr.each!((k, el) { (cast(RcHack!T)el).release(); });
     arr = null;
 }
 
@@ -209,13 +221,8 @@ template rc(T) if (isRefCounted!T)
 struct Rc(T) if (isRefCounted!T)
 {
     private T _obj;
-    static if (is(T == interface) && is(T : AtomicRefCounted) && !is(T == shared)) {
-        // see https://issues.dlang.org/show_bug.cgi?id=18138
-        private alias HackT = RefCounted;
-    }
-    else {
-        private alias HackT = T;
-    }
+
+    private alias HackT = RcHack!T;
 
     /// Build a Rc instance with the provided resource
     this(T obj)
