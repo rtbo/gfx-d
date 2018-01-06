@@ -35,6 +35,19 @@ class VulkanDeviceMemory : DeviceMemory
         return _size;
     }
 
+    void* map(in size_t offset, in size_t size) {
+        void *data;
+        vulkanEnforce(
+            vkMapMemory(_dev.vk, _vk, offset, size, 0, &data),
+            "Could not map device memory"
+        );
+        return data;
+    }
+
+    void unmap() {
+        vkUnmapMemory(_dev.vk, _vk);
+    }
+
     private VkDeviceMemory _vk;
     private VulkanDevice _dev;
     private uint _typeIndex;
