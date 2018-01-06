@@ -1,6 +1,8 @@
 
 module gfx.backend.vulkan.memory;
 
+package:
+
 import erupted;
 
 import gfx.backend.vulkan.device;

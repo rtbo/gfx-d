@@ -34,6 +34,10 @@ final class VulkanDevice : Device
         return _vk;
     }
 
+    @property VulkanPhysicalDevice pd() {
+        return _pd;
+    }
+
     override DeviceMemory allocateMemory(uint memTypeIndex, size_t size)
     {
         VkMemoryAllocateInfo mai;

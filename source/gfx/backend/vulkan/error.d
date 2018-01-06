@@ -1,6 +1,8 @@
 /// Module that is meant to give meaningful information about the Vulkan errors
 module gfx.backend.vulkan.error;
 
+package:
+
 import erupted;
 
 import gfx.hal.error;
