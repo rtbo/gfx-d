@@ -34,6 +34,6 @@ struct MemoryType {
 
 interface DeviceMemory : AtomicRefCounted
 {
-    @property MemProps props();
+    @property uint typeIndex();
     @property size_t size();
 }

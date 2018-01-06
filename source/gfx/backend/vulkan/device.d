@@ -6,11 +6,13 @@ package:
 import erupted;
 
 import gfx.backend.vulkan;
+import gfx.backend.vulkan.error;
+import gfx.backend.vulkan.memory;
 import gfx.core.rc;
 import gfx.hal.device;
 import gfx.hal.memory;
 
-class VulkanDevice : Device
+final class VulkanDevice : Device
 {
     mixin(atomicRcCode);
 
@@ -28,9 +30,21 @@ class VulkanDevice : Device
         _pd = null;
     }
 
-    override DeviceMemory allocateMemory(uint memPropIndex, size_t size)
+    @property VkDevice vk() {
+        return _vk;
+    }
+
+    override DeviceMemory allocateMemory(uint memTypeIndex, size_t size)
     {
-        return null;
+        VkMemoryAllocateInfo mai;
+        mai.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        mai.allocationSize = size;
+        mai.memoryTypeIndex = memTypeIndex;
+
+        VkDeviceMemory vkMem;
+        vulkanEnforce(vkAllocateMemory(_vk, &mai, null, &vkMem), "Could not allocate device memory");
+
+        return new VulkanDeviceMemory(vkMem, this, memTypeIndex, size);
     }
 
     VkDevice _vk;

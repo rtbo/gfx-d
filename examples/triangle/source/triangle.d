@@ -25,6 +25,8 @@ int main() {
         writefln("mem props = %s", pd.memoryProperties);
         writefln("queue families = %s", pd.queueFamilies);
         auto dev = pd.open([QueueRequest(0, 0.5)]).rc;
+        auto mem = dev.allocateMemory(0, 2*1024*1024).rc;
+        writefln("mem size: %s", mem.size);
     }
 
     return 0;
