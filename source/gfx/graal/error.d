@@ -1,4 +1,4 @@
-module gfx.hal.error;
+module gfx.graal.error;
 
 import std.format;
 

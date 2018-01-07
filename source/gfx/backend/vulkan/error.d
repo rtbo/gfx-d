@@ -5,12 +5,12 @@ package:
 
 import erupted;
 
-import gfx.hal.error;
+import gfx.graal.error;
 
 void vulkanEnforce(in VkResult res, in string msg) {
     if (res == VK_SUCCESS) return;
 
-    import gfx.hal.error;
+    import gfx.graal.error;
 
     switch (res) {
     case VK_ERROR_OUT_OF_HOST_MEMORY:

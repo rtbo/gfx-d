@@ -7,7 +7,7 @@ import erupted;
 
 import gfx.backend.vulkan.device;
 import gfx.core.rc;
-import gfx.hal.memory;
+import gfx.graal.memory;
 
 class VulkanDeviceMemory : DeviceMemory
 {

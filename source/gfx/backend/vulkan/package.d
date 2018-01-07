@@ -37,10 +37,10 @@ VulkanInstance createVulkanInstance(in string appName="", in uint appVersion=0)
 package:
 
 import gfx.core.rc;
-import gfx.hal;
-import gfx.hal.device;
-import gfx.hal.memory;
-import gfx.hal.queue;
+import gfx.graal;
+import gfx.graal.device;
+import gfx.graal.memory;
+import gfx.graal.queue;
 
 
 immutable deviceExtensions = [

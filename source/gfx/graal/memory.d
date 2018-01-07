@@ -1,7 +1,7 @@
-module gfx.hal.memory;
+module gfx.graal.memory;
 
 import gfx.core.rc;
-import gfx.hal.device;
+import gfx.graal.device;
 
 /// Properties of memory allocated by the device
 enum MemProps {

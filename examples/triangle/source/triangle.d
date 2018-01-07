@@ -4,7 +4,7 @@ import erupted;
 
 import gfx.backend.vulkan : createVulkanInstance;
 import gfx.core.rc;
-import gfx.hal.device;
+import gfx.graal.device;
 
 import std.stdio;
 

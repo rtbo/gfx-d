@@ -9,8 +9,8 @@ import gfx.backend.vulkan;
 import gfx.backend.vulkan.error;
 import gfx.backend.vulkan.memory;
 import gfx.core.rc;
-import gfx.hal.device;
-import gfx.hal.memory;
+import gfx.graal.device;
+import gfx.graal.memory;
 
 final class VulkanDevice : Device
 {

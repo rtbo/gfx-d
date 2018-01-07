@@ -1,4 +1,4 @@
-module gfx.hal.queue;
+module gfx.graal.queue;
 
 
 enum QueueCap {

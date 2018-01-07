@@ -1,7 +1,7 @@
-module gfx.hal;
+module gfx.graal;
 
 import gfx.core.rc;
-import gfx.hal.device;
+import gfx.graal.device;
 
 /// A backend instance
 interface Instance : AtomicRefCounted {

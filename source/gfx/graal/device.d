@@ -1,8 +1,8 @@
-module gfx.hal.device;
+module gfx.graal.device;
 
 import gfx.core.rc;
-import gfx.hal.memory;
-import gfx.hal.queue;
+import gfx.graal.memory;
+import gfx.graal.queue;
 
 struct DeviceFeatures {}
 
