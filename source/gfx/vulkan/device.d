@@ -1,16 +1,16 @@
 /// Vulkan device module
-module gfx.backend.vulkan.device;
+module gfx.vulkan.device;
 
 package:
 
 import erupted;
 
-import gfx.backend.vulkan;
-import gfx.backend.vulkan.error;
-import gfx.backend.vulkan.memory;
 import gfx.core.rc;
 import gfx.graal.device;
 import gfx.graal.memory;
+import gfx.vulkan;
+import gfx.vulkan.error;
+import gfx.vulkan.memory;
 
 final class VulkanDevice : Device
 {

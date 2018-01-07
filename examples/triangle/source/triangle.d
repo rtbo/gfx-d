@@ -2,9 +2,9 @@ module triangle;
 
 import erupted;
 
-import gfx.backend.vulkan : createVulkanInstance;
 import gfx.core.rc;
 import gfx.graal.device;
+import gfx.vulkan : createVulkanInstance;
 
 import std.stdio;
 

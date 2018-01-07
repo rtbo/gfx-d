@@ -1,5 +1,5 @@
 /// Module that is meant to give meaningful information about the Vulkan errors
-module gfx.backend.vulkan.error;
+module gfx.vulkan.error;
 
 package:
 

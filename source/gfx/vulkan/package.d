@@ -1,9 +1,10 @@
-module gfx.backend.vulkan;
+/// Vulkan implementation of GrAAL
+module gfx.vulkan;
 
 import erupted;
 
-import gfx.backend.vulkan.device;
-import gfx.backend.vulkan.error;
+import gfx.vulkan.device;
+import gfx.vulkan.error;
 
 /// Creates an Instance object with Vulkan backend
 VulkanInstance createVulkanInstance(in string appName="", in uint appVersion=0)

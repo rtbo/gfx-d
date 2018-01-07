@@ -1,13 +1,13 @@
 
-module gfx.backend.vulkan.memory;
+module gfx.vulkan.memory;
 
 package:
 
 import erupted;
 
-import gfx.backend.vulkan.device;
 import gfx.core.rc;
 import gfx.graal.memory;
+import gfx.vulkan.device;
 
 class VulkanDeviceMemory : DeviceMemory
 {
