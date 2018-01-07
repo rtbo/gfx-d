@@ -6,21 +6,31 @@ import gfx.backend.vulkan.device;
 import gfx.backend.vulkan.error;
 
 /// Creates an Instance object with Vulkan backend
-VulkanInstance createVulkanInstance()
+VulkanInstance createVulkanInstance(in string appName="", in uint appVersion=0)
 {
-    DerelictErupted.load();
+    import gfx : gfxVersionMaj, gfxVersionMin, gfxVersionMic;
+    import std.string : toStringz;
 
-    VkInstance vkInst;
+    DerelictErupted.load();
 
     VkApplicationInfo ai;
     ai.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    VkInstanceCreateInfo ici;
+    if (appName.length) {
+        ai.pApplicationName = toStringz(appName);
+    }
+    ai.applicationVersion = appVersion;
+    ai.pEngineName = "gfx-d\n".ptr;
+    ai.engineVersion = VK_MAKE_VERSION(gfxVersionMaj, gfxVersionMin, gfxVersionMic);
 
+    VkInstanceCreateInfo ici;
     ici.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     ici.pApplicationInfo = &ai;
 
+    VkInstance vkInst;
     vulkanEnforce(vkCreateInstance(&ici, null, &vkInst), "Could not create Vulkan instance");
+
     loadInstanceLevelFunctions(vkInst);
+
     return new VulkanInstance(vkInst);
 }
 

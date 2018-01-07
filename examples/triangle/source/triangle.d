@@ -9,7 +9,7 @@ import gfx.hal.device;
 import std.stdio;
 
 int main() {
-    auto instance = createVulkanInstance().rc;
+    auto instance = createVulkanInstance("Triangle").rc;
 
     auto physicalDevices = instance.devices();
     retainArray(physicalDevices);
