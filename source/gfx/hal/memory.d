@@ -1,6 +1,7 @@
 module gfx.hal.memory;
 
 import gfx.core.rc;
+import gfx.hal.device;
 
 /// Properties of memory allocated by the device
 enum MemProps {
@@ -52,9 +53,14 @@ struct MemoryMap(T)
         if (dm) dm.unmap();
     }
 
-    // TODO: register into a mapped memory range
+    void addToSet(ref MappedMemorySet set)
+    {
+        set.addMM(MappedMemorySet.MM(dm.obj, offset, data.length*T.sizeof));
+    }
+
     // TODO: opSlice, opIndex, opDollar...
 }
+
 
 
 /// Map device memory to host visible memory.

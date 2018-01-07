@@ -53,8 +53,37 @@ private bool isConsistentWith(in QueueRequest[] requests, in QueueFamily[] famil
     return true;
 }
 
+struct MappedMemorySet
+{
+    package(gfx) struct MM {
+        DeviceMemory dm;
+        size_t offset;
+        size_t size;
+    }
+
+    package(gfx) void addMM(MM mm) {
+        (cast(RcHack!DeviceMemory)mm.dm).retain();
+        mms ~= mm;
+    }
+
+
+    package(gfx) MM[] mms;
+
+    this(this) {
+        import std.algorithm : each;
+        mms.each!(m => (cast(RcHack!DeviceMemory)m.dm).retain());
+    }
+
+    ~this() {
+        import std.algorithm : each;
+        mms.each!(m => (cast(RcHack!DeviceMemory)m.dm).release());
+    }
+}
+
 /// Handle to a physical device
 interface Device : AtomicRefCounted
 {
     DeviceMemory allocateMemory(uint memPropIndex, size_t size);
+    void flushMappedMemory(MappedMemorySet set);
+    void invalidateMappedMemory(MappedMemorySet set);
 }

@@ -27,6 +27,10 @@ class VulkanDeviceMemory : DeviceMemory
         _dev.release();
     }
 
+    @property VkDeviceMemory vk() {
+        return _vk;
+    }
+
     override @property uint typeIndex() {
         return _typeIndex;
     }

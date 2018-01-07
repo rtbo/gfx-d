@@ -51,6 +51,36 @@ final class VulkanDevice : Device
         return new VulkanDeviceMemory(vkMem, this, memTypeIndex, size);
     }
 
+    void flushMappedMemory(MappedMemorySet set)
+    {
+        import std.algorithm : map;
+        import std.array : array;
+        VkMappedMemoryRange[] mmrs = set.mms.map!((MappedMemorySet.MM mm) {
+            VkMappedMemoryRange mmr;
+            mmr.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+            mmr.memory = (cast(VulkanDeviceMemory)mm.dm).vk;
+            mmr.offset = mm.offset;
+            mmr.size = mm.size;
+            return mmr;
+        }).array;
+
+        vkFlushMappedMemoryRanges(_vk, cast(uint)mmrs.length, mmrs.ptr);
+    }
+    void invalidateMappedMemory(MappedMemorySet set) {
+        import std.algorithm : map;
+        import std.array : array;
+        VkMappedMemoryRange[] mmrs = set.mms.map!((MappedMemorySet.MM mm) {
+            VkMappedMemoryRange mmr;
+            mmr.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+            mmr.memory = (cast(VulkanDeviceMemory)mm.dm).vk;
+            mmr.offset = mm.offset;
+            mmr.size = mm.size;
+            return mmr;
+        }).array;
+
+        vkInvalidateMappedMemoryRanges(_vk, cast(uint)mmrs.length, mmrs.ptr);
+    }
+
     VkDevice _vk;
     VulkanPhysicalDevice _pd;
 }
