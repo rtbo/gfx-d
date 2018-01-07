@@ -40,6 +40,7 @@ package:
 import gfx.core.rc;
 import gfx.graal;
 import gfx.graal.device;
+import gfx.graal.format;
 import gfx.graal.memory;
 import gfx.graal.queue;
 
@@ -164,6 +165,18 @@ class VulkanPhysicalDevice : PhysicalDevice
         )).array;
     }
 
+    override FormatProperties formatProperties(in Format format)
+    {
+        VkFormatProperties vkFp;
+        vkGetPhysicalDeviceFormatProperties(_vk, formatToVk(format), &vkFp);
+
+        return FormatProperties(
+            formatFeaturesFromVk(vkFp.linearTilingFeatures),
+            formatFeaturesFromVk(vkFp.optimalTilingFeatures),
+            formatFeaturesFromVk(vkFp.bufferFeatures),
+        );
+    }
+
     override Device open(in QueueRequest[] queues)
     {
         import std.algorithm : map, sort;
@@ -278,6 +291,20 @@ QueueCap queueCapFromVk(in VkQueueFlags vkFlags)
 }
 
 
-import gfx.graal.format;
+VkFormat formatToVk(in Format format) {
+    return cast(VkFormat)format;
+}
 
-static assert((cast(int)Format.rgba8_uNorm) == VK_FORMAT_R8G8B8A8_UNORM);
+Format formatFromVk(in VkFormat vkFormat) {
+    return cast(Format)vkFormat;
+}
+
+VkFormatFeatureFlags formatFeaturesToVk(in FormatFeatures ff) {
+    return cast(VkFormatFeatureFlags)ff;
+}
+
+FormatFeatures formatFeaturesFromVk(in VkFormatFeatureFlags vkFff) {
+    return cast(FormatFeatures)vkFff;
+}
+
+static assert(formatToVk(Format.rgba8_uNorm) == VK_FORMAT_R8G8B8A8_UNORM);

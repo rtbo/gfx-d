@@ -3,6 +3,7 @@ module gfx.graal.device;
 import gfx.core.rc;
 import gfx.graal.memory;
 import gfx.graal.queue;
+import gfx.graal.format;
 
 struct DeviceFeatures {}
 
@@ -37,6 +38,7 @@ interface PhysicalDevice : AtomicRefCounted
     @property DeviceLimits limits();
     @property MemoryProperties memoryProperties();
     @property QueueFamily[] queueFamilies();
+    FormatProperties formatProperties(in Format format);
 
     /// Open a device with the specified queues.
     /// Returns: null if it can't meet all requested queues, the opened device otherwise.
