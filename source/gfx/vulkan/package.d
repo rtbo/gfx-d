@@ -276,3 +276,8 @@ QueueCap queueCapFromVk(in VkQueueFlags vkFlags)
     }
     return caps;
 }
+
+
+import gfx.graal.format;
+
+static assert((cast(int)Format.rgba8_uNorm) == VK_FORMAT_R8G8B8A8_UNORM);
