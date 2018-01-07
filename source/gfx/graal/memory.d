@@ -65,9 +65,9 @@ struct MemoryMap(T)
 
 /// Map device memory to host visible memory.
 /// Params:
-///     - dm:       the device memory to be mapped
-///     - offset:   the offset to the requested memory in bytes
-///     - count:    the number of elements of type T to be mapped
+///     dm =       the device memory to be mapped
+///     offset =   the offset to the requested memory in bytes
+///     count =    the number of elements of type T to be mapped
 /// Warning: offset and count are not in the same units.
 /// This is necessary in order to allow a memory block to hold several arrays
 /// of different element types.

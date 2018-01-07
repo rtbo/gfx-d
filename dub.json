@@ -14,5 +14,6 @@
 	},
 	"subPackages": [
 		"examples/triangle"
-	]
+	],
+	"-ddoxFilterArgs": ["--min-protection=Protected", "--ex=erupted"]
 }
