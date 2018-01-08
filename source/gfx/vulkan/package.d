@@ -31,6 +31,7 @@ VulkanInstance createVulkanInstance(in string appName="", in uint appVersion=0)
     vulkanEnforce(vkCreateInstance(&ici, null, &vkInst), "Could not create Vulkan instance");
 
     loadInstanceLevelFunctions(vkInst);
+    loadDeviceLevelFunctions(vkInst);
 
     return new VulkanInstance(vkInst);
 }
@@ -227,9 +228,6 @@ class VulkanPhysicalDevice : PhysicalDevice
         VkDevice vkDev;
         vulkanEnforce(vkCreateDevice(_vk, &ci, null, &vkDev),
                 "Vulkan device creation failed");
-
-        /// Check multiple devices ??
-        loadDeviceLevelFunctions(vkDev);
 
         return new VulkanDevice(vkDev, this);
     }
