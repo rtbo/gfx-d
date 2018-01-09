@@ -40,7 +40,7 @@ class VulkanImage : Image
     override @property MemoryRequirements memoryRequirements() {
         VkMemoryRequirements vkMr;
         vkGetImageMemoryRequirements(_dev.vk, _vk, &vkMr);
-        return memoryRequirementsFromVk(vkMr);
+        return vkMr.fromVk();
     }
 
     override void bindMemory(DeviceMemory mem, in size_t offset)

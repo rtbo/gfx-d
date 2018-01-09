@@ -170,12 +170,12 @@ class VulkanPhysicalDevice : PhysicalDevice
     override FormatProperties formatProperties(in Format format)
     {
         VkFormatProperties vkFp;
-        vkGetPhysicalDeviceFormatProperties(_vk, formatToVk(format), &vkFp);
+        vkGetPhysicalDeviceFormatProperties(_vk, format.toVk(), &vkFp);
 
         return FormatProperties(
-            formatFeaturesFromVk(vkFp.linearTilingFeatures),
-            formatFeaturesFromVk(vkFp.optimalTilingFeatures),
-            formatFeaturesFromVk(vkFp.bufferFeatures),
+            vkFp.linearTilingFeatures.fromVk(),
+            vkFp.optimalTilingFeatures.fromVk(),
+            vkFp.bufferFeatures.fromVk(),
         );
     }
 

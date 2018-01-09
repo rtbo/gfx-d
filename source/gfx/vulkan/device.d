@@ -90,8 +90,8 @@ final class VulkanDevice : Device
         VkImageCreateInfo ici;
         ici.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         if (type.isCube) ici.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
-        ici.imageType = imageTypeToVk(type);
-        ici.format = formatToVk(format);
+        ici.imageType = type.toVk();
+        ici.format = format.toVk();
         ici.extent = VkExtent3D(dims.width, dims.height, dims.depth);
         ici.mipLevels = levels;
         ici.arrayLayers = dims.layers;
