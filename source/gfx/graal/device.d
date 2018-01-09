@@ -1,6 +1,7 @@
 module gfx.graal.device;
 
 import gfx.core.rc;
+import gfx.graal.buffer;
 import gfx.graal.format;
 import gfx.graal.image;
 import gfx.graal.memory;
@@ -89,6 +90,8 @@ interface Device : AtomicRefCounted
     DeviceMemory allocateMemory(uint memPropIndex, size_t size);
     void flushMappedMemory(MappedMemorySet set);
     void invalidateMappedMemory(MappedMemorySet set);
+
+    Buffer createBuffer(BufferUsage usage, size_t size);
 
     Image createImage(ImageType type, ImageDims dims, Format format,
                       ImageUsage usage, uint samples, uint levels=1);

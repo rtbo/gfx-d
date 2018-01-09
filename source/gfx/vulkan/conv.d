@@ -5,6 +5,7 @@ package:
 
 import erupted;
 
+import gfx.graal.buffer;
 import gfx.graal.format;
 import gfx.graal.image;
 import gfx.graal.memory;
@@ -30,7 +31,6 @@ FormatFeatures fromVk(in VkFormatFeatureFlags vkFff) {
 }
 
 static assert(Format.rgba8_uNorm.toVk() == VK_FORMAT_R8G8B8A8_UNORM);
-
 
 VkImageType toVk(in ImageType it) {
     final switch (it) {
@@ -86,6 +86,10 @@ QueueCap queueCapFromVk(in VkQueueFlags vkFlags)
         caps |= QueueCap.compute;
     }
     return caps;
+}
+
+VkBufferUsageFlags bufferUsageToVk(in BufferUsage usage) {
+    return cast(VkBufferUsageFlags)usage;
 }
 
 VkImageUsageFlags imageUsageToVk(in ImageUsage usage)

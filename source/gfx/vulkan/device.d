@@ -10,6 +10,7 @@ import gfx.graal.device;
 import gfx.graal.image;
 import gfx.graal.memory;
 import gfx.vulkan;
+import gfx.vulkan.buffer;
 import gfx.vulkan.conv;
 import gfx.vulkan.error;
 import gfx.vulkan.image;
@@ -110,6 +111,19 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
         vkInvalidateMappedMemoryRanges(vk, cast(uint)mmrs.length, mmrs.ptr);
     }
 
+    override Buffer createBuffer(BufferUsage usage, size_t size)
+    {
+        VkBufferCreateInfo bci;
+        bci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bci.size = size;
+        bci.usage = bufferUsageToVk(usage);
+
+        VkBuffer vkBuf;
+        vulkanEnforce(vkCreateBuffer(vk, &bci, null, &vkBuf), "Could not create a Vulkan buffer");
+
+        return new VulkanBuffer(vkBuf, this, usage, size);
+    }
+
     override Image createImage(ImageType type, ImageDims dims, Format format,
                                ImageUsage usage, uint samples, uint levels=1)
     {
@@ -131,7 +145,6 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
 
         return new VulkanImage(vkImg, this, dims);
     }
-
 
     VulkanPhysicalDevice _pd;
 }
