@@ -3,8 +3,7 @@ module gfx.vulkan;
 
 import erupted;
 
-import gfx.vulkan.device;
-import gfx.vulkan.error;
+import gfx.graal;
 
 /// Creates an Instance object with Vulkan backend
 VulkanInstance createVulkanInstance(in string appName="", in uint appVersion=0)
@@ -39,11 +38,13 @@ VulkanInstance createVulkanInstance(in string appName="", in uint appVersion=0)
 package:
 
 import gfx.core.rc;
-import gfx.graal;
 import gfx.graal.device;
 import gfx.graal.format;
 import gfx.graal.memory;
 import gfx.graal.queue;
+import gfx.vulkan.conv;
+import gfx.vulkan.device;
+import gfx.vulkan.error;
 
 
 immutable deviceExtensions = [
@@ -254,55 +255,3 @@ DeviceType devTypeFromVk(in VkPhysicalDeviceType vkType)
         assert(false, "unexpected vulkan device type constant");
     }
 }
-
-MemProps memPropsFromVk(in VkMemoryPropertyFlags vkFlags)
-{
-    MemProps props = cast(MemProps)0;
-    if (vkFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) {
-        props |= MemProps.deviceLocal;
-    }
-    if (vkFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) {
-        props |= MemProps.hostVisible;
-    }
-    if (vkFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) {
-        props |= MemProps.hostCoherent;
-    }
-    if (vkFlags & VK_MEMORY_PROPERTY_HOST_CACHED_BIT) {
-        props |= MemProps.hostCached;
-    }
-    if (vkFlags & VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT) {
-        props |= MemProps.lazilyAllocated;
-    }
-    return props;
-}
-
-QueueCap queueCapFromVk(in VkQueueFlags vkFlags)
-{
-    QueueCap caps = cast(QueueCap)0;
-    if (vkFlags & VK_QUEUE_GRAPHICS_BIT) {
-        caps |= QueueCap.graphics;
-    }
-    if (vkFlags & VK_QUEUE_COMPUTE_BIT) {
-        caps |= QueueCap.compute;
-    }
-    return caps;
-}
-
-
-VkFormat formatToVk(in Format format) {
-    return cast(VkFormat)format;
-}
-
-Format formatFromVk(in VkFormat vkFormat) {
-    return cast(Format)vkFormat;
-}
-
-VkFormatFeatureFlags formatFeaturesToVk(in FormatFeatures ff) {
-    return cast(VkFormatFeatureFlags)ff;
-}
-
-FormatFeatures formatFeaturesFromVk(in VkFormatFeatureFlags vkFff) {
-    return cast(FormatFeatures)vkFff;
-}
-
-static assert(formatToVk(Format.rgba8_uNorm) == VK_FORMAT_R8G8B8A8_UNORM);

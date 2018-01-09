@@ -1,9 +1,10 @@
 module gfx.graal.device;
 
 import gfx.core.rc;
+import gfx.graal.format;
+import gfx.graal.image;
 import gfx.graal.memory;
 import gfx.graal.queue;
-import gfx.graal.format;
 
 struct DeviceFeatures {}
 
@@ -24,8 +25,8 @@ struct QueueRequest
     float priority;
 }
 
-/// Represent a physical device. This interface is meant to describe the device
-/// and open it.
+/// Represent a physical device. This interface is meant to describe a graphics
+/// device and open a logical device out of it.
 interface PhysicalDevice : AtomicRefCounted
 {
     @property uint apiVersion();
@@ -40,7 +41,7 @@ interface PhysicalDevice : AtomicRefCounted
     @property QueueFamily[] queueFamilies();
     FormatProperties formatProperties(in Format format);
 
-    /// Open a device with the specified queues.
+    /// Open a logical device with the specified queues.
     /// Returns: null if it can't meet all requested queues, the opened device otherwise.
     Device open(in QueueRequest[] queues)
     in {
@@ -82,10 +83,13 @@ struct MappedMemorySet
     }
 }
 
-/// Handle to a physical device
+/// Handle to a logical device
 interface Device : AtomicRefCounted
 {
     DeviceMemory allocateMemory(uint memPropIndex, size_t size);
     void flushMappedMemory(MappedMemorySet set);
     void invalidateMappedMemory(MappedMemorySet set);
+
+    Image createImage(ImageType type, ImageDims dims, Format format,
+                      ImageUsage usage, uint samples, uint levels=1);
 }

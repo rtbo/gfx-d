@@ -32,6 +32,12 @@ struct MemoryType {
     MemProps props;
 }
 
+struct MemoryRequirements {
+    size_t size;
+    size_t alignment;
+    MemProps props;
+}
+
 struct MemoryMap(T)
 {
     private Rc!DeviceMemory dm;
