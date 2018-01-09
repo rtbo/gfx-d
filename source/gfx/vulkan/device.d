@@ -15,26 +15,52 @@ import gfx.vulkan.error;
 import gfx.vulkan.image;
 import gfx.vulkan.memory;
 
-final class VulkanDevice : Device
+class VulkanDevObj(VkType, alias destroyFn) : Disposable
+{
+    this (VkType vk, VulkanDevice dev)
+    {
+        _vk = vk;
+        _dev = dev;
+        _dev.retain();
+    }
+
+    override void dispose() {
+        destroyFn(vkDev, vk, null);
+        _dev.release();
+        _dev = null;
+    }
+
+    final @property VkType vk() {
+        return _vk;
+    }
+
+    final @property VulkanDevice dev() {
+        return _dev;
+    }
+
+    final @property VkDevice vkDev() {
+        return _dev.vk;
+    }
+
+    VkType _vk;
+    VulkanDevice _dev;
+}
+
+final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
 {
     mixin(atomicRcCode);
 
     this (VkDevice vk, VulkanPhysicalDevice pd)
     {
-        _vk = vk;
+        super(vk);
         _pd = pd;
         _pd.retain();
     }
 
     override void dispose() {
-        vkDestroyDevice(_vk, null);
-        _vk = null;
+        super.dispose();
         _pd.release();
         _pd = null;
-    }
-
-    @property VkDevice vk() {
-        return _vk;
     }
 
     @property VulkanPhysicalDevice pd() {
@@ -49,7 +75,7 @@ final class VulkanDevice : Device
         mai.memoryTypeIndex = memTypeIndex;
 
         VkDeviceMemory vkMem;
-        vulkanEnforce(vkAllocateMemory(_vk, &mai, null, &vkMem), "Could not allocate device memory");
+        vulkanEnforce(vkAllocateMemory(vk, &mai, null, &vkMem), "Could not allocate device memory");
 
         return new VulkanDeviceMemory(vkMem, this, memTypeIndex, size);
     }
@@ -67,7 +93,7 @@ final class VulkanDevice : Device
             return mmr;
         }).array;
 
-        vkFlushMappedMemoryRanges(_vk, cast(uint)mmrs.length, mmrs.ptr);
+        vkFlushMappedMemoryRanges(vk, cast(uint)mmrs.length, mmrs.ptr);
     }
     override void invalidateMappedMemory(MappedMemorySet set) {
         import std.algorithm : map;
@@ -81,7 +107,7 @@ final class VulkanDevice : Device
             return mmr;
         }).array;
 
-        vkInvalidateMappedMemoryRanges(_vk, cast(uint)mmrs.length, mmrs.ptr);
+        vkInvalidateMappedMemoryRanges(vk, cast(uint)mmrs.length, mmrs.ptr);
     }
 
     override Image createImage(ImageType type, ImageDims dims, Format format,
@@ -101,12 +127,11 @@ final class VulkanDevice : Device
         ici.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
         VkImage vkImg;
-        vulkanEnforce(vkCreateImage(_vk, &ici, null, &vkImg), "Could not create a Vulkan image");
+        vulkanEnforce(vkCreateImage(vk, &ici, null, &vkImg), "Could not create a Vulkan image");
 
         return new VulkanImage(vkImg, this, dims);
     }
 
 
-    VkDevice _vk;
     VulkanPhysicalDevice _pd;
 }

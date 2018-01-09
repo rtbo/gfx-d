@@ -12,25 +12,14 @@ import gfx.vulkan.device;
 import gfx.vulkan.error;
 import gfx.vulkan.memory;
 
-class VulkanImage : Image
+class VulkanImage : VulkanDevObj!(VkImage, vkDestroyImage), Image
 {
     mixin(atomicRcCode);
 
     this(VkImage vk, VulkanDevice dev, ImageDims dims)
     {
-        _vk = vk;
-        _dev = dev;
-        _dev.retain();
+        super(vk, dev);
         _dims = dims;
-    }
-
-    override void dispose() {
-        vkDestroyImage(_dev.vk, _vk, null);
-        _dev.release();
-    }
-
-    final @property VkImage vk() {
-        return _vk;
     }
 
     override @property ImageDims dims() {
@@ -39,7 +28,7 @@ class VulkanImage : Image
 
     override @property MemoryRequirements memoryRequirements() {
         VkMemoryRequirements vkMr;
-        vkGetImageMemoryRequirements(_dev.vk, _vk, &vkMr);
+        vkGetImageMemoryRequirements(vkDev, vk, &vkMr);
         return vkMr.fromVk();
     }
 
@@ -47,12 +36,10 @@ class VulkanImage : Image
     {
         auto vulkanMem = cast(VulkanDeviceMemory)mem;
         vulkanEnforce(
-            vkBindImageMemory(_dev.vk, vk, vulkanMem.vk, offset),
+            vkBindImageMemory(vkDev, vk, vulkanMem.vk, offset),
             "Could not bind image memory"
         );
     }
 
-    private VkImage _vk;
-    private VulkanDevice _dev;
     private ImageDims _dims;
 }

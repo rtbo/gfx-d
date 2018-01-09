@@ -47,31 +47,45 @@ import gfx.vulkan.device;
 import gfx.vulkan.error;
 
 
+class VulkanObj(VkType, alias destroyFn) : Disposable
+{
+    this (VkType vk) {
+        _vk = vk;
+    }
+
+    override void dispose() {
+        destroyFn(_vk, null);
+    }
+
+    final @property VkType vk() {
+        return _vk;
+    }
+
+    private VkType _vk;
+}
+
+
 immutable deviceExtensions = [
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 ];
 
 
-class VulkanInstance : Instance
+class VulkanInstance : VulkanObj!(VkInstance, vkDestroyInstance), Instance
 {
     mixin(atomicRcCode);
 
     this(VkInstance vk) {
-        _vk = vk;
-    }
-
-    override void dispose() {
-        vkDestroyInstance(_vk, null);
+        super(vk);
     }
 
     override PhysicalDevice[] devices()
     {
         import std.array : array, uninitializedArray;
         uint count;
-        vulkanEnforce(vkEnumeratePhysicalDevices(_vk, &count, null),
+        vulkanEnforce(vkEnumeratePhysicalDevices(vk, &count, null),
                 "Could not enumerate Vulkan devices");
         auto devices = uninitializedArray!(VkPhysicalDevice[])(count);
-        vulkanEnforce(vkEnumeratePhysicalDevices(_vk, &count, devices.ptr),
+        vulkanEnforce(vkEnumeratePhysicalDevices(vk, &count, devices.ptr),
                 "Could not enumerate Vulkan devices");
 
         import std.algorithm : map;
@@ -79,8 +93,6 @@ class VulkanInstance : Instance
             .map!(d => cast(PhysicalDevice)(new VulkanPhysicalDevice(d, this)))
             .array;
     }
-
-    private VkInstance _vk;
 }
 
 class VulkanPhysicalDevice : PhysicalDevice

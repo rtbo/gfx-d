@@ -9,26 +9,15 @@ import gfx.core.rc;
 import gfx.graal.memory;
 import gfx.vulkan.device;
 
-class VulkanDeviceMemory : DeviceMemory
+class VulkanDeviceMemory : VulkanDevObj!(VkDeviceMemory, vkFreeMemory), DeviceMemory
 {
     mixin(atomicRcCode);
 
     this(VkDeviceMemory vk, VulkanDevice dev, in uint typeIndex, in size_t size)
     {
-        _vk = vk;
-        _dev = dev;
-        _dev.retain();
+        super(vk, dev);
         _typeIndex = typeIndex;
         _size = size;
-    }
-
-    override void dispose() {
-        vkFreeMemory(_dev.vk, _vk, null);
-        _dev.release();
-    }
-
-    @property VkDeviceMemory vk() {
-        return _vk;
     }
 
     override @property uint typeIndex() {
@@ -42,18 +31,16 @@ class VulkanDeviceMemory : DeviceMemory
     void* map(in size_t offset, in size_t size) {
         void *data;
         vulkanEnforce(
-            vkMapMemory(_dev.vk, _vk, offset, size, 0, &data),
+            vkMapMemory(vkDev, vk, offset, size, 0, &data),
             "Could not map device memory"
         );
         return data;
     }
 
     void unmap() {
-        vkUnmapMemory(_dev.vk, _vk);
+        vkUnmapMemory(vkDev, vk);
     }
 
-    private VkDeviceMemory _vk;
-    private VulkanDevice _dev;
     private uint _typeIndex;
     private size_t _size;
 }
