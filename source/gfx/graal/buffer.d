@@ -2,6 +2,7 @@
 module gfx.graal.buffer;
 
 import gfx.core.rc;
+import gfx.graal.format;
 import gfx.graal.memory;
 
 enum BufferUsage
@@ -23,4 +24,14 @@ interface Buffer : AtomicRefCounted
     @property BufferUsage usage();
     @property MemoryRequirements memoryRequirements();
     void bindMemory(DeviceMemory mem, in size_t offset);
+
+    BufferView createView(Format format, size_t offset, size_t size);
+}
+
+interface BufferView : AtomicRefCounted
+{
+    @property Format format();
+    @property Buffer buffer();
+    @property size_t offset();
+    @property size_t size();
 }
