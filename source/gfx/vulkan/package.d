@@ -5,26 +5,210 @@ import erupted;
 
 import gfx.graal;
 
-/// Creates an Instance object with Vulkan backend
-VulkanInstance createVulkanInstance(in string appName="", in uint appVersion=0)
+
+enum surfaceExtension = "VK_KHR_surface";
+
+enum win32SurfaceExtension = "VK_KHR_win32_surface";
+enum xlibSurfaceExtension = "VK_KHR_xlib_surface";
+enum xcbSurfaceExtension = "VK_KHR_xcb_surface";
+enum waylandSurfaceExtension = "VK_KHR_wayland_surface";
+enum mirSurfaceExtension = "VK_KHR_mir_surface";
+enum androidSurfaceExtension = "VK_KHR_android_surface";
+
+enum swapChainExtension = "VK_KHR_swapchain";
+
+enum VulkanPlatform {
+    win32, xlib, xcb, wayland, mir, android
+}
+
+enum lunarGValidationLayers = [
+    "VK_LAYER_LUNARG_core_validation",
+    "VK_LAYER_LUNARG_standard_validation",
+    "VK_LAYER_LUNARG_parameter_validation",
+];
+
+string[] surfaceInstanceExtensions(VulkanPlatform platform)
 {
-    import gfx : gfxVersionMaj, gfxVersionMin, gfxVersionMic;
+    final switch (platform) {
+    case VulkanPlatform.win32 : return [
+        surfaceExtension, win32SurfaceExtension
+    ];
+    case VulkanPlatform.xlib : return [
+        surfaceExtension, xlibSurfaceExtension
+    ];
+    case VulkanPlatform.xcb : return [
+        surfaceExtension, xcbSurfaceExtension
+    ];
+    case VulkanPlatform.wayland : return [
+        surfaceExtension, waylandSurfaceExtension
+    ];
+    case VulkanPlatform.mir : return [
+        surfaceExtension, mirSurfaceExtension
+    ];
+    case VulkanPlatform.android : return [
+        surfaceExtension, androidSurfaceExtension
+    ];
+    }
+}
+
+/// Load global level vulkan functions
+void vulkanInit()
+{
+    DerelictErupted.load();
+}
+
+struct VulkanVersion
+{
+    import std.bitmanip : bitfields;
+    mixin(bitfields!(
+        uint, "patch", 12,
+        uint, "minor", 10,
+        uint, "major", 10,
+    ));
+
+    this (in uint major, in uint minor, in uint patch) {
+        this.major = major; this.minor = minor; this.patch = patch;
+    }
+
+    this (in uint vkVer) {
+        this(VK_VERSION_MAJOR(vkVer), VK_VERSION_MINOR(vkVer), VK_VERSION_PATCH(vkVer));
+    }
+
+    static VulkanVersion fromUint(in uint vkVer) {
+        return *cast(VulkanVersion*)(cast(void*)&vkVer);
+    }
+
+    uint toUint() const {
+        return *cast(uint*)(cast(void*)&this);
+    }
+
+    string toString() {
+        import std.format : format;
+        return format("VulkanVersion(%s, %s, %s)", this.major, this.minor, this.patch);
+    }
+}
+
+unittest {
+    const vkVer = VK_MAKE_VERSION(12, 7, 38);
+    auto vv = VulkanVersion.fromUint(vkVer);
+    assert(vv.major == 12);
+    assert(vv.minor == 7);
+    assert(vv.patch == 38);
+    assert(vv.toUint() == vkVer);
+}
+
+struct VulkanLayerProperties
+{
+    string layerName;
+    VulkanVersion specVer;
+    VulkanVersion implVer;
+    string description;
+}
+
+struct VulkanExtensionProperties
+{
+    string extensionName;
+    VulkanVersion specVer;
+}
+
+/// Retrieve available instance level layer properties
+@property VulkanLayerProperties[] vulkanInstanceLayers()
+{
+    uint count;
+    vulkanEnforce(
+        vkEnumerateInstanceLayerProperties(&count, null),
+        "Could not retrieve Vulkan instance layers"
+    );
+    if (!count) return[];
+
+    auto vkLayers = new VkLayerProperties[count];
+    vulkanEnforce(
+        vkEnumerateInstanceLayerProperties(&count, &vkLayers[0]),
+        "Could not retrieve Vulkan instance layers"
+    );
+
+    import std.algorithm : map;
+    import std.array : array;
+    import std.string : fromStringz;
+
+    return vkLayers
+            .map!((ref VkLayerProperties vkLp) {
+                return VulkanLayerProperties(
+                    fromStringz(&vkLp.layerName[0]).idup,
+                    VulkanVersion.fromUint(vkLp.specVersion),
+                    VulkanVersion.fromUint(vkLp.implementationVersion),
+                    fromStringz(&vkLp.description[0]).idup,
+                );
+            })
+            .array;
+}
+
+/// Retrieve available instance level extensions properties
+VulkanExtensionProperties[] vulkanInstanceExtensions(in string layerName=null)
+{
     import std.string : toStringz;
 
-    DerelictErupted.load();
+    const(char)* layer;
+    if (layerName.length) {
+        layer = toStringz(layerName);
+    }
+    uint count;
+    vulkanEnforce(
+        vkEnumerateInstanceExtensionProperties(layer, &count, null),
+        "Could not retrieve Vulkan instance layers"
+    );
+    if (!count) return[];
+
+    auto vkExts = new VkExtensionProperties[count];
+    vulkanEnforce(
+        vkEnumerateInstanceExtensionProperties(layer, &count, &vkExts[0]),
+        "Could not retrieve Vulkan instance layers"
+    );
+
+    import std.algorithm : map;
+    import std.array : array;
+    import std.string : fromStringz;
+
+    return vkExts
+            .map!((ref VkExtensionProperties vkExt) {
+                return VulkanExtensionProperties(
+                    fromStringz(&vkExt.extensionName[0]).idup,
+                    VulkanVersion.fromUint(vkExt.specVersion)
+                );
+            })
+            .array;
+}
+
+
+/// Creates an Instance object with Vulkan backend
+VulkanInstance createVulkanInstance(in string[] layers, in string[] extensions,
+                                    in string appName=null,
+                                    in VulkanVersion appVersion=VulkanVersion(0, 0, 0))
+{
+    import gfx : gfxVersionMaj, gfxVersionMin, gfxVersionMic;
+    import std.algorithm : map;
+    import std.array : array;
+    import std.string : toStringz;
 
     VkApplicationInfo ai;
     ai.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     if (appName.length) {
         ai.pApplicationName = toStringz(appName);
     }
-    ai.applicationVersion = appVersion;
+    ai.applicationVersion = appVersion.toUint();
     ai.pEngineName = "gfx-d\n".ptr;
     ai.engineVersion = VK_MAKE_VERSION(gfxVersionMaj, gfxVersionMin, gfxVersionMic);
+
+    auto vkLayers = layers.map!toStringz.array;
+    auto vkExts = extensions.map!toStringz.array;
 
     VkInstanceCreateInfo ici;
     ici.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     ici.pApplicationInfo = &ai;
+    ici.enabledLayerCount = cast(uint)vkLayers.length;
+    ici.ppEnabledLayerNames = &vkLayers[0];
+    ici.enabledExtensionCount = cast(uint)vkExts.length;
+    ici.ppEnabledExtensionNames = &vkExts[0];
 
     VkInstance vkInst;
     vulkanEnforce(vkCreateInstance(&ici, null, &vkInst), "Could not create Vulkan instance");

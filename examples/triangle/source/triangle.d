@@ -4,12 +4,40 @@ import erupted;
 
 import gfx.core.rc;
 import gfx.graal.device;
-import gfx.vulkan : createVulkanInstance;
+import gfx.vulkan;
 
+import std.algorithm;
+import std.exception;
 import std.stdio;
 
 int main() {
-    auto instance = createVulkanInstance("Triangle").rc;
+    vulkanInit();
+
+    writeln("layers:");
+    vulkanInstanceLayers.each!(writeln);
+    writeln("extensions:");
+    vulkanInstanceExtensions.each!(writeln);
+
+    version(Windows) {
+        const extensions = surfaceInstanceExtensions(VulkanPlatform.win32);
+    }
+    else version(linux) {
+        const extensions = surfaceInstanceExtensions(VulkanPlatform.xcb);
+    }
+    else {
+        static assert(false, "unsupported platform");
+    }
+
+    debug {
+        enum layers = lunarGValidationLayers;
+    }
+    else {
+        enum string[] layers = [];
+    }
+
+    auto instance = createVulkanInstance(
+        layers, extensions, "Triangle", VulkanVersion(0, 0, 1)
+    ).rc;
 
     auto physicalDevices = instance.devices();
     retainArray(physicalDevices);
