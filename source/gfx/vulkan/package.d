@@ -52,6 +52,7 @@ string[] surfaceInstanceExtensions(VulkanPlatform platform)
 }
 
 /// Load global level vulkan functions
+/// This function must be called before any other in this module
 void vulkanInit()
 {
     DerelictErupted.load();
@@ -155,14 +156,14 @@ VulkanExtensionProperties[] vulkanInstanceExtensions(in string layerName=null)
     uint count;
     vulkanEnforce(
         vkEnumerateInstanceExtensionProperties(layer, &count, null),
-        "Could not retrieve Vulkan instance layers"
+        "Could not retrieve Vulkan instance extensions"
     );
     if (!count) return[];
 
     auto vkExts = new VkExtensionProperties[count];
     vulkanEnforce(
         vkEnumerateInstanceExtensionProperties(layer, &count, &vkExts[0]),
-        "Could not retrieve Vulkan instance layers"
+        "Could not retrieve Vulkan instance extensions"
     );
 
     import std.algorithm : map;
@@ -219,6 +220,99 @@ VulkanInstance createVulkanInstance(in string[] layers, in string[] extensions,
     return new VulkanInstance(vkInst);
 }
 
+/// Retrieve available device level layers
+@property VulkanLayerProperties[] vulkanDeviceLayers(PhysicalDevice device)
+{
+    auto pd = cast(VulkanPhysicalDevice)device;
+    if (!pd) return [];
+
+    uint count;
+    vulkanEnforce(
+        vkEnumerateDeviceLayerProperties(pd.vk, &count, null),
+        "Could not retrieve Vulkan device layers"
+    );
+    if (!count) return[];
+
+    auto vkLayers = new VkLayerProperties[count];
+    vulkanEnforce(
+        vkEnumerateDeviceLayerProperties(pd.vk, &count, &vkLayers[0]),
+        "Could not retrieve Vulkan device layers"
+    );
+
+    import std.algorithm : map;
+    import std.array : array;
+    import std.string : fromStringz;
+
+    return vkLayers
+            .map!((ref VkLayerProperties vkLp) {
+                return VulkanLayerProperties(
+                    fromStringz(&vkLp.layerName[0]).idup,
+                    VulkanVersion.fromUint(vkLp.specVersion),
+                    VulkanVersion.fromUint(vkLp.implementationVersion),
+                    fromStringz(&vkLp.description[0]).idup,
+                );
+            })
+            .array;
+}
+
+/// Retrieve available instance level extensions properties
+VulkanExtensionProperties[] vulkanDeviceExtensions(PhysicalDevice device, in string layerName=null)
+{
+    auto pd = cast(VulkanPhysicalDevice)device;
+    if (!pd) return [];
+
+    import std.string : toStringz;
+
+    const(char)* layer;
+    if (layerName.length) {
+        layer = toStringz(layerName);
+    }
+
+    uint count;
+    vulkanEnforce(
+        vkEnumerateDeviceExtensionProperties(pd.vk, layer, &count, null),
+        "Could not retrieve Vulkan device extensions"
+    );
+    if (!count) return[];
+
+    auto vkExts = new VkExtensionProperties[count];
+    vulkanEnforce(
+        vkEnumerateDeviceExtensionProperties(pd.vk, layer, &count, &vkExts[0]),
+        "Could not retrieve Vulkan device extensions"
+    );
+
+    import std.algorithm : map;
+    import std.array : array;
+    import std.string : fromStringz;
+
+    return vkExts
+            .map!((ref VkExtensionProperties vkExt) {
+                return VulkanExtensionProperties(
+                    fromStringz(&vkExt.extensionName[0]).idup,
+                    VulkanVersion.fromUint(vkExt.specVersion)
+                );
+            })
+            .array;
+}
+
+
+void setDeviceOpenVulkanLayers(PhysicalDevice device, string[] layers)
+{
+    auto pd = cast(VulkanPhysicalDevice)device;
+    if (!pd) return;
+
+    pd._openLayers = layers;
+}
+
+void setDeviceOpenVulkanExtensions(PhysicalDevice device, string[] extensions)
+{
+    auto pd = cast(VulkanPhysicalDevice)device;
+    if (!pd) return;
+
+    pd._openExtensions = extensions;
+}
+
+
 package:
 
 import gfx.core.rc;
@@ -247,12 +341,6 @@ class VulkanObj(VkType, alias destroyFn) : Disposable
 
     private VkType _vk;
 }
-
-
-immutable deviceExtensions = [
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME
-];
-
 
 class VulkanInstance : VulkanObj!(VkInstance, vkDestroyInstance), Instance
 {
@@ -294,6 +382,10 @@ class VulkanPhysicalDevice : PhysicalDevice
     override void dispose() {
         _inst.release();
         _inst = null;
+    }
+
+    @property VkPhysicalDevice vk() {
+        return _vk;
     }
 
     override @property uint apiVersion() {
@@ -413,14 +505,17 @@ class VulkanPhysicalDevice : PhysicalDevice
             return qci;
         }).array;
 
-        const extensions = deviceExtensions.map!toStringz.array;
+        const layers = _openLayers.map!toStringz.array;
+        const extensions = _openExtensions.map!toStringz.array;
 
         VkDeviceCreateInfo ci;
         ci.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         ci.queueCreateInfoCount = cast(uint)qcis.length;
         ci.pQueueCreateInfos = qcis.ptr;
+        ci.enabledLayerCount = cast(uint)layers.length;
+        ci.ppEnabledLayerNames = &layers[0];
         ci.enabledExtensionCount = cast(uint)extensions.length;
-        ci.ppEnabledExtensionNames = extensions.ptr;
+        ci.ppEnabledExtensionNames = &extensions[0];
 
         VkDevice vkDev;
         vulkanEnforce(vkCreateDevice(_vk, &ci, null, &vkDev),
@@ -432,6 +527,9 @@ class VulkanPhysicalDevice : PhysicalDevice
     private VkPhysicalDevice _vk;
     private VkPhysicalDeviceProperties _vkProps;
     private VulkanInstance _inst;
+
+    private string[] _openLayers;
+    private string[] _openExtensions;
 }
 
 DeviceType devTypeFromVk(in VkPhysicalDeviceType vkType)

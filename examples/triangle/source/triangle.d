@@ -44,6 +44,11 @@ int main() {
     scope(exit) releaseArray(physicalDevices);
 
     foreach (pd; physicalDevices) {
+        writeln("device layers:");
+        pd.vulkanDeviceLayers.each!(writeln);
+        writeln("device extensions:");
+        pd.vulkanDeviceExtensions.each!(writeln);
+
         writefln("apiVersion = %s", pd.apiVersion);
         writefln("driverVersion = %s", pd.driverVersion);
         writefln("vendorId = %s", pd.vendorId);
@@ -52,6 +57,10 @@ int main() {
         writefln("type = %s", pd.type);
         writefln("mem props = %s", pd.memoryProperties);
         writefln("queue families = %s", pd.queueFamilies);
+
+        pd.setDeviceOpenVulkanLayers(layers);
+        pd.setDeviceOpenVulkanExtensions([ swapChainExtension ]);
+
         auto dev = pd.open([QueueRequest(0, 0.5)]).rc;
         auto mem = dev.allocateMemory(0, 2*1024*1024).rc;
         writefln("mem size: %s", mem.size);
