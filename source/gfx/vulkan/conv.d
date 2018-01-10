@@ -47,9 +47,54 @@ VkImageType toVk(in ImageType it) {
     }
 }
 
+VkImageViewType toVkView(in ImageType it) {
+    final switch (it) {
+    case ImageType.d1:
+        return VK_IMAGE_VIEW_TYPE_1D;
+    case ImageType.d1Array:
+        return VK_IMAGE_VIEW_TYPE_1D_ARRAY;
+    case ImageType.d2:
+        return VK_IMAGE_VIEW_TYPE_2D;
+    case ImageType.d2Array:
+        return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+    case ImageType.cube:
+        return VK_IMAGE_VIEW_TYPE_CUBE;
+    case ImageType.cubeArray:
+        return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+    case ImageType.d3:
+        return VK_IMAGE_VIEW_TYPE_3D;
+    }
+}
+
 MemoryRequirements fromVk(in VkMemoryRequirements mr) {
     return MemoryRequirements(
         mr.size, mr.alignment, memPropsFromVk(mr.memoryTypeBits)
+    );
+}
+
+VkComponentSwizzle toVk(in CompSwizzle cs) {
+    final switch (cs) {
+    case CompSwizzle.identity : return VK_COMPONENT_SWIZZLE_IDENTITY;
+    case CompSwizzle.zero : return VK_COMPONENT_SWIZZLE_ZERO;
+    case CompSwizzle.one : return VK_COMPONENT_SWIZZLE_ONE;
+    case CompSwizzle.r : return VK_COMPONENT_SWIZZLE_R;
+    case CompSwizzle.g : return VK_COMPONENT_SWIZZLE_G;
+    case CompSwizzle.b : return VK_COMPONENT_SWIZZLE_B;
+    case CompSwizzle.a : return VK_COMPONENT_SWIZZLE_A;
+    }
+}
+
+VkComponentMapping toVk(in Swizzle swizzle) {
+    return VkComponentMapping(
+        swizzle[0].toVk(), swizzle[1].toVk(), swizzle[2].toVk(), swizzle[3].toVk(),
+    );
+}
+
+VkImageSubresourceRange toVk(in ImageSubresourceRange isr) {
+    return VkImageSubresourceRange(
+        isr.aspect.aspectToVk(),
+        cast(uint)isr.firstLevel, cast(uint)isr.levels,
+        cast(uint)isr.firstLayer, cast(uint)isr.layers,
     );
 }
 
@@ -95,4 +140,9 @@ VkBufferUsageFlags bufferUsageToVk(in BufferUsage usage) {
 VkImageUsageFlags imageUsageToVk(in ImageUsage usage)
 {
     return cast(VkImageUsageFlags)usage;
+}
+
+VkImageAspectFlags aspectToVk(in ImageAspect aspect)
+{
+    return cast(VkImageAspectFlags)aspect;
 }

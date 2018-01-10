@@ -143,7 +143,7 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
         VkImage vkImg;
         vulkanEnforce(vkCreateImage(vk, &ici, null, &vkImg), "Could not create a Vulkan image");
 
-        return new VulkanImage(vkImg, this, dims);
+        return new VulkanImage(vkImg, this, type, dims);
     }
 
     VulkanPhysicalDevice _pd;

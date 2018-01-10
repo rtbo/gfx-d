@@ -2,6 +2,7 @@
 module gfx.graal.image;
 
 import gfx.core.rc;
+import gfx.graal.format;
 import gfx.graal.memory;
 
 enum ImageType {
@@ -10,8 +11,12 @@ enum ImageType {
     d3, cube, cubeArray
 }
 
-bool isCube(in ImageType tt) {
-    return tt == ImageType.cube || tt == ImageType.cubeArray;
+bool isCube(in ImageType it) {
+    return it == ImageType.cube || it == ImageType.cubeArray;
+}
+
+bool isArray(in ImageType it) {
+    return it == ImageType.d1Array || it == ImageType.d2Array || it == ImageType.cubeArray;
 }
 
 enum CubeFace {
@@ -70,12 +75,50 @@ enum ImageUsage {
     inputAttachment         = 0x80,
 }
 
-interface Image : AtomicRefCounted
-{
-    @property ImageDims dims();
-    @property MemoryRequirements memoryRequirements();
-
-    void bindMemory(DeviceMemory mem, in size_t offset);
+enum ImageAspect {
+    color           = 0x01,
+    depth           = 0x02,
+    stencil         = 0x04,
+    depthStencil    = depth | stencil,
 }
 
 
+struct ImageSubresourceRange
+{
+    ImageAspect aspect;
+    size_t firstLevel;
+    size_t levels;
+    size_t firstLayer;
+    size_t layers;
+}
+
+enum CompSwizzle : ubyte
+{
+    identity,
+    zero, one,
+    r, g, b, a,
+}
+
+alias Swizzle = CompSwizzle[4];
+
+interface Image : AtomicRefCounted
+{
+    @property ImageType type();
+    @property Format format();
+    @property ImageDims dims();
+    @property uint levels();
+    @property MemoryRequirements memoryRequirements();
+
+    void bindMemory(DeviceMemory mem, in size_t offset);
+
+    // TODO: deduce view type from subrange and image type
+    ImageView createView(ImageType viewtype, ImageSubresourceRange isr, Swizzle swizzle);
+}
+
+
+interface ImageView : AtomicRefCounted
+{
+    @property Image image();
+    @property ImageSubresourceRange subresourceRange();
+    @property Swizzle swizzle();
+}

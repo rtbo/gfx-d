@@ -69,6 +69,8 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, vkDestroyBuffer), Buffer
 
 class VulkanBufferView : VulkanDevObj!(VkBufferView, vkDestroyBufferView), BufferView
 {
+    mixin(atomicRcCode);
+
     this(VkBufferView vk, VulkanBuffer buf, Format format, size_t offset, size_t size)
     {
         super(vk, buf.dev);
