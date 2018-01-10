@@ -7,7 +7,9 @@ import gfx.graal.image;
 import gfx.graal.memory;
 import gfx.graal.queue;
 
-struct DeviceFeatures {}
+struct DeviceFeatures {
+    bool presentation;
+}
 
 struct DeviceLimits {}
 

@@ -408,7 +408,15 @@ class VulkanPhysicalDevice : PhysicalDevice
         return devTypeFromVk(_vkProps.deviceType);
     }
     override @property DeviceFeatures features() {
-        return DeviceFeatures.init;
+        import std.algorithm : canFind, map;
+
+        auto exts = vulkanDeviceExtensions(this);
+
+        DeviceFeatures features;
+        features.presentation = exts
+                .map!(e => e.extensionName)
+                .canFind(swapChainExtension);
+        return features;
     }
     override @property DeviceLimits limits() {
         return DeviceLimits.init;
