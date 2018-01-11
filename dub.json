@@ -1,19 +1,49 @@
 {
-	"name": "gfx",
-	"authors": [
-		"Rémi Thebault"
-	],
-	"description": "D graphics rendering library",
-	"copyright": "Copyright © 2016, Rémi Thebault",
-	"license": "MIT",
-	"dependencies": {
-		"erupted": "~>1.6.11"
-	},
-	"subConfigurations": {
-		"erupted": "with-derelict-loader"
-	},
-	"subPackages": [
-		"examples/triangle"
-	],
-	"-ddoxFilterArgs": ["--min-protection=Protected", "--ex=erupted"]
+    "name": "gfx",
+    "authors": [
+        "Rémi Thebault"
+    ],
+    "description": "D graphics rendering library",
+    "copyright": "Copyright © 2016, Rémi Thebault",
+    "license": "MIT",
+
+    "subPackages": [
+        "examples/triangle"
+    ],
+    "-ddoxFilterArgs": ["--min-protection=Protected", "--ex=erupted"],
+
+    "dependencies": {
+        "erupted": "~>1.6.11"
+    },
+    "configurations": [
+        {
+            "name": "xcb",
+            "platforms": ["linux"],
+            "versions": [ "GfxVulkanXcb" ],
+            "dependencies": {
+                "xcb-d": "~>2.1.0"
+            },
+            "subConfigurations": {
+                "erupted": "dub-platform-xcb-derelict-loader"
+            }
+        },
+        {
+            "name": "windows",
+            "platforms": ["windows"],
+            "versions": [
+                "GfxVulkanWin32",
+                "VK_USE_PLATFORM_WIN32_KHR"
+            ],
+            "subConfigurations": {
+                "erupted": "with-derelict-loader"
+            }
+        },
+        {
+            "name": "offscreen",
+            "versions": ["GfxOffscreen"],
+            "subConfigurations": {
+                "erupted": "with-derelict-loader"
+            }
+        }
+    ]
 }

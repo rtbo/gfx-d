@@ -18,26 +18,8 @@ int main() {
     writeln("extensions:");
     vulkanInstanceExtensions.each!(writeln);
 
-    version(Windows) {
-        const extensions = surfaceInstanceExtensions(VulkanPlatform.win32);
-    }
-    else version(linux) {
-        const extensions = surfaceInstanceExtensions(VulkanPlatform.xcb);
-    }
-    else {
-        static assert(false, "unsupported platform");
-    }
 
-    debug {
-        enum layers = lunarGValidationLayers;
-    }
-    else {
-        enum string[] layers = [];
-    }
-
-    auto instance = createVulkanInstance(
-        layers, extensions, "Triangle", VulkanVersion(0, 0, 1)
-    ).rc;
+    auto instance = createVulkanInstance("Triangle", VulkanVersion(0, 0, 1)).rc;
 
     auto physicalDevices = instance.devices();
     retainArray(physicalDevices);
@@ -57,9 +39,6 @@ int main() {
         writefln("type = %s", pd.type);
         writefln("mem props = %s", pd.memoryProperties);
         writefln("queue families = %s", pd.queueFamilies);
-
-        pd.setDeviceOpenVulkanLayers(layers);
-        pd.setDeviceOpenVulkanExtensions([ swapChainExtension ]);
 
         auto dev = pd.open([QueueRequest(0, 0.5)]).rc;
         auto mem = dev.allocateMemory(0, 2*1024*1024).rc;

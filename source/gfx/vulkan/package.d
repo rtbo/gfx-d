@@ -6,20 +6,7 @@ import erupted;
 import gfx.graal;
 
 
-enum surfaceExtension = "VK_KHR_surface";
-
-enum win32SurfaceExtension = "VK_KHR_win32_surface";
-enum xlibSurfaceExtension = "VK_KHR_xlib_surface";
-enum xcbSurfaceExtension = "VK_KHR_xcb_surface";
-enum waylandSurfaceExtension = "VK_KHR_wayland_surface";
-enum mirSurfaceExtension = "VK_KHR_mir_surface";
-enum androidSurfaceExtension = "VK_KHR_android_surface";
-
-enum swapChainExtension = "VK_KHR_swapchain";
-
-enum VulkanPlatform {
-    win32, xlib, xcb, wayland, mir, android
-}
+// some standard layers
 
 enum lunarGValidationLayers = [
     "VK_LAYER_LUNARG_core_validation",
@@ -27,35 +14,44 @@ enum lunarGValidationLayers = [
     "VK_LAYER_LUNARG_parameter_validation",
 ];
 
-string[] surfaceInstanceExtensions(VulkanPlatform platform)
-{
-    final switch (platform) {
-    case VulkanPlatform.win32 : return [
-        surfaceExtension, win32SurfaceExtension
-    ];
-    case VulkanPlatform.xlib : return [
-        surfaceExtension, xlibSurfaceExtension
-    ];
-    case VulkanPlatform.xcb : return [
-        surfaceExtension, xcbSurfaceExtension
-    ];
-    case VulkanPlatform.wayland : return [
-        surfaceExtension, waylandSurfaceExtension
-    ];
-    case VulkanPlatform.mir : return [
-        surfaceExtension, mirSurfaceExtension
-    ];
-    case VulkanPlatform.android : return [
-        surfaceExtension, androidSurfaceExtension
-    ];
-    }
+// instance level extensions
+
+enum surfaceExtension = "VK_KHR_surface";
+
+version(Windows) {
+    enum win32SurfaceExtension = "VK_KHR_win32_surface";
+}
+version(linux) {
+    enum xlibSurfaceExtension = "VK_KHR_xlib_surface";
+    enum xcbSurfaceExtension = "VK_KHR_xcb_surface";
 }
 
-/// Load global level vulkan functions
+// device level extensions
+
+enum swapChainExtension = "VK_KHR_swapchain";
+
+
+version(GfxVulkanXcb) {
+    enum surfaceInstanceExtensions = [
+        surfaceExtension, xcbSurfaceExtension
+    ];
+}
+version(GfxVulkanWin32) {
+    enum surfaceInstanceExtensions = [
+        surfaceExtension, win32SurfaceExtension
+    ];
+}
+version(GfxOffscreen) {
+    enum surfaceInstanceExtensions = [];
+}
+
+/// Load global level vulkan functions, and instance level layers and extensions
 /// This function must be called before any other in this module
 void vulkanInit()
 {
     DerelictErupted.load();
+    _instanceLayers = loadInstanceLayers();
+    _instanceExtensions = loadInstanceExtensions();
 }
 
 struct VulkanVersion
@@ -104,6 +100,11 @@ struct VulkanLayerProperties
     VulkanVersion specVer;
     VulkanVersion implVer;
     string description;
+
+    @property VulkanExtensionProperties[] instanceExtensions()
+    {
+        return loadInstanceExtensions(layerName);
+    }
 }
 
 struct VulkanExtensionProperties
@@ -113,7 +114,137 @@ struct VulkanExtensionProperties
 }
 
 /// Retrieve available instance level layer properties
-@property VulkanLayerProperties[] vulkanInstanceLayers()
+@property VulkanLayerProperties[] vulkanInstanceLayers() {
+    return _instanceLayers;
+}
+/// Retrieve available instance level extensions properties
+@property VulkanExtensionProperties[] vulkanInstanceExtensions()
+{
+    return _instanceExtensions;
+}
+
+/// Creates a vulkan instance with default layers and extensions
+VulkanInstance createVulkanInstance(in string appName=null,
+                                    in VulkanVersion appVersion=VulkanVersion(0, 0, 0))
+{
+    debug {
+        const layers = lunarGValidationLayers;
+    }
+    else {
+        const string[] layers = [];
+    }
+
+    return createVulkanInstance(layers, surfaceInstanceExtensions, appName, appVersion);
+}
+
+/// Creates an Instance object with Vulkan backend with user specified layers and extensions
+VulkanInstance createVulkanInstance(in string[] layers, in string[] extensions,
+                                    in string appName=null,
+                                    in VulkanVersion appVersion=VulkanVersion(0, 0, 0))
+{
+    import gfx : gfxVersionMaj, gfxVersionMin, gfxVersionMic;
+    import std.algorithm : all, canFind, map;
+    import std.array : array;
+    import std.exception : enforce;
+    import std.string : toStringz;
+
+    // throw if some requested layers or extensions are not available
+    // TODO: specific exception
+    foreach (l; layers) {
+        enforce(
+            _instanceLayers.map!(il => il.layerName).canFind(l),
+            "Could not find layer " ~ l ~ " when creating Vulkan instance"
+        );
+    }
+    foreach (e; extensions) {
+        enforce(
+            _instanceExtensions.map!(ie => ie.extensionName).canFind(e),
+            "Could not find extension " ~ e ~ " when creating Vulkan instance"
+        );
+    }
+
+    VkApplicationInfo ai;
+    ai.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    if (appName.length) {
+        ai.pApplicationName = toStringz(appName);
+    }
+    ai.applicationVersion = appVersion.toUint();
+    ai.pEngineName = "gfx-d\n".ptr;
+    ai.engineVersion = VK_MAKE_VERSION(gfxVersionMaj, gfxVersionMin, gfxVersionMic);
+
+    auto vkLayers = layers.map!toStringz.array;
+    auto vkExts = extensions.map!toStringz.array;
+
+    VkInstanceCreateInfo ici;
+    ici.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    ici.pApplicationInfo = &ai;
+    ici.enabledLayerCount = cast(uint)vkLayers.length;
+    ici.ppEnabledLayerNames = &vkLayers[0];
+    ici.enabledExtensionCount = cast(uint)vkExts.length;
+    ici.ppEnabledExtensionNames = &vkExts[0];
+
+    VkInstance vkInst;
+    vulkanEnforce(vkCreateInstance(&ici, null, &vkInst), "Could not create Vulkan instance");
+
+    loadInstanceLevelFunctions(vkInst);
+    loadDeviceLevelFunctions(vkInst);
+
+    return new VulkanInstance(vkInst);
+}
+
+/// Retrieve available device level layers
+@property VulkanLayerProperties[] vulkanDeviceLayers(PhysicalDevice device) {
+    auto pd = cast(VulkanPhysicalDevice)device;
+    if (!pd) return [];
+
+    return pd._availableLayers;
+}
+/// Retrieve available instance level extensions properties
+VulkanExtensionProperties[] vulkanDeviceExtensions(PhysicalDevice device, in string layerName=null)
+{
+    auto pd = cast(VulkanPhysicalDevice)device;
+    if (!pd) return [];
+
+    if (!layerName) {
+        return pd._availableExtensions;
+    }
+    else {
+        return pd.loadDeviceExtensions(layerName);
+    }
+}
+
+void overrideDeviceOpenVulkanLayers(PhysicalDevice device, string[] layers)
+{
+    auto pd = cast(VulkanPhysicalDevice)device;
+    if (!pd) return;
+
+    pd._openLayers = layers;
+}
+
+void overrideDeviceOpenVulkanExtensions(PhysicalDevice device, string[] extensions)
+{
+    auto pd = cast(VulkanPhysicalDevice)device;
+    if (!pd) return;
+
+    pd._openExtensions = extensions;
+}
+
+
+package:
+
+import gfx.core.rc;
+import gfx.graal.device;
+import gfx.graal.format;
+import gfx.graal.memory;
+import gfx.graal.queue;
+import gfx.vulkan.conv;
+import gfx.vulkan.device;
+import gfx.vulkan.error;
+
+__gshared VulkanLayerProperties[] _instanceLayers;
+__gshared VulkanExtensionProperties[] _instanceExtensions;
+
+VulkanLayerProperties[] loadInstanceLayers()
 {
     uint count;
     vulkanEnforce(
@@ -144,8 +275,7 @@ struct VulkanExtensionProperties
             .array;
 }
 
-/// Retrieve available instance level extensions properties
-VulkanExtensionProperties[] vulkanInstanceExtensions(in string layerName=null)
+VulkanExtensionProperties[] loadInstanceExtensions(in string layerName=null)
 {
     import std.string : toStringz;
 
@@ -180,52 +310,8 @@ VulkanExtensionProperties[] vulkanInstanceExtensions(in string layerName=null)
             .array;
 }
 
-
-/// Creates an Instance object with Vulkan backend
-VulkanInstance createVulkanInstance(in string[] layers, in string[] extensions,
-                                    in string appName=null,
-                                    in VulkanVersion appVersion=VulkanVersion(0, 0, 0))
+VulkanLayerProperties[] loadDeviceLayers(VulkanPhysicalDevice pd)
 {
-    import gfx : gfxVersionMaj, gfxVersionMin, gfxVersionMic;
-    import std.algorithm : map;
-    import std.array : array;
-    import std.string : toStringz;
-
-    VkApplicationInfo ai;
-    ai.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    if (appName.length) {
-        ai.pApplicationName = toStringz(appName);
-    }
-    ai.applicationVersion = appVersion.toUint();
-    ai.pEngineName = "gfx-d\n".ptr;
-    ai.engineVersion = VK_MAKE_VERSION(gfxVersionMaj, gfxVersionMin, gfxVersionMic);
-
-    auto vkLayers = layers.map!toStringz.array;
-    auto vkExts = extensions.map!toStringz.array;
-
-    VkInstanceCreateInfo ici;
-    ici.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    ici.pApplicationInfo = &ai;
-    ici.enabledLayerCount = cast(uint)vkLayers.length;
-    ici.ppEnabledLayerNames = &vkLayers[0];
-    ici.enabledExtensionCount = cast(uint)vkExts.length;
-    ici.ppEnabledExtensionNames = &vkExts[0];
-
-    VkInstance vkInst;
-    vulkanEnforce(vkCreateInstance(&ici, null, &vkInst), "Could not create Vulkan instance");
-
-    loadInstanceLevelFunctions(vkInst);
-    loadDeviceLevelFunctions(vkInst);
-
-    return new VulkanInstance(vkInst);
-}
-
-/// Retrieve available device level layers
-@property VulkanLayerProperties[] vulkanDeviceLayers(PhysicalDevice device)
-{
-    auto pd = cast(VulkanPhysicalDevice)device;
-    if (!pd) return [];
-
     uint count;
     vulkanEnforce(
         vkEnumerateDeviceLayerProperties(pd.vk, &count, null),
@@ -255,12 +341,8 @@ VulkanInstance createVulkanInstance(in string[] layers, in string[] extensions,
             .array;
 }
 
-/// Retrieve available instance level extensions properties
-VulkanExtensionProperties[] vulkanDeviceExtensions(PhysicalDevice device, in string layerName=null)
+VulkanExtensionProperties[] loadDeviceExtensions(VulkanPhysicalDevice pd, in string layerName=null)
 {
-    auto pd = cast(VulkanPhysicalDevice)device;
-    if (!pd) return [];
-
     import std.string : toStringz;
 
     const(char)* layer;
@@ -294,36 +376,6 @@ VulkanExtensionProperties[] vulkanDeviceExtensions(PhysicalDevice device, in str
             })
             .array;
 }
-
-
-void setDeviceOpenVulkanLayers(PhysicalDevice device, string[] layers)
-{
-    auto pd = cast(VulkanPhysicalDevice)device;
-    if (!pd) return;
-
-    pd._openLayers = layers;
-}
-
-void setDeviceOpenVulkanExtensions(PhysicalDevice device, string[] extensions)
-{
-    auto pd = cast(VulkanPhysicalDevice)device;
-    if (!pd) return;
-
-    pd._openExtensions = extensions;
-}
-
-
-package:
-
-import gfx.core.rc;
-import gfx.graal.device;
-import gfx.graal.format;
-import gfx.graal.memory;
-import gfx.graal.queue;
-import gfx.vulkan.conv;
-import gfx.vulkan.device;
-import gfx.vulkan.error;
-
 
 class VulkanObj(VkType, alias destroyFn) : Disposable
 {
@@ -377,6 +429,24 @@ class VulkanPhysicalDevice : PhysicalDevice
         _inst.retain();
 
         vkGetPhysicalDeviceProperties(_vk, &_vkProps);
+
+        _availableLayers = loadDeviceLayers(this);
+        _availableExtensions = loadDeviceExtensions(this);
+
+        import std.algorithm : canFind, map;
+        import std.exception : enforce;
+        debug {
+            foreach (l; lunarGValidationLayers) {
+                if (_availableLayers.map!"a.layerName".canFind(l)) {
+                    _openLayers ~= l;
+                }
+            }
+        }
+        version(GfxOffscreen) {}
+        else {
+            enforce(_availableExtensions.map!"a.extensionName".canFind(swapChainExtension));
+            _openExtensions ~= swapChainExtension;
+        }
     }
 
     override void dispose() {
@@ -535,6 +605,9 @@ class VulkanPhysicalDevice : PhysicalDevice
     private VkPhysicalDevice _vk;
     private VkPhysicalDeviceProperties _vkProps;
     private VulkanInstance _inst;
+
+    private VulkanLayerProperties[] _availableLayers;
+    private VulkanExtensionProperties[] _availableExtensions;
 
     private string[] _openLayers;
     private string[] _openExtensions;
