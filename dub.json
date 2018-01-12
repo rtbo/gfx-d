@@ -17,6 +17,17 @@
     },
     "configurations": [
         {
+            "name": "wayland",
+            "platforms": ["linux"],
+            "versions": [ "GfxVulkanWayland" ],
+            "dependencies": {
+                "wayland-d:client": "~>0.0.4"
+            },
+            "subConfigurations": {
+                "erupted": "with-derelict-loader"
+            }
+        },
+        {
             "name": "xcb",
             "platforms": ["linux"],
             "versions": [ "GfxVulkanXcb" ],

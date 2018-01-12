@@ -22,7 +22,7 @@ version(Windows) {
     enum win32SurfaceExtension = "VK_KHR_win32_surface";
 }
 version(linux) {
-    enum xlibSurfaceExtension = "VK_KHR_xlib_surface";
+    enum waylandSurfaceExtension = "VK_KHR_wayland_surface";
     enum xcbSurfaceExtension = "VK_KHR_xcb_surface";
 }
 
@@ -31,6 +31,11 @@ version(linux) {
 enum swapChainExtension = "VK_KHR_swapchain";
 
 
+version(GfxVulkanWayland) {
+    enum surfaceInstanceExtensions = [
+        surfaceExtension, waylandSurfaceExtension
+    ];
+}
 version(GfxVulkanXcb) {
     enum surfaceInstanceExtensions = [
         surfaceExtension, xcbSurfaceExtension

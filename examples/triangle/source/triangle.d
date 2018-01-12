@@ -5,19 +5,24 @@ import erupted;
 import gfx.core.rc;
 import gfx.graal.device;
 import gfx.vulkan;
+import gfx.window;
 
 import std.algorithm;
 import std.exception;
 import std.stdio;
 
 int main() {
+
+    auto win = createWindow();
+    scope(exit) win.close();
+
+
     vulkanInit();
 
     writeln("layers:");
     vulkanInstanceLayers.each!(writeln);
     writeln("extensions:");
     vulkanInstanceExtensions.each!(writeln);
-
 
     auto instance = createVulkanInstance("Triangle", VulkanVersion(0, 0, 1)).rc;
 
@@ -44,6 +49,8 @@ int main() {
         auto mem = dev.allocateMemory(0, 2*1024*1024).rc;
         writefln("mem size: %s", mem.size);
     }
+
+    win.show(640, 480);
 
     return 0;
 }
