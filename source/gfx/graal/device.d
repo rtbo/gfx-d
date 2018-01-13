@@ -7,6 +7,7 @@ import gfx.graal.image;
 import gfx.graal.memory;
 import gfx.graal.presentation;
 import gfx.graal.queue;
+import gfx.graal.sync;
 
 struct DeviceFeatures {
     bool presentation;
@@ -100,4 +101,6 @@ interface Device : AtomicRefCounted
 
     Image createImage(ImageType type, ImageDims dims, Format format,
                       ImageUsage usage, uint samples, uint levels=1);
+
+    Semaphore createSemaphore();
 }

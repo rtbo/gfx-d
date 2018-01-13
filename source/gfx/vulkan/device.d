@@ -9,12 +9,14 @@ import gfx.core.rc;
 import gfx.graal.device;
 import gfx.graal.image;
 import gfx.graal.memory;
+import gfx.graal.sync;
 import gfx.vulkan;
 import gfx.vulkan.buffer;
 import gfx.vulkan.conv;
 import gfx.vulkan.error;
 import gfx.vulkan.image;
 import gfx.vulkan.memory;
+import gfx.vulkan.sync;
 
 class VulkanDevObj(VkType, alias destroyFn) : Disposable
 {
@@ -144,6 +146,17 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
         vulkanEnforce(vkCreateImage(vk, &ici, null, &vkImg), "Could not create a Vulkan image");
 
         return new VulkanImage(vkImg, this, type, dims);
+    }
+
+    override Semaphore createSemaphore()
+    {
+        VkSemaphoreCreateInfo sci;
+        sci.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        VkSemaphore vkSem;
+        vulkanEnforce(vkCreateSemaphore(vk, &sci, null, &vkSem), "Could not create a Vulkan semaphore");
+
+        return new VulkanSemaphore(vkSem, this);
     }
 
     VulkanPhysicalDevice _pd;
