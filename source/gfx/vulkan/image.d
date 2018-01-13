@@ -8,6 +8,7 @@ import erupted;
 import gfx.core.rc;
 import gfx.graal.image;
 import gfx.graal.memory;
+import gfx.vulkan;
 import gfx.vulkan.conv;
 import gfx.vulkan.device;
 import gfx.vulkan.error;
@@ -113,4 +114,13 @@ class VulkanImageView : VulkanDevObj!(VkImageView, vkDestroyImageView), ImageVie
     private VulkanImage _img;
     private ImageSubresourceRange _isr;
     private Swizzle _swizzle;
+}
+
+class VulkanSurface : VulkanInstObj!(VkSurfaceKHR, vkDestroySurfaceKHR), Surface
+{
+    mixin(atomicRcCode);
+
+    this(VkSurfaceKHR vk, VulkanInstance inst) {
+        super(vk, inst);
+    }
 }

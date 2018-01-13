@@ -399,6 +399,37 @@ class VulkanObj(VkType, alias destroyFn) : Disposable
     private VkType _vk;
 }
 
+class VulkanInstObj(VkType, alias destroyFn) : Disposable
+{
+    this (VkType vk, VulkanInstance inst)
+    {
+        _vk = vk;
+        _inst = inst;
+        _inst.retain();
+    }
+
+    override void dispose() {
+        destroyFn(_inst.vk, _vk, null);
+        _inst.release();
+        _inst = null;
+    }
+
+    final @property VkType vk() {
+        return _vk;
+    }
+
+    final @property VulkanInstance inst() {
+        return _inst;
+    }
+
+    final @property VkInstance vkInst() {
+        return _inst.vk;
+    }
+
+    private VkType _vk;
+    private VulkanInstance _inst;
+}
+
 class VulkanInstance : VulkanObj!(VkInstance, vkDestroyInstance), Instance
 {
     mixin(atomicRcCode);
