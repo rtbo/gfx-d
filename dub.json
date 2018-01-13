@@ -13,7 +13,9 @@
     "-ddoxFilterArgs": ["--min-protection=Protected", "--ex=erupted"],
 
     "dependencies": {
-        "erupted": "~>1.6.11"
+        "erupted": {
+            "path": "3rdparty/Erupted"
+        }
     },
     "configurations": [
         {
@@ -24,7 +26,7 @@
                 "wayland-d:client": "~>0.0.4"
             },
             "subConfigurations": {
-                "erupted": "with-derelict-loader"
+                "erupted": "dub-platform-wayland-derelict-loader"
             }
         },
         {
