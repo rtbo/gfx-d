@@ -122,8 +122,3 @@ interface ImageView : AtomicRefCounted
     @property ImageSubresourceRange subresourceRange();
     @property Swizzle swizzle();
 }
-
-interface Surface : AtomicRefCounted
-{
-
-}

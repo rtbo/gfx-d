@@ -4,7 +4,7 @@ module gfx.window.wayland;
 version(GfxVulkanWayland):
 
 import gfx.graal : Instance;
-import gfx.graal.image : Surface;
+import gfx.graal.presentation;
 import gfx.vulkan.wsi;
 import gfx.window;
 

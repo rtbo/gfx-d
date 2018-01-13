@@ -206,6 +206,7 @@ import gfx.core.rc;
 import gfx.graal.device;
 import gfx.graal.format;
 import gfx.graal.memory;
+import gfx.graal.presentation;
 import gfx.graal.queue;
 import gfx.vulkan.conv;
 import gfx.vulkan.device;

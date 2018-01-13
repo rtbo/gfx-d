@@ -2,7 +2,7 @@
 module gfx.window;
 
 import gfx.graal : Instance;
-import gfx.graal.image : Surface;
+import gfx.graal.presentation;
 
 alias MouseHandler = void delegate(uint x, uint y);
 
