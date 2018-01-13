@@ -14,42 +14,6 @@ enum lunarGValidationLayers = [
     "VK_LAYER_LUNARG_parameter_validation",
 ];
 
-// instance level extensions
-
-enum surfaceExtension = "VK_KHR_surface";
-
-version(Windows) {
-    enum win32SurfaceExtension = "VK_KHR_win32_surface";
-}
-version(linux) {
-    enum waylandSurfaceExtension = "VK_KHR_wayland_surface";
-    enum xcbSurfaceExtension = "VK_KHR_xcb_surface";
-}
-
-// device level extensions
-
-enum swapChainExtension = "VK_KHR_swapchain";
-
-
-version(GfxVulkanWayland) {
-    enum surfaceInstanceExtensions = [
-        surfaceExtension, waylandSurfaceExtension
-    ];
-}
-version(GfxVulkanXcb) {
-    enum surfaceInstanceExtensions = [
-        surfaceExtension, xcbSurfaceExtension
-    ];
-}
-version(GfxVulkanWin32) {
-    enum surfaceInstanceExtensions = [
-        surfaceExtension, win32SurfaceExtension
-    ];
-}
-version(GfxOffscreen) {
-    enum surfaceInstanceExtensions = [];
-}
-
 /// Load global level vulkan functions, and instance level layers and extensions
 /// This function must be called before any other in this module
 void vulkanInit()
@@ -139,6 +103,7 @@ VulkanInstance createVulkanInstance(in string appName=null,
         const string[] layers = [];
     }
 
+    import gfx.vulkan.wsi : surfaceInstanceExtensions;
     return createVulkanInstance(layers, surfaceInstanceExtensions, appName, appVersion);
 }
 
@@ -480,6 +445,7 @@ class VulkanPhysicalDevice : PhysicalDevice
         }
         version(GfxOffscreen) {}
         else {
+            import gfx.vulkan.wsi : swapChainExtension;
             enforce(_availableExtensions.map!"a.extensionName".canFind(swapChainExtension));
             _openExtensions ~= swapChainExtension;
         }
@@ -515,6 +481,7 @@ class VulkanPhysicalDevice : PhysicalDevice
     }
     override @property DeviceFeatures features() {
         import std.algorithm : canFind, map;
+        import gfx.vulkan.wsi : swapChainExtension;
 
         auto exts = vulkanDeviceExtensions(this);
 

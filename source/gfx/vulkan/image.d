@@ -115,12 +115,3 @@ class VulkanImageView : VulkanDevObj!(VkImageView, vkDestroyImageView), ImageVie
     private ImageSubresourceRange _isr;
     private Swizzle _swizzle;
 }
-
-class VulkanSurface : VulkanInstObj!(VkSurfaceKHR, vkDestroySurfaceKHR), Surface
-{
-    mixin(atomicRcCode);
-
-    this(VkSurfaceKHR vk, VulkanInstance inst) {
-        super(vk, inst);
-    }
-}
