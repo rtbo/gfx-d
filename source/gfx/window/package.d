@@ -8,7 +8,7 @@ alias MouseHandler = void delegate(uint x, uint y);
 
 interface Window
 {
-    void show(Instance instance, uint width, uint height);
+    void show(uint width, uint height);
     void close();
 
     @property Surface surface();
@@ -18,11 +18,11 @@ interface Window
     @property void mouseOff(MouseHandler handler);
 }
 
-Window createWindow()
+Window createWindow(Instance instance)
 {
     version(GfxVulkanWayland) {
         import gfx.window.wayland : WaylandWindow;
-        return new WaylandWindow;
+        return new WaylandWindow(instance);
     }
     else {
         pragma(msg, "unsupported window");

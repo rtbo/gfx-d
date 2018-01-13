@@ -14,11 +14,9 @@ import wayland.util;
 
 class WaylandWindow : Window
 {
-    this() {
+    this(Instance instance)
+    {
         refDisplay(this);
-    }
-
-    override void show (Instance instance, uint width, uint height) {
         wlSurface = dpy.compositor.createSurface();
 		wlShellSurface = dpy.shell.getShellSurface(wlSurface);
 		wlShellSurface.onPing = (WlShellSurface ss, uint serial)
@@ -27,8 +25,11 @@ class WaylandWindow : Window
 		};
 
 		wlShellSurface.setToplevel();
-
         gfxSurface = createVulkanWaylandSurface(instance, dpy.display, wlSurface);
+    }
+
+    override void show (uint width, uint height)
+    {
     }
 
     override void close() {
