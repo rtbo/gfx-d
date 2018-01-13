@@ -3,6 +3,9 @@ module gfx.window.wayland;
 
 version(GfxVulkanWayland):
 
+import gfx.graal : Instance;
+import gfx.graal.image : Surface;
+import gfx.vulkan.wsi;
 import gfx.window;
 
 import wayland.client;
@@ -15,22 +18,24 @@ class WaylandWindow : Window
         refDisplay(this);
     }
 
-    override void show (uint width, uint height) {
-        surface = dpy.compositor.createSurface();
-		shellSurface = dpy.shell.getShellSurface(surface);
-		shellSurface.onPing = (WlShellSurface ss, uint serial)
+    override void show (Instance instance, uint width, uint height) {
+        wlSurface = dpy.compositor.createSurface();
+		wlShellSurface = dpy.shell.getShellSurface(wlSurface);
+		wlShellSurface.onPing = (WlShellSurface ss, uint serial)
 		{
 			ss.pong(serial);
 		};
 
-		shellSurface.setToplevel();
+		wlShellSurface.setToplevel();
+
+        gfxSurface = createVulkanWaylandSurface(instance, dpy.display, wlSurface);
     }
 
     override void close() {
-        shellSurface.destroy();
-        shellSurface = null;
-        surface.destroy();
-        surface = null;
+        wlShellSurface.destroy();
+        wlShellSurface = null;
+        wlSurface.destroy();
+        wlSurface = null;
         unrefDisplay(this);
     }
 
@@ -42,6 +47,10 @@ class WaylandWindow : Window
     }
     override @property void mouseOff(MouseHandler handler) {
         offHandler = handler;
+    }
+
+    override @property Surface surface() {
+        return gfxSurface;
     }
 
     private void pointerButton(WlPointer, uint serial, uint time, uint button,
@@ -96,8 +105,10 @@ class WaylandWindow : Window
 
     private void pointerLeave() {}
 
-    private WlSurface surface;
-    private WlShellSurface shellSurface;
+    private WlSurface wlSurface;
+    private WlShellSurface wlShellSurface;
+
+    private Surface gfxSurface;
 
     private MouseHandler moveHandler;
     private MouseHandler onHandler;
@@ -163,7 +174,7 @@ class Display {
                         WlFixed surfaceX, WlFixed surfaceY)
     {
         foreach (w; windows) {
-            if (w.surface is surface) {
+            if (w.wlSurface is surface) {
                 pointer.onButton = &w.pointerButton;
                 pointer.onMotion = &w.pointerMotion;
                 pointer.onFrame = &w.pointerFrame;
@@ -178,7 +189,7 @@ class Display {
         pointer.onMotion = null;
         pointer.onFrame = null;
         foreach (w; windows) {
-            if (w.surface is surface) {
+            if (w.wlSurface is surface) {
                 w.pointerLeave();
             }
         }
