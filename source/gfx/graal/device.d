@@ -44,6 +44,8 @@ interface PhysicalDevice : AtomicRefCounted
     @property QueueFamily[] queueFamilies();
     FormatProperties formatProperties(in Format format);
 
+    bool supportsSurface(uint queueFamilyIndex, Surface surface);
+
     /// Open a logical device with the specified queues.
     /// Returns: null if it can't meet all requested queues, the opened device otherwise.
     Device open(in QueueRequest[] queues)

@@ -211,6 +211,8 @@ import gfx.vulkan.conv;
 import gfx.vulkan.device;
 import gfx.vulkan.error;
 
+import std.exception : enforce;
+
 __gshared VulkanLayerProperties[] _instanceLayers;
 __gshared VulkanExtensionProperties[] _instanceExtensions;
 
@@ -546,6 +548,20 @@ class VulkanPhysicalDevice : PhysicalDevice
             vkFp.optimalTilingFeatures.fromVk(),
             vkFp.bufferFeatures.fromVk(),
         );
+    }
+
+    override bool supportsSurface(uint queueFamilyIndex, Surface graalSurface) {
+        import gfx.vulkan.wsi : VulkanSurface;
+        auto surf = enforce(
+            cast(VulkanSurface)graalSurface,
+            "Did not pass a Vulkan surface"
+        );
+        VkBool32 supported;
+        vulkanEnforce(
+            vkGetPhysicalDeviceSurfaceSupportKHR(vk, queueFamilyIndex, surf.vk, &supported),
+            "Could not query vulkan surface support"
+        );
+        return supported != VK_FALSE;
     }
 
     override Device open(in QueueRequest[] queues)

@@ -13,10 +13,6 @@ import std.stdio;
 
 int main() {
 
-    auto win = createWindow();
-    scope(exit) win.close();
-
-
     vulkanInit();
 
     writeln("layers:");
@@ -25,6 +21,9 @@ int main() {
     vulkanInstanceExtensions.each!(writeln);
 
     auto instance = createVulkanInstance("Triangle", VulkanVersion(0, 0, 1)).rc;
+
+    auto win = createWindow(instance);
+    scope(exit) win.close();
 
     auto physicalDevices = instance.devices();
     retainArray(physicalDevices);
@@ -48,9 +47,9 @@ int main() {
         auto dev = pd.open([QueueRequest(0, 0.5)]).rc;
         auto mem = dev.allocateMemory(0, 2*1024*1024).rc;
         writefln("mem size: %s", mem.size);
-    }
 
-    win.show(640, 480);
+        writefln("window surface support: %s", pd.supportsSurface(0, win.surface));
+    }
 
     return 0;
 }
