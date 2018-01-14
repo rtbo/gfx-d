@@ -481,7 +481,7 @@ class VulkanPhysicalDevice : PhysicalDevice
         return fromStringz(_vkProps.deviceName.ptr).idup;
     }
     override @property DeviceType type() {
-        return devTypeFromVk(_vkProps.deviceType);
+        return devTypeToGfx(_vkProps.deviceType);
     }
     override @property DeviceFeatures features() {
         import std.algorithm : canFind, map;
@@ -516,7 +516,7 @@ class VulkanPhysicalDevice : PhysicalDevice
             const vkMemType = vkProps.memoryTypes[i];
             const type = MemoryType(
                 i, vkMemType.heapIndex, props.heaps[vkMemType.heapIndex].size,
-                memPropsFromVk(vkMemType.propertyFlags)
+                memPropsToGfx(vkMemType.propertyFlags)
             );
             props.types ~= type;
             props.heaps[i].props |= type.props;
@@ -536,7 +536,7 @@ class VulkanPhysicalDevice : PhysicalDevice
 
         import std.algorithm : map;
         return vkQueueFams.map!(vk => QueueFamily(
-            queueCapFromVk(vk.queueFlags), vk.queueCount
+            queueCapToGfx(vk.queueFlags), vk.queueCount
         )).array;
     }
 
@@ -546,9 +546,9 @@ class VulkanPhysicalDevice : PhysicalDevice
         vkGetPhysicalDeviceFormatProperties(_vk, format.toVk(), &vkFp);
 
         return FormatProperties(
-            vkFp.linearTilingFeatures.fromVk(),
-            vkFp.optimalTilingFeatures.fromVk(),
-            vkFp.bufferFeatures.fromVk(),
+            vkFp.linearTilingFeatures.toGfx(),
+            vkFp.optimalTilingFeatures.toGfx(),
+            vkFp.bufferFeatures.toGfx(),
         );
     }
 
@@ -575,7 +575,7 @@ class VulkanPhysicalDevice : PhysicalDevice
             vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vk, surf.vk, &vkSc),
             "Could not query vulkan surface capabilities"
         );
-        return vkSc.fromVk();
+        return vkSc.toGfx();
     }
 
     override Format[] surfaceFormats(Surface graalSurface) {
@@ -599,7 +599,7 @@ class VulkanPhysicalDevice : PhysicalDevice
         import std.array : array;
         return vkSf
                 .filter!(sf => sf.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-                .map!(sf => sf.format.fromVk())
+                .map!(sf => sf.format.toGfx())
                 .array;
     }
 
@@ -624,7 +624,7 @@ class VulkanPhysicalDevice : PhysicalDevice
         import std.array : array;
         return vkPms
                 .filter!(pm => pm.hasGfxSupport)
-                .map!(pm => pm.fromVk())
+                .map!(pm => pm.toGfx())
                 .array;
     }
 
@@ -696,7 +696,7 @@ class VulkanPhysicalDevice : PhysicalDevice
     private string[] _openExtensions;
 }
 
-DeviceType devTypeFromVk(in VkPhysicalDeviceType vkType)
+DeviceType devTypeToGfx(in VkPhysicalDeviceType vkType)
 {
     switch (vkType) {
     case VK_PHYSICAL_DEVICE_TYPE_OTHER:

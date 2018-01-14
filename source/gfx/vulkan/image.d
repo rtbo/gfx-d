@@ -41,7 +41,7 @@ class VulkanImage : VulkanDevObj!(VkImage, vkDestroyImage), Image
     override @property MemoryRequirements memoryRequirements() {
         VkMemoryRequirements vkMr;
         vkGetImageMemoryRequirements(vkDev, vk, &vkMr);
-        return vkMr.fromVk();
+        return vkMr.toGfx();
     }
 
     override void bindMemory(DeviceMemory mem, in size_t offset)

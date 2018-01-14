@@ -33,7 +33,7 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, vkDestroyBuffer), Buffer
     override @property MemoryRequirements memoryRequirements() {
         VkMemoryRequirements vkMr;
         vkGetBufferMemoryRequirements(vkDev, vk, &vkMr);
-        return vkMr.fromVk();
+        return vkMr.toGfx();
     }
 
     override void bindMemory(DeviceMemory mem, in size_t offset)

@@ -19,7 +19,7 @@ VkFormat toVk(in Format format) {
     return cast(VkFormat)format;
 }
 
-Format fromVk(in VkFormat vkFormat) {
+Format toGfx(in VkFormat vkFormat) {
     return cast(Format)vkFormat;
 }
 
@@ -27,7 +27,7 @@ VkFormatFeatureFlags toVk(in FormatFeatures ff) {
     return cast(VkFormatFeatureFlags)ff;
 }
 
-FormatFeatures fromVk(in VkFormatFeatureFlags vkFff) {
+FormatFeatures toGfx(in VkFormatFeatureFlags vkFff) {
     return cast(FormatFeatures)vkFff;
 }
 
@@ -67,9 +67,9 @@ VkImageViewType toVkView(in ImageType it) {
     }
 }
 
-MemoryRequirements fromVk(in VkMemoryRequirements mr) {
+MemoryRequirements toGfx(in VkMemoryRequirements mr) {
     return MemoryRequirements(
-        mr.size, mr.alignment, memPropsFromVk(mr.memoryTypeBits)
+        mr.size, mr.alignment, memPropsToGfx(mr.memoryTypeBits)
     );
 }
 
@@ -99,17 +99,17 @@ VkImageSubresourceRange toVk(in ImageSubresourceRange isr) {
     );
 }
 
-SurfaceCaps fromVk(in VkSurfaceCapabilitiesKHR vkCaps) {
+SurfaceCaps toGfx(in VkSurfaceCapabilitiesKHR vkCaps) {
     return SurfaceCaps(
         vkCaps.minImageCount, vkCaps.maxImageCount,
         [ vkCaps.minImageExtent.width, vkCaps.minImageExtent.height ],
         [ vkCaps.maxImageExtent.width, vkCaps.maxImageExtent.height ],
         vkCaps.maxImageArrayLayers,
-        imageUsageFromVk(vkCaps.supportedUsageFlags)
+        imageUsageToGfx(vkCaps.supportedUsageFlags)
     );
 }
 
-PresentMode fromVk(in VkPresentModeKHR pm) {
+PresentMode toGfx(in VkPresentModeKHR pm) {
     switch (pm) {
     case VK_PRESENT_MODE_IMMEDIATE_KHR:
         return PresentMode.immediate;
@@ -135,7 +135,7 @@ PresentMode fromVk(in VkPresentModeKHR pm) {
 
 // flags conversion
 
-MemProps memPropsFromVk(in VkMemoryPropertyFlags vkFlags)
+MemProps memPropsToGfx(in VkMemoryPropertyFlags vkFlags)
 {
     MemProps props = cast(MemProps)0;
     if (vkFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) {
@@ -156,7 +156,7 @@ MemProps memPropsFromVk(in VkMemoryPropertyFlags vkFlags)
     return props;
 }
 
-QueueCap queueCapFromVk(in VkQueueFlags vkFlags)
+QueueCap queueCapToGfx(in VkQueueFlags vkFlags)
 {
     QueueCap caps = cast(QueueCap)0;
     if (vkFlags & VK_QUEUE_GRAPHICS_BIT) {
@@ -177,7 +177,7 @@ VkImageUsageFlags imageUsageToVk(in ImageUsage usage)
     return cast(VkImageUsageFlags)usage;
 }
 
-ImageUsage imageUsageFromVk(in VkImageUsageFlags usage)
+ImageUsage imageUsageToGfx(in VkImageUsageFlags usage)
 {
     return cast(ImageUsage)usage;
 }
