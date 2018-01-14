@@ -47,6 +47,9 @@ interface PhysicalDevice : AtomicRefCounted
     FormatProperties formatProperties(in Format format);
 
     bool supportsSurface(uint queueFamilyIndex, Surface surface);
+    SurfaceCaps surfaceCaps(Surface surface);
+    Format[] surfaceFormats(Surface surface);
+    PresentMode[] surfacePresentModes(Surface surface);
 
     /// Open a logical device with the specified queues.
     /// Returns: null if it can't meet all requested queues, the opened device otherwise.

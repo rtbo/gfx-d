@@ -9,6 +9,7 @@ import gfx.graal.buffer;
 import gfx.graal.format;
 import gfx.graal.image;
 import gfx.graal.memory;
+import gfx.graal.presentation;
 import gfx.graal.queue;
 
 
@@ -98,6 +99,40 @@ VkImageSubresourceRange toVk(in ImageSubresourceRange isr) {
     );
 }
 
+SurfaceCaps fromVk(in VkSurfaceCapabilitiesKHR vkCaps) {
+    return SurfaceCaps(
+        vkCaps.minImageCount, vkCaps.maxImageCount,
+        [ vkCaps.minImageExtent.width, vkCaps.minImageExtent.height ],
+        [ vkCaps.maxImageExtent.width, vkCaps.maxImageExtent.height ],
+        vkCaps.maxImageArrayLayers,
+        imageUsageFromVk(vkCaps.supportedUsageFlags)
+    );
+}
+
+PresentMode fromVk(in VkPresentModeKHR pm) {
+    switch (pm) {
+    case VK_PRESENT_MODE_IMMEDIATE_KHR:
+        return PresentMode.immediate;
+    case VK_PRESENT_MODE_FIFO_KHR:
+        return PresentMode.fifo;
+    case VK_PRESENT_MODE_MAILBOX_KHR:
+        return PresentMode.mailbox;
+    default:
+        assert(false);
+    }
+}
+
+@property bool hasGfxSupport(in VkPresentModeKHR pm) {
+    switch (pm) {
+    case VK_PRESENT_MODE_IMMEDIATE_KHR:
+    case VK_PRESENT_MODE_FIFO_KHR:
+    case VK_PRESENT_MODE_MAILBOX_KHR:
+        return true;
+    default:
+        return false;
+    }
+}
+
 // flags conversion
 
 MemProps memPropsFromVk(in VkMemoryPropertyFlags vkFlags)
@@ -140,6 +175,11 @@ VkBufferUsageFlags bufferUsageToVk(in BufferUsage usage) {
 VkImageUsageFlags imageUsageToVk(in ImageUsage usage)
 {
     return cast(VkImageUsageFlags)usage;
+}
+
+ImageUsage imageUsageFromVk(in VkImageUsageFlags usage)
+{
+    return cast(ImageUsage)usage;
 }
 
 VkImageAspectFlags aspectToVk(in ImageAspect aspect)

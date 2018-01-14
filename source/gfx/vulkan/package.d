@@ -211,6 +211,7 @@ import gfx.graal.queue;
 import gfx.vulkan.conv;
 import gfx.vulkan.device;
 import gfx.vulkan.error;
+import gfx.vulkan.wsi : VulkanSurface;
 
 import std.exception : enforce;
 
@@ -552,7 +553,6 @@ class VulkanPhysicalDevice : PhysicalDevice
     }
 
     override bool supportsSurface(uint queueFamilyIndex, Surface graalSurface) {
-        import gfx.vulkan.wsi : VulkanSurface;
         auto surf = enforce(
             cast(VulkanSurface)graalSurface,
             "Did not pass a Vulkan surface"
@@ -563,6 +563,69 @@ class VulkanPhysicalDevice : PhysicalDevice
             "Could not query vulkan surface support"
         );
         return supported != VK_FALSE;
+    }
+
+    override SurfaceCaps surfaceCaps(Surface graalSurface) {
+        auto surf = enforce(
+            cast(VulkanSurface)graalSurface,
+            "Did not pass a Vulkan surface"
+        );
+        VkSurfaceCapabilitiesKHR vkSc;
+        vulkanEnforce(
+            vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vk, surf.vk, &vkSc),
+            "Could not query vulkan surface capabilities"
+        );
+        return vkSc.fromVk();
+    }
+
+    override Format[] surfaceFormats(Surface graalSurface) {
+        auto surf = enforce(
+            cast(VulkanSurface)graalSurface,
+            "Did not pass a Vulkan surface"
+        );
+
+        uint count;
+        vulkanEnforce(
+            vkGetPhysicalDeviceSurfaceFormatsKHR(vk, surf.vk, &count, null),
+            "Could not query vulkan surface formats"
+        );
+        auto vkSf = new VkSurfaceFormatKHR[count];
+        vulkanEnforce(
+            vkGetPhysicalDeviceSurfaceFormatsKHR(vk, surf.vk, &count, &vkSf[0]),
+            "Could not query vulkan surface formats"
+        );
+
+        import std.algorithm : filter, map;
+        import std.array : array;
+        return vkSf
+                .filter!(sf => sf.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+                .map!(sf => sf.format.fromVk())
+                .array;
+    }
+
+    override PresentMode[] surfacePresentModes(Surface graalSurface) {
+        auto surf = enforce(
+            cast(VulkanSurface)graalSurface,
+            "Did not pass a Vulkan surface"
+        );
+
+        uint count;
+        vulkanEnforce(
+            vkGetPhysicalDeviceSurfacePresentModesKHR(vk, surf.vk, &count, null),
+            "Could not query vulkan surface present modes"
+        );
+        auto vkPms = new VkPresentModeKHR[count];
+        vulkanEnforce(
+            vkGetPhysicalDeviceSurfacePresentModesKHR(vk, surf.vk, &count, &vkPms[0]),
+            "Could not query vulkan surface present modes"
+        );
+
+        import std.algorithm : filter, map;
+        import std.array : array;
+        return vkPms
+                .filter!(pm => pm.hasGfxSupport)
+                .map!(pm => pm.fromVk())
+                .array;
     }
 
     override Device open(in QueueRequest[] queues)

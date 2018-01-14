@@ -49,6 +49,9 @@ int main() {
         writefln("mem size: %s", mem.size);
 
         writefln("window surface support: %s", pd.supportsSurface(0, win.surface));
+        writefln("window surface caps: %s", pd.surfaceCaps(win.surface));
+        writefln("window surface formats: %s", pd.surfaceFormats(win.surface));
+        writefln("window surface presentModes: %s", pd.surfacePresentModes(win.surface));
     }
 
     return 0;
