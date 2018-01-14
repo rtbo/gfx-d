@@ -9,6 +9,7 @@ import gfx.core.rc;
 import gfx.graal.device;
 import gfx.graal.image;
 import gfx.graal.memory;
+import gfx.graal.presentation;
 import gfx.graal.sync;
 import gfx.vulkan;
 import gfx.vulkan.buffer;
@@ -17,6 +18,7 @@ import gfx.vulkan.error;
 import gfx.vulkan.image;
 import gfx.vulkan.memory;
 import gfx.vulkan.sync;
+import gfx.vulkan.wsi;
 
 class VulkanDevObj(VkType, alias destroyFn) : Disposable
 {
@@ -98,6 +100,7 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
 
         vkFlushMappedMemoryRanges(vk, cast(uint)mmrs.length, mmrs.ptr);
     }
+
     override void invalidateMappedMemory(MappedMemorySet set) {
         import std.algorithm : map;
         import std.array : array;
@@ -157,6 +160,37 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
         vulkanEnforce(vkCreateSemaphore(vk, &sci, null, &vkSem), "Could not create a Vulkan semaphore");
 
         return new VulkanSemaphore(vkSem, this);
+    }
+
+    override Swapchain createSwapchain(Surface graalSurface, PresentMode pm, uint numImages,
+                                       Format format, uint[2] size, ImageUsage usage)
+    {
+        auto surf = enforce(
+            cast(VulkanSurface)graalSurface,
+            "Did not pass a Vulkan surface"
+        );
+
+        VkSwapchainCreateInfoKHR sci;
+        sci.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        sci.surface = surf.vk;
+        sci.minImageCount = numImages;
+        sci.imageFormat = format.toVk;
+        sci.imageExtent = VkExtent2D(size[0], size[1]);
+        sci.imageArrayLayers = 1;
+        sci.imageUsage = imageUsageToVk(usage);
+        sci.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+        sci.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+        sci.clipped = VK_TRUE;
+        sci.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        sci.presentMode = pm.toVk;
+
+        VkSwapchainKHR vkSc;
+        vulkanEnforce(
+            vkCreateSwapchainKHR(vk, &sci, null, &vkSc),
+            "Could not create a Vulkan Swap chain"
+        );
+
+        return new VulkanSwapchain(vkSc, this, size);
     }
 
     VulkanPhysicalDevice _pd;

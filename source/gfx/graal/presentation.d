@@ -24,5 +24,9 @@ enum PresentMode {
 }
 
 interface Surface : AtomicRefCounted
+{}
+
+interface Swapchain : AtomicRefCounted
 {
+    @property Image[] images();
 }

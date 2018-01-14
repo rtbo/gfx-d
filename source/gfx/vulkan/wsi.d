@@ -1,10 +1,13 @@
 /// Vulkan Window System Integration module
 module gfx.vulkan.wsi;
 
+import erupted;
+
 import gfx.core.rc;
 import gfx.graal;
 import gfx.graal.image;
 import gfx.vulkan;
+import gfx.vulkan.image;
 import gfx.vulkan.error;
 
 import std.exception : enforce;
@@ -68,14 +71,6 @@ version(GfxOffscreen) {
 }
 
 
-
-version(GfxVulkanWayland) {
-}
-version(GfxVulkanXcb) {
-}
-version(GfxVulkanWin32) {
-}
-
 package:
 
 class VulkanSurface : VulkanInstObj!(VkSurfaceKHR, vkDestroySurfaceKHR), Surface
@@ -86,4 +81,51 @@ class VulkanSurface : VulkanInstObj!(VkSurfaceKHR, vkDestroySurfaceKHR), Surface
     {
         super(vk, inst);
     }
+}
+
+class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, vkDestroySwapchainKHR), Swapchain
+{
+    mixin(atomicRcCode);
+
+    this(VkSwapchainKHR vk, VulkanDevice dev, uint[2] size)
+    {
+        super(vk, dev);
+        _size = size;
+    }
+
+    // not releasing images on purpose, the lifetime is owned by implementation
+
+    override @property Image[] images() {
+
+        if (!_images.length) {
+            uint count;
+            vulkanEnforce(
+                vkGetSwapchainImagesKHR(vkDev, vk, &count, null),
+                "Could not get vulkan swap chain images"
+            );
+            auto vkImgs = new VkImage[count];
+            vulkanEnforce(
+                vkGetSwapchainImagesKHR(vkDev, vk, &count, &vkImgs[0]),
+                "Could not get vulkan swap chain images"
+            );
+
+            import std.algorithm : map;
+            import std.array : array;
+            _images = vkImgs
+                    .map!((VkImage vkImg) {
+                        const dims = ImageDims.d2(_size[0], _size[1]);
+                        auto img = new VulkanImage(vkImg, dev, ImageType.d2, dims);
+                        img.retain();
+                        dev.release();  // img will not be released as held by implementation
+                                        // this must be compensated
+                        return img;
+                    })
+                    .array;
+        }
+
+        return cast(Image[])_images;
+    }
+
+    private VulkanImage[] _images;
+    private uint[2] _size;
 }

@@ -122,6 +122,17 @@ PresentMode toGfx(in VkPresentModeKHR pm) {
     }
 }
 
+VkPresentModeKHR toVk(in PresentMode pm) {
+    final switch (pm) {
+    case PresentMode.immediate:
+        return VK_PRESENT_MODE_IMMEDIATE_KHR;
+    case PresentMode.fifo:
+        return VK_PRESENT_MODE_FIFO_KHR;
+    case PresentMode.mailbox:
+        return VK_PRESENT_MODE_MAILBOX_KHR;
+    }
+}
+
 @property bool hasGfxSupport(in VkPresentModeKHR pm) {
     switch (pm) {
     case VK_PRESENT_MODE_IMMEDIATE_KHR:

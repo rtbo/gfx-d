@@ -35,15 +35,28 @@ struct QueueRequest
 interface PhysicalDevice : AtomicRefCounted
 {
     @property uint apiVersion();
+
     @property uint driverVersion();
+
     @property uint vendorId();
+
     @property uint deviceId();
+
     @property string name();
+
     @property DeviceType type();
+    final @property bool softwareRendering() {
+        return type == DeviceType.cpu;
+    }
+
     @property DeviceFeatures features();
+
     @property DeviceLimits limits();
+
     @property MemoryProperties memoryProperties();
+
     @property QueueFamily[] queueFamilies();
+
     FormatProperties formatProperties(in Format format);
 
     bool supportsSurface(uint queueFamilyIndex, Surface surface);
@@ -106,4 +119,7 @@ interface Device : AtomicRefCounted
                       ImageUsage usage, uint samples, uint levels=1);
 
     Semaphore createSemaphore();
+
+    Swapchain createSwapchain(Surface surface, PresentMode pm, uint numImages,
+                              Format format, uint[2] size, ImageUsage usage);
 }
