@@ -1,14 +1,18 @@
 /// Vulkan Window System Integration module
 module gfx.vulkan.wsi;
 
+import core.time : Duration;
+
 import erupted;
 
 import gfx.core.rc;
 import gfx.graal;
 import gfx.graal.image;
+import gfx.graal.sync;
 import gfx.vulkan;
 import gfx.vulkan.image;
 import gfx.vulkan.error;
+import gfx.vulkan.sync;
 
 import std.exception : enforce;
 
@@ -124,6 +128,27 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, vkDestroySwapchainKHR), Sw
         }
 
         return cast(Image[])_images;
+    }
+
+    override uint acquireNextImage(Duration timeout, Semaphore graalSemaphore)
+    {
+        auto sem = enforce(
+            cast(VulkanSemaphore)graalSemaphore,
+            "a non vulkan semaphore was passed"
+        );
+
+        ulong vkTimeout = timeout.total!"nsecs";
+        import core.time : dur;
+        if (timeout < dur!"nsecs"(0)) {
+            vkTimeout = ulong.max;
+        }
+
+        uint img;
+        vulkanEnforce(
+            vkAcquireNextImageKHR(vkDev, vk, vkTimeout, sem.vk, null, &img),
+            "Could not acquire next vulkan image"
+        );
+        return img;
     }
 
     private VulkanImage[] _images;

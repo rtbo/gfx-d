@@ -72,6 +72,10 @@ int main() {
 
     auto sc = dev.createSwapchain(win.surface, pm, numImages, f, swapChainSize, usage).rc;
 
+    auto scImgs = sc.images;
+
+
+
     return 0;
 }
 
