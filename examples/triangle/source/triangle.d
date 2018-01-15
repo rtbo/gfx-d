@@ -74,7 +74,15 @@ int main() {
 
     auto scImgs = sc.images;
 
+    bool exitFlag;
+    win.mouseOn = (uint, uint) {
+        exitFlag = true;
+    };
 
+    while (!exitFlag) {
+        win.waitAndDispatch();
+        writeln("draw!");
+    }
 
     return 0;
 }

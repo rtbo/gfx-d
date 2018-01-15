@@ -16,6 +16,9 @@ interface Window
     @property void mouseMove(MouseHandler handler);
     @property void mouseOn(MouseHandler handler);
     @property void mouseOff(MouseHandler handler);
+
+    void pollAndDispatch();
+    void waitAndDispatch();
 }
 
 Window createWindow(Instance instance)

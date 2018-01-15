@@ -54,6 +54,19 @@ class WaylandWindow : Window
         return gfxSurface;
     }
 
+    override void pollAndDispatch() {
+        while (dpy.display.prepareRead() != 0) {
+            dpy.display.dispatchPending();
+        }
+        dpy.display.flush();
+        dpy.display.readEvents();
+        dpy.display.dispatchPending();
+    }
+
+    override void waitAndDispatch() {
+        dpy.display.dispatch();
+    }
+
     private void pointerButton(WlPointer, uint serial, uint time, uint button,
                         WlPointer.ButtonState state)
     {
