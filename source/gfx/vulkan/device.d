@@ -10,6 +10,7 @@ import gfx.graal.device;
 import gfx.graal.image;
 import gfx.graal.memory;
 import gfx.graal.presentation;
+import gfx.graal.queue;
 import gfx.graal.sync;
 import gfx.vulkan;
 import gfx.vulkan.buffer;
@@ -17,6 +18,7 @@ import gfx.vulkan.conv;
 import gfx.vulkan.error;
 import gfx.vulkan.image;
 import gfx.vulkan.memory;
+import gfx.vulkan.queue;
 import gfx.vulkan.sync;
 import gfx.vulkan.wsi;
 
@@ -70,6 +72,21 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
 
     @property VulkanPhysicalDevice pd() {
         return _pd;
+    }
+
+    override Queue getQueue(uint queueFamilyIndex, uint queueIndex) {
+        VkQueue vkQ;
+        vkGetDeviceQueue(vk, queueFamilyIndex, queueIndex, &vkQ);
+
+        foreach (q; _queues) {
+            if (q.vk is vkQ) {
+                return q;
+            }
+        }
+
+        auto q = new VulkanQueue(vkQ);
+        _queues ~= q;
+        return q;
     }
 
     override DeviceMemory allocateMemory(uint memTypeIndex, size_t size)
@@ -193,5 +210,6 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
         return new VulkanSwapchain(vkSc, this, size);
     }
 
-    VulkanPhysicalDevice _pd;
+    private VulkanPhysicalDevice _pd;
+    private VulkanQueue[] _queues;
 }

@@ -111,6 +111,8 @@ struct MappedMemorySet
 /// Handle to a logical device
 interface Device : AtomicRefCounted
 {
+    Queue getQueue(uint queueFamilyIndex, uint queueIndex);
+
     DeviceMemory allocateMemory(uint memPropIndex, size_t size);
     void flushMappedMemory(MappedMemorySet set);
     void invalidateMappedMemory(MappedMemorySet set);
