@@ -51,7 +51,7 @@ int main() {
     const qfInd = chooseQueue(pd);
     enforce (qfInd != invalidQueue, "Could not find a suitable graphics queue");
 
-    auto dev = pd.open([QueueRequest(qfInd, 0.5)]).rc;
+    auto dev = pd.open([QueueRequest(qfInd, [0.5])]).rc;
 
     const surfCaps = pd.surfaceCaps(win.surface);
 

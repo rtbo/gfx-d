@@ -23,11 +23,13 @@ enum DeviceType {
     cpu
 }
 
-/// A request for a specific queue and its priority level when opening a device.
+/// A request for a queue family and each queue to be created within that family.
+/// The amount of queue to be created is given by priorities.length.
+/// Priorities represent the relative priority to be given to each queue (from 0 to 1)
 struct QueueRequest
 {
     uint familyIndex;
-    float priority;
+    float[] priorities;
 }
 
 /// Represent a physical device. This interface is meant to describe a graphics

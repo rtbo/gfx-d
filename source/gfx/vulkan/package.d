@@ -639,30 +639,12 @@ class VulkanPhysicalDevice : PhysicalDevice
             return null;
         }
 
-        auto ordered = queues.dup;
-        ordered.sort!"a.familyIndex < b.familyIndex"();
-
-        struct Req {
-            uint fam;
-            float[] prios;
-        }
-
-        Req[] reqs = [ Req( ordered[0].familyIndex, [ ordered[0].priority ] ) ];
-        foreach (const qr; ordered[1 .. $]) {
-            if (qr.familyIndex == reqs[$-1].fam) {
-                reqs[$-1].prios ~= qr.priority;
-            }
-            else {
-                reqs ~= Req( qr.familyIndex, [ qr.priority ]);
-            }
-        }
-
-        const qcis = reqs.map!((Req r) {
+        const qcis = queues.map!((const(QueueRequest) r) {
             VkDeviceQueueCreateInfo qci;
             qci.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-            qci.queueFamilyIndex = r.fam;
-            qci.queueCount = cast(uint)r.prios.length;
-            qci.pQueuePriorities = r.prios.ptr;
+            qci.queueFamilyIndex = r.familyIndex;
+            qci.queueCount = cast(uint)r.priorities.length;
+            qci.pQueuePriorities = r.priorities.ptr;
             return qci;
         }).array;
 
