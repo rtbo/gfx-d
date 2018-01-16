@@ -31,13 +31,18 @@ interface Surface : AtomicRefCounted
 
 interface Swapchain : AtomicRefCounted
 {
+    /// Get the list of images owned by this swapchain.
+    /// The index of each image is meaningful and is often used to reference
+    /// the image (such as the index returned by acquireNextImage)
     @property Image[] images();
 
     /// use negative timeout to specify no timeout at all
     /// Params:
     ///     timeout = the maximum time to wait until the call returns
     ///     semaphore = the semaphore
+    ///     suboptimal = a flag that implementation may set if the swapchain need
+    ///                  to be recreated
     /// Returns: the index of an available image or uint.max if timeout expired
     ///          before any image was returned to the application
-    uint acquireNextImage(Duration timeout, Semaphore semaphore);
+    uint acquireNextImage(Duration timeout, Semaphore semaphore, out bool suboptimal);
 }

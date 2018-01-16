@@ -125,5 +125,6 @@ interface Device : AtomicRefCounted
     Semaphore createSemaphore();
 
     Swapchain createSwapchain(Surface surface, PresentMode pm, uint numImages,
-                              Format format, uint[2] size, ImageUsage usage);
+                              Format format, uint[2] size, ImageUsage usage,
+                              Swapchain former=null);
 }

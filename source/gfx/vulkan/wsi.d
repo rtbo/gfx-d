@@ -130,7 +130,7 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, vkDestroySwapchainKHR), Sw
         return cast(Image[])_images;
     }
 
-    override uint acquireNextImage(Duration timeout, Semaphore graalSemaphore)
+    override uint acquireNextImage(Duration timeout, Semaphore graalSemaphore, out bool suboptimal)
     {
         auto sem = enforce(
             cast(VulkanSemaphore)graalSemaphore,
@@ -144,10 +144,15 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, vkDestroySwapchainKHR), Sw
         }
 
         uint img;
-        vulkanEnforce(
-            vkAcquireNextImageKHR(vkDev, vk, vkTimeout, sem.vk, null, &img),
-            "Could not acquire next vulkan image"
-        );
+        const res = vkAcquireNextImageKHR(vkDev, vk, vkTimeout, sem.vk, null, &img);
+
+        if (res == VK_SUBOPTIMAL_KHR) {
+            suboptimal = true;
+        }
+        else {
+            enforce(res == VK_SUCCESS, "Could not acquire next vulkan image");
+        }
+
         return img;
     }
 

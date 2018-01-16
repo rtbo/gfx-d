@@ -180,12 +180,17 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
     }
 
     override Swapchain createSwapchain(Surface graalSurface, PresentMode pm, uint numImages,
-                                       Format format, uint[2] size, ImageUsage usage)
+                                       Format format, uint[2] size, ImageUsage usage,
+                                       Swapchain old=null)
     {
         auto surf = enforce(
             cast(VulkanSurface)graalSurface,
             "Did not pass a Vulkan surface"
         );
+
+        auto oldSc = old ? enforce(
+            cast(VulkanSwapchain)old, "Did not pass a vulkan swapchain"
+        ) : null;
 
         VkSwapchainCreateInfoKHR sci;
         sci.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -200,6 +205,7 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
         sci.clipped = VK_TRUE;
         sci.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
         sci.presentMode = pm.toVk;
+        sci.oldSwapchain = oldSc ? oldSc.vk : null;
 
         VkSwapchainKHR vkSc;
         vulkanEnforce(
