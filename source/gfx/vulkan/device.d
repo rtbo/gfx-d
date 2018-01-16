@@ -6,6 +6,7 @@ package:
 import erupted;
 
 import gfx.core.rc;
+import gfx.graal.cmd;
 import gfx.graal.device;
 import gfx.graal.image;
 import gfx.graal.memory;
@@ -14,6 +15,7 @@ import gfx.graal.queue;
 import gfx.graal.sync;
 import gfx.vulkan;
 import gfx.vulkan.buffer;
+import gfx.vulkan.cmd;
 import gfx.vulkan.conv;
 import gfx.vulkan.error;
 import gfx.vulkan.image;
@@ -87,6 +89,21 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
         auto q = new VulkanQueue(vkQ);
         _queues ~= q;
         return q;
+    }
+
+    override CommandPool createCommandPool(uint queueFamilyIndex) {
+        VkCommandPoolCreateInfo cci;
+        cci.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        cci.queueFamilyIndex = queueFamilyIndex;
+        cci.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+        VkCommandPool vkPool;
+        vulkanEnforce(
+            vkCreateCommandPool(vk, &cci, null, &vkPool),
+            "Could not create vulkan command pool"
+        );
+
+        return new VulkanCommandPool(vkPool, this);
     }
 
     override DeviceMemory allocateMemory(uint memTypeIndex, size_t size)

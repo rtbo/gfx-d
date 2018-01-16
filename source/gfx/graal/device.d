@@ -2,6 +2,7 @@ module gfx.graal.device;
 
 import gfx.core.rc;
 import gfx.graal.buffer;
+import gfx.graal.cmd;
 import gfx.graal.format;
 import gfx.graal.image;
 import gfx.graal.memory;
@@ -112,6 +113,8 @@ struct MappedMemorySet
 interface Device : AtomicRefCounted
 {
     Queue getQueue(uint queueFamilyIndex, uint queueIndex);
+
+    CommandPool createCommandPool(uint queueFamilyIndex);
 
     DeviceMemory allocateMemory(uint memPropIndex, size_t size);
     void flushMappedMemory(MappedMemorySet set);

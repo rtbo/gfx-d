@@ -4,6 +4,7 @@ import erupted;
 
 import gfx.core.rc;
 import gfx.graal;
+import gfx.graal.cmd;
 import gfx.graal.device;
 import gfx.graal.queue;
 import gfx.graal.sync;
@@ -29,6 +30,7 @@ class Triangle : Disposable
     Image[] scImages;
     Rc!Semaphore imageAvailableSem;
     Rc!Semaphore renderingFinishSem;
+    Rc!CommandPool presentPool;
 
     void prepare() {
         // initialize vulkan library
@@ -43,6 +45,7 @@ class Triangle : Disposable
         prepareDevice();
         prepareSwapchain();
         prepareSync();
+        prepareCmds();
     }
 
     void prepareDevice()
@@ -101,11 +104,16 @@ class Triangle : Disposable
         renderingFinishSem = device.createSemaphore();
     }
 
+    void prepareCmds() {
+        presentPool = device.createCommandPool(presentQueueIndex);
+    }
+
     void render() {
         writeln("render!");
     }
 
     override void dispose() {
+        presentPool.unload();
         imageAvailableSem.unload();
         renderingFinishSem.unload();
         swapchain.unload();
