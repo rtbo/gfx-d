@@ -31,6 +31,7 @@ class Triangle : Disposable
     Rc!Semaphore imageAvailableSem;
     Rc!Semaphore renderingFinishSem;
     Rc!CommandPool presentPool;
+    CommandBuffer[] presentCmdBufs;
 
     void prepare() {
         // initialize vulkan library
@@ -106,6 +107,7 @@ class Triangle : Disposable
 
     void prepareCmds() {
         presentPool = device.createCommandPool(presentQueueIndex);
+        presentCmdBufs = presentPool.allocate(scImages.length);
     }
 
     void render() {
@@ -113,6 +115,7 @@ class Triangle : Disposable
     }
 
     override void dispose() {
+        presentPool.free(presentCmdBufs);
         presentPool.unload();
         imageAvailableSem.unload();
         renderingFinishSem.unload();
