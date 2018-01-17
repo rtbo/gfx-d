@@ -75,6 +75,18 @@ enum ImageUsage {
     inputAttachment         = 0x80,
 }
 
+enum ImageLayout {
+	undefined                       = 0,
+	general                         = 1,
+	colorAttachmentOptimal          = 2,
+	depthStencilAttachmentOptimal   = 3,
+	depthStencilReadOnlyOptimal     = 4,
+	shaderReadOnlyOptimal           = 5,
+	transferSrcOptimal              = 6,
+	transferDstOptimal              = 7,
+	preinitialized                  = 8,
+}
+
 enum ImageAspect {
     color           = 0x01,
     depth           = 0x02,

@@ -7,8 +7,11 @@ import erupted;
 
 import gfx.core.rc;
 import gfx.graal.cmd;
+import gfx.vulkan.buffer;
+import gfx.vulkan.conv;
 import gfx.vulkan.device;
 import gfx.vulkan.error;
+import gfx.vulkan.image;
 
 class VulkanCommandPool : VulkanDevObj!(VkCommandPool, vkDestroyCommandPool), CommandPool
 {
@@ -88,6 +91,48 @@ final class VulkanCommandBuffer : CommandBuffer
     override void end() {
         vulkanEnforce(
             vkEndCommandBuffer(vk), "Could not end vulkan command buffer"
+        );
+    }
+
+    override void pipelineBarrier(Trans!PipelineStage stageTrans,
+                                  BufferMemoryBarrier[] bufMbs,
+                                  ImageMemoryBarrier[] imgMbs)
+    {
+        import std.algorithm : map;
+        import std.array : array;
+
+        auto vkBufMbs = bufMbs.map!((BufferMemoryBarrier bufMb) {
+            VkBufferMemoryBarrier vkBufMb;
+            vkBufMb.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+            vkBufMb.srcAccessMask = accessToVk(bufMb.accessMaskTrans.from);
+            vkBufMb.dstAccessMask = accessToVk(bufMb.accessMaskTrans.to);
+            vkBufMb.srcQueueFamilyIndex = bufMb.queueFamIndexTrans.from;
+            vkBufMb.dstQueueFamilyIndex = bufMb.queueFamIndexTrans.to;
+            vkBufMb.buffer = enforce(cast(VulkanBuffer)bufMb.buffer, "Did not pass a Vulkan buffer").vk;
+            vkBufMb.offset = bufMb.offset;
+            vkBufMb.size = bufMb.size;
+            return vkBufMb;
+        }).array;
+
+        auto vkImgMbs = imgMbs.map!((ImageMemoryBarrier imgMb) {
+            VkImageMemoryBarrier vkImgMb;
+            vkImgMb.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            vkImgMb.srcAccessMask = accessToVk(imgMb.accessMaskTrans.from);
+            vkImgMb.dstAccessMask = accessToVk(imgMb.accessMaskTrans.to);
+            vkImgMb.oldLayout = imgMb.layoutTrans.from.toVk();
+            vkImgMb.newLayout = imgMb.layoutTrans.to.toVk();
+            vkImgMb.srcQueueFamilyIndex = imgMb.queueFamIndexTrans.from;
+            vkImgMb.dstQueueFamilyIndex = imgMb.queueFamIndexTrans.to;
+            vkImgMb.image = enforce(cast(VulkanImage)imgMb.image, "Did not pass a Vulkan image").vk;
+            vkImgMb.subresourceRange = imgMb.range.toVk();
+            return vkImgMb;
+        }).array;
+
+        vkCmdPipelineBarrier( vk,
+            pipelineStageToVk(stageTrans.from), pipelineStageToVk(stageTrans.to),
+            0, 0, null,
+            cast(uint)vkBufMbs.length, &vkBufMbs[0],
+            cast(uint)vkImgMbs.length, &vkImgMbs[0]
         );
     }
 

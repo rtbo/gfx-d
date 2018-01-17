@@ -6,6 +6,7 @@ package:
 import erupted;
 
 import gfx.graal.buffer;
+import gfx.graal.cmd;
 import gfx.graal.format;
 import gfx.graal.image;
 import gfx.graal.memory;
@@ -65,6 +66,11 @@ VkImageViewType toVkView(in ImageType it) {
     case ImageType.d3:
         return VK_IMAGE_VIEW_TYPE_3D;
     }
+}
+
+VkImageLayout toVk(in ImageLayout layout)
+{
+    return cast(VkImageLayout)layout;
 }
 
 MemoryRequirements toGfx(in VkMemoryRequirements mr) {
@@ -196,4 +202,14 @@ ImageUsage imageUsageToGfx(in VkImageUsageFlags usage)
 VkImageAspectFlags aspectToVk(in ImageAspect aspect)
 {
     return cast(VkImageAspectFlags)aspect;
+}
+
+VkAccessFlags accessToVk(in Access access)
+{
+    return cast(VkAccessFlags)access;
+}
+
+VkPipelineStageFlags pipelineStageToVk(in PipelineStage stage)
+{
+    return cast(VkPipelineStageFlags)stage;
 }
