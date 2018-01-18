@@ -7,6 +7,7 @@ import erupted;
 
 import gfx.core.rc;
 import gfx.graal.queue;
+import gfx.vulkan.conv;
 import gfx.vulkan.error;
 import gfx.vulkan.sync;
 import gfx.vulkan.wsi;
@@ -23,6 +24,57 @@ class VulkanQueue : Queue
 
     void waitIdle() {
         vkQueueWaitIdle(_vk);
+    }
+
+    void submit(Submission[] submissions)
+    {
+        import std.algorithm : map;
+        import std.array : array;
+
+        auto vkSubmitInfos = submissions.map!((ref Submission s)
+        {
+            auto vkWaitSems = new VkSemaphore[s.stageWaits.length];
+            auto vkWaitDstStage = new VkPipelineStageFlags[s.stageWaits.length];
+
+            foreach (i, sw; s.stageWaits) {
+                vkWaitSems[i] = enforce(
+                    cast(VulkanSemaphore)sw.sem,
+                    "Did not pass a vulkan semaphore"
+                ).vk;
+                vkWaitDstStage[i] = pipelineStageToVk(sw.stages);
+            }
+
+            auto vkSigSems = s.sigSems.map!(
+                s => enforce(
+                    cast(VulkanSemaphore)s,
+                    "Did not pass a vulkan semaphore"
+                ).vk
+            ).array;
+            auto vkCmdBufs = s.cmdBufs.map!(
+                b => enforce(
+                    cast(VulkanCommandBuffer)b,
+                    "Did not pass a vulkan command buffer"
+                ).vk
+            ).array;
+
+
+            VkSubmitInfo si;
+            si.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            si.waitSemaphoreCount = cast(uint)vkWaitSems.length;
+            si.pWaitSemaphores = vkWaitSems.ptr;
+            si.pWaitDstStageMask = vkWaitDstStage.ptr;
+            si.commandBufferCount = cast(uint)vkCmdBufs.length;
+            si.pCommandBuffers = vkCmdBufs.ptr;
+            si.signalSemaphoreCount = cast(uint)vkSigSems.length;
+            si.pSignalSemaphores = vkSigSems.ptr;
+
+            return si;
+        }).array;
+
+        vulkanEnforce(
+            vkQueueSubmit(vk, cast(uint)vkSubmitInfos.length, vkSubmitInfos.ptr, null),
+            "Could not submit vulkan queue"
+        );
     }
 
     void present(Semaphore[] waitSems, PresentRequest[] prs) {

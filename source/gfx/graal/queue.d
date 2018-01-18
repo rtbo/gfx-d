@@ -1,6 +1,7 @@
 module gfx.graal.queue;
 
 import gfx.core.rc;
+import gfx.graal.cmd;
 import gfx.graal.presentation;
 import gfx.graal.sync;
 
@@ -15,6 +16,17 @@ struct QueueFamily
     uint count;
 }
 
+struct StageWait {
+    Semaphore sem;
+    PipelineStage stages;
+}
+
+struct Submission {
+    StageWait[] stageWaits;
+    Semaphore[] sigSems;
+    CommandBuffer[] cmdBufs;
+}
+
 struct PresentRequest {
     Swapchain swapChain;
     uint imageIndex;
@@ -23,5 +35,6 @@ struct PresentRequest {
 interface Queue
 {
     void waitIdle();
+    void submit(Submission[] submissions);  // TODO: fence
     void present(Semaphore[] waitSems, PresentRequest[] prs);
 }
