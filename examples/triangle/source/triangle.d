@@ -47,6 +47,7 @@ class Triangle : Disposable
         prepareSwapchain();
         prepareSync();
         prepareCmds();
+        recordCmds();
     }
 
     void prepareDevice()
@@ -108,6 +109,42 @@ class Triangle : Disposable
     void prepareCmds() {
         presentPool = device.createCommandPool(presentQueueIndex);
         presentCmdBufs = presentPool.allocate(scImages.length);
+    }
+
+    void recordCmds() {
+
+        const clearValues = ClearColorValues(0.8f, 0.7f, 0.2f, 1f);
+        auto subrange = ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1);
+
+        foreach (i, buf; presentCmdBufs) {
+            buf.begin(true);
+
+            buf.pipelineBarrier(
+                trans(PipelineStage.transfer, PipelineStage.transfer), [],
+                [ ImageMemoryBarrier(
+                    trans(Access.memoryRead, Access.transferWrite),
+                    trans(ImageLayout.undefined, ImageLayout.transferDstOptimal),
+                    trans(graphicsQueueIndex, presentQueueIndex),
+                    scImages[i], subrange
+                ) ]
+            );
+
+            buf.clearColorImage(
+                scImages[i], ImageLayout.transferDstOptimal, clearValues, [ subrange ]
+            );
+
+            buf.pipelineBarrier(
+                trans(PipelineStage.transfer, PipelineStage.transfer), [],
+                [ ImageMemoryBarrier(
+                    trans(Access.transferWrite, Access.memoryRead),
+                    trans(ImageLayout.transferDstOptimal, ImageLayout.presentSrc),
+                    trans(graphicsQueueIndex, presentQueueIndex),
+                    scImages[i], subrange
+                ) ]
+            );
+
+            buf.end();
+        }
     }
 
     void render() {
