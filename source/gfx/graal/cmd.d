@@ -51,6 +51,8 @@ enum Access {
     memoryWrite                 = 0x00010000,
 }
 
+enum queueFamilyIgnored = ~0;
+
 struct ImageMemoryBarrier {
     Trans!Access accessMaskTrans;
     Trans!ImageLayout layoutTrans;
