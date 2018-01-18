@@ -76,6 +76,13 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
         return _pd;
     }
 
+    override void waitIdle() {
+        vulkanEnforce(
+            vkDeviceWaitIdle(vk),
+            "Problem waiting for device"
+        );
+    }
+
     override Queue getQueue(uint queueFamilyIndex, uint queueIndex) {
         VkQueue vkQ;
         vkGetDeviceQueue(vk, queueFamilyIndex, queueIndex, &vkQ);

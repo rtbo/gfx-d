@@ -112,6 +112,9 @@ struct MappedMemorySet
 /// Handle to a logical device
 interface Device : AtomicRefCounted
 {
+    /// Wait that device finishes all operations in progress
+    void waitIdle();
+
     Queue getQueue(uint queueFamilyIndex, uint queueIndex);
 
     CommandPool createCommandPool(uint queueFamilyIndex);
