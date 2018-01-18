@@ -48,7 +48,7 @@ class Triangle : Disposable
 
         // the rest of the preparation
         prepareDevice();
-        prepareSwapchain();
+        prepareSwapchain(null);
         prepareSync();
         prepareCmds();
         recordCmds();
@@ -88,7 +88,7 @@ class Triangle : Disposable
         }
     }
 
-    void prepareSwapchain() {
+    void prepareSwapchain(Swapchain former) {
         const surfCaps = physicalDevice.surfaceCaps(window.surface);
         enforce(surfCaps.usage & ImageUsage.transferDst, "TransferDst not supported by surface");
         const usage = ImageUsage.transferDst | ImageUsage.colorAttachment;
@@ -101,7 +101,7 @@ class Triangle : Disposable
         }
         const pm = choosePresentMode(physicalDevice, window.surface);
 
-        swapchain = device.createSwapchain(window.surface, pm, numImages, f, surfaceSize, usage);
+        swapchain = device.createSwapchain(window.surface, pm, numImages, f, surfaceSize, usage, former);
         scImages = swapchain.images;
     }
 
@@ -172,7 +172,7 @@ class Triangle : Disposable
 
         if (needReconstruction) {
             writeln("need to rebuild swapchain");
-            prepareSwapchain();
+            prepareSwapchain(swapchain);
         }
     }
 
