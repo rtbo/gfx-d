@@ -224,11 +224,11 @@ Format chooseFormat(PhysicalDevice pd, Surface surface)
 
 PresentMode choosePresentMode(PhysicalDevice pd, Surface surface)
 {
-    auto modes = pd.surfacePresentModes(surface);
-    if (modes.canFind(PresentMode.mailbox)) {
-        return PresentMode.mailbox;
-    }
-    assert(modes.canFind(PresentMode.fifo));
+    // auto modes = pd.surfacePresentModes(surface);
+    // if (modes.canFind(PresentMode.mailbox)) {
+    //     return PresentMode.mailbox;
+    // }
+    assert(pd.surfacePresentModes(surface).canFind(PresentMode.fifo));
     return PresentMode.fifo;
 }
 
