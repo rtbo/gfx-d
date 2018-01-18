@@ -97,14 +97,29 @@ VulkanInstance createVulkanInstance(in string appName=null,
                                     in VulkanVersion appVersion=VulkanVersion(0, 0, 0))
 {
     debug {
-        const layers = lunarGValidationLayers;
+        const wantedLayers = lunarGValidationLayers;
+        const wantedExts = [ "VK_KHR_debug_report", "VK_EXT_debug_report" ];
     }
     else {
-        const string[] layers = [];
+        const string[] wantedLayers = [];
+        const string[] wantedExts = [];
     }
 
     import gfx.vulkan.wsi : surfaceInstanceExtensions;
-    return createVulkanInstance(layers, surfaceInstanceExtensions, appName, appVersion);
+
+    import std.algorithm : canFind, filter, map;
+    import std.array : array;
+    import std.range : chain;
+
+    const layers = wantedLayers
+            .filter!(l => _instanceLayers.map!(il => il.layerName).canFind(l))
+            .array;
+    const exts = wantedExts
+            .filter!(e => _instanceExtensions.map!(ie => ie.extensionName).canFind(e))
+            .array
+        ~ surfaceInstanceExtensions;
+
+    return createVulkanInstance(layers, exts, appName, appVersion);
 }
 
 /// Creates an Instance object with Vulkan backend with user specified layers and extensions
