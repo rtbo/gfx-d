@@ -132,8 +132,8 @@ final class VulkanCommandBuffer : CommandBuffer
         vkCmdPipelineBarrier( vk,
             pipelineStageToVk(stageTrans.from), pipelineStageToVk(stageTrans.to),
             0, 0, null,
-            cast(uint)vkBufMbs.length, &vkBufMbs[0],
-            cast(uint)vkImgMbs.length, &vkImgMbs[0]
+            cast(uint)vkBufMbs.length, vkBufMbs.ptr,
+            cast(uint)vkImgMbs.length, vkImgMbs.ptr
         );
     }
 
