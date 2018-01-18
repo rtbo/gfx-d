@@ -122,12 +122,12 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, vkDestroySwapchainKHR), Sw
                         img.retain();
                         dev.release();  // img will not be released as held by implementation
                                         // this must be compensated
-                        return img;
+                        return cast(Image)img;
                     })
                     .array;
         }
 
-        return cast(Image[])_images;
+        return _images;
     }
 
     override uint acquireNextImage(Duration timeout, Semaphore graalSemaphore, out bool suboptimal)
@@ -156,6 +156,6 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, vkDestroySwapchainKHR), Sw
         return img;
     }
 
-    private VulkanImage[] _images;
+    private Image[] _images;
     private uint[2] _size;
 }

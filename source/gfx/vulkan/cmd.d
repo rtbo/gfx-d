@@ -40,9 +40,10 @@ class VulkanCommandPool : VulkanDevObj!(VkCommandPool, vkDestroyCommandPool), Co
 
         import std.algorithm : map;
         import std.array : array;
-        return cast(CommandBuffer[])(
-            vkBufs.map!(vkBuf => new VulkanCommandBuffer(vkBuf, this)).array
-        );
+
+        return vkBufs
+                .map!(vkBuf => cast(CommandBuffer)new VulkanCommandBuffer(vkBuf, this))
+                .array;
     }
 
     override void free(CommandBuffer[] bufs) {
