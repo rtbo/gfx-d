@@ -23,7 +23,7 @@
             "platforms": ["linux"],
             "versions": [ "GfxVulkanWayland" ],
             "dependencies": {
-                "wayland-d:client": "~>0.0.4"
+                "wayland:client": "~>0.1.0"
             },
             "subConfigurations": {
                 "erupted": "dub-platform-wayland-derelict-loader"
