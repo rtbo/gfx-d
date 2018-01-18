@@ -250,13 +250,15 @@ int main() {
     StopWatch sw;
     sw.start();
 
+    enum reportFreq = 100;
+
     while (!exitFlag) {
         triangle.window.waitAndDispatch();
         triangle.render();
         ++ frameCount;
-        if ((frameCount % 1000) == 0) {
+        if ((frameCount % reportFreq) == 0) {
             const us = sw.peek().total!"usecs";
-            writeln("FPS: ", 1000_000_000.0 / (us - lastUs));
+            writeln("FPS: ", 1000_000.0 * reportFreq / (us - lastUs));
             lastUs = us;
         }
     }
