@@ -1,5 +1,7 @@
 module triangle;
 
+import core.time : Duration;
+
 import erupted;
 
 import gfx.core.rc;
@@ -32,6 +34,8 @@ class Triangle : Disposable
     Rc!Semaphore renderingFinishSem;
     Rc!CommandPool presentPool;
     CommandBuffer[] presentCmdBufs;
+    bool swStarted;
+
 
     void prepare() {
         // initialize vulkan library
@@ -147,19 +151,49 @@ class Triangle : Disposable
         }
     }
 
-    void render() {
-        writeln("render!");
+    void render()
+    {
+        import core.time : dur;
+
+        bool needReconstruction;
+        const imgInd = swapchain.acquireNextImage(dur!"seconds"(-1), imageAvailableSem, needReconstruction);
+
+        presentQueue.submit([
+            Submission (
+                [ StageWait(imageAvailableSem, PipelineStage.transfer) ],
+                [ renderingFinishSem ], [ presentCmdBufs[imgInd] ]
+            )
+        ]);
+
+        presentQueue.present(
+            [ renderingFinishSem ],
+            [ PresentRequest(swapchain, imgInd) ]
+        );
+
+        if (needReconstruction) {
+            writeln("need to rebuild swapchain");
+            prepareSwapchain();
+        }
     }
 
     override void dispose() {
-        presentPool.free(presentCmdBufs);
-        presentPool.unload();
+        if (device) {
+            device.waitIdle();
+        }
+        if (presentPool && presentCmdBufs.length) {
+            presentPool.free(presentCmdBufs);
+            presentPool.unload();
+        }
+        // the rest is checked with Rc, so it is safe to call unload even
+        // if object is invalid
         imageAvailableSem.unload();
         renderingFinishSem.unload();
         swapchain.unload();
         device.unload();
         physicalDevice.unload();
-        window.close();
+        if (window) {
+            window.close();
+        }
         instance.unload();
     }
 }
@@ -202,16 +236,29 @@ int main() {
 
     auto triangle = new Triangle();
     triangle.prepare();
-    scope(exit) triangle.dispose();
+    scope(exit) collectException(triangle.dispose());
 
     bool exitFlag;
     triangle.window.mouseOn = (uint, uint) {
         exitFlag = true;
     };
 
+    import std.datetime.stopwatch : StopWatch;
+
+    size_t frameCount;
+    size_t lastUs;
+    StopWatch sw;
+    sw.start();
+
     while (!exitFlag) {
         triangle.window.waitAndDispatch();
         triangle.render();
+        ++ frameCount;
+        if ((frameCount % 1000) == 0) {
+            const us = sw.peek().total!"usecs";
+            writeln("FPS: ", 1000_000_000.0 / (us - lastUs));
+            lastUs = us;
+        }
     }
 
     return 0;
