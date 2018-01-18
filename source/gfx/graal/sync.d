@@ -6,3 +6,7 @@ import gfx.core.rc;
 interface Semaphore : AtomicRefCounted
 {}
 
+interface Fence : AtomicRefCounted
+{
+    @property bool signaled();
+}

@@ -35,6 +35,6 @@ struct PresentRequest {
 interface Queue
 {
     void waitIdle();
-    void submit(Submission[] submissions);  // TODO: fence
+    void submit(Submission[] submissions, Fence fence);
     void present(Semaphore[] waitSems, PresentRequest[] prs);
 }

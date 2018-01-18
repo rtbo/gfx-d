@@ -1,5 +1,7 @@
 module gfx.graal.device;
 
+import core.time : Duration;
+
 import gfx.core.rc;
 import gfx.graal.buffer;
 import gfx.graal.cmd;
@@ -9,6 +11,8 @@ import gfx.graal.memory;
 import gfx.graal.presentation;
 import gfx.graal.queue;
 import gfx.graal.sync;
+
+import std.typecons : Flag;
 
 struct DeviceFeatures {
     bool presentation;
@@ -129,6 +133,9 @@ interface Device : AtomicRefCounted
                       ImageUsage usage, uint samples, uint levels=1);
 
     Semaphore createSemaphore();
+    Fence createFence(Flag!"signaled" signaled);
+    void resetFences(Fence[] fences);
+    void waitForFances(Fence[] fences, Flag!"waitAll" waitAll, Duration timeout);
 
     Swapchain createSwapchain(Surface surface, PresentMode pm, uint numImages,
                               Format format, uint[2] size, ImageUsage usage,

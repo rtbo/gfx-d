@@ -16,3 +16,16 @@ class VulkanSemaphore : VulkanDevObj!(VkSemaphore, vkDestroySemaphore), Semaphor
         super(vk, dev);
     }
 }
+
+class VulkanFence : VulkanDevObj!(VkFence, vkDestroyFence), Fence
+{
+    mixin(atomicRcCode);
+
+    this (VkFence vk, VulkanDevice dev) {
+        super(vk, dev);
+    }
+
+    override @property bool signaled() {
+        return vkGetFenceStatus(vkDev, vk) == VK_SUCCESS;
+    }
+}

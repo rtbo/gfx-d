@@ -163,7 +163,7 @@ class Triangle : Disposable
                 [ StageWait(imageAvailableSem, PipelineStage.transfer) ],
                 [ renderingFinishSem ], [ presentCmdBufs[imgInd] ]
             )
-        ]);
+        ], null);
 
         presentQueue.present(
             [ renderingFinishSem ],

@@ -26,7 +26,7 @@ class VulkanQueue : Queue
         vkQueueWaitIdle(_vk);
     }
 
-    void submit(Submission[] submissions)
+    void submit(Submission[] submissions, Fence fence)
     {
         import std.algorithm : map;
         import std.array : array;
@@ -71,8 +71,13 @@ class VulkanQueue : Queue
             return si;
         }).array;
 
+        VkFence vkFence;
+        if (fence) {
+            vkFence = enforce(cast(VulkanFence)fence, "Did not pass a Vulkan fence").vk;
+        }
+
         vulkanEnforce(
-            vkQueueSubmit(vk, cast(uint)vkSubmitInfos.length, vkSubmitInfos.ptr, null),
+            vkQueueSubmit(vk, cast(uint)vkSubmitInfos.length, vkSubmitInfos.ptr, vkFence),
             "Could not submit vulkan queue"
         );
     }

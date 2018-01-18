@@ -3,6 +3,8 @@ module gfx.vulkan.device;
 
 package:
 
+import core.time : Duration;
+
 import erupted;
 
 import gfx.core.rc;
@@ -23,6 +25,8 @@ import gfx.vulkan.memory;
 import gfx.vulkan.queue;
 import gfx.vulkan.sync;
 import gfx.vulkan.wsi;
+
+import std.typecons : Flag;
 
 class VulkanDevObj(VkType, alias destroyFn) : Disposable
 {
@@ -202,6 +206,53 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
 
         return new VulkanSemaphore(vkSem, this);
     }
+
+    override Fence createFence(Flag!"signaled" signaled)
+    {
+        VkFenceCreateInfo fci;
+        fci.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        if (signaled) {
+            fci.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        }
+        VkFence vkF;
+        vulkanEnforce(vkCreateFence(vk, &fci, null, &vkF), "Could not create a Vulkan fence");
+
+        return new VulkanFence(vkF, this);
+    }
+
+    override void resetFences(Fence[] fences) {
+        import std.algorithm : map;
+        import std.array : array;
+
+        auto vkFs = fences.map!(
+            f => enforce(cast(VulkanFence)f, "Did not pass a Vulkan fence").vk
+        ).array;
+
+        vulkanEnforce(
+            vkResetFences(vk, cast(uint)vkFs.length, &vkFs[0]),
+            "Could not reset vulkan fences"
+        );
+    }
+
+    override void waitForFances(Fence[] fences, Flag!"waitAll" waitAll, Duration timeout)
+    {
+        import std.algorithm : map;
+        import std.array : array;
+
+        auto vkFs = fences.map!(
+            f => enforce(cast(VulkanFence)f, "Did not pass a Vulkan fence").vk
+        ).array;
+
+        const vkWaitAll = waitAll ? VK_TRUE : VK_FALSE;
+        const nsecs = timeout.total!"nsecs";
+        const vkTimeout = nsecs < 0 ? ulong.max : cast(ulong)nsecs;
+
+        vulkanEnforce(
+            vkWaitForFences(vk, cast(uint)vkFs.length, &vkFs[0], vkWaitAll, vkTimeout),
+            "could not wait for vulkan fences"
+        );
+    }
+
 
     override Swapchain createSwapchain(Surface graalSurface, PresentMode pm, uint numImages,
                                        Format format, uint[2] size, ImageUsage usage,
