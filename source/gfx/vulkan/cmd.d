@@ -136,6 +136,35 @@ final class VulkanCommandBuffer : CommandBuffer
         );
     }
 
+    override void clearColorImage(Image image, ImageLayout layout,
+                         in ClearColorValues clearValues, ImageSubresourceRange[] ranges)
+    {
+        import std.algorithm : map;
+        import std.array : array;
+
+        auto vkImg = enforce(cast(VulkanImage)image, "Did not pass a vulkan image").vk;
+        auto vkLayout = layout.toVk();
+        auto vkClear = cast(const(VkClearColorValue)*) cast(const(void)*) &clearValues.values;
+        auto vkRanges = ranges.map!(r => r.toVk()).array;
+
+        vkCmdClearColorImage(vk, vkImg, vkLayout, vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
+    }
+
+    override void clearDepthStencilImage(Image image, ImageLayout layout,
+                                         in ClearDepthStencilValues clearValues,
+                                         ImageSubresourceRange[] ranges)
+    {
+        import std.algorithm : map;
+        import std.array : array;
+
+        auto vkImg = enforce(cast(VulkanImage)image, "Did not pass a vulkan image").vk;
+        auto vkLayout = layout.toVk();
+        auto vkClear = VkClearDepthStencilValue(clearValues.depth, clearValues.stencil);
+        auto vkRanges = ranges.map!(r => r.toVk()).array;
+
+        vkCmdClearDepthStencilImage(vk, vkImg, vkLayout, &vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
+    }
+
     private VkCommandBuffer _vk;
     private VulkanCommandPool _pool;
 }

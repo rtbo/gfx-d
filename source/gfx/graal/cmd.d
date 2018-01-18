@@ -87,6 +87,43 @@ enum PipelineStage {
     allCommands                 = 0x00010000,
 }
 
+/// Values to be given to a clear image color command
+/// The type should be f32, unless the image format has numeric format of sInt or uInt.
+struct ClearColorValues
+{
+    enum Type {
+        f32, i32, u32
+    }
+    union Values {
+        float[4] f32;
+        int[4] i32;
+        uint[4] u32;
+    }
+    Type type;
+    Values values;
+
+    this (float r, float g, float b, float a) {
+        type = Type.f32;
+        values.f32 = [ r, g, b, a ];
+    }
+
+    this (int r, int g, int b, int a) {
+        type = Type.i32;
+        values.i32 = [ r, g, b, a ];
+    }
+
+    this (uint r, uint g, uint b, uint a) {
+        type = Type.u32;
+        values.u32 = [ r, g, b, a ];
+    }
+}
+
+struct ClearDepthStencilValues
+{
+    float depth;
+    uint stencil;
+}
+
 interface CommandBuffer
 {
     @property CommandPool pool();
@@ -97,6 +134,15 @@ interface CommandBuffer
     void end();
 
     void pipelineBarrier(Trans!PipelineStage stageTrans,
-                         BufferMemoryBarrier[] bufMB,
-                         ImageMemoryBarrier[] imgMB);
+                         BufferMemoryBarrier[] bufMbs,
+                         ImageMemoryBarrier[] imgMbs);
+
+    void clearColorImage(Image image, ImageLayout layout,
+                         in ClearColorValues clearValues,
+                         ImageSubresourceRange[] ranges);
+
+    void clearDepthStencilImage(Image image, ImageLayout layout,
+                                in ClearDepthStencilValues clearValues,
+                                ImageSubresourceRange[] ranges);
+
 }
