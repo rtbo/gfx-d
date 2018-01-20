@@ -234,34 +234,40 @@ PresentMode choosePresentMode(PhysicalDevice pd, Surface surface)
 
 int main() {
 
-    auto triangle = new Triangle();
-    triangle.prepare();
-    scope(exit) collectException(triangle.dispose());
+    try {
+        auto triangle = new Triangle();
+        triangle.prepare();
+        scope(exit) triangle.dispose();
 
-    bool exitFlag;
-    triangle.window.mouseOn = (uint, uint) {
-        exitFlag = true;
-    };
+        bool exitFlag;
+        triangle.window.mouseOn = (uint, uint) {
+            exitFlag = true;
+        };
 
-    import std.datetime.stopwatch : StopWatch;
+        import std.datetime.stopwatch : StopWatch;
 
-    size_t frameCount;
-    size_t lastUs;
-    StopWatch sw;
-    sw.start();
+        size_t frameCount;
+        size_t lastUs;
+        StopWatch sw;
+        sw.start();
 
-    enum reportFreq = 100;
+        enum reportFreq = 100;
 
-    while (!exitFlag) {
-        triangle.window.waitAndDispatch();
-        triangle.render();
-        ++ frameCount;
-        if ((frameCount % reportFreq) == 0) {
-            const us = sw.peek().total!"usecs";
-            writeln("FPS: ", 1000_000.0 * reportFreq / (us - lastUs));
-            lastUs = us;
+        while (!exitFlag) {
+            triangle.window.waitAndDispatch();
+            triangle.render();
+            ++ frameCount;
+            if ((frameCount % reportFreq) == 0) {
+                const us = sw.peek().total!"usecs";
+                writeln("FPS: ", 1000_000.0 * reportFreq / (us - lastUs));
+                lastUs = us;
+            }
         }
-    }
 
-    return 0;
+        return 0;
+    }
+    catch(Exception ex) {
+        stderr.writeln("error occured: ", ex.msg);
+        return 1;
+    }
 }

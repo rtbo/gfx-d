@@ -27,7 +27,10 @@
             },
             "subConfigurations": {
                 "erupted": "dub-platform-wayland-derelict-loader"
-            }
+            },
+            "preGenerateCommands": [
+                "dub run wayland:scanner -- -m gfx.window.wayland.zxdg_shell_v6 -i $PACKAGE_DIR/resources/xdg-shell-unstable-v6.xml -o $PACKAGE_DIR/source/gfx/window/wayland/zxdg_shell_v6.d"
+            ]
         },
         {
             "name": "xcb",

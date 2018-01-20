@@ -5,9 +5,11 @@ import gfx.graal : Instance;
 import gfx.graal.presentation;
 
 alias MouseHandler = void delegate(uint x, uint y);
+alias KeyHandler = void delegate(uint key);
 
 interface Window
 {
+    void prepareSurface();
     void show(uint width, uint height);
     void close();
 
@@ -16,6 +18,8 @@ interface Window
     @property void mouseMove(MouseHandler handler);
     @property void mouseOn(MouseHandler handler);
     @property void mouseOff(MouseHandler handler);
+    @property void keyOn(KeyHandler handler);
+    @property void keyOff(KeyHandler handler);
 
     void pollAndDispatch();
     void waitAndDispatch();
@@ -24,8 +28,12 @@ interface Window
 Window createWindow(Instance instance)
 {
     version(GfxVulkanWayland) {
-        import gfx.window.wayland : WaylandWindow;
-        return new WaylandWindow(instance);
+        import gfx.window.wayland : refDisplay, unrefDisplay;
+        auto dpy = refDisplay();
+        scope(exit) unrefDisplay();
+        auto win = dpy.createWindow(instance);
+        win.prepareSurface();
+        return win;
     }
     else {
         pragma(msg, "unsupported window");
