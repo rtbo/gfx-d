@@ -22,7 +22,6 @@ interface Window
     @property void keyOff(KeyHandler handler);
 
     void pollAndDispatch();
-    void waitAndDispatch();
 }
 
 Window createWindow(Instance instance)

@@ -284,10 +284,6 @@ private abstract class WaylandWindowBase : Window
         dpy.display.dispatchPending();
     }
 
-    override void waitAndDispatch() {
-        dpy.display.dispatch();
-    }
-
     private void pointerButton(WlPointer.ButtonState state) {
         switch (state) {
         case WlPointer.ButtonState.pressed:
@@ -400,12 +396,6 @@ private class XdgWaylandWindow : WaylandWindowBase
 	void onTLClose(ZxdgToplevelV6)
 	{
 	}
-
-    override void waitAndDispatch() {
-        if (!configured) dpy.display.dispatchPending();
-        else dpy.display.dispatch();
-    }
-
 
     override protected void closeShell() {
         xdgTopLevel.destroy();
