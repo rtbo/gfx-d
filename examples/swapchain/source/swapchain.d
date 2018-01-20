@@ -1,4 +1,4 @@
-module triangle;
+module swapchain;
 
 import core.time : Duration;
 
@@ -17,7 +17,7 @@ import std.algorithm;
 import std.exception;
 import std.stdio;
 
-class Triangle : Disposable
+class SwapchainExample : Disposable
 {
     Rc!Instance instance;
     Window window;
@@ -235,12 +235,12 @@ PresentMode choosePresentMode(PhysicalDevice pd, Surface surface)
 int main() {
 
     try {
-        auto triangle = new Triangle();
-        triangle.prepare();
-        scope(exit) triangle.dispose();
+        auto example = new SwapchainExample();
+        example.prepare();
+        scope(exit) example.dispose();
 
         bool exitFlag;
-        triangle.window.mouseOn = (uint, uint) {
+        example.window.mouseOn = (uint, uint) {
             exitFlag = true;
         };
 
@@ -254,8 +254,8 @@ int main() {
         enum reportFreq = 100;
 
         while (!exitFlag) {
-            triangle.window.waitAndDispatch();
-            triangle.render();
+            example.window.waitAndDispatch();
+            example.render();
             ++ frameCount;
             if ((frameCount % reportFreq) == 0) {
                 const us = sw.peek().total!"usecs";

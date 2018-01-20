@@ -1,9 +1,9 @@
 {
-	"name": "triangle",
+	"name": "swapchain",
 	"authors": [
 		"Remi Thebault"
 	],
-	"description": "gfx-d triangle example",
+	"description": "gfx-d swapchain example",
 	"copyright": "Copyright © 2016, Remi Thebault",
 	"license": "MIT",
 	"targetType": "executable",
