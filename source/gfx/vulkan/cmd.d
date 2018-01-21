@@ -6,6 +6,7 @@ package:
 import erupted;
 
 import gfx.core.rc;
+import gfx.core.typecons;
 import gfx.graal.cmd;
 import gfx.vulkan.buffer;
 import gfx.vulkan.conv;

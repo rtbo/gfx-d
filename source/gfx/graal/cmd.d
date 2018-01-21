@@ -2,6 +2,7 @@
 module gfx.graal.cmd;
 
 import gfx.core.rc;
+import gfx.core.typecons;
 import gfx.graal.buffer;
 import gfx.graal.image;
 
@@ -16,19 +17,6 @@ interface CommandPool : AtomicRefCounted
         import std.algorithm : all;
         assert(buffers.all!(b => b.pool is this));
     }
-}
-
-/// A transition from one state to another
-struct Trans(T) {
-    /// state before
-    T from;
-    /// state after
-    T to;
-}
-
-/// Transition build helper
-auto trans(T)(T from, T to) {
-    return Trans!T(from, to);
 }
 
 enum Access {

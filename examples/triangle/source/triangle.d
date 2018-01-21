@@ -12,6 +12,7 @@ import std.stdio;
 class TriangleExample : Example
 {
     void recordCmds() {
+        import gfx.core.typecons : trans;
 
         const clearValues = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         auto subrange = ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1);
