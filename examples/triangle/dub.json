@@ -12,5 +12,8 @@
 	],
     "dependencies": {
         "gfx" : { "path": "../../"  }
-    }
+	},
+	"preGenerateCommands": [
+		"bash $PACKAGE_DIR/../gen_example_spirv.sh $PACKAGE_DIR"
+	]
 }

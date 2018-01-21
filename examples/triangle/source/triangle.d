@@ -2,15 +2,42 @@ module triangle;
 
 import example;
 
+import gfx.core.rc;
+
 import gfx.graal.cmd;
 import gfx.graal.image;
 import gfx.graal.presentation;
 import gfx.graal.queue;
+import gfx.graal.renderpass;
+import gfx.graal.shader;
 
 import std.stdio;
 
 class TriangleExample : Example
 {
+    Rc!RenderPass renderPass;
+
+    this() {
+        super("Triangle");
+    }
+
+    override void prepare() {
+        super.prepare();
+        prepareRenderPass();
+        preparePipeline();
+    }
+
+    void prepareRenderPass() {
+        // TODO
+    }
+
+    void preparePipeline()
+    {
+        auto vtxShader = device.createShaderModule(ShaderLanguage.spirV, import("shader.vert.spv")).rc;
+        auto fragShader = device.createShaderModule(ShaderLanguage.spirV, import("shader.frag.spv")).rc;
+    }
+
+
     void recordCmds() {
         import gfx.core.typecons : trans;
 
@@ -47,7 +74,6 @@ class TriangleExample : Example
             buf.end();
         }
     }
-
     void render()
     {
         import core.time : dur;

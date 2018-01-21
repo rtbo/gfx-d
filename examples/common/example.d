@@ -12,8 +12,9 @@ import gfx.window;
 import std.algorithm;
 import std.exception;
 
-class Example : Disposable {
-
+class Example : Disposable
+{
+    string title;
     Rc!Instance instance;
     Window window;
     uint graphicsQueueIndex;
@@ -31,11 +32,21 @@ class Example : Disposable {
     Rc!CommandPool presentPool;
     CommandBuffer[] presentCmdBufs;
 
-    void prepare(string title="Gfx-d Example") {
+    this (string title)
+    {
+        this.title = title;
+    }
+
+    void prepare()
+    {
+        import std.format : format;
         // initialize vulkan library
         vulkanInit();
         // create a vulkan instance
-        instance = createVulkanInstance(title, VulkanVersion(0, 0, 1)).rc;
+        instance = createVulkanInstance(
+            format("Gfx-d %s Example", title),
+            VulkanVersion(0, 0, 1)
+        ).rc;
         // create a window for the running platform
         // the window surface is created during this process
         window = createWindow(instance);
