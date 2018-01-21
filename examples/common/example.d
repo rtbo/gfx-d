@@ -37,6 +37,27 @@ class Example : Disposable
         this.title = title;
     }
 
+    override void dispose() {
+        if (device) {
+            device.waitIdle();
+        }
+        if (presentPool && presentCmdBufs.length) {
+            presentPool.free(presentCmdBufs);
+            presentPool.unload();
+        }
+        // the rest is checked with Rc, so it is safe to call unload even
+        // if object is invalid
+        imageAvailableSem.unload();
+        renderingFinishSem.unload();
+        swapchain.unload();
+        device.unload();
+        physicalDevice.unload();
+        if (window) {
+            window.close();
+        }
+        instance.unload();
+    }
+
     void prepare()
     {
         import std.format : format;
@@ -119,27 +140,6 @@ class Example : Disposable
     void prepareCmds() {
         presentPool = device.createCommandPool(presentQueueIndex);
         presentCmdBufs = presentPool.allocate(scImages.length);
-    }
-
-    override void dispose() {
-        if (device) {
-            device.waitIdle();
-        }
-        if (presentPool && presentCmdBufs.length) {
-            presentPool.free(presentCmdBufs);
-            presentPool.unload();
-        }
-        // the rest is checked with Rc, so it is safe to call unload even
-        // if object is invalid
-        imageAvailableSem.unload();
-        renderingFinishSem.unload();
-        swapchain.unload();
-        device.unload();
-        physicalDevice.unload();
-        if (window) {
-            window.close();
-        }
-        instance.unload();
     }
 }
 

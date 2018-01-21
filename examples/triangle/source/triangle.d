@@ -3,7 +3,7 @@ module triangle;
 import example;
 
 import gfx.core.rc;
-
+import gfx.core.typecons;
 import gfx.graal.cmd;
 import gfx.graal.image;
 import gfx.graal.presentation;
@@ -12,6 +12,7 @@ import gfx.graal.renderpass;
 import gfx.graal.shader;
 
 import std.stdio;
+import std.typecons;
 
 class TriangleExample : Example
 {
@@ -21,6 +22,11 @@ class TriangleExample : Example
         super("Triangle");
     }
 
+    override void dispose() {
+        renderPass.unload();
+        super.dispose();
+    }
+
     override void prepare() {
         super.prepare();
         prepareRenderPass();
@@ -28,7 +34,21 @@ class TriangleExample : Example
     }
 
     void prepareRenderPass() {
-        // TODO
+        const attachments = [
+            AttachmentDescription(swapchain.format, 1,
+                AttachmentOps(LoadOp.clear, StoreOp.store),
+                AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
+                trans(ImageLayout.presentSrc, ImageLayout.presentSrc),
+                No.mayAlias
+            )
+        ];
+        const subpasses = [
+            SubpassDescription(
+                [], [ AttachmentRef(0, ImageLayout.colorAttachmentOptimal) ],
+                none!AttachmentRef, []
+            )
+        ];
+        renderPass = device.createRenderPass(attachments, subpasses, []);
     }
 
     void preparePipeline()
