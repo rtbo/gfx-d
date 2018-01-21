@@ -124,7 +124,7 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, vkDestroySwapchainKHR), Sw
             _images = vkImgs
                     .map!((VkImage vkImg) {
                         const dims = ImageDims.d2(_size[0], _size[1]);
-                        auto img = new VulkanImage(vkImg, dev, ImageType.d2, dims);
+                        auto img = new VulkanImage(vkImg, dev, ImageType.d2, dims, _format);
                         img.retain();
                         dev.release();  // img will not be released as held by implementation
                                         // this must be compensated

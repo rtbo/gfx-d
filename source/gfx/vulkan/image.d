@@ -18,11 +18,12 @@ class VulkanImage : VulkanDevObj!(VkImage, vkDestroyImage), Image
 {
     mixin(atomicRcCode);
 
-    this(VkImage vk, VulkanDevice dev, ImageType type, ImageDims dims)
+    this(VkImage vk, VulkanDevice dev, ImageType type, ImageDims dims, Format format)
     {
         super(vk, dev);
         _type = type;
         _dims = dims;
+        _format = format;
     }
 
     override @property ImageType type() {

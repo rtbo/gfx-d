@@ -196,7 +196,7 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
         VkImage vkImg;
         vulkanEnforce(vkCreateImage(vk, &ici, null, &vkImg), "Could not create a Vulkan image");
 
-        return new VulkanImage(vkImg, this, type, dims);
+        return new VulkanImage(vkImg, this, type, dims, format);
     }
 
     override Semaphore createSemaphore()
@@ -395,7 +395,7 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
             "Could not create a Vulkan Framebuffer"
         );
 
-        return new VulkanFramebuffer(vkFb, this);
+        return new VulkanFramebuffer(vkFb, this, attachments);
     }
 
     override ShaderModule createShaderModule(ShaderLanguage sl, string code)
