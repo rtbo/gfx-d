@@ -69,6 +69,12 @@ class TriangleExample : Example
     {
         auto vtxShader = device.createShaderModule(ShaderLanguage.spirV, import("shader.vert.spv")).rc;
         auto fragShader = device.createShaderModule(ShaderLanguage.spirV, import("shader.frag.spv")).rc;
+
+        auto shaderInfos = [
+            ShaderInfo(ShaderStage.vertex, vtxShader, "main"),
+            ShaderInfo(ShaderStage.fragment, fragShader, "main")
+        ];
+
     }
 
 
