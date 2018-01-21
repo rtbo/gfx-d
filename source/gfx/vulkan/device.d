@@ -291,7 +291,7 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
             "Could not create a Vulkan Swap chain"
         );
 
-        return new VulkanSwapchain(vkSc, this, size);
+        return new VulkanSwapchain(vkSc, this, size, format);
     }
 
     override RenderPass createRenderPass(AttachmentDescription[] attachments,

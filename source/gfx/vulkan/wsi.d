@@ -7,6 +7,7 @@ import erupted;
 
 import gfx.core.rc;
 import gfx.graal;
+import gfx.graal.format;
 import gfx.graal.image;
 import gfx.graal.sync;
 import gfx.vulkan;
@@ -91,10 +92,15 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, vkDestroySwapchainKHR), Sw
 {
     mixin(atomicRcCode);
 
-    this(VkSwapchainKHR vk, VulkanDevice dev, uint[2] size)
+    this(VkSwapchainKHR vk, VulkanDevice dev, uint[2] size, Format format)
     {
         super(vk, dev);
         _size = size;
+        _format = format;
+    }
+
+    override @property Format format() {
+        return _format;
     }
 
     // not releasing images on purpose, the lifetime is owned by implementation
@@ -158,4 +164,5 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, vkDestroySwapchainKHR), Sw
 
     private Image[] _images;
     private uint[2] _size;
+    private Format _format;
 }
