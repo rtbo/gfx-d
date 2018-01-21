@@ -294,14 +294,14 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
         return new VulkanSwapchain(vkSc, this, size, format);
     }
 
-    override RenderPass createRenderPass(AttachmentDescription[] attachments,
-                                         SubpassDescription[] subpasses,
-                                         SubpassDependency[] dependencies)
+    override RenderPass createRenderPass(in AttachmentDescription[] attachments,
+                                         in SubpassDescription[] subpasses,
+                                         in SubpassDependency[] dependencies)
     {
         import std.algorithm : map;
         import std.array : array;
 
-        auto vkAttachments = attachments.map!((ref AttachmentDescription ad) {
+        auto vkAttachments = attachments.map!((ref const(AttachmentDescription) ad) {
             VkAttachmentDescription vkAd;
             if (ad.mayAlias) {
                 vkAd.flags = VK_ATTACHMENT_DESCRIPTION_MAY_ALIAS_BIT;
@@ -319,10 +319,10 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
         static VkAttachmentReference mapRef (in AttachmentRef ar) {
             return VkAttachmentReference(ar.attachment, ar.layout.toVk());
         }
-        static VkAttachmentReference[] mapRefs(AttachmentRef[] ars) {
+        static VkAttachmentReference[] mapRefs(in AttachmentRef[] ars) {
             return ars.map!mapRef.array;
         }
-        auto vkSubpasses = subpasses.map!((ref SubpassDescription sd) {
+        auto vkSubpasses = subpasses.map!((ref const(SubpassDescription) sd) {
             auto vkInputs = mapRefs(sd.inputs);
             auto vkColors = mapRefs(sd.colors);
             auto vkDepthStencil = sd.depthStencil.save.map!(mapRef).array;
@@ -339,7 +339,7 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
             return vkSd;
         }).array;
 
-        auto vkDeps = dependencies.map!((ref SubpassDependency sd) {
+        auto vkDeps = dependencies.map!((ref const(SubpassDependency) sd) {
             VkSubpassDependency vkSd;
             vkSd.srcSubpass = sd.subpass.from;
             vkSd.dstSubpass = sd.subpass.to;

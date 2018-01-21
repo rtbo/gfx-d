@@ -145,9 +145,9 @@ interface Device : AtomicRefCounted
                               Format format, uint[2] size, ImageUsage usage,
                               CompositeAlpha alpha, Swapchain former=null);
 
-    RenderPass createRenderPass(AttachmentDescription[] attachments,
-                                SubpassDescription[] subpasses,
-                                SubpassDependency[] dependencies);
+    RenderPass createRenderPass(in AttachmentDescription[] attachments,
+                                in SubpassDescription[] subpasses,
+                                in SubpassDependency[] dependencies);
 
     Framebuffer createFramebuffer(RenderPass rp, ImageView[] attachments,
                                   uint width, uint height, uint layers);
