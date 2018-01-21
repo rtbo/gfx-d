@@ -11,6 +11,7 @@ import gfx.graal.memory;
 import gfx.graal.presentation;
 import gfx.graal.queue;
 import gfx.graal.renderpass;
+import gfx.graal.shader;
 import gfx.graal.sync;
 
 import std.typecons : Flag;
@@ -19,7 +20,9 @@ struct DeviceFeatures {
     bool presentation;
 }
 
-struct DeviceLimits {}
+struct DeviceLimits {
+    ShaderLanguage supportedShaderLanguages;
+}
 
 enum DeviceType {
     other,
@@ -148,4 +151,6 @@ interface Device : AtomicRefCounted
 
     Framebuffer createFramebuffer(RenderPass rp, ImageView[] attachments,
                                   uint width, uint height, uint layers);
+
+    ShaderModule createShaderModule(ShaderLanguage language, string code);
 }

@@ -14,6 +14,7 @@ import gfx.graal.image;
 import gfx.graal.memory;
 import gfx.graal.presentation;
 import gfx.graal.queue;
+import gfx.graal.shader;
 import gfx.graal.sync;
 import gfx.vulkan;
 import gfx.vulkan.buffer;
@@ -24,6 +25,7 @@ import gfx.vulkan.image;
 import gfx.vulkan.memory;
 import gfx.vulkan.queue;
 import gfx.vulkan.renderpass;
+import gfx.vulkan.shader;
 import gfx.vulkan.sync;
 import gfx.vulkan.wsi;
 
@@ -394,6 +396,24 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
         );
 
         return new VulkanFramebuffer(vkFb, this);
+    }
+
+    override ShaderModule createShaderModule(ShaderLanguage sl, string code)
+    {
+        enforce(sl == ShaderLanguage.spirV, "Vulkan only understands SPIR-V");
+        enforce(code.length % 4 == 0, "SPIR-V code size must be a multiple of 4");
+        VkShaderModuleCreateInfo smci;
+        smci.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        smci.codeSize = cast(uint)code.length;
+        smci.pCode = cast(const(uint)*)code.ptr;
+
+        VkShaderModule vkSm;
+        vulkanEnforce(
+            vkCreateShaderModule(vk, &smci, null, &vkSm),
+            "Could not create Vulkan shader module"
+        );
+
+        return new VulkanShaderModule(vkSm, this);
     }
 
     private VulkanPhysicalDevice _pd;

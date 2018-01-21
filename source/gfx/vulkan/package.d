@@ -511,7 +511,8 @@ class VulkanPhysicalDevice : PhysicalDevice
         return features;
     }
     override @property DeviceLimits limits() {
-        return DeviceLimits.init;
+        import gfx.graal.shader : ShaderLanguage;
+        return DeviceLimits(ShaderLanguage.spirV);
     }
 
     override @property MemoryProperties memoryProperties()
