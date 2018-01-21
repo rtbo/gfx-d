@@ -8,7 +8,8 @@
     "license": "MIT",
 
     "subPackages": [
-        "examples/swapchain"
+        "examples/swapchain",
+        "examples/triangle"
     ],
     "-ddoxFilterArgs": ["--min-protection=Protected", "--ex=erupted"],
 
