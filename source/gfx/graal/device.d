@@ -10,6 +10,7 @@ import gfx.graal.image;
 import gfx.graal.memory;
 import gfx.graal.presentation;
 import gfx.graal.queue;
+import gfx.graal.renderpass;
 import gfx.graal.sync;
 
 import std.typecons : Flag;
@@ -140,4 +141,8 @@ interface Device : AtomicRefCounted
     Swapchain createSwapchain(Surface surface, PresentMode pm, uint numImages,
                               Format format, uint[2] size, ImageUsage usage,
                               CompositeAlpha alpha, Swapchain former=null);
+
+    RenderPass createRenderPass(AttachmentDescription[] attachments,
+                                SubpassDescription[] subpasses,
+                                SubpassDependency[] dependencies);
 }

@@ -23,6 +23,7 @@ import gfx.vulkan.error;
 import gfx.vulkan.image;
 import gfx.vulkan.memory;
 import gfx.vulkan.queue;
+import gfx.vulkan.renderpass;
 import gfx.vulkan.sync;
 import gfx.vulkan.wsi;
 
@@ -290,6 +291,81 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
 
         return new VulkanSwapchain(vkSc, this, size);
     }
+
+    override RenderPass createRenderPass(AttachmentDescription[] attachments,
+                                         SubpassDescription[] subpasses,
+                                         SubpassDependency[] dependencies)
+    {
+        import std.algorithm : map;
+        import std.array : array;
+
+        auto vkAttachments = attachments.map!((ref AttachmentDescription ad) {
+            VkAttachmentDescription vkAd;
+            if (ad.mayAlias) {
+                vkAd.flags = VK_ATTACHMENT_DESCRIPTION_MAY_ALIAS_BIT;
+            }
+            vkAd.format = ad.format.toVk();
+            vkAd.loadOp = ad.colorDepthOps.load.toVk();
+            vkAd.storeOp = ad.colorDepthOps.store.toVk();
+            vkAd.stencilLoadOp = ad.stencilOps.load.toVk();
+            vkAd.stencilStoreOp = ad.stencilOps.store.toVk();
+            vkAd.initialLayout = ad.layoutTrans.from.toVk();
+            vkAd.finalLayout = ad.layoutTrans.to.toVk();
+            return vkAd;
+        }).array;
+
+        static VkAttachmentReference mapRef (in AttachmentRef ar) {
+            return VkAttachmentReference(ar.attachment, ar.layout.toVk());
+        }
+        static VkAttachmentReference[] mapRefs(AttachmentRef[] ars) {
+            return ars.map!mapRef.array;
+        }
+        auto vkSubpasses = subpasses.map!((ref SubpassDescription sd) {
+            auto vkInputs = mapRefs(sd.inputs);
+            auto vkColors = mapRefs(sd.colors);
+            auto vkDepthStencil = sd.depthStencil.save.map!(mapRef).array;
+            VkSubpassDescription vkSd;
+            vkSd.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+            vkSd.inputAttachmentCount = cast(uint)vkInputs.length;
+            vkSd.pInputAttachments = vkInputs.ptr;
+            vkSd.colorAttachmentCount = cast(uint)vkColors.length;
+            vkSd.pColorAttachments = vkColors.ptr;
+            vkSd.pDepthStencilAttachment = vkDepthStencil.length ?
+                    vkDepthStencil.ptr : null;
+            vkSd.preserveAttachmentCount = cast(uint)sd.preserves.length;
+            vkSd.pPreserveAttachments = sd.preserves.ptr;
+            return vkSd;
+        }).array;
+
+        auto vkDeps = dependencies.map!((ref SubpassDependency sd) {
+            VkSubpassDependency vkSd;
+            vkSd.srcSubpass = sd.subpass.from;
+            vkSd.dstSubpass = sd.subpass.to;
+            vkSd.srcStageMask = pipelineStageToVk(sd.stageMask.from);
+            vkSd.dstStageMask = pipelineStageToVk(sd.stageMask.to);
+            vkSd.srcAccessMask = accessToVk(sd.accessMask.from);
+            vkSd.dstAccessMask = accessToVk(sd.accessMask.to);
+            return vkSd;
+        }).array;
+
+        VkRenderPassCreateInfo rpci;
+        rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        rpci.attachmentCount = cast(uint)vkAttachments.length;
+        rpci.pAttachments = vkAttachments.ptr;
+        rpci.subpassCount = cast(uint)vkSubpasses.length;
+        rpci.pSubpasses = vkSubpasses.ptr;
+        rpci.dependencyCount = cast(uint)vkDeps.length;
+        rpci.pDependencies = vkDeps.ptr;
+
+        VkRenderPass vkRp;
+        vulkanEnforce(
+            vkCreateRenderPass(vk, &rpci, null, &vkRp),
+            "Could not create a Vulkan render pass"
+        );
+
+        return new VulkanRenderPass(vkRp, this);
+    }
+
 
     private VulkanPhysicalDevice _pd;
     private VulkanQueue[] _queues;

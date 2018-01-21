@@ -12,6 +12,7 @@ import gfx.graal.image;
 import gfx.graal.memory;
 import gfx.graal.presentation;
 import gfx.graal.queue;
+import gfx.graal.renderpass;
 
 
 // structures and enums conversion
@@ -148,6 +149,21 @@ VkPresentModeKHR toVk(in PresentMode pm) {
         return true;
     default:
         return false;
+    }
+}
+
+VkAttachmentLoadOp toVk(in LoadOp op) {
+    final switch (op) {
+    case LoadOp.load: return VK_ATTACHMENT_LOAD_OP_LOAD;
+    case LoadOp.clear: return VK_ATTACHMENT_LOAD_OP_CLEAR;
+    case LoadOp.dontCare: return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    }
+}
+
+VkAttachmentStoreOp toVk(in StoreOp op) {
+    final switch (op) {
+    case StoreOp.store: return VK_ATTACHMENT_STORE_OP_STORE;
+    case StoreOp.dontCare: return VK_ATTACHMENT_STORE_OP_DONT_CARE;
     }
 }
 
