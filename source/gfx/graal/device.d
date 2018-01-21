@@ -139,5 +139,5 @@ interface Device : AtomicRefCounted
 
     Swapchain createSwapchain(Surface surface, PresentMode pm, uint numImages,
                               Format format, uint[2] size, ImageUsage usage,
-                              Swapchain former=null);
+                              CompositeAlpha alpha, Swapchain former=null);
 }

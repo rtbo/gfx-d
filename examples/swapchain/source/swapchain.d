@@ -28,6 +28,7 @@ class SwapchainExample : Disposable
     Queue graphicsQueue;
     Queue presentQueue;
     uint[2] surfaceSize;
+    bool hasAlpha;
     Rc!Swapchain swapchain;
     Image[] scImages;
     Rc!Semaphore imageAvailableSem;
@@ -95,13 +96,15 @@ class SwapchainExample : Disposable
         const numImages = max(2, surfCaps.minImages);
         enforce(surfCaps.maxImages == 0 || surfCaps.maxImages >= numImages);
         const f = chooseFormat(physicalDevice, window.surface);
+        hasAlpha = (surfCaps.supportedAlpha & CompositeAlpha.preMultiplied) == CompositeAlpha.preMultiplied;
+        const ca = hasAlpha ? CompositeAlpha.preMultiplied : CompositeAlpha.opaque;
         surfaceSize = [ 640, 480 ];
         foreach (i; 0..2) {
             surfaceSize[i] = clamp(surfaceSize[i], surfCaps.minSize[i], surfCaps.maxSize[i]);
         }
         const pm = choosePresentMode(physicalDevice, window.surface);
 
-        swapchain = device.createSwapchain(window.surface, pm, numImages, f, surfaceSize, usage, former);
+        swapchain = device.createSwapchain(window.surface, pm, numImages, f, surfaceSize, usage, ca, former);
         scImages = swapchain.images;
     }
 
@@ -117,7 +120,7 @@ class SwapchainExample : Disposable
 
     void recordCmds() {
 
-        const clearValues = ClearColorValues(0.8f, 0.7f, 0.2f, 1f);
+        const clearValues = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         auto subrange = ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1);
 
         foreach (i, buf; presentCmdBufs) {
@@ -173,6 +176,8 @@ class SwapchainExample : Disposable
         if (needReconstruction) {
             writeln("need to rebuild swapchain");
             prepareSwapchain(swapchain);
+            presentPool.reset();
+            recordCmds();
         }
     }
 

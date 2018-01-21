@@ -111,7 +111,8 @@ SurfaceCaps toGfx(in VkSurfaceCapabilitiesKHR vkCaps) {
         [ vkCaps.minImageExtent.width, vkCaps.minImageExtent.height ],
         [ vkCaps.maxImageExtent.width, vkCaps.maxImageExtent.height ],
         vkCaps.maxImageArrayLayers,
-        imageUsageToGfx(vkCaps.supportedUsageFlags)
+        imageUsageToGfx(vkCaps.supportedUsageFlags),
+        compositeAlphaToGfx(vkCaps.supportedCompositeAlpha),
     );
 }
 
@@ -185,6 +186,16 @@ QueueCap queueCapToGfx(in VkQueueFlags vkFlags)
     return caps;
 }
 
+ImageUsage imageUsageToGfx(in VkImageUsageFlags usage)
+{
+    return cast(ImageUsage)usage;
+}
+
+CompositeAlpha compositeAlphaToGfx(in VkCompositeAlphaFlagsKHR ca)
+{
+    return cast(CompositeAlpha)ca;
+}
+
 VkBufferUsageFlags bufferUsageToVk(in BufferUsage usage) {
     return cast(VkBufferUsageFlags)usage;
 }
@@ -192,11 +203,6 @@ VkBufferUsageFlags bufferUsageToVk(in BufferUsage usage) {
 VkImageUsageFlags imageUsageToVk(in ImageUsage usage)
 {
     return cast(VkImageUsageFlags)usage;
-}
-
-ImageUsage imageUsageToGfx(in VkImageUsageFlags usage)
-{
-    return cast(ImageUsage)usage;
 }
 
 VkImageAspectFlags aspectToVk(in ImageAspect aspect)
@@ -212,4 +218,9 @@ VkAccessFlags accessToVk(in Access access)
 VkPipelineStageFlags pipelineStageToVk(in PipelineStage stage)
 {
     return cast(VkPipelineStageFlags)stage;
+}
+
+VkCompositeAlphaFlagBitsKHR compositeAlphaToVk(in CompositeAlpha ca)
+{
+    return cast(VkCompositeAlphaFlagBitsKHR)ca;
 }

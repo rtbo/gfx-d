@@ -18,6 +18,14 @@ struct SurfaceCaps
     uint[2] maxSize;
     uint maxLayers;
     ImageUsage usage;
+    CompositeAlpha supportedAlpha;
+}
+
+enum CompositeAlpha {
+    opaque          = 0x01,
+    preMultiplied   = 0x02,
+    postMultiplied  = 0x04,
+    inherit         = 0x08,
 }
 
 enum PresentMode {

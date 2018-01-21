@@ -256,7 +256,7 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
 
     override Swapchain createSwapchain(Surface graalSurface, PresentMode pm, uint numImages,
                                        Format format, uint[2] size, ImageUsage usage,
-                                       Swapchain old=null)
+                                       CompositeAlpha alpha, Swapchain old=null)
     {
         auto surf = enforce(
             cast(VulkanSurface)graalSurface,
@@ -278,8 +278,8 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
         sci.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
         sci.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
         sci.clipped = VK_TRUE;
-        sci.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
         sci.presentMode = pm.toVk;
+        sci.compositeAlpha = compositeAlphaToVk(alpha);
         sci.oldSwapchain = oldSc ? oldSc.vk : null;
 
         VkSwapchainKHR vkSc;
