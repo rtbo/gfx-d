@@ -2,8 +2,6 @@ module swapchain;
 
 import core.time : Duration;
 
-import erupted;
-
 import gfx.core.rc;
 import gfx.graal;
 import gfx.graal.cmd;
@@ -35,7 +33,6 @@ class SwapchainExample : Disposable
     Rc!Semaphore renderingFinishSem;
     Rc!CommandPool presentPool;
     CommandBuffer[] presentCmdBufs;
-    bool swStarted;
 
 
     void prepare() {
