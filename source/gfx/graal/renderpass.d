@@ -52,6 +52,7 @@ struct SubpassDependency
 }
 
 interface RenderPass : AtomicRefCounted
-{
+{}
 
-}
+interface Framebuffer : AtomicRefCounted
+{}

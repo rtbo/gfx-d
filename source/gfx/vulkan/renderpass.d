@@ -17,3 +17,12 @@ class VulkanRenderPass : VulkanDevObj!(VkRenderPass, vkDestroyRenderPass), Rende
         super(vk, dev);
     }
 }
+
+class VulkanFramebuffer : VulkanDevObj!(VkFramebuffer, vkDestroyFramebuffer), Framebuffer
+{
+    mixin(atomicRcCode);
+
+    this(VkFramebuffer vk, VulkanDevice dev) {
+        super(vk, dev);
+    }
+}

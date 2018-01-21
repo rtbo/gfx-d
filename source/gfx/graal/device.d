@@ -145,4 +145,7 @@ interface Device : AtomicRefCounted
     RenderPass createRenderPass(AttachmentDescription[] attachments,
                                 SubpassDescription[] subpasses,
                                 SubpassDependency[] dependencies);
+
+    Framebuffer createFramebuffer(RenderPass rp, ImageView[] attachments,
+                                  uint width, uint height, uint layers);
 }

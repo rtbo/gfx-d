@@ -367,6 +367,35 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
     }
 
 
+    override Framebuffer createFramebuffer(RenderPass rp, ImageView[] attachments,
+                                           uint width, uint height, uint layers)
+    {
+        import std.algorithm : map;
+        import std.array : array;
+
+        auto vkRp = enforce(cast(VulkanRenderPass)rp, "Did not pass a Vulkan render pass").vk;
+        auto vkAttachments = attachments.map!(
+            iv => enforce(cast(VulkanImageView)iv, "Did not pass a Vulkan image view").vk
+        ).array;
+
+        VkFramebufferCreateInfo fci;
+        fci.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        fci.renderPass = vkRp;
+        fci.attachmentCount = cast(uint)vkAttachments.length;
+        fci.pAttachments = vkAttachments.ptr;
+        fci.width = width;
+        fci.height = height;
+        fci.layers = layers;
+
+        VkFramebuffer vkFb;
+        vulkanEnforce(
+            vkCreateFramebuffer(vk, &fci, null, &vkFb),
+            "Could not create a Vulkan Framebuffer"
+        );
+
+        return new VulkanFramebuffer(vkFb, this);
+    }
+
     private VulkanPhysicalDevice _pd;
     private VulkanQueue[] _queues;
 }
