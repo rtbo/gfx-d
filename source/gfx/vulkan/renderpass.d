@@ -6,6 +6,7 @@ import erupted;
 
 import gfx.core.rc;
 import gfx.graal.device;
+import gfx.graal.image;
 import gfx.graal.renderpass;
 import gfx.vulkan.device;
 
@@ -22,7 +23,17 @@ class VulkanFramebuffer : VulkanDevObj!(VkFramebuffer, vkDestroyFramebuffer), Fr
 {
     mixin(atomicRcCode);
 
-    this(VkFramebuffer vk, VulkanDevice dev) {
+    this(VkFramebuffer vk, VulkanDevice dev, ImageView[] views) {
         super(vk, dev);
+        _views = views;
+        retainArray(_views);
     }
+
+    override void dispose() {
+        releaseArray(_views);
+        _views = [];
+        super.dispose();
+    }
+
+    ImageView[] _views;
 }
