@@ -17,6 +17,7 @@ import std.typecons;
 class TriangleExample : Example
 {
     Rc!RenderPass renderPass;
+    Framebuffer[] framebuffers;
 
     this() {
         super("Triangle");
@@ -24,6 +25,7 @@ class TriangleExample : Example
 
     override void dispose() {
         renderPass.unload();
+        releaseArray(framebuffers);
         super.dispose();
     }
 
@@ -48,7 +50,19 @@ class TriangleExample : Example
                 none!AttachmentRef, []
             )
         ];
+
         renderPass = device.createRenderPass(attachments, subpasses, []);
+
+        framebuffers = new Framebuffer[scImages.length];
+        foreach (i; 0 .. scImages.length) {
+            framebuffers[i] = device.createFramebuffer(renderPass, [
+                scImages[i].createView(
+                    ImageType.d2,
+                    ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1),
+                    Swizzle.init
+                )
+            ], surfaceSize[0], surfaceSize[1], 1);
+        }
     }
 
     void preparePipeline()
