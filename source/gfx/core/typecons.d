@@ -182,15 +182,19 @@ struct Option(T)
         @property inout(T) front() inout {
             return get;
         }
+        @property Option!(inout(T)) save() inout {
+            return Option!(inout(T))(_val);
+        }
     }
     else {
         @property T front() const {
             return get;
         }
+
+        @property Option!T save() const {
+            return isSome ? Option!T(_val) : none!T;
+        }
     }
 
-    @property Option!T save() {
-        return isSome ? Option!T(_val) : none!T;
-    }
 }
 
