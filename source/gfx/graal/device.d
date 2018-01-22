@@ -8,10 +8,10 @@ import gfx.graal.cmd;
 import gfx.graal.format;
 import gfx.graal.image;
 import gfx.graal.memory;
+import gfx.graal.pipeline;
 import gfx.graal.presentation;
 import gfx.graal.queue;
 import gfx.graal.renderpass;
-import gfx.graal.shader;
 import gfx.graal.sync;
 
 import std.typecons : Flag;
@@ -152,5 +152,9 @@ interface Device : AtomicRefCounted
     Framebuffer createFramebuffer(RenderPass rp, ImageView[] attachments,
                                   uint width, uint height, uint layers);
 
-    ShaderModule createShaderModule(ShaderLanguage language, string code);
+    ShaderModule createShaderModule(ShaderLanguage language, string code, string entryPoint);
+
+    PipelineLayout createPipelineLayout();
+
+    Pipeline[] createPipelines(PipelineInfo[] infos);
 }

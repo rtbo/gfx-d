@@ -4,12 +4,13 @@ import example;
 
 import gfx.core.rc;
 import gfx.core.typecons;
+import gfx.core.types;
 import gfx.graal.cmd;
 import gfx.graal.image;
+import gfx.graal.pipeline;
 import gfx.graal.presentation;
 import gfx.graal.queue;
 import gfx.graal.renderpass;
-import gfx.graal.shader;
 
 import std.stdio;
 import std.typecons;
@@ -18,12 +19,14 @@ class TriangleExample : Example
 {
     Rc!RenderPass renderPass;
     Framebuffer[] framebuffers;
+    Rc!Pipeline pipeline;
 
     this() {
         super("Triangle");
     }
 
     override void dispose() {
+        pipeline.unload();
         renderPass.unload();
         releaseArray(framebuffers);
         super.dispose();
@@ -67,14 +70,43 @@ class TriangleExample : Example
 
     void preparePipeline()
     {
-        auto vtxShader = device.createShaderModule(ShaderLanguage.spirV, import("shader.vert.spv")).rc;
-        auto fragShader = device.createShaderModule(ShaderLanguage.spirV, import("shader.frag.spv")).rc;
+        auto vtxShader = device.createShaderModule(
+            ShaderLanguage.spirV, import("shader.vert.spv"), "main"
+        ).rc;
+        auto fragShader = device.createShaderModule(
+            ShaderLanguage.spirV, import("shader.frag.spv"), "main"
+        ).rc;
 
-        auto shaderInfos = [
-            ShaderInfo(ShaderStage.vertex, vtxShader, "main"),
-            ShaderInfo(ShaderStage.fragment, fragShader, "main")
+        PipelineInfo info;
+        info.shaders.vertex = vtxShader;
+        info.shaders.fragment = fragShader;
+        info.assembly = InputAssembly(Primitive.triangleList, No.primitiveRestart);
+        info.rasterizer = Rasterizer(
+            PolygonMode.fill, Cull.back, FrontFace.ccw, No.depthClamp,
+            none!DepthBias, 1f
+        );
+        info.viewports = [
+            ViewportConfig(
+                Viewport(0, 0, cast(float)surfaceSize[0], cast(float)surfaceSize[1], -1, 1),
+                Rect(0, 0, surfaceSize[0], surfaceSize[1])
+            )
         ];
+        info.blendInfo = ColorBlendInfo(
+            none!LogicOp, [
+                ColorBlendAttachment(No.enabled,
+                    BlendState(trans(BlendFactor.one, BlendFactor.zero), BlendOp.add),
+                    BlendState(trans(BlendFactor.one, BlendFactor.zero), BlendOp.add),
+                    ColorMask.all
+                )
+            ],
+            [ 0f, 0f, 0f, 0f ]
+        );
+        info.layout = device.createPipelineLayout();
+        info.renderPass = renderPass;
+        info.subpassIndex = 0;
 
+        auto pls = device.createPipelines( [info] );
+        pipeline = pls[0];
     }
 
 

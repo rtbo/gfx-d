@@ -10,6 +10,7 @@ import gfx.graal.cmd;
 import gfx.graal.format;
 import gfx.graal.image;
 import gfx.graal.memory;
+import gfx.graal.pipeline;
 import gfx.graal.presentation;
 import gfx.graal.queue;
 import gfx.graal.renderpass;
@@ -167,6 +168,34 @@ VkAttachmentStoreOp toVk(in StoreOp op) {
     }
 }
 
+VkPrimitiveTopology toVk(in Primitive p) {
+    return cast(VkPrimitiveTopology)p;
+}
+
+VkFrontFace toVk(in FrontFace ff) {
+    return cast(VkFrontFace)ff;
+}
+
+VkPolygonMode toVk(in PolygonMode pm) {
+    return cast(VkPolygonMode)pm;
+}
+
+VkBlendFactor toVk(in BlendFactor bf) {
+    return cast(VkBlendFactor)bf;
+}
+
+VkBlendOp toVk(in BlendOp op) {
+    return cast(VkBlendOp)op;
+}
+
+VkLogicOp toVk(in LogicOp op) {
+    return cast(VkLogicOp)op;
+}
+
+VkDynamicState toVk(in DynamicState ds) {
+    return cast(VkDynamicState)ds;
+}
+
 // flags conversion
 
 MemProps memPropsToGfx(in VkMemoryPropertyFlags vkFlags)
@@ -239,4 +268,13 @@ VkPipelineStageFlags pipelineStageToVk(in PipelineStage stage)
 VkCompositeAlphaFlagBitsKHR compositeAlphaToVk(in CompositeAlpha ca)
 {
     return cast(VkCompositeAlphaFlagBitsKHR)ca;
+}
+
+VkShaderStageFlagBits shaderStageToVk(in ShaderStage ss)
+{
+    return cast(VkShaderStageFlagBits)ss;
+}
+
+VkCullModeFlagBits cullModeToVk(in Cull c) {
+    return cast(VkCullModeFlagBits)c;
 }

@@ -14,7 +14,7 @@ import gfx.graal.image;
 import gfx.graal.memory;
 import gfx.graal.presentation;
 import gfx.graal.queue;
-import gfx.graal.shader;
+import gfx.graal.pipeline;
 import gfx.graal.sync;
 import gfx.vulkan;
 import gfx.vulkan.buffer;
@@ -23,9 +23,9 @@ import gfx.vulkan.conv;
 import gfx.vulkan.error;
 import gfx.vulkan.image;
 import gfx.vulkan.memory;
+import gfx.vulkan.pipeline;
 import gfx.vulkan.queue;
 import gfx.vulkan.renderpass;
-import gfx.vulkan.shader;
 import gfx.vulkan.sync;
 import gfx.vulkan.wsi;
 
@@ -398,7 +398,7 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
         return new VulkanFramebuffer(vkFb, this, attachments);
     }
 
-    override ShaderModule createShaderModule(ShaderLanguage sl, string code)
+    override ShaderModule createShaderModule(ShaderLanguage sl, string code, string entryPoint)
     {
         enforce(sl == ShaderLanguage.spirV, "Vulkan only understands SPIR-V");
         enforce(code.length % 4 == 0, "SPIR-V code size must be a multiple of 4");
@@ -413,7 +413,191 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
             "Could not create Vulkan shader module"
         );
 
-        return new VulkanShaderModule(vkSm, this);
+        return new VulkanShaderModule(vkSm, this, entryPoint);
+    }
+
+    override PipelineLayout createPipelineLayout() {
+        VkPipelineLayoutCreateInfo plci;
+        plci.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+
+        VkPipelineLayout vkPl;
+        vulkanEnforce(
+            vkCreatePipelineLayout(vk, &plci, null, &vkPl),
+            "Could not create Vulkan pipeline layout"
+        );
+        return new VulkanPipelineLayout(vkPl, this);
+    }
+
+    override Pipeline[] createPipelines(PipelineInfo[] infos) {
+        import std.algorithm : map, max;
+        import std.array : array;
+        import std.string : toStringz;
+
+        auto pcis = new VkGraphicsPipelineCreateInfo[infos.length];
+
+        foreach (i; 0 .. infos.length) {
+            VkPipelineShaderStageCreateInfo[] sscis;
+            void addShaderStage(ShaderModule sm, ShaderStage ss) {
+                VkPipelineShaderStageCreateInfo ssci;
+                ssci.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                ssci.stage = shaderStageToVk(ss);
+                ssci._module = enforce(
+                    cast(VulkanShaderModule)sm,
+                    "did not pass a Vulkan shader module"
+                ).vk;
+                ssci.pName = toStringz(sm.entryPoint);
+                sscis ~= ssci;
+            }
+            auto shaders = infos[i].shaders;
+            enforce(shaders.vertex, "Vertex input shader is mandatory");
+            addShaderStage(shaders.vertex, ShaderStage.vertex);
+            if (shaders.tessControl)
+                addShaderStage(shaders.tessControl, ShaderStage.tessellationControl);
+            if (shaders.tessEval)
+                addShaderStage(shaders.tessEval, ShaderStage.tessellationEvaluation);
+            if (shaders.geometry)
+                addShaderStage(shaders.geometry, ShaderStage.geometry);
+            if (shaders.fragment)
+                addShaderStage(shaders.fragment, ShaderStage.fragment);
+
+
+            auto vkInputBindings = infos[i].inputBindings.map!(
+                ib => VkVertexInputBindingDescription(
+                    ib.binding, cast(uint)ib.stride,
+                    ib.instanced ?
+                            VK_VERTEX_INPUT_RATE_INSTANCE :
+                            VK_VERTEX_INPUT_RATE_VERTEX
+                )
+            ).array;
+
+            auto vkInputAttribs = infos[i].inputAttribs.map!(
+                ia => VkVertexInputAttributeDescription(
+                    ia.location, ia.binding, ia.format.toVk(), cast(uint)ia.offset
+                )
+            ).array;
+
+            auto vkVtxInput = new VkPipelineVertexInputStateCreateInfo;
+            vkVtxInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+            vkVtxInput.vertexBindingDescriptionCount = cast(uint)vkInputBindings.length;
+            vkVtxInput.pVertexBindingDescriptions = vkInputBindings.ptr;
+            vkVtxInput.vertexAttributeDescriptionCount = cast(uint)vkInputAttribs.length;
+            vkVtxInput.pVertexAttributeDescriptions = vkInputAttribs.ptr;
+
+            auto vkAssy = new VkPipelineInputAssemblyStateCreateInfo;
+            vkAssy.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+            vkAssy.topology = infos[i].assembly.primitive.toVk();
+            vkAssy.primitiveRestartEnable = infos[i].assembly.primitiveRestart ? VK_TRUE : VK_FALSE;
+
+            auto vkViewports = infos[i].viewports.map!(vc => vc.viewport).map!(
+                vp => VkViewport(vp.x, vp.y, vp.width, vp.height, vp.minDepth, vp.maxDepth)
+            ).array;
+            auto vkScissors = infos[i].viewports.map!(vc => vc.scissors).map!(
+                r => VkRect2D(VkOffset2D(r.x, r.y), VkExtent2D(r.width, r.height))
+            ).array;
+            auto vkViewport = new VkPipelineViewportStateCreateInfo;
+            vkViewport.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+            vkViewport.viewportCount = cast(uint)max(1, infos[i].viewports.length);
+            vkViewport.pViewports = vkViewports.ptr;
+            vkViewport.scissorCount = cast(uint)max(1, infos[i].viewports.length);
+            vkViewport.pScissors = vkScissors.ptr;
+
+            auto vkRasterizer = new VkPipelineRasterizationStateCreateInfo;
+            vkRasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+            vkRasterizer.rasterizerDiscardEnable = shaders.fragment ? VK_FALSE : VK_TRUE;
+            vkRasterizer.polygonMode = infos[i].rasterizer.mode.toVk();
+            vkRasterizer.cullMode = cullModeToVk(infos[i].rasterizer.cull);
+            vkRasterizer.frontFace = infos[i].rasterizer.front.toVk();
+            vkRasterizer.lineWidth = infos[i].rasterizer.lineWidth;
+            vkRasterizer.depthClampEnable = infos[i].rasterizer.depthClamp ? VK_TRUE : VK_FALSE;
+            if (infos[i].rasterizer.depthBias.isSome) {
+                DepthBias db = infos[i].rasterizer.depthBias.get;
+                vkRasterizer.depthBiasEnable = VK_TRUE;
+                vkRasterizer.depthBiasConstantFactor = db.constantFactor;
+                vkRasterizer.depthBiasClamp = db.clamp;
+                vkRasterizer.depthBiasSlopeFactor = db.slopeFactor;
+            }
+            else {
+                vkRasterizer.depthBiasConstantFactor = 0f;
+                vkRasterizer.depthBiasClamp = 0f;
+                vkRasterizer.depthBiasSlopeFactor = 0f;
+            }
+
+            const blendInfo = infos[i].blendInfo;
+            auto vkColorAttachments = blendInfo.attachments.map!(
+                cba => VkPipelineColorBlendAttachmentState (
+                    cba.enabled ? VK_TRUE : VK_FALSE,
+                    cba.colorBlend.factor.from.toVk(),
+                    cba.colorBlend.factor.to.toVk(),
+                    cba.colorBlend.op.toVk(),
+                    cba.alphaBlend.factor.from.toVk(),
+                    cba.alphaBlend.factor.to.toVk(),
+                    cba.alphaBlend.op.toVk(),
+                    cast(VkColorComponentFlags)cba.colorMask
+                )
+            ).array;
+            auto vkBlend = new VkPipelineColorBlendStateCreateInfo;
+            vkBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+            if (blendInfo.logicOp.isSome) {
+                vkBlend.logicOpEnable = VK_TRUE;
+                vkBlend.logicOp = blendInfo.logicOp.get.toVk();
+            }
+            vkBlend.attachmentCount = cast(uint)vkColorAttachments.length;
+            vkBlend.pAttachments = vkColorAttachments.ptr;
+            vkBlend.blendConstants = blendInfo.blendConstants;
+
+            VkPipelineDynamicStateCreateInfo *vkDynStatesInfo;
+            if (infos[i].dynamicStates) {
+                auto vkDynStates = infos[i].dynamicStates.map!(ds => ds.toVk()).array;
+                vkDynStatesInfo = new VkPipelineDynamicStateCreateInfo;
+                vkDynStatesInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+                vkDynStatesInfo.dynamicStateCount = cast(uint)vkDynStates.length;
+                vkDynStatesInfo.pDynamicStates = vkDynStates.ptr;
+            }
+
+            auto rp = infos[i].renderPass;
+            auto vkRp = rp ? enforce(
+                cast(VulkanRenderPass)rp,
+                "did not supply a Vulkan render pass"
+            ).vk : null;
+
+            // following bindings are not implemented yet
+            auto vkTess = new VkPipelineTessellationStateCreateInfo;
+            auto vkMs = new VkPipelineMultisampleStateCreateInfo;
+            vkMs.minSampleShading = 1f;
+            auto vkDepthStencil = new VkPipelineDepthStencilStateCreateInfo;
+
+            pcis[i].sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+            pcis[i].stageCount = cast(uint)sscis.length;
+            pcis[i].pStages = sscis.ptr;
+            pcis[i].pVertexInputState = vkVtxInput;
+            pcis[i].pInputAssemblyState = vkAssy;
+            pcis[i].pTessellationState = vkTess;
+            pcis[i].pViewportState = vkViewport;
+            pcis[i].pRasterizationState = vkRasterizer;
+            pcis[i].pMultisampleState = vkMs;
+            pcis[i].pDepthStencilState = vkDepthStencil;
+            pcis[i].pColorBlendState = vkBlend;
+            pcis[i].pDynamicState = vkDynStatesInfo;
+            pcis[i].layout = enforce(
+                cast(VulkanPipelineLayout)infos[i].layout,
+                "did not pass a valid vulkan pipeline layout"
+            ).vk;
+            pcis[i].renderPass = vkRp;
+            pcis[i].subpass = infos[i].subpassIndex;
+            pcis[i].basePipelineIndex = -1;
+        }
+
+        auto vkPls = new VkPipeline[infos.length];
+        vulkanEnforce(
+            vkCreateGraphicsPipelines(vk, null, cast(uint)pcis.length, pcis.ptr, null, vkPls.ptr),
+            "Could not create Vulkan graphics pipeline"
+        );
+
+        auto pls = new Pipeline[infos.length];
+        foreach (i; 0 .. vkPls.length) {
+//            pls[i] = new VulkanPipeline(vkPls[i], this);
+        }
+        return pls;
     }
 
     private VulkanPhysicalDevice _pd;
