@@ -595,7 +595,7 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
 
         auto pls = new Pipeline[infos.length];
         foreach (i; 0 .. vkPls.length) {
-//            pls[i] = new VulkanPipeline(vkPls[i], this);
+            pls[i] = new VulkanPipeline(vkPls[i], this, infos[i].layout);
         }
         return pls;
     }

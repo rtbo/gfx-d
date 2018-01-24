@@ -26,6 +26,9 @@ class TriangleExample : Example
     }
 
     override void dispose() {
+        if (device) {
+            device.waitIdle();
+        }
         pipeline.unload();
         renderPass.unload();
         releaseArray(framebuffers);
@@ -113,35 +116,45 @@ class TriangleExample : Example
     void recordCmds() {
         import gfx.core.typecons : trans;
 
-        const clearValues = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
+        const cv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         auto subrange = ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1);
 
         foreach (i, buf; presentCmdBufs) {
             buf.begin(true);
 
-            buf.pipelineBarrier(
-                trans(PipelineStage.transfer, PipelineStage.transfer), [],
-                [ ImageMemoryBarrier(
-                    trans(Access.memoryRead, Access.transferWrite),
-                    trans(ImageLayout.undefined, ImageLayout.transferDstOptimal),
-                    trans(graphicsQueueIndex, presentQueueIndex),
-                    scImages[i], subrange
-                ) ]
+            if (graphicsQueueIndex != presentQueueIndex) {
+                buf.pipelineBarrier(
+                    trans(PipelineStage.colorAttachment, PipelineStage.colorAttachment), [],
+                    [ ImageMemoryBarrier(
+                        trans(Access.memoryRead, Access.colorAttachmentWrite),
+                        trans(ImageLayout.presentSrc, ImageLayout.presentSrc),
+                        trans(presentQueueIndex, graphicsQueueIndex),
+                        scImages[i], subrange
+                    ) ]
+                );
+            }
+
+            buf.beginRenderPass(
+                renderPass, framebuffers[i],
+                Rect(0, 0, surfaceSize[0], surfaceSize[1]), [ ClearValues(cv) ]
             );
 
-            buf.clearColorImage(
-                scImages[i], ImageLayout.transferDstOptimal, clearValues, [ subrange ]
-            );
+            buf.bindPipeline(pipeline);
+            buf.draw(3, 1, 0, 0);
 
-            buf.pipelineBarrier(
-                trans(PipelineStage.transfer, PipelineStage.transfer), [],
-                [ ImageMemoryBarrier(
-                    trans(Access.transferWrite, Access.memoryRead),
-                    trans(ImageLayout.transferDstOptimal, ImageLayout.presentSrc),
-                    trans(graphicsQueueIndex, presentQueueIndex),
-                    scImages[i], subrange
-                ) ]
-            );
+            buf.endRenderPass();
+
+            if (graphicsQueueIndex != presentQueueIndex) {
+                buf.pipelineBarrier(
+                    trans(PipelineStage.colorAttachment, PipelineStage.colorAttachment), [],
+                    [ ImageMemoryBarrier(
+                        trans(Access.colorAttachmentWrite, Access.memoryRead),
+                        trans(ImageLayout.presentSrc, ImageLayout.presentSrc),
+                        trans(graphicsQueueIndex, presentQueueIndex),
+                        scImages[i], subrange
+                    ) ]
+                );
+            }
 
             buf.end();
         }

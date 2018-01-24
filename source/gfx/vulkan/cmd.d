@@ -8,11 +8,13 @@ import erupted;
 import gfx.core.rc;
 import gfx.core.typecons;
 import gfx.graal.cmd;
+import gfx.graal.renderpass;
 import gfx.vulkan.buffer;
 import gfx.vulkan.conv;
 import gfx.vulkan.device;
 import gfx.vulkan.error;
 import gfx.vulkan.image;
+import gfx.vulkan.renderpass;
 
 class VulkanCommandPool : VulkanDevObj!(VkCommandPool, vkDestroyCommandPool), CommandPool
 {
@@ -165,6 +167,73 @@ final class VulkanCommandBuffer : CommandBuffer
         auto vkRanges = ranges.map!(r => r.toVk()).array;
 
         vkCmdClearDepthStencilImage(vk, vkImg, vkLayout, &vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
+    }
+
+    override void beginRenderPass(RenderPass rp, Framebuffer fb,
+                                  Rect area, ClearValues[] clearValues)
+    {
+        import std.algorithm : map;
+        import std.array : array;
+        auto vkCvs = clearValues.map!(
+            (ClearValues cv) {
+                VkClearValue vkCv;
+                if (cv.type == ClearValues.Type.color) {
+                    const ccv = cv.values.color;
+                    VkClearColorValue vkCcv;
+                    switch (ccv.type) {
+                    case ClearColorValues.Type.f32:
+                        vkCcv.float32 = ccv.values.f32;
+                        break;
+                    case ClearColorValues.Type.i32:
+                        vkCcv.int32 = ccv.values.i32;
+                        break;
+                    case ClearColorValues.Type.u32:
+                        vkCcv.uint32 = ccv.values.u32;
+                        break;
+                    default:
+                        break;
+                    }
+                    vkCv.color = vkCcv;
+                }
+                else if (cv.type == ClearValues.Type.depthStencil) {
+                    const dscv = cv.values.depthStencil;
+                    vkCv.depthStencil = VkClearDepthStencilValue(
+                        dscv.depth, dscv.stencil
+                    );
+                }
+                return vkCv;
+            }
+        ).array;
+
+        VkRenderPassBeginInfo bi;
+        bi.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        bi.renderPass = enforce(cast(VulkanRenderPass)rp, "did not supply a valid Vulkan render pass").vk;
+        bi.framebuffer = enforce(cast(VulkanFramebuffer)fb, "did not supply a valid Vulkan frame buffer").vk;
+        bi.renderArea = area.toVk();
+        bi.clearValueCount = cast(uint)vkCvs.length;
+        bi.pClearValues = vkCvs.ptr;
+
+        vkCmdBeginRenderPass(vk, &bi, VK_SUBPASS_CONTENTS_INLINE);
+    }
+
+    override void nextSubpass() {
+        vkCmdNextSubpass(vk, VK_SUBPASS_CONTENTS_INLINE);
+    }
+
+    override void endRenderPass() {
+        vkCmdEndRenderPass(vk);
+    }
+
+    override void bindPipeline(Pipeline pipeline)
+    {
+        vkCmdBindPipeline(vk, VK_PIPELINE_BIND_POINT_GRAPHICS, enforce(
+            cast(VulkanPipeline)pipeline, "did not pass a valid Vulkan pipeline"
+        ).vk);
+    }
+
+    override void draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance)
+    {
+        vkCmdDraw(vk, vertexCount, instanceCount, firstVertex, firstInstance);
     }
 
     private VkCommandBuffer _vk;

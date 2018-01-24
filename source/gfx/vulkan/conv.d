@@ -5,6 +5,7 @@ package:
 
 import erupted;
 
+import gfx.core.types;
 import gfx.graal.buffer;
 import gfx.graal.cmd;
 import gfx.graal.format;
@@ -194,6 +195,10 @@ VkLogicOp toVk(in LogicOp op) {
 
 VkDynamicState toVk(in DynamicState ds) {
     return cast(VkDynamicState)ds;
+}
+
+VkRect2D toVk(in Rect r) {
+    return VkRect2D(VkOffset2D(r.x, r.y), VkExtent2D(r.width, r.height));
 }
 
 // flags conversion

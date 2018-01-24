@@ -3,8 +3,11 @@ module gfx.graal.cmd;
 
 import gfx.core.rc;
 import gfx.core.typecons;
+import gfx.core.types;
 import gfx.graal.buffer;
 import gfx.graal.image;
+import gfx.graal.renderpass;
+import gfx.graal.pipeline;
 
 interface CommandPool : AtomicRefCounted
 {
@@ -114,6 +117,26 @@ struct ClearDepthStencilValues
     uint stencil;
 }
 
+struct ClearValues
+{
+    enum Type { undefined, color, depthStencil }
+    union Values {
+        ClearColorValues        color;
+        ClearDepthStencilValues depthStencil;
+    }
+    Type type;
+    Values values;
+
+    this (ClearColorValues color) {
+        type = Type.color;
+        values.color = color;
+    }
+    this (ClearDepthStencilValues depthStencil) {
+        type = Type.depthStencil;
+        values.depthStencil = depthStencil;
+    }
+}
+
 interface CommandBuffer
 {
     @property CommandPool pool();
@@ -134,5 +157,16 @@ interface CommandBuffer
     void clearDepthStencilImage(Image image, ImageLayout layout,
                                 in ClearDepthStencilValues clearValues,
                                 ImageSubresourceRange[] ranges);
+
+    void beginRenderPass(RenderPass rp, Framebuffer fb,
+                         Rect area, ClearValues[] clearValues);
+
+    void nextSubpass();
+
+    void endRenderPass();
+
+    void bindPipeline(Pipeline pipeline);
+
+    void draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance);
 
 }
