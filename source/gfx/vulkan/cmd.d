@@ -16,6 +16,8 @@ import gfx.vulkan.error;
 import gfx.vulkan.image;
 import gfx.vulkan.renderpass;
 
+import std.typecons : Flag;
+
 class VulkanCommandPool : VulkanDevObj!(VkCommandPool, vkDestroyCommandPool), CommandPool
 {
     mixin(atomicRcCode);
@@ -81,10 +83,10 @@ final class VulkanCommandBuffer : CommandBuffer
         );
     }
 
-    override void begin(bool multipleSubmissions) {
+    override void begin(Flag!"persistent" persistent) {
         VkCommandBufferBeginInfo cbbi;
         cbbi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        cbbi.flags = multipleSubmissions ?
+        cbbi.flags = persistent ?
             VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT :
             VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         vulkanEnforce(

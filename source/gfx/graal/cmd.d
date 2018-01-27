@@ -9,6 +9,8 @@ import gfx.graal.image;
 import gfx.graal.renderpass;
 import gfx.graal.pipeline;
 
+import std.typecons : Flag, No;
+
 interface CommandPool : AtomicRefCounted
 {
     void reset();
@@ -144,7 +146,7 @@ interface CommandBuffer
 
     void reset();
 
-    void begin(bool multipleSubmissions);
+    void begin(Flag!"persistent" persistent=No.persistent);
     void end();
 
     void pipelineBarrier(Trans!PipelineStage stageTrans,

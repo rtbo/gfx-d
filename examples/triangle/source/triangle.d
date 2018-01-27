@@ -125,7 +125,7 @@ class TriangleExample : Example
         auto buf = cmdBufs[bufInd];
 
         //buf.reset();
-        buf.begin(false);
+        buf.begin(No.persistent);
 
         if (perImages[imgInd].undefinedLayout) {
             buf.pipelineBarrier(
