@@ -139,7 +139,7 @@ interface Device : AtomicRefCounted
     Semaphore createSemaphore();
     Fence createFence(Flag!"signaled" signaled);
     void resetFences(Fence[] fences);
-    void waitForFances(Fence[] fences, Flag!"waitAll" waitAll, Duration timeout);
+    void waitForFences(Fence[] fences, Flag!"waitAll" waitAll, Duration timeout);
 
     Swapchain createSwapchain(Surface surface, PresentMode pm, uint numImages,
                               Format format, uint[2] size, ImageUsage usage,

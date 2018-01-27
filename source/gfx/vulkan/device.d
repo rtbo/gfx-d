@@ -237,7 +237,7 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
         );
     }
 
-    override void waitForFances(Fence[] fences, Flag!"waitAll" waitAll, Duration timeout)
+    override void waitForFences(Fence[] fences, Flag!"waitAll" waitAll, Duration timeout)
     {
         import std.algorithm : map;
         import std.array : array;
