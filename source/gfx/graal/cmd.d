@@ -23,6 +23,7 @@ interface CommandPool : AtomicRefCounted
 }
 
 enum Access {
+    none                        = 0x00000000,
     indirectCommandRead         = 0x00000001,
     indexRead                   = 0x00000002,
     vertexAttributeRead         = 0x00000004,
