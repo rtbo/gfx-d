@@ -132,6 +132,11 @@ struct ViewportConfig {
     Rect scissors;
 }
 
+enum CompareOp
+{
+    never, less, equal, lessOrEqual, greater, notEqual, greaterOrEqual, always,
+}
+
 enum BlendFactor
 {
     zero = 0,

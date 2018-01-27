@@ -199,6 +199,39 @@ final class VulkanDevice : VulkanObj!(VkDevice, vkDestroyDevice), Device
         return new VulkanImage(vkImg, this, type, dims, format);
     }
 
+    Sampler createSampler(in SamplerInfo info) {
+        import std.algorithm : each;
+        VkSamplerCreateInfo sci;
+        sci.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        sci.minFilter = info.minFilter.toVk();
+        sci.magFilter = info.magFilter.toVk();
+        sci.mipmapMode = info.mipmapFilter.toVkMipmapMode();
+        sci.addressModeU = info.wrapMode[0].toVk();
+        sci.addressModeV = info.wrapMode[1].toVk();
+        sci.addressModeW = info.wrapMode[2].toVk();
+        sci.mipLodBias = info.lodBias;
+        info.anisotropy.save.each!((float max) {
+            sci.anisotropyEnable = VK_TRUE;
+            sci.maxAnisotropy = max;
+        });
+        info.compare.save.each!((CompareOp op) {
+            sci.compareEnable = VK_TRUE;
+            sci.compareOp = op.toVk();
+        });
+        sci.minLod = info.lodRange[0];
+        sci.maxLod = info.lodRange[1];
+        sci.borderColor = info.borderColor.toVk();
+        sci.unnormalizedCoordinates = info.unnormalizeCoords ? VK_TRUE : VK_FALSE;
+
+        VkSampler vkS;
+        vulkanEnforce(
+            vkCreateSampler(vk, &sci, null, &vkS),
+            "Could not create Vulkan sampler"
+        );
+
+        return new VulkanSampler(vkS, this);
+    }
+
     override Semaphore createSemaphore()
     {
         VkSemaphoreCreateInfo sci;

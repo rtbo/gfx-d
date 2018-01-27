@@ -136,6 +136,8 @@ interface Device : AtomicRefCounted
     Image createImage(ImageType type, ImageDims dims, Format format,
                       ImageUsage usage, uint samples, uint levels=1);
 
+    Sampler createSampler(in SamplerInfo info);
+
     Semaphore createSemaphore();
     Fence createFence(Flag!"signaled" signaled);
     void resetFences(Fence[] fences);

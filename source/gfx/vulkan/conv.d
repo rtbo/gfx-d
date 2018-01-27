@@ -201,6 +201,27 @@ VkRect2D toVk(in Rect r) {
     return VkRect2D(VkOffset2D(r.x, r.y), VkExtent2D(r.width, r.height));
 }
 
+VkFilter toVk(in Filter f) {
+    return cast(VkFilter)f;
+}
+
+VkSamplerMipmapMode toVkMipmapMode(in Filter f) {
+    return cast(VkSamplerMipmapMode)f;
+}
+
+VkSamplerAddressMode toVk(in WrapMode wm) {
+    return cast(VkSamplerAddressMode)wm;
+}
+
+VkBorderColor toVk(in BorderColor bc) {
+    return cast(VkBorderColor)bc;
+}
+
+VkCompareOp toVk(in CompareOp op) {
+    return cast(VkCompareOp)op;
+}
+
+
 // flags conversion
 
 MemProps memPropsToGfx(in VkMemoryPropertyFlags vkFlags)

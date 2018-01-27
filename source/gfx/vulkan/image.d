@@ -146,3 +146,11 @@ class VulkanImageView : VulkanDevObj!(VkImageView, vkDestroyImageView), ImageVie
     private ImageSubresourceRange _isr;
     private Swizzle _swizzle;
 }
+
+class VulkanSampler : VulkanDevObj!(VkSampler, vkDestroySampler), Sampler
+{
+    mixin(atomicRcCode);
+    this(VkSampler sampler, VulkanDevice dev) {
+        super(sampler, dev);
+    }
+}

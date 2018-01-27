@@ -2,8 +2,12 @@
 module gfx.graal.image;
 
 import gfx.core.rc;
+import gfx.core.typecons;
 import gfx.graal.format;
 import gfx.graal.memory;
+import gfx.graal.pipeline : CompareOp;
+
+import std.typecons : Flag;
 
 enum ImageType {
     d1, d1Array,
@@ -137,3 +141,64 @@ interface ImageView : AtomicRefCounted
     @property ImageSubresourceRange subresourceRange();
     @property Swizzle swizzle();
 }
+
+
+enum Filter {
+    nearest,
+    linear,
+}
+
+
+/// Specifies how texture coordinates outside the range `[0, 1]` are handled.
+enum WrapMode {
+    /// Repeat the texture. That is, sample the coordinate modulo `1.0`.
+    repeat,
+    /// Mirror the texture. Like tile, but uses abs(coord) before the modulo.
+    mirrorRepeat,
+    /// Clamp the texture to the value at `0.0` or `1.0` respectively.
+    clamp,
+    /// Use border color.
+    border,
+}
+
+enum BorderColor
+{
+    floatTransparent,
+    intTransparent,
+    floatBlack,
+    intBlack,
+    floatWhite,
+    intWhite,
+}
+
+///
+struct SamplerInfo {
+    Filter minFilter;
+    Filter magFilter;
+    Filter mipmapFilter;
+    WrapMode[3] wrapMode;
+    Option!float anisotropy;
+    float lodBias;
+    float[2] lodRange;
+    Option!CompareOp compare;
+    BorderColor borderColor;
+    Flag!"unnormalizeCoords" unnormalizeCoords;
+
+    static @property SamplerInfo bilinear() {
+        SamplerInfo si;
+        si.minFilter = Filter.linear;
+        si.magFilter = Filter.linear;
+        return si;
+    }
+
+    static @property SamplerInfo trilinear() {
+        SamplerInfo si;
+        si.minFilter = Filter.linear;
+        si.magFilter = Filter.linear;
+        si.mipmapFilter = Filter.linear;
+        return si;
+    }
+}
+
+interface Sampler : AtomicRefCounted
+{}
