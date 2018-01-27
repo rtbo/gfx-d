@@ -14,44 +14,43 @@ import gfx.vulkan.device;
 import gfx.vulkan.error;
 import gfx.vulkan.memory;
 
-class VulkanImage : VulkanDevObj!(VkImage, vkDestroyImage), Image
+class VulkanImage : Image
 {
-    mixin(atomicRcCode);
-
     this(VkImage vk, VulkanDevice dev, ImageType type, ImageDims dims, Format format)
     {
-        super(vk, dev);
+        _vk = vk;
+        _dev = dev;
         _type = type;
         _dims = dims;
         _format = format;
     }
 
-    override @property ImageType type() {
+    final @property VkImage vk()
+    {
+        return _vk;
+    }
+
+    final @property VulkanDevice dev()
+    {
+        return _dev;
+    }
+
+    final @property VkDevice vkDev()
+    {
+        return _dev.vk;
+    }
+
+    final override @property ImageType type() {
         return _type;
     }
-    @property Format format() {
+    final @property Format format() {
         return _format;
     }
-    override @property ImageDims dims() {
+    final override @property ImageDims dims() {
         return _dims;
     }
-    @property uint levels() {
+    final @property uint levels() {
         return _levels;
-    }
-
-    override @property MemoryRequirements memoryRequirements() {
-        VkMemoryRequirements vkMr;
-        vkGetImageMemoryRequirements(vkDev, vk, &vkMr);
-        return vkMr.toGfx();
-    }
-
-    override void bindMemory(DeviceMemory mem, in size_t offset)
-    {
-        auto vulkanMem = cast(VulkanDeviceMemory)mem;
-        vulkanEnforce(
-            vkBindImageMemory(vkDev, vk, vulkanMem.vk, offset),
-            "Could not bind image memory"
-        );
     }
 
     override VulkanImageView createView(ImageType viewType, ImageSubresourceRange isr, Swizzle swizzle)
@@ -74,10 +73,43 @@ class VulkanImage : VulkanDevObj!(VkImage, vkDestroyImage), Image
         return new VulkanImageView(vkIv, this, isr, swizzle);
     }
 
+    private VkImage _vk;
+    private VulkanDevice _dev;
     private ImageType _type;
     private ImageDims _dims;
     private Format _format;
     private uint _levels;
+}
+
+class VulkanImageRc : VulkanImage, ImageRc
+{
+    mixin(atomicRcCode);
+
+    this(VkImage vk, VulkanDevice dev, ImageType type, ImageDims dims, Format format)
+    {
+        super(vk, dev, type, dims, format);
+        dev.retain();
+    }
+
+    override void dispose() {
+        vkDestroyImage(vkDev, vk, null);
+        dev.release();
+    }
+
+    override @property MemoryRequirements memoryRequirements() {
+        VkMemoryRequirements vkMr;
+        vkGetImageMemoryRequirements(vkDev, vk, &vkMr);
+        return vkMr.toGfx();
+    }
+
+    override void bindMemory(DeviceMemory mem, in size_t offset)
+    {
+        auto vulkanMem = cast(VulkanDeviceMemory)mem;
+        vulkanEnforce(
+            vkBindImageMemory(vkDev, vk, vulkanMem.vk, offset),
+            "Could not bind image memory"
+        );
+    }
 }
 
 class VulkanImageView : VulkanDevObj!(VkImageView, vkDestroyImageView), ImageView
@@ -88,7 +120,6 @@ class VulkanImageView : VulkanDevObj!(VkImageView, vkDestroyImageView), ImageVie
     {
         super(vk, img.dev);
         _img = img;
-        _img.retain();
         _isr = isr;
         _swizzle = swizzle;
     }
@@ -96,7 +127,6 @@ class VulkanImageView : VulkanDevObj!(VkImageView, vkDestroyImageView), ImageVie
     override void dispose()
     {
         super.dispose();
-        _img.release();
         _img = null;
     }
 

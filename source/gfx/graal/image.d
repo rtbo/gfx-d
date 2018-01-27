@@ -114,20 +114,22 @@ enum CompSwizzle : ubyte
 
 alias Swizzle = CompSwizzle[4];
 
-interface Image : AtomicRefCounted
+interface Image
 {
     @property ImageType type();
     @property Format format();
     @property ImageDims dims();
     @property uint levels();
-    @property MemoryRequirements memoryRequirements();
-
-    void bindMemory(DeviceMemory mem, in size_t offset);
 
     // TODO: deduce view type from subrange and image type
     ImageView createView(ImageType viewtype, ImageSubresourceRange isr, Swizzle swizzle);
 }
 
+interface ImageRc : Image, AtomicRefCounted
+{
+    @property MemoryRequirements memoryRequirements();
+    void bindMemory(DeviceMemory mem, in size_t offset);
+}
 
 interface ImageView : AtomicRefCounted
 {
