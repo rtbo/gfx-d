@@ -20,6 +20,11 @@ class TriangleExample : Example
     Rc!RenderPass renderPass;
     Framebuffer[] framebuffers;
     Rc!Pipeline pipeline;
+    PerImage[] perImages;
+
+    struct PerImage {
+        bool undefinedLayout=true;
+    }
 
     this() {
         super("Triangle");
@@ -35,13 +40,7 @@ class TriangleExample : Example
         super.dispose();
     }
 
-    override void prepare() {
-        super.prepare();
-        prepareRenderPass();
-        preparePipeline();
-    }
-
-    void prepareRenderPass() {
+    override void prepareRenderPasses() {
         const attachments = [
             AttachmentDescription(swapchain.format, 1,
                 AttachmentOps(LoadOp.clear, StoreOp.store),
@@ -71,7 +70,7 @@ class TriangleExample : Example
         }
     }
 
-    void preparePipeline()
+    override void preparePipelines()
     {
         auto vtxShader = device.createShaderModule(
             ShaderLanguage.spirV, import("shader.vert.spv"), "main"
@@ -113,77 +112,45 @@ class TriangleExample : Example
     }
 
 
-    void recordCmds() {
+    override void recordCmds(size_t bufInd, size_t imgInd) {
         import gfx.core.typecons : trans;
+
+        if (!perImages.length) {
+            perImages = new PerImage[scImages.length];
+        }
 
         const cv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         auto subrange = ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1);
 
-        foreach (i, buf; presentCmdBufs) {
-            buf.begin(true);
+        auto buf = cmdBufs[bufInd];
 
-            if (graphicsQueueIndex != presentQueueIndex) {
-                buf.pipelineBarrier(
-                    trans(PipelineStage.colorAttachment, PipelineStage.colorAttachment), [],
-                    [ ImageMemoryBarrier(
-                        trans(Access.memoryRead, Access.colorAttachmentWrite),
-                        trans(ImageLayout.presentSrc, ImageLayout.presentSrc),
-                        trans(presentQueueIndex, graphicsQueueIndex),
-                        scImages[i], subrange
-                    ) ]
-                );
-            }
+        //buf.reset();
+        buf.begin(false);
 
-            buf.beginRenderPass(
-                renderPass, framebuffers[i],
-                Rect(0, 0, surfaceSize[0], surfaceSize[1]), [ ClearValues(cv) ]
+        if (perImages[imgInd].undefinedLayout) {
+            buf.pipelineBarrier(
+                trans(PipelineStage.colorAttachment, PipelineStage.colorAttachment), [],
+                [ ImageMemoryBarrier(
+                    trans(Access.none, Access.colorAttachmentWrite),
+                    trans(ImageLayout.undefined, ImageLayout.presentSrc),
+                    trans(graphicsQueueIndex, graphicsQueueIndex),
+                    scImages[imgInd], subrange
+                ) ]
             );
-
-            buf.bindPipeline(pipeline);
-            buf.draw(3, 1, 0, 0);
-
-            buf.endRenderPass();
-
-            if (graphicsQueueIndex != presentQueueIndex) {
-                buf.pipelineBarrier(
-                    trans(PipelineStage.colorAttachment, PipelineStage.colorAttachment), [],
-                    [ ImageMemoryBarrier(
-                        trans(Access.colorAttachmentWrite, Access.memoryRead),
-                        trans(ImageLayout.presentSrc, ImageLayout.presentSrc),
-                        trans(graphicsQueueIndex, presentQueueIndex),
-                        scImages[i], subrange
-                    ) ]
-                );
-            }
-
-            buf.end();
+            perImages[imgInd].undefinedLayout = false;
         }
-    }
-    void render()
-    {
-        import core.time : dur;
 
-        bool needReconstruction;
-        const imgInd = swapchain.acquireNextImage(dur!"seconds"(-1), imageAvailableSem, needReconstruction);
-
-        presentQueue.submit([
-            Submission (
-                [ StageWait(imageAvailableSem, PipelineStage.transfer) ],
-                [ renderingFinishSem ], [ presentCmdBufs[imgInd] ]
-            )
-        ], null);
-
-        presentQueue.present(
-            [ renderingFinishSem ],
-            [ PresentRequest(swapchain, imgInd) ]
+        buf.beginRenderPass(
+            renderPass, framebuffers[imgInd],
+            Rect(0, 0, surfaceSize[0], surfaceSize[1]), [ ClearValues(cv) ]
         );
 
-        if (needReconstruction) {
-            writeln("need to rebuild swapchain");
-            prepareSwapchain(swapchain);
-            presentPool.reset();
-            recordCmds();
-        }
+        buf.bindPipeline(pipeline);
+        buf.draw(3, 1, 0, 0);
+
+        buf.endRenderPass();
+
+        buf.end();
     }
 
 }
@@ -193,7 +160,6 @@ int main() {
     try {
         auto example = new TriangleExample();
         example.prepare();
-        example.recordCmds();
         scope(exit) example.dispose();
 
         bool exitFlag;

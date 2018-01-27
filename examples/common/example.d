@@ -11,6 +11,7 @@ import gfx.window;
 
 import std.algorithm;
 import std.exception;
+import std.typecons;
 
 class Example : Disposable
 {
@@ -29,8 +30,12 @@ class Example : Disposable
     Image[] scImages;
     Rc!Semaphore imageAvailableSem;
     Rc!Semaphore renderingFinishSem;
-    Rc!CommandPool presentPool;
-    CommandBuffer[] presentCmdBufs;
+    Rc!CommandPool cmdPool;
+    CommandBuffer[] cmdBufs;
+    Fence[] fences;
+
+    enum numCmdBufs=2;
+    size_t cmdBufInd;
 
     this (string title)
     {
@@ -41,9 +46,10 @@ class Example : Disposable
         if (device) {
             device.waitIdle();
         }
-        if (presentPool && presentCmdBufs.length) {
-            presentPool.free(presentCmdBufs);
-            presentPool.unload();
+        releaseArray(fences);
+        if (cmdPool && cmdBufs.length) {
+            cmdPool.free(cmdBufs);
+            cmdPool.unload();
         }
         // the rest is checked with Rc, so it is safe to call unload even
         // if object is invalid
@@ -77,6 +83,8 @@ class Example : Disposable
         prepareSwapchain(null);
         prepareSync();
         prepareCmds();
+        prepareRenderPasses();
+        preparePipelines();
     }
 
     void prepareDevice()
@@ -135,11 +143,59 @@ class Example : Disposable
     void prepareSync() {
         imageAvailableSem = device.createSemaphore();
         renderingFinishSem = device.createSemaphore();
+        fences = new Fence[numCmdBufs];
+        foreach (i; 0 .. numCmdBufs) {
+            fences[i] = device.createFence(Yes.signaled);
+        }
+        retainArray(fences);
     }
 
     void prepareCmds() {
-        presentPool = device.createCommandPool(presentQueueIndex);
-        presentCmdBufs = presentPool.allocate(scImages.length);
+        cmdPool = device.createCommandPool(graphicsQueueIndex);
+        cmdBufs = cmdPool.allocate(numCmdBufs);
+    }
+
+    abstract void prepareRenderPasses();
+    abstract void preparePipelines();
+    abstract void recordCmds(size_t bufInd, size_t imgInd);
+
+    size_t nextCmdBuf() {
+        const ind = cmdBufInd++;
+        if (cmdBufInd == numCmdBufs) {
+            cmdBufInd = 0;
+        }
+        return ind;
+    }
+
+    void render()
+    {
+        import core.time : dur;
+
+        bool needReconstruction;
+        const imgInd = swapchain.acquireNextImage(dur!"seconds"(-1), imageAvailableSem, needReconstruction);
+        const bufInd = nextCmdBuf();
+
+        fences[bufInd].wait();
+        fences[bufInd].reset();
+
+        recordCmds(bufInd, imgInd);
+
+        presentQueue.submit([
+            Submission (
+                [ StageWait(imageAvailableSem, PipelineStage.transfer) ],
+                [ renderingFinishSem ], [ cmdBufs[bufInd] ]
+            )
+        ], fences[bufInd] );
+
+        presentQueue.present(
+            [ renderingFinishSem ],
+            [ PresentRequest(swapchain, imgInd) ]
+        );
+
+        // if (needReconstruction) {
+        //     prepareSwapchain(swapchain);
+        //     presentPool.reset();
+        // }
     }
 }
 
