@@ -5,13 +5,18 @@ import example;
 import gfx.core.rc;
 import gfx.core.typecons;
 import gfx.core.types;
+import gfx.graal.buffer;
 import gfx.graal.cmd;
+import gfx.graal.device;
+import gfx.graal.format;
 import gfx.graal.image;
+import gfx.graal.memory;
 import gfx.graal.pipeline;
 import gfx.graal.presentation;
 import gfx.graal.queue;
 import gfx.graal.renderpass;
 
+import std.exception;
 import std.stdio;
 import std.typecons;
 
@@ -21,9 +26,15 @@ class TriangleExample : Example
     Framebuffer[] framebuffers;
     Rc!Pipeline pipeline;
     PerImage[] perImages;
+    Rc!Buffer vertBuf;
 
     struct PerImage {
         bool undefinedLayout=true;
+    }
+
+    struct Vertex {
+        float[4] position;
+        float[4] color;
     }
 
     this() {
@@ -34,13 +45,55 @@ class TriangleExample : Example
         if (device) {
             device.waitIdle();
         }
+        vertBuf.unload();
         pipeline.unload();
         renderPass.unload();
         releaseArray(framebuffers);
         super.dispose();
     }
 
-    override void prepareRenderPasses() {
+    override void prepare() {
+        super.prepare();
+        prepareBuffer();
+        prepareRenderPass();
+        preparePipeline();
+    }
+
+    void prepareBuffer() {
+        const vertexData = [
+            Vertex([ 0.7f, -0.7f, 0f, 1f], [ 1f, 0f, 0f, 1f ]),
+            Vertex([-0.7f, -0.7f, 0f, 1f], [ 0f, 1f, 0f, 1f ]),
+            Vertex([   0f,  0.7f, 0f, 1f], [ 0f, 0f, 1f, 1f ]),
+        ];
+        const dataSize = vertexData.length * Vertex.sizeof;
+
+        vertBuf = device.createBuffer( BufferUsage.vertex, dataSize );
+
+        const mr = vertBuf.memoryRequirements;
+        const props = mr.props | MemProps.hostVisible;
+        const devMemProps = physicalDevice.memoryProperties;
+        uint memTypeInd = uint.max;
+        foreach (uint i, mt; devMemProps.types) {
+            if ((mt.props & props) == props) {
+                memTypeInd = i;
+                break;
+            }
+        }
+        enforce(memTypeInd != uint.max, "Could not find a memory type");
+
+        auto mem = device.allocateMemory(memTypeInd, mr.size).rc;
+        {
+            auto mm = mapMemory!Vertex(mem, 0, vertexData.length);
+            mm[] = vertexData;
+            MappedMemorySet mms;
+            mm.addToSet(mms);
+            device.flushMappedMemory(mms);
+        }
+
+        vertBuf.bindMemory(mem, 0);
+    }
+
+    void prepareRenderPass() {
         const attachments = [
             AttachmentDescription(swapchain.format, 1,
                 AttachmentOps(LoadOp.clear, StoreOp.store),
@@ -70,7 +123,7 @@ class TriangleExample : Example
         }
     }
 
-    override void preparePipelines()
+    void preparePipeline()
     {
         auto vtxShader = device.createShaderModule(
             ShaderLanguage.spirV, import("shader.vert.spv"), "main"
@@ -82,6 +135,13 @@ class TriangleExample : Example
         PipelineInfo info;
         info.shaders.vertex = vtxShader;
         info.shaders.fragment = fragShader;
+        info.inputBindings = [
+            VertexInputBinding(0, Vertex.sizeof, No.instanced)
+        ];
+        info.inputAttribs = [
+            VertexInputAttrib(0, 0, Format.rgba32_sFloat, 0),
+            VertexInputAttrib(1, 0, Format.rgba32_sFloat, Vertex.color.offsetof),
+        ];
         info.assembly = InputAssembly(Primitive.triangleList, No.primitiveRestart);
         info.rasterizer = Rasterizer(
             PolygonMode.fill, Cull.back, FrontFace.ccw, No.depthClamp,
@@ -112,7 +172,7 @@ class TriangleExample : Example
     }
 
 
-    override void recordCmds(size_t bufInd, size_t imgInd) {
+    override void recordCmds(size_t cmdBufInd, size_t imgInd) {
         import gfx.core.typecons : trans;
 
         if (!perImages.length) {
@@ -122,7 +182,7 @@ class TriangleExample : Example
         const cv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         auto subrange = ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1);
 
-        auto buf = cmdBufs[bufInd];
+        auto buf = cmdBufs[cmdBufInd];
 
         //buf.reset();
         buf.begin(No.persistent);
@@ -146,6 +206,7 @@ class TriangleExample : Example
         );
 
         buf.bindPipeline(pipeline);
+        buf.bindVertexBuffers(0, [ VertexBinding(vertBuf, 0) ]);
         buf.draw(3, 1, 0, 0);
 
         buf.endRenderPass();

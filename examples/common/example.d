@@ -83,8 +83,6 @@ class Example : Disposable
         prepareSwapchain(null);
         prepareSync();
         prepareCmds();
-        prepareRenderPasses();
-        preparePipelines();
     }
 
     void prepareDevice()
@@ -155,9 +153,7 @@ class Example : Disposable
         cmdBufs = cmdPool.allocate(numCmdBufs);
     }
 
-    abstract void prepareRenderPasses();
-    abstract void preparePipelines();
-    abstract void recordCmds(size_t bufInd, size_t imgInd);
+    abstract void recordCmds(size_t cmdBufInd, size_t imgInd);
 
     size_t nextCmdBuf() {
         const ind = cmdBufInd++;
@@ -173,19 +169,19 @@ class Example : Disposable
 
         bool needReconstruction;
         const imgInd = swapchain.acquireNextImage(dur!"seconds"(-1), imageAvailableSem, needReconstruction);
-        const bufInd = nextCmdBuf();
+        const cmdBufInd = nextCmdBuf();
 
-        fences[bufInd].wait();
-        fences[bufInd].reset();
+        fences[cmdBufInd].wait();
+        fences[cmdBufInd].reset();
 
-        recordCmds(bufInd, imgInd);
+        recordCmds(cmdBufInd, imgInd);
 
         presentQueue.submit([
             Submission (
                 [ StageWait(imageAvailableSem, PipelineStage.transfer) ],
-                [ renderingFinishSem ], [ cmdBufs[bufInd] ]
+                [ renderingFinishSem ], [ cmdBufs[cmdBufInd] ]
             )
-        ], fences[bufInd] );
+        ], fences[cmdBufInd] );
 
         presentQueue.present(
             [ renderingFinishSem ],
