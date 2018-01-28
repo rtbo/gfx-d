@@ -64,7 +64,36 @@ struct MemoryMap(T)
         set.addMM(MappedMemorySet.MM(dm.obj, offset, data.length*T.sizeof));
     }
 
-    // TODO: opSlice, opIndex, opDollar...
+    size_t opDollar() {
+        return data.length;
+    }
+
+    size_t[2] opSlice(size_t beg, size_t end) {
+        return [beg, end];
+    }
+
+    T[] opIndex() {
+        return data;
+    }
+    T opIndex(size_t index) {
+        return data[index];
+    }
+    T[] opIndex(in size_t[2] slice) {
+        return data[ slice[0] .. slice[1] ];
+    }
+
+    void opIndexAssign(in T[] vals) {
+        data[] = vals;
+    }
+    void opIndexAssign(in T val, size_t ind) {
+        data[ind] = val;
+    }
+    void opIndexAssign(in T val, size_t[2] slice) {
+        data[slice[0] .. slice[1]] = val;
+    }
+    void opIndexAssign(in T[] vals, size_t[2] slice) {
+        data[slice[0] .. slice[1]] = vals;
+    }
 }
 
 
@@ -81,7 +110,7 @@ auto mapMemory(T)(DeviceMemory dm, in size_t offset, in size_t count)
 {
     const size = count * T.sizeof;
     auto slice = dm.map(offset, size)[0 .. size];
-    return MemoryMap!T(dm, offset, retypeSlice!(slice));
+    return MemoryMap!T(dm, offset, retypeSlice!T(slice));
 }
 
 interface DeviceMemory : AtomicRefCounted
