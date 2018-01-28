@@ -132,6 +132,7 @@ interface Image
 interface ImageRc : Image, AtomicRefCounted
 {
     @property MemoryRequirements memoryRequirements();
+    /// The image keeps a reference of the device memory
     void bindMemory(DeviceMemory mem, in size_t offset);
 }
 

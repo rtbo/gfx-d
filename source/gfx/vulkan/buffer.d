@@ -22,6 +22,12 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, vkDestroyBuffer), Buffer
         _size = size;
     }
 
+    override void dispose() {
+        vkDestroyBuffer(vkDev, vk, null);
+        if (_vdm) _vdm.release();
+        dev.release();
+    }
+
     @property BufferUsage usage() {
         return _usage;
     }
@@ -38,11 +44,13 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, vkDestroyBuffer), Buffer
 
     override void bindMemory(DeviceMemory mem, in size_t offset)
     {
-        auto vulkanMem = cast(VulkanDeviceMemory)mem;
+        assert(!_vdm, "Bind the same buffer twice");
+        _vdm = enforce(cast(VulkanDeviceMemory)mem, "Did not pass a Vulkan memory");
         vulkanEnforce(
-            vkBindBufferMemory(vkDev, vk, vulkanMem.vk, offset),
+            vkBindBufferMemory(vkDev, vk, _vdm.vk, offset),
             "Could not bind image memory"
         );
+        _vdm.retain();
     }
 
     override VulkanBufferView createView(Format format, size_t offset, size_t size)
@@ -62,6 +70,7 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, vkDestroyBuffer), Buffer
         return new VulkanBufferView(vkBv, this, format, offset, size);
     }
 
+    private VulkanDeviceMemory _vdm;
     private BufferUsage _usage;
     private size_t _size;
 }

@@ -93,6 +93,7 @@ class VulkanImageRc : VulkanImage, ImageRc
 
     override void dispose() {
         vkDestroyImage(vkDev, vk, null);
+        if (_vdm) _vdm.release();
         dev.release();
     }
 
@@ -104,12 +105,16 @@ class VulkanImageRc : VulkanImage, ImageRc
 
     override void bindMemory(DeviceMemory mem, in size_t offset)
     {
-        auto vulkanMem = cast(VulkanDeviceMemory)mem;
+        assert(!_vdm, "Bind the same buffer twice");
+        _vdm = enforce(cast(VulkanDeviceMemory)mem, "Did not pass a Vulkan memory");
         vulkanEnforce(
-            vkBindImageMemory(vkDev, vk, vulkanMem.vk, offset),
+            vkBindImageMemory(vkDev, vk, _vdm.vk, offset),
             "Could not bind image memory"
         );
+        _vdm.retain();
     }
+
+    VulkanDeviceMemory _vdm;
 }
 
 class VulkanImageView : VulkanDevObj!(VkImageView, vkDestroyImageView), ImageView
