@@ -61,9 +61,9 @@ class TriangleExample : Example
 
     void prepareBuffer() {
         const vertexData = [
-            Vertex([ 0.7f, -0.7f, 0f, 1f], [ 1f, 0f, 0f, 1f ]),
-            Vertex([-0.7f, -0.7f, 0f, 1f], [ 0f, 1f, 0f, 1f ]),
-            Vertex([   0f,  0.7f, 0f, 1f], [ 0f, 0f, 1f, 1f ]),
+            Vertex([-0.7f,  0.7f, 0f, 1f], [ 0f, 1f, 0f, 1f ]),
+            Vertex([ 0.7f,  0.7f, 0f, 1f], [ 1f, 0f, 0f, 1f ]),
+            Vertex([   0f, -0.7f, 0f, 1f], [ 0f, 0f, 1f, 1f ]),
         ];
         const dataSize = vertexData.length * Vertex.sizeof;
 
