@@ -14,6 +14,12 @@ enum lunarGValidationLayers = [
     "VK_LAYER_LUNARG_parameter_validation",
 ];
 
+@property ApiProps vulkanApiProps() {
+    return ApiProps(
+        "vulkan", CoordSystem.rightHanded
+    );
+}
+
 /// Load global level vulkan functions, and instance level layers and extensions
 /// This function must be called before any other in this module
 void vulkanInit()
@@ -420,6 +426,10 @@ class VulkanInstance : VulkanObj!(VkInstance, vkDestroyInstance), Instance
 
     this(VkInstance vk) {
         super(vk);
+    }
+
+    override @property ApiProps apiProps() {
+        return vulkanApiProps;
     }
 
     override PhysicalDevice[] devices()
