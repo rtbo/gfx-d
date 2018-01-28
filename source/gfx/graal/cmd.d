@@ -140,6 +140,11 @@ struct ClearValues
     }
 }
 
+struct VertexBinding {
+    Buffer buffer;
+    size_t offset;
+}
+
 interface CommandBuffer
 {
     @property CommandPool pool();
@@ -169,6 +174,7 @@ interface CommandBuffer
     void endRenderPass();
 
     void bindPipeline(Pipeline pipeline);
+    void bindVertexBuffers(uint firstBinding, VertexBinding[] bindings);
 
     void draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance);
 

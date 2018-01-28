@@ -233,6 +233,19 @@ final class VulkanCommandBuffer : CommandBuffer
         ).vk);
     }
 
+    override void bindVertexBuffers(uint firstBinding, VertexBinding[] bindings) {
+        import std.algorithm : map;
+        import std.array : array;
+        auto vkBufs = bindings
+                .map!(b => enforce(cast(VulkanBuffer)b.buffer).vk)
+                .array;
+        auto vkOffsets = bindings
+                .map!(b => cast(VkDeviceSize)b.offset)
+                .array;
+        vkCmdBindVertexBuffers(vk, firstBinding, cast(uint)bindings.length, vkBufs.ptr, vkOffsets.ptr);
+    }
+
+
     override void draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance)
     {
         vkCmdDraw(vk, vertexCount, instanceCount, firstVertex, firstInstance);
