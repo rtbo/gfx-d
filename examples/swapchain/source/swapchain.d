@@ -14,6 +14,7 @@ import gfx.window;
 import std.algorithm;
 import std.exception;
 import std.stdio;
+import std.typecons;
 
 class SwapchainExample : Disposable
 {
@@ -123,7 +124,7 @@ class SwapchainExample : Disposable
         auto subrange = ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1);
 
         foreach (i, buf; presentCmdBufs) {
-            buf.begin(true);
+            buf.begin(Yes.persistent);
 
             buf.pipelineBarrier(
                 trans(PipelineStage.transfer, PipelineStage.transfer), [],
