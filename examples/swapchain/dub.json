@@ -8,6 +8,7 @@
 	"license": "MIT",
 	"targetType": "executable",
     "dependencies": {
-        "gfx" : { "path": "../../"  }
+		"gfx" : { "path": "../../"  },
+		"gfx:window" : { "path": "../../window" }
     }
 }

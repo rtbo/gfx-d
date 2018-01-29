@@ -8,11 +8,11 @@
     "license": "MIT",
 
     "subPackages": [
+        "window",
+
         "examples/swapchain",
         "examples/triangle"
     ],
-    "-ddoxFilterArgs": ["--min-protection=Protected", "--ex=erupted"],
-
     "dependencies": {
         "erupted": {
             "path": "3rdparty/Erupted"
@@ -21,46 +21,29 @@
     "configurations": [
         {
             "name": "wayland",
-            "platforms": ["linux"],
-            "versions": [ "GfxVulkanWayland" ],
-            "dependencies": {
-                "wayland:client": "~>0.1.0"
-            },
             "subConfigurations": {
                 "erupted": "dub-platform-wayland-derelict-loader"
-            },
-            "preGenerateCommands": [
-                "sh resources/gen_wld_protocol.sh $PACKAGE_DIR"
-            ]
+            }
         },
         {
             "name": "xcb",
-            "platforms": ["linux"],
-            "versions": [ "GfxVulkanXcb" ],
-            "dependencies": {
-                "xcb-d": "~>2.1.0"
-            },
             "subConfigurations": {
                 "erupted": "dub-platform-xcb-derelict-loader"
             }
         },
         {
-            "name": "windows",
-            "platforms": ["windows"],
-            "versions": [
-                "GfxVulkanWin32",
-                "VK_USE_PLATFORM_WIN32_KHR"
-            ],
+            "name": "win32",
             "subConfigurations": {
-                "erupted": "with-derelict-loader"
+                "erupted": "dub-platform-win32-derelict-loader"
             }
         },
         {
             "name": "offscreen",
-            "versions": ["GfxOffscreen"],
             "subConfigurations": {
                 "erupted": "with-derelict-loader"
             }
         }
-    ]
+    ],
+
+    "-ddoxFilterArgs": ["--min-protection=Protected", "--ex=erupted"]
 }
