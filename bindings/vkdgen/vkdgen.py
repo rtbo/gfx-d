@@ -8,6 +8,7 @@
 from reg import Registry
 from generator import OutputGenerator, GeneratorOptions, noneStr
 import xml.etree.ElementTree as etree
+from itertools import islice
 import re
 
 # General utility
@@ -95,21 +96,22 @@ class SourceFile(object):
 
 re_single_const = re.compile(r"^const\s+(.+)\*\s*$")
 re_double_const = re.compile(r"^const\s+(.+)\*\s+const\*\s*$")
+re_funcptr = re.compile(r"^typedef (.+) \(VKAPI_PTR \*$")
 
 dkeywords = [ "module" ]
 
 def convertDTypeConst( typ ):
-	"""
-	Converts C const syntax to D const syntax
-	"""
-	doubleConstMatch = re.match( re_double_const, typ )
-	if doubleConstMatch:
-		return "const({}*)*".format( doubleConstMatch.group( 1 ))
-	else:
-		singleConstMatch = re.match( re_single_const, typ )
-		if singleConstMatch:
-			return "const({})*".format( singleConstMatch.group( 1 ))
-	return typ
+    """
+    Converts C const syntax to D const syntax
+    """
+    doubleConstMatch = re.match( re_double_const, typ )
+    if doubleConstMatch:
+        return "const({}*)*".format( doubleConstMatch.group( 1 ))
+    else:
+        singleConstMatch = re.match( re_single_const, typ )
+        if singleConstMatch:
+            return "const({})*".format( singleConstMatch.group( 1 ))
+    return typ
 
 def makeDParamType(param):
     def makePart(part):
@@ -128,11 +130,11 @@ def mapDName(name):
         return name + "_"
     return name
 
-BASETYPE_SECT = 1
-CONST_SECT = 2
-ENUM_SECT = 3
-STRUCT_SECT = 4
-
+BASETYPE_SECT   = 1
+CONST_SECT      = 2
+FUNCPTR_SECT    = 3
+ENUM_SECT       = 4
+STRUCT_SECT     = 5
 
 class DGenerator(OutputGenerator):
 
@@ -187,9 +189,19 @@ class DGenerator(OutputGenerator):
         self.sf("// Structures")
         self.sf()
 
+        self.sf.section(FUNCPTR_SECT)
+        self.sf()
+        self.sf("// Function pointers")
+        self.sf()
+        self.sf("extern(C) {")
+        self.sf.indent()
+
 
     def endFile(self):
         # not calling super on purpose (see beginFile comment)
+        self.sf.section(FUNCPTR_SECT)
+        self.sf.unindent()
+        self.sf("}")
         self.sf.writeOut()
 
     def beginFeature(self, interface, emit):
@@ -212,6 +224,24 @@ class DGenerator(OutputGenerator):
             self.sf("alias %s = %s;", name, typeinfo.elem.find("type").text)
         elif category == "struct" or category == "union":
             self.genStruct(typeinfo, name)
+        elif category == "funcpointer":
+            returnType = re.match( re_funcptr, typeinfo.elem.text ).group( 1 )
+            params = "".join( islice( typeinfo.elem.itertext(), 2, None ))[ 2: ]
+            if params == "void);" or params == " void );" : params = ");"
+            #else: params = ' '.join( ' '.join( line.strip() for line in params.splitlines()).split())
+            else:
+                concatParams = ""
+                for line in params.splitlines():
+                    lineSplit = line.split()
+                    if len( lineSplit ) > 2:
+                        concatParams += ' ' + convertTypeConst( lineSplit[ 0 ] + ' ' + lineSplit[ 1 ] ) + ' ' + lineSplit[ 2 ]
+                    else:
+                        concatParams += ' ' + ' '.join( param for param in lineSplit )
+
+                params = concatParams[ 2: ]
+
+            self.sf.section(FUNCPTR_SECT)
+            self.sf("alias %s = %s function(%s", name, returnType, params)
 
 
     def genEnum(self, enuminfo, name):
@@ -254,7 +284,6 @@ class DGenerator(OutputGenerator):
                 spacer = " " * (maxLen - len(member[0]) + 1)
                 self.sf("%s%s%s;", member[0], spacer, member[1])
         self.sf("}")
-        self.sf()
 
 
 # main driver starts here
