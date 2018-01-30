@@ -275,7 +275,7 @@ class DGenerator(OutputGenerator):
         for member in typeinfo.elem.findall(".//member"):
             typeStr = makeDParamType(member)
             maxLen = max(maxLen, len(typeStr))
-            memName = member.findall(".//name")[0].text
+            memName = member.find("name").text
             members.append([typeStr, mapDName(memName)])
         self.sf.section(STRUCT_SECT)
         self.sf("%s %s {", category, name)
