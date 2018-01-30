@@ -1,0 +1,9 @@
+{
+    "name": "bindings",
+    "authors": [
+        "Rémi Thebault"
+    ],
+    "description": "Raw bindings to Gfx APIs",
+    "copyright": "Copyright © 2016, Rémi Thebault",
+    "license": "MIT"
+}
