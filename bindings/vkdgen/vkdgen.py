@@ -22,6 +22,7 @@ class Sect(Enum):
     FUNCPTR         = auto()
     ENUM            = auto()
     STRUCT          = auto()
+    CMD             = auto()
 
 class SourceFile(object):
     '''
@@ -122,7 +123,7 @@ def convertDTypeConst( typ ):
 
 def makeDParamType(param):
     def makePart(part):
-        return noneStr(part).strip().replace("const", "const ")
+        return noneStr(part).replace("struct ", "").strip().replace("const", "const ")
 
     typeStr = makePart(param.text)
     for elem in param:
@@ -140,6 +141,17 @@ def mapDName(name):
 
 class DGenerator(OutputGenerator):
 
+    class Command:
+        def __init__(self, ret, name, params):
+            self.returnType = ret
+            self.name = name
+            self.params = params
+
+    class Param:
+        def __init__(self, typeStr, name):
+            self.typeStr = typeStr
+            self.name = name
+
     def __init__(self, moduleName, outFile):
         super().__init__()
         self.moduleName = moduleName
@@ -154,6 +166,18 @@ class DGenerator(OutputGenerator):
             "int32_t": "int",
             "int64_t": "long",
         }
+        self.cmds = []
+        self.globalCmdNames = {
+            "vkGetInstanceProcAddr",
+            "vkEnumerateInstanceExtensionProperties",
+            "vkEnumerateInstanceLayerProperties",
+            "vkCreateInstance"
+        }
+        self.globalCmds = []
+        self.instanceCmdNames = set()
+        self.instanceCmds = []
+        self.deviceCmdNames = set()
+        self.deviceCmds = []
 
     def logMsg(self, level, *args):
         # shut down logging during dev to see debug output
@@ -203,6 +227,7 @@ class DGenerator(OutputGenerator):
         initSect(Sect.HANDLE, "Handles")
         initSect(Sect.ENUM, "Enumerations")
         initSect(Sect.STRUCT, "Structures")
+        initSect(Sect.CMD, "Commands")
 
 
     def endFile(self):
@@ -210,6 +235,29 @@ class DGenerator(OutputGenerator):
         self.sf.section = Sect.FUNCPTR
         self.sf.unindent()
         self.sf("}")
+
+        self.sf.section = Sect.CMD
+        self.sf("extern(C) {")
+        with self.sf.indent_block():
+            for cmd in self.cmds:
+                maxLen = 0
+                for p in cmd.params:
+                    maxLen = max(maxLen, len(p.typeStr))
+                fstLine = "alias PFN_{} = {} function (".format(cmd.name, cmd.returnType)
+                if len(cmd.params) == 0:
+                    self.sf(fstLine+");")
+                    continue
+                if len(cmd.params) == 1:
+                    self.sf("%s%s %s);", fstLine, cmd.params[0].typeStr, cmd.params[0].name)
+                    continue
+                lineSpace = fstLine
+                for i, p in enumerate(cmd.params):
+                    spacer = " " * (maxLen-len(p.typeStr))
+                    endLine = ");" if i == len(cmd.params)-1 else ","
+                    self.sf("%s%s%s %s%s", lineSpace, p.typeStr, spacer, p.name, endLine)
+                    lineSpace = " "*len(fstLine)
+        self.sf("}")
+
         self.sf.writeOut()
 
     def beginFeature(self, interface, emit):
@@ -219,7 +267,7 @@ class DGenerator(OutputGenerator):
 
     def endFeature(self):
         super().endFeature()
-        pass
+
 
     def genType(self, typeinfo, name):
         super().genType(typeinfo, name)
@@ -230,12 +278,15 @@ class DGenerator(OutputGenerator):
         if category == "basetype" or category == "bitmask":
             self.sf.section = Sect.BASETYPE
             self.sf("alias %s = %s;", name, typeinfo.elem.find("type").text)
+
         elif category == "handle":
             typeStr = typeinfo.elem.find("type").text
             self.sf.section = Sect.HANDLE
             self.sf('mixin(%s!"%s");', typeStr, name)
+
         elif category == "struct" or category == "union":
             self.genStruct(typeinfo, name)
+
         elif category == "funcpointer":
             returnType = re.match( re_funcptr, typeinfo.elem.text ).group( 1 )
             params = "".join( islice( typeinfo.elem.itertext(), 2, None ))[ 2: ]
@@ -306,6 +357,27 @@ class DGenerator(OutputGenerator):
                 spacer = " " * (maxLen - len(member[0]) + 1)
                 self.sf("%s%s%s;", member[0], spacer, member[1])
         self.sf("}")
+
+    def genCmd(self, cmdinfo, name):
+        super().genCmd(cmdinfo, name)
+        typeStr = cmdinfo.elem.findall("./proto/type")[0].text
+        params=[]
+        for pElem in cmdinfo.elem.findall("./param"):
+            p = DGenerator.Param(makeDParamType(pElem), pElem.find("name").text)
+            params.append(p)
+
+        cmd = DGenerator.Command(typeStr, name, params)
+
+        self.cmds.append(cmd)
+
+        if name in self.globalCmdNames:
+            self.globalCmds.append(cmd)
+        elif len(params) and params[0].name in { "VkDevice", "VkQueue", "VkCommandBuffer" }:
+            self.deviceCmds.append(cmd)
+            self.deviceCmdNames.add(name)
+        else:
+            self.instanceCmds.append(cmd)
+            self.instanceCmdNames.add(name)
 
 
 # main driver starts here
