@@ -267,17 +267,27 @@ class DGenerator(OutputGenerator):
         super().genGroup(groupinfo, name)
         repStr = ""
         if name.endswith("FlagBits"):
-            # TODO: replace FlagBits by Flags
-            repStr = ": VkFlags"
+            repStr = " : VkFlags"
+
+        maxLen = 0
+        members = []
+        for elem in groupinfo.elem.findall("enum"):
+            (numVal, strVal) = self.enumToValue(elem, True)
+            membName = elem.get("name")
+            maxLen = max(maxLen, len(membName))
+            members.append([membName, numVal])
 
         self.sf.section = Sect.ENUM
         self.sf("enum %s%s {", name, repStr)
         with self.sf.indent_block():
-            for elem in groupinfo.elem.findall("enum"):
-                (numVal, strVal) = self.enumToValue(elem, True)
-                name = elem.get("name")
-                self.sf("%s = %s,", name, numVal)
+            for m in members:
+                spacer = " " * (maxLen - len(m[0]))
+                self.sf("%s%s = %s,", m[0], spacer, m[1])
         self.sf("}")
+        for m in members:
+            spacer = " " * (maxLen - len(m[0]))
+            self.sf("enum %s%s = %s.%s;", m[0], spacer, name, m[0])
+        self.sf()
 
     def genStruct(self, typeinfo, name):
         super().genStruct(typeinfo, name)
