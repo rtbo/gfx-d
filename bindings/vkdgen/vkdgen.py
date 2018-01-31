@@ -236,27 +236,11 @@ class DGenerator(OutputGenerator):
         self.sf.unindent()
         self.sf("}")
 
+        self.issueCmdPtrAliases()
         self.sf.section = Sect.CMD
-        self.sf("extern(C) {")
-        with self.sf.indent_block():
-            for cmd in self.cmds:
-                maxLen = 0
-                for p in cmd.params:
-                    maxLen = max(maxLen, len(p.typeStr))
-                fstLine = "alias PFN_{} = {} function (".format(cmd.name, cmd.returnType)
-                if len(cmd.params) == 0:
-                    self.sf(fstLine+");")
-                    continue
-                if len(cmd.params) == 1:
-                    self.sf("%s%s %s);", fstLine, cmd.params[0].typeStr, cmd.params[0].name)
-                    continue
-                lineSpace = fstLine
-                for i, p in enumerate(cmd.params):
-                    spacer = " " * (maxLen-len(p.typeStr))
-                    endLine = ");" if i == len(cmd.params)-1 else ","
-                    self.sf("%s%s%s %s%s", lineSpace, p.typeStr, spacer, p.name, endLine)
-                    lineSpace = " "*len(fstLine)
-        self.sf("}")
+        self.issueCmdPtrStruct("VkGlobalCmds", self.globalCmds)
+        self.issueCmdPtrStruct("VkInstanceCmds", self.instanceCmds)
+        self.issueCmdPtrStruct("VkDeviceCmds", self.deviceCmds)
 
         self.sf.writeOut()
 
@@ -378,6 +362,32 @@ class DGenerator(OutputGenerator):
         else:
             self.instanceCmds.append(cmd)
             self.instanceCmdNames.add(name)
+
+    def issueCmdPtrAliases(self):
+        self.sf.section = Sect.CMD
+        self.sf("extern(C) {")
+        with self.sf.indent_block():
+            for cmd in self.cmds:
+                maxLen = 0
+                for p in cmd.params:
+                    maxLen = max(maxLen, len(p.typeStr))
+                fstLine = "alias PFN_{} = {} function (".format(cmd.name, cmd.returnType)
+                if len(cmd.params) == 0:
+                    self.sf(fstLine+");")
+                    continue
+                if len(cmd.params) == 1:
+                    self.sf("%s%s %s);", fstLine, cmd.params[0].typeStr, cmd.params[0].name)
+                    continue
+                lineSpace = fstLine
+                for i, p in enumerate(cmd.params):
+                    spacer = " " * (maxLen-len(p.typeStr))
+                    endLine = ");" if i == len(cmd.params)-1 else ","
+                    self.sf("%s%s%s %s%s", lineSpace, p.typeStr, spacer, p.name, endLine)
+                    lineSpace = " "*len(fstLine)
+        self.sf("}")
+
+    def issueCmdPtrStruct(self, name, cmds):
+        pass
 
 
 # main driver starts here
