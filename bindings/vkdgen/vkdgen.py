@@ -237,7 +237,6 @@ class DGenerator(OutputGenerator):
         self.sf("}")
 
         self.issueCmdPtrAliases()
-        self.sf.section = Sect.CMD
         self.issueCmdPtrStruct("VkGlobalCmds", self.globalCmds)
         self.issueCmdPtrStruct("VkInstanceCmds", self.instanceCmds)
         self.issueCmdPtrStruct("VkDeviceCmds", self.deviceCmds)
@@ -356,7 +355,7 @@ class DGenerator(OutputGenerator):
 
         if name in self.globalCmdNames:
             self.globalCmds.append(cmd)
-        elif len(params) and params[0].name in { "VkDevice", "VkQueue", "VkCommandBuffer" }:
+        elif len(params) and params[0].typeStr in { "VkDevice", "VkQueue", "VkCommandBuffer" }:
             self.deviceCmds.append(cmd)
             self.deviceCmdNames.add(name)
         else:
@@ -365,7 +364,7 @@ class DGenerator(OutputGenerator):
 
     def issueCmdPtrAliases(self):
         self.sf.section = Sect.CMD
-        self.sf("extern(C) {")
+        self.sf("extern(C) nothrow @nogc {")
         with self.sf.indent_block():
             for cmd in self.cmds:
                 maxLen = 0
@@ -378,15 +377,30 @@ class DGenerator(OutputGenerator):
                 if len(cmd.params) == 1:
                     self.sf("%s%s %s);", fstLine, cmd.params[0].typeStr, cmd.params[0].name)
                     continue
-                lineSpace = fstLine
-                for i, p in enumerate(cmd.params):
-                    spacer = " " * (maxLen-len(p.typeStr))
-                    endLine = ");" if i == len(cmd.params)-1 else ","
-                    self.sf("%s%s%s %s%s", lineSpace, p.typeStr, spacer, p.name, endLine)
-                    lineSpace = " "*len(fstLine)
+
+                self.sf(fstLine)
+                with self.sf.indent_block():
+                    for p in cmd.params:
+                        spacer = " " * (maxLen-len(p.typeStr))
+                        self.sf("%s%s %s,", p.typeStr, spacer, p.name)
+                self.sf(");")
+
         self.sf("}")
+        self.sf()
 
     def issueCmdPtrStruct(self, name, cmds):
+        maxLen = 0
+        for cmd in cmds:
+            maxLen = max(maxLen, len(cmd.name))
+        self.sf.section = Sect.CMD
+        self.sf("class %s {", name)
+        with self.sf.indent_block():
+            for cmd in cmds:
+                spacer = " " * (maxLen - len(cmd.name))
+                # vkCmdName => cmdName
+                membName = cmd.name[2].lower() + cmd.name[3:]
+                self.sf("PFN_%s%s %s;", cmd.name, spacer, membName)
+        self.sf("}")
         pass
 
 
