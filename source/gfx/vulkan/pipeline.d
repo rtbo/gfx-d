@@ -2,13 +2,13 @@ module gfx.vulkan.pipeline;
 
 package:
 
-import erupted;
+import gfx.bindings.vulkan;
 
 import gfx.core.rc;
 import gfx.graal.pipeline;
 import gfx.vulkan.device;
 
-class VulkanShaderModule : VulkanDevObj!(VkShaderModule, vkDestroyShaderModule), ShaderModule
+class VulkanShaderModule : VulkanDevObj!(VkShaderModule, "destroyShaderModule"), ShaderModule
 {
     mixin(atomicRcCode);
     this(VkShaderModule vk, VulkanDevice dev, string entryPoint)
@@ -24,7 +24,7 @@ class VulkanShaderModule : VulkanDevObj!(VkShaderModule, vkDestroyShaderModule),
     private string _entryPoint;
 }
 
-class VulkanPipelineLayout : VulkanDevObj!(VkPipelineLayout, vkDestroyPipelineLayout), PipelineLayout
+class VulkanPipelineLayout : VulkanDevObj!(VkPipelineLayout, "destroyPipelineLayout"), PipelineLayout
 {
     mixin(atomicRcCode);
     this(VkPipelineLayout vk, VulkanDevice dev)
@@ -33,7 +33,7 @@ class VulkanPipelineLayout : VulkanDevObj!(VkPipelineLayout, vkDestroyPipelineLa
     }
 }
 
-class VulkanPipeline : VulkanDevObj!(VkPipeline, vkDestroyPipeline), Pipeline
+class VulkanPipeline : VulkanDevObj!(VkPipeline, "destroyPipeline"), Pipeline
 {
     mixin(atomicRcCode);
     this(VkPipeline vk, VulkanDevice dev, PipelineLayout pl)

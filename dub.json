@@ -8,42 +8,15 @@
     "license": "MIT",
 
     "subPackages": [
+        "bindings",
         "window",
 
         "examples/swapchain",
         "examples/triangle"
     ],
     "dependencies": {
-        "erupted": {
-            "path": "3rdparty/Erupted"
-        }
+        "gfx:bindings": "*"
     },
-    "configurations": [
-        {
-            "name": "wayland",
-            "subConfigurations": {
-                "erupted": "dub-platform-wayland-derelict-loader"
-            }
-        },
-        {
-            "name": "xcb",
-            "subConfigurations": {
-                "erupted": "dub-platform-xcb-derelict-loader"
-            }
-        },
-        {
-            "name": "win32",
-            "subConfigurations": {
-                "erupted": "dub-platform-win32-derelict-loader"
-            }
-        },
-        {
-            "name": "offscreen",
-            "subConfigurations": {
-                "erupted": "with-derelict-loader"
-            }
-        }
-    ],
 
     "-ddoxFilterArgs": ["--min-protection=Protected", "--ex=erupted"]
 }

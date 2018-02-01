@@ -2,7 +2,7 @@ module gfx.vulkan.renderpass;
 
 package:
 
-import erupted;
+import gfx.bindings.vulkan;
 
 import gfx.core.rc;
 import gfx.graal.device;
@@ -10,7 +10,7 @@ import gfx.graal.image;
 import gfx.graal.renderpass;
 import gfx.vulkan.device;
 
-class VulkanRenderPass : VulkanDevObj!(VkRenderPass, vkDestroyRenderPass), RenderPass
+class VulkanRenderPass : VulkanDevObj!(VkRenderPass, "destroyRenderPass"), RenderPass
 {
     mixin(atomicRcCode);
 
@@ -19,7 +19,7 @@ class VulkanRenderPass : VulkanDevObj!(VkRenderPass, vkDestroyRenderPass), Rende
     }
 }
 
-class VulkanFramebuffer : VulkanDevObj!(VkFramebuffer, vkDestroyFramebuffer), Framebuffer
+class VulkanFramebuffer : VulkanDevObj!(VkFramebuffer, "destroyFramebuffer"), Framebuffer
 {
     mixin(atomicRcCode);
 

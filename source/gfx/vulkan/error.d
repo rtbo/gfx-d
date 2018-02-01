@@ -3,7 +3,7 @@ module gfx.vulkan.error;
 
 package:
 
-import erupted;
+import gfx.bindings.vulkan;
 
 import gfx.graal.error;
 

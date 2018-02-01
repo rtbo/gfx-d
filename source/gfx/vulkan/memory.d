@@ -3,13 +3,13 @@ module gfx.vulkan.memory;
 
 package:
 
-import erupted;
+import gfx.bindings.vulkan;
 
 import gfx.core.rc;
 import gfx.graal.memory;
 import gfx.vulkan.device;
 
-class VulkanDeviceMemory : VulkanDevObj!(VkDeviceMemory, vkFreeMemory), DeviceMemory
+class VulkanDeviceMemory : VulkanDevObj!(VkDeviceMemory, "freeMemory"), DeviceMemory
 {
     mixin(atomicRcCode);
 
@@ -31,14 +31,14 @@ class VulkanDeviceMemory : VulkanDevObj!(VkDeviceMemory, vkFreeMemory), DeviceMe
     void* map(in size_t offset, in size_t size) {
         void *data;
         vulkanEnforce(
-            vkMapMemory(vkDev, vk, offset, size, 0, &data),
+            cmds.mapMemory(vkDev, vk, offset, size, 0, &data),
             "Could not map device memory"
         );
         return data;
     }
 
     void unmap() {
-        vkUnmapMemory(vkDev, vk);
+        cmds.unmapMemory(vkDev, vk);
     }
 
     private uint _typeIndex;

@@ -3,7 +3,7 @@ module gfx.vulkan.cmd;
 
 package:
 
-import erupted;
+import gfx.bindings.vulkan;
 
 import gfx.core.rc;
 import gfx.core.typecons;
@@ -18,7 +18,7 @@ import gfx.vulkan.renderpass;
 
 import std.typecons : Flag;
 
-class VulkanCommandPool : VulkanDevObj!(VkCommandPool, vkDestroyCommandPool), CommandPool
+class VulkanCommandPool : VulkanDevObj!(VkCommandPool, "destroyCommandPool"), CommandPool
 {
     mixin(atomicRcCode);
 
@@ -27,7 +27,7 @@ class VulkanCommandPool : VulkanDevObj!(VkCommandPool, vkDestroyCommandPool), Co
     }
 
     override void reset() {
-        vulkanEnforce(vkResetCommandPool(vkDev, vk, 0), "Could not reset command buffer");
+        vulkanEnforce(cmds.resetCommandPool(vkDev, vk, 0), "Could not reset command buffer");
     }
 
     override CommandBuffer[] allocate(size_t count) {
@@ -39,7 +39,7 @@ class VulkanCommandPool : VulkanDevObj!(VkCommandPool, vkDestroyCommandPool), Co
 
         auto vkBufs = new VkCommandBuffer[count];
         vulkanEnforce(
-            vkAllocateCommandBuffers(vkDev, &cbai, &vkBufs[0]),
+            cmds.allocateCommandBuffers(vkDev, &cbai, &vkBufs[0]),
             "Could not allocate command buffers"
         );
 
@@ -58,7 +58,7 @@ class VulkanCommandPool : VulkanDevObj!(VkCommandPool, vkDestroyCommandPool), Co
         auto vkBufs = bufs.map!(
             b => enforce(cast(VulkanCommandBuffer)b, "Did not pass a Vulkan command buffer").vk
         ).array;
-        vkFreeCommandBuffers(vkDev, vk, cast(uint)bufs.length, &vkBufs[0]);
+        cmds.freeCommandBuffers(vkDev, vk, cast(uint)bufs.length, &vkBufs[0]);
     }
 }
 
@@ -67,6 +67,7 @@ final class VulkanCommandBuffer : CommandBuffer
     this (VkCommandBuffer vk, VulkanCommandPool pool) {
         _vk = vk;
         _pool = pool;
+        _cmds = pool.cmds;
     }
 
     @property VkCommandBuffer vk() {
@@ -77,9 +78,13 @@ final class VulkanCommandBuffer : CommandBuffer
         return _pool;
     }
 
+    @property VkDeviceCmds cmds() {
+        return _cmds;
+    }
+
     override void reset() {
         vulkanEnforce(
-            vkResetCommandBuffer(vk, 0), "Could not reset vulkan command buffer"
+            cmds.resetCommandBuffer(vk, 0), "Could not reset vulkan command buffer"
         );
     }
 
@@ -90,13 +95,13 @@ final class VulkanCommandBuffer : CommandBuffer
             VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT :
             VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         vulkanEnforce(
-            vkBeginCommandBuffer(vk, &cbbi), "Could not begin vulkan command buffer"
+            cmds.beginCommandBuffer(vk, &cbbi), "Could not begin vulkan command buffer"
         );
     }
 
     override void end() {
         vulkanEnforce(
-            vkEndCommandBuffer(vk), "Could not end vulkan command buffer"
+            cmds.endCommandBuffer(vk), "Could not end vulkan command buffer"
         );
     }
 
@@ -134,7 +139,7 @@ final class VulkanCommandBuffer : CommandBuffer
             return vkImgMb;
         }).array;
 
-        vkCmdPipelineBarrier( vk,
+        cmds.cmdPipelineBarrier( vk,
             pipelineStageToVk(stageTrans.from), pipelineStageToVk(stageTrans.to),
             0, 0, null,
             cast(uint)vkBufMbs.length, vkBufMbs.ptr,
@@ -153,7 +158,7 @@ final class VulkanCommandBuffer : CommandBuffer
         auto vkClear = cast(const(VkClearColorValue)*) cast(const(void)*) &clearValues.values;
         auto vkRanges = ranges.map!(r => r.toVk()).array;
 
-        vkCmdClearColorImage(vk, vkImg, vkLayout, vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
+        cmds.cmdClearColorImage(vk, vkImg, vkLayout, vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
     }
 
     override void clearDepthStencilImage(Image image, ImageLayout layout,
@@ -168,7 +173,7 @@ final class VulkanCommandBuffer : CommandBuffer
         auto vkClear = VkClearDepthStencilValue(clearValues.depth, clearValues.stencil);
         auto vkRanges = ranges.map!(r => r.toVk()).array;
 
-        vkCmdClearDepthStencilImage(vk, vkImg, vkLayout, &vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
+        cmds.cmdClearDepthStencilImage(vk, vkImg, vkLayout, &vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
     }
 
     override void beginRenderPass(RenderPass rp, Framebuffer fb,
@@ -215,20 +220,20 @@ final class VulkanCommandBuffer : CommandBuffer
         bi.clearValueCount = cast(uint)vkCvs.length;
         bi.pClearValues = vkCvs.ptr;
 
-        vkCmdBeginRenderPass(vk, &bi, VK_SUBPASS_CONTENTS_INLINE);
+        cmds.cmdBeginRenderPass(vk, &bi, VK_SUBPASS_CONTENTS_INLINE);
     }
 
     override void nextSubpass() {
-        vkCmdNextSubpass(vk, VK_SUBPASS_CONTENTS_INLINE);
+        cmds.cmdNextSubpass(vk, VK_SUBPASS_CONTENTS_INLINE);
     }
 
     override void endRenderPass() {
-        vkCmdEndRenderPass(vk);
+        cmds.cmdEndRenderPass(vk);
     }
 
     override void bindPipeline(Pipeline pipeline)
     {
-        vkCmdBindPipeline(vk, VK_PIPELINE_BIND_POINT_GRAPHICS, enforce(
+        cmds.cmdBindPipeline(vk, VK_PIPELINE_BIND_POINT_GRAPHICS, enforce(
             cast(VulkanPipeline)pipeline, "did not pass a valid Vulkan pipeline"
         ).vk);
     }
@@ -242,15 +247,16 @@ final class VulkanCommandBuffer : CommandBuffer
         auto vkOffsets = bindings
                 .map!(b => cast(VkDeviceSize)b.offset)
                 .array;
-        vkCmdBindVertexBuffers(vk, firstBinding, cast(uint)bindings.length, vkBufs.ptr, vkOffsets.ptr);
+        cmds.cmdBindVertexBuffers(vk, firstBinding, cast(uint)bindings.length, vkBufs.ptr, vkOffsets.ptr);
     }
 
 
     override void draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance)
     {
-        vkCmdDraw(vk, vertexCount, instanceCount, firstVertex, firstInstance);
+        cmds.cmdDraw(vk, vertexCount, instanceCount, firstVertex, firstInstance);
     }
 
     private VkCommandBuffer _vk;
     private VulkanCommandPool _pool;
+    private VkDeviceCmds _cmds;
 }

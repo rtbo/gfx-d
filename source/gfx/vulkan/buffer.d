@@ -3,7 +3,7 @@ module gfx.vulkan.buffer;
 
 package:
 
-import erupted;
+import gfx.bindings.vulkan;
 
 import gfx.core.rc;
 import gfx.graal.buffer;
@@ -11,7 +11,7 @@ import gfx.vulkan.device;
 import gfx.vulkan.error;
 import gfx.vulkan.memory;
 
-class VulkanBuffer : VulkanDevObj!(VkBuffer, vkDestroyBuffer), Buffer
+class VulkanBuffer : VulkanDevObj!(VkBuffer, "destroyBuffer"), Buffer
 {
     mixin(atomicRcCode);
 
@@ -23,7 +23,7 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, vkDestroyBuffer), Buffer
     }
 
     override void dispose() {
-        vkDestroyBuffer(vkDev, vk, null);
+        cmds.destroyBuffer(vkDev, vk, null);
         if (_vdm) _vdm.release();
         dev.release();
     }
@@ -38,7 +38,7 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, vkDestroyBuffer), Buffer
 
     override @property MemoryRequirements memoryRequirements() {
         VkMemoryRequirements vkMr;
-        vkGetBufferMemoryRequirements(vkDev, vk, &vkMr);
+        cmds.getBufferMemoryRequirements(vkDev, vk, &vkMr);
         return vkMr.toGfx();
     }
 
@@ -47,7 +47,7 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, vkDestroyBuffer), Buffer
         assert(!_vdm, "Bind the same buffer twice");
         _vdm = enforce(cast(VulkanDeviceMemory)mem, "Did not pass a Vulkan memory");
         vulkanEnforce(
-            vkBindBufferMemory(vkDev, vk, _vdm.vk, offset),
+            cmds.bindBufferMemory(vkDev, vk, _vdm.vk, offset),
             "Could not bind image memory"
         );
         _vdm.retain();
@@ -63,7 +63,7 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, vkDestroyBuffer), Buffer
 
         VkBufferView vkBv;
         vulkanEnforce(
-            vkCreateBufferView(vkDev, &bvci, null, &vkBv),
+            cmds.createBufferView(vkDev, &bvci, null, &vkBv),
             "Could not create Vulkan buffer view"
         );
 
@@ -76,7 +76,7 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, vkDestroyBuffer), Buffer
 }
 
 
-class VulkanBufferView : VulkanDevObj!(VkBufferView, vkDestroyBufferView), BufferView
+class VulkanBufferView : VulkanDevObj!(VkBufferView, "destroyBufferView"), BufferView
 {
     mixin(atomicRcCode);
 
