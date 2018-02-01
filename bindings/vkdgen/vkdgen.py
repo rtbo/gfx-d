@@ -363,7 +363,7 @@ class DGenerator(OutputGenerator):
             (numVal, strVal) = self.enumToValue(elem, True)
             membName = elem.get("name")
             maxLen = max(maxLen, len(membName))
-            members.append([membName, numVal])
+            members.append([membName, strVal])
 
         self.sf.section = Sect.ENUM
         self.sf("enum %s%s {", name, repStr)
