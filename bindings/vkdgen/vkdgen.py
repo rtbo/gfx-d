@@ -318,6 +318,12 @@ class DGenerator(OutputGenerator):
         elif category == "struct" or category == "union":
             self.genStruct(typeinfo, name)
 
+        elif category == 'define' and name == 'VK_HEADER_VERSION':
+            for headerVersion in islice( typeinfo.elem.itertext(), 2, 3 ):	# get the version string from the one element list
+                self.section = Sect.GLOBAL_DEF
+                self.sf("enum VK_HEADER_VERSION = %s;", headerVersion)
+                break
+
         elif category == "funcpointer":
             returnType = re.match( re_funcptr, typeinfo.elem.text ).group( 1 )
             params = "".join( islice( typeinfo.elem.itertext(), 2, None ))[ 2: ]
@@ -618,8 +624,9 @@ if __name__ == "__main__":
         apiname = "vulkan",
         addExtensions = makeREstring([
             "VK_KHR_display",
-            "VK_KHR_display_swapchain",
+            "VK_KHR_swapchain",
             "VK_KHR_wayland_surface",
+            "VK_KHR_surface",
             "VK_KHR_debug_report",
         ]),
     ))
