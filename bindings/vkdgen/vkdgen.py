@@ -237,9 +237,9 @@ class DGenerator(OutputGenerator):
         self.sf("}")
 
         self.issueCmdPtrAliases()
-        self.issueCmdPtrStruct("VkGlobalCmds", self.globalCmds)
-        self.issueCmdPtrStruct("VkInstanceCmds", self.instanceCmds)
-        self.issueCmdPtrStruct("VkDeviceCmds", self.deviceCmds)
+        self.issueCmdPtrStruct("VkGlobalCmds", self.globalCmds, DGenerator.issueGlobalLoader)
+        self.issueCmdPtrStruct("VkInstanceCmds", self.instanceCmds, DGenerator.issueInstanceLoader)
+        self.issueCmdPtrStruct("VkDeviceCmds", self.deviceCmds, DGenerator.issueDeviceLoader)
 
         self.sf.writeOut()
 
@@ -355,7 +355,7 @@ class DGenerator(OutputGenerator):
 
         if name in self.globalCmdNames:
             self.globalCmds.append(cmd)
-        elif len(params) and params[0].typeStr in { "VkDevice", "VkQueue", "VkCommandBuffer" }:
+        elif name != "vkGetDeviceProcAddr" and len(params) and params[0].typeStr in { "VkDevice", "VkQueue", "VkCommandBuffer" }:
             self.deviceCmds.append(cmd)
             self.deviceCmdNames.add(name)
         else:
@@ -388,20 +388,66 @@ class DGenerator(OutputGenerator):
         self.sf("}")
         self.sf()
 
-    def issueCmdPtrStruct(self, name, cmds):
+    def issueCmdPtrStruct(self, name, cmds, issueLoader):
         maxLen = 0
         for cmd in cmds:
             maxLen = max(maxLen, len(cmd.name))
         self.sf.section = Sect.CMD
-        self.sf("class %s {", name)
+        self.sf("final class %s {", name)
         with self.sf.indent_block():
             for cmd in cmds:
                 spacer = " " * (maxLen - len(cmd.name))
                 # vkCmdName => cmdName
                 membName = cmd.name[2].lower() + cmd.name[3:]
                 self.sf("PFN_%s%s %s;", cmd.name, spacer, membName)
+
+            self.sf()
+            issueLoader(self, maxLen)
+
         self.sf("}")
-        pass
+        self.sf()
+
+    def issueGlobalLoader(self, maxLen):
+        self.sf("this (PFN_vkGetInstanceProcAddr loader) {")
+        with self.sf.indent_block():
+            self.sf("getInstanceProcAddr = loader;")
+            for cmd in self.globalCmds:
+                if cmd.name == "vkGetInstanceProcAddr":
+                    continue
+                spacer = " " * (maxLen - len(cmd.name))
+                membName = cmd.name[2].lower() + cmd.name[3:]
+                self.sf(
+                    "%s%s = cast(PFN_%s)%sloader(null, \"%s\");",
+                    membName, spacer, cmd.name, spacer, cmd.name
+                )
+        self.sf("}")
+
+    def issueInstanceLoader(self, maxLen):
+        self.sf("this (VkInstance instance, VkGlobalCmds globalCmds) {")
+        with self.sf.indent_block():
+            self.sf("auto loader = globalCmds.getInstanceProcAddr;")
+            for cmd in self.instanceCmds:
+                spacer = " " * (maxLen - len(cmd.name))
+                membName = cmd.name[2].lower() + cmd.name[3:]
+                self.sf(
+                    "%s%s = cast(PFN_%s)%sloader(instance, \"%s\");",
+                    membName, spacer, cmd.name, spacer, cmd.name
+                )
+        self.sf("}")
+
+    def issueDeviceLoader(self, maxLen):
+        self.sf("this (VkDevice device, VkInstanceCmds instanceCmds) {")
+        with self.sf.indent_block():
+            self.sf("auto loader = instanceCmds.getDeviceProcAddr;")
+            for cmd in self.deviceCmds:
+                spacer = " " * (maxLen - len(cmd.name))
+                membName = cmd.name[2].lower() + cmd.name[3:]
+                self.sf(
+                    "%s%s = cast(PFN_%s)%sloader(device, \"%s\");",
+                    membName, spacer, cmd.name, spacer, cmd.name
+                )
+        self.sf("}")
+
 
 
 # main driver starts here
