@@ -3,7 +3,7 @@ module gfx.vulkan.wsi;
 
 import core.time : Duration;
 
-import erupted;
+import gfx.bindings.vulkan;
 
 import gfx.core.rc;
 import gfx.graal;
@@ -33,11 +33,12 @@ version(linux) {
 
 enum swapChainExtension = "VK_KHR_swapchain";
 
-version(GfxVulkanWayland) {
+version(linux) {
     import wayland.client;
 
+    // TODO: fall back from wayland to XCB
     enum surfaceInstanceExtensions = [
-        surfaceExtension, waylandSurfaceExtension
+        surfaceExtension, waylandSurfaceExtension, xcbSurfaceExtension
     ];
 
     Surface createVulkanWaylandSurface(Instance graalInst, WlDisplay wlDpy, WlSurface wlSurf)
@@ -54,18 +55,14 @@ version(GfxVulkanWayland) {
 
         VkSurfaceKHR vkSurf;
         vulkanEnforce(
-            vkCreateWaylandSurfaceKHR(inst.vk, &sci, null, &vkSurf),
+            inst.cmds.createWaylandSurfaceKHR(inst.vk, &sci, null, &vkSurf),
             "Could not create Vulkan Wayland Surface"
         );
 
         return new VulkanSurface(vkSurf, inst);
     }
 }
-version(GfxVulkanXcb) {
-    enum surfaceInstanceExtensions = [
-        surfaceExtension, xcbSurfaceExtension
-    ];
-}
+
 version(GfxVulkanWin32) {
     enum surfaceInstanceExtensions = [
         surfaceExtension, win32SurfaceExtension
@@ -78,7 +75,7 @@ version(GfxOffscreen) {
 
 package:
 
-class VulkanSurface : VulkanInstObj!(VkSurfaceKHR, vkDestroySurfaceKHR), Surface
+class VulkanSurface : VulkanInstObj!(VkSurfaceKHR), Surface
 {
     mixin(atomicRcCode);
 
@@ -86,9 +83,14 @@ class VulkanSurface : VulkanInstObj!(VkSurfaceKHR, vkDestroySurfaceKHR), Surface
     {
         super(vk, inst);
     }
+
+    override void dispose() {
+        inst.cmds.destroySurfaceKHR(vkInst, vk, null);
+        super.dispose();
+    }
 }
 
-class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, vkDestroySwapchainKHR), Swapchain
+class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "destroySwapchainKHR"), Swapchain
 {
     mixin(atomicRcCode);
 
@@ -110,12 +112,12 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, vkDestroySwapchainKHR), Sw
         if (!_images.length) {
             uint count;
             vulkanEnforce(
-                vkGetSwapchainImagesKHR(vkDev, vk, &count, null),
+                cmds.getSwapchainImagesKHR(vkDev, vk, &count, null),
                 "Could not get vulkan swap chain images"
             );
             auto vkImgs = new VkImage[count];
             vulkanEnforce(
-                vkGetSwapchainImagesKHR(vkDev, vk, &count, &vkImgs[0]),
+                cmds.getSwapchainImagesKHR(vkDev, vk, &count, &vkImgs[0]),
                 "Could not get vulkan swap chain images"
             );
 
@@ -147,7 +149,7 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, vkDestroySwapchainKHR), Sw
         }
 
         uint img;
-        const res = vkAcquireNextImageKHR(vkDev, vk, vkTimeout, sem.vk, null, &img);
+        const res = cmds.acquireNextImageKHR(vkDev, vk, vkTimeout, sem.vk, null, &img);
 
         if (res == VK_SUBOPTIMAL_KHR) {
             suboptimal = true;

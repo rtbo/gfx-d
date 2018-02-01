@@ -4,13 +4,13 @@ package:
 
 import core.time : dur, Duration;
 
-import erupted;
+import gfx.bindings.vulkan;
 
 import gfx.core.rc;
 import gfx.graal.sync;
 import gfx.vulkan.device;
 
-class VulkanSemaphore : VulkanDevObj!(VkSemaphore, vkDestroySemaphore), Semaphore
+class VulkanSemaphore : VulkanDevObj!(VkSemaphore, "destroySemaphore"), Semaphore
 {
     mixin(atomicRcCode);
 
@@ -19,7 +19,7 @@ class VulkanSemaphore : VulkanDevObj!(VkSemaphore, vkDestroySemaphore), Semaphor
     }
 }
 
-class VulkanFence : VulkanDevObj!(VkFence, vkDestroyFence), Fence
+class VulkanFence : VulkanDevObj!(VkFence, "destroyFence"), Fence
 {
     mixin(atomicRcCode);
 
@@ -28,14 +28,14 @@ class VulkanFence : VulkanDevObj!(VkFence, vkDestroyFence), Fence
     }
 
     override @property bool signaled() {
-        return vkGetFenceStatus(vkDev, vk) == VK_SUCCESS;
+        return cmds.getFenceStatus(vkDev, vk) == VK_SUCCESS;
     }
 
     override void reset()
     {
         auto vkF = vk;
         vulkanEnforce(
-            vkResetFences(vkDev, 1, &vkF),
+            cmds.resetFences(vkDev, 1, &vkF),
             "Could not reset Vulkan fence"
         );
     }
@@ -47,7 +47,7 @@ class VulkanFence : VulkanDevObj!(VkFence, vkDestroyFence), Fence
         auto vkF = vk;
 
         vulkanEnforce(
-            vkWaitForFences(vkDev, 1, &vkF, VK_TRUE, vkTimeout),
+            cmds.waitForFences(vkDev, 1, &vkF, VK_TRUE, vkTimeout),
             "Could not wait for Vulkan fence"
         );
     }

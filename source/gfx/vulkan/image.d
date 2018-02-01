@@ -3,7 +3,7 @@ module gfx.vulkan.image;
 
 package:
 
-import erupted;
+import gfx.bindings.vulkan;
 
 import gfx.core.rc;
 import gfx.graal.image;
@@ -23,6 +23,7 @@ class VulkanImage : Image
         _type = type;
         _dims = dims;
         _format = format;
+        _cmds = dev.cmds;
     }
 
     final @property VkImage vk()
@@ -38,6 +39,10 @@ class VulkanImage : Image
     final @property VkDevice vkDev()
     {
         return _dev.vk;
+    }
+
+    final @property VkDeviceCmds cmds() {
+        return _cmds;
     }
 
     final override @property ImageType type() {
@@ -66,7 +71,7 @@ class VulkanImage : Image
 
         VkImageView vkIv;
         vulkanEnforce(
-            vkCreateImageView(vkDev, &ivci, null, &vkIv),
+            cmds.createImageView(vkDev, &ivci, null, &vkIv),
             "Could not create Vulkan View"
         );
 
@@ -75,6 +80,7 @@ class VulkanImage : Image
 
     private VkImage _vk;
     private VulkanDevice _dev;
+    private VkDeviceCmds _cmds;
     private ImageType _type;
     private ImageDims _dims;
     private Format _format;
@@ -92,14 +98,14 @@ class VulkanImageRc : VulkanImage, ImageRc
     }
 
     override void dispose() {
-        vkDestroyImage(vkDev, vk, null);
+        cmds.destroyImage(vkDev, vk, null);
         if (_vdm) _vdm.release();
         dev.release();
     }
 
     override @property MemoryRequirements memoryRequirements() {
         VkMemoryRequirements vkMr;
-        vkGetImageMemoryRequirements(vkDev, vk, &vkMr);
+        cmds.getImageMemoryRequirements(vkDev, vk, &vkMr);
         return vkMr.toGfx();
     }
 
@@ -108,7 +114,7 @@ class VulkanImageRc : VulkanImage, ImageRc
         assert(!_vdm, "Bind the same buffer twice");
         _vdm = enforce(cast(VulkanDeviceMemory)mem, "Did not pass a Vulkan memory");
         vulkanEnforce(
-            vkBindImageMemory(vkDev, vk, _vdm.vk, offset),
+            cmds.bindImageMemory(vkDev, vk, _vdm.vk, offset),
             "Could not bind image memory"
         );
         _vdm.retain();
@@ -117,7 +123,7 @@ class VulkanImageRc : VulkanImage, ImageRc
     VulkanDeviceMemory _vdm;
 }
 
-class VulkanImageView : VulkanDevObj!(VkImageView, vkDestroyImageView), ImageView
+class VulkanImageView : VulkanDevObj!(VkImageView, "destroyImageView"), ImageView
 {
     mixin(atomicRcCode);
 
@@ -152,7 +158,7 @@ class VulkanImageView : VulkanDevObj!(VkImageView, vkDestroyImageView), ImageVie
     private Swizzle _swizzle;
 }
 
-class VulkanSampler : VulkanDevObj!(VkSampler, vkDestroySampler), Sampler
+class VulkanSampler : VulkanDevObj!(VkSampler, "destroySampler"), Sampler
 {
     mixin(atomicRcCode);
     this(VkSampler sampler, VulkanDevice dev) {

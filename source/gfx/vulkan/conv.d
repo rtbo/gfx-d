@@ -3,7 +3,7 @@ module gfx.vulkan.conv;
 
 package:
 
-import erupted;
+import gfx.bindings.vulkan;
 
 import gfx.core.types;
 import gfx.graal.buffer;

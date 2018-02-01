@@ -1,7 +1,7 @@
 /// wayland window impl
 module gfx.window.wayland;
 
-version(GfxVulkanWayland):
+version(linux):
 
 import gfx.graal : Instance;
 import gfx.graal.presentation;

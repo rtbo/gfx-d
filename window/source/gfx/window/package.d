@@ -26,7 +26,7 @@ interface Window
 
 Window createWindow(Instance instance)
 {
-    version(GfxVulkanWayland) {
+    version(linux) {
         import gfx.window.wayland : refDisplay, unrefDisplay;
         auto dpy = refDisplay();
         scope(exit) unrefDisplay();

@@ -3,7 +3,7 @@ module gfx.vulkan.queue;
 
 package:
 
-import erupted;
+import gfx.bindings.vulkan;
 
 import gfx.core.rc;
 import gfx.graal.queue;
@@ -12,18 +12,23 @@ import gfx.vulkan.error;
 import gfx.vulkan.sync;
 import gfx.vulkan.wsi;
 
-class VulkanQueue : Queue
+final class VulkanQueue : Queue
 {
-    this (VkQueue vk) {
+    this (VkQueue vk, VkDeviceCmds cmds) {
         _vk = vk;
+        _cmds = cmds;
     }
 
-    final @property VkQueue vk() {
+    @property VkQueue vk() {
         return _vk;
     }
 
+    @property VkDeviceCmds cmds() {
+        return _cmds;
+    }
+
     void waitIdle() {
-        vkQueueWaitIdle(_vk);
+        cmds.queueWaitIdle(_vk);
     }
 
     void submit(Submission[] submissions, Fence fence)
@@ -77,7 +82,7 @@ class VulkanQueue : Queue
         }
 
         vulkanEnforce(
-            vkQueueSubmit(vk, cast(uint)vkSubmitInfos.length, vkSubmitInfos.ptr, vkFence),
+            cmds.queueSubmit(vk, cast(uint)vkSubmitInfos.length, vkSubmitInfos.ptr, vkFence),
             "Could not submit vulkan queue"
         );
     }
@@ -111,9 +116,10 @@ class VulkanQueue : Queue
         qpi.pImageIndices = &vkImgs[0];
 
         vulkanEnforce(
-            vkQueuePresentKHR(vk, &qpi), "Could not present vulkan swapchain"
+            cmds.queuePresentKHR(vk, &qpi), "Could not present vulkan swapchain"
         );
     }
 
     private VkQueue _vk;
+    private VkDeviceCmds _cmds;
 }
