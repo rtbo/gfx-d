@@ -460,13 +460,52 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         return new VulkanShaderModule(vkSm, this, entryPoint);
     }
 
-    override PipelineLayout createPipelineLayout() {
-        VkPipelineLayoutCreateInfo plci;
-        plci.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    override DescriptorSetLayout createDescriptorSetLayout(in PipelineLayoutBinding[] bindings)
+    {
+        import std.algorithm : map;
+        import std.array : array;
+
+        auto vkBindings = bindings.map!(b => VkDescriptorSetLayoutBinding(
+            b.binding, b.descriptorType.toVk(), b.descriptorCount, shaderStageToVk(b.stages), null
+        )).array;
+
+        VkDescriptorSetLayoutCreateInfo ci;
+        ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        ci.bindingCount = cast(uint)vkBindings.length;
+        ci.pBindings = vkBindings.ptr;
+
+        VkDescriptorSetLayout vkL;
+        vulkanEnforce(
+            cmds.createDescriptorSetLayout(vk, &ci, null, &vkL),
+            "Could not create Vulkan descriptor set layout"
+        );
+
+        return new VulkanDescriptorSetLayout(vkL, this);
+    }
+
+    override PipelineLayout createPipelineLayout(DescriptorSetLayout[] layouts,
+                                                 PushConstantRange[] ranges)
+    {
+        import std.algorithm : map;
+        import std.array : array;
+
+        auto vkLayouts = layouts.map!(
+            l => enforce(cast(VulkanDescriptorSetLayout)l).vk
+        ).array;
+        auto vkRanges = ranges.map!(
+            r => VkPushConstantRange( shaderStageToVk(r.stages), r.offset, r.size )
+        ).array;
+
+        VkPipelineLayoutCreateInfo ci;
+        ci.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        ci.setLayoutCount = cast(uint)vkLayouts.length;
+        ci.pSetLayouts = vkLayouts.ptr;
+        ci.pushConstantRangeCount = cast(uint)vkRanges.length;
+        ci.pPushConstantRanges = vkRanges.ptr;
 
         VkPipelineLayout vkPl;
         vulkanEnforce(
-            cmds.createPipelineLayout(vk, &plci, null, &vkPl),
+            cmds.createPipelineLayout(vk, &ci, null, &vkPl),
             "Could not create Vulkan pipeline layout"
         );
         return new VulkanPipelineLayout(vkPl, this);

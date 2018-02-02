@@ -163,7 +163,7 @@ class TriangleExample : Example
             ],
             [ 0f, 0f, 0f, 0f ]
         );
-        info.layout = device.createPipelineLayout();
+        info.layout = device.createPipelineLayout([], []);
         info.renderPass = renderPass;
         info.subpassIndex = 0;
 

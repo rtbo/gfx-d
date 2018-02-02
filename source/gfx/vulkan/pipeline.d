@@ -49,3 +49,12 @@ class VulkanPipeline : VulkanDevObj!(VkPipeline, "destroyPipeline"), Pipeline
 
     private Rc!PipelineLayout pl;
 }
+
+class VulkanDescriptorSetLayout : VulkanDevObj!(VkDescriptorSetLayout, "destroyDescriptorSetLayout"), DescriptorSetLayout
+{
+    mixin(atomicRcCode);
+    this(VkDescriptorSetLayout vk, VulkanDevice dev)
+    {
+        super(vk, dev);
+    }
+}

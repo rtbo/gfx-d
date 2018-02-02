@@ -221,6 +221,10 @@ VkCompareOp toVk(in CompareOp op) {
     return cast(VkCompareOp)op;
 }
 
+VkDescriptorType toVk(in DescriptorType dt) {
+    return cast(VkDescriptorType)dt;
+}
+
 
 // flags conversion
 

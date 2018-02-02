@@ -19,6 +19,9 @@ interface PipelineLayout : AtomicRefCounted
 interface Pipeline : AtomicRefCounted
 {}
 
+interface DescriptorSetLayout : AtomicRefCounted
+{}
+
 
 struct PipelineInfo {
     GraphicsShaderSet shaders;
@@ -225,4 +228,31 @@ enum DynamicState {
     stencilCmpMask,
     stencilWriteMask,
     stencilRef,
+}
+
+enum DescriptorType {
+    sampler,
+    combinedImageSampler,
+    sampledImage,
+    storageImage,
+    uniformTexelBuffer,
+    storageTexelBuffer,
+    uniformBuffer,
+    storageBuffer,
+    uniformBufferDynamic,
+    storageBufferDynamic,
+    inputAttachment,
+}
+
+struct PipelineLayoutBinding {
+    uint binding;
+    DescriptorType descriptorType;
+    uint descriptorCount;
+    ShaderStage stages;
+}
+
+struct PushConstantRange {
+    ShaderStage stages;
+    uint offset;
+    uint size;
 }
