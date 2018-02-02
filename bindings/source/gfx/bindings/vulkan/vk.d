@@ -6,18 +6,6 @@ version(linux) {
     alias wl_surface = wl_proxy;
 }
 
-// Global definitions
-
-enum VK_DEFINE_HANDLE(string name) =
-    "struct "~name~"_handle; alias "~name~" = "~name~"_handle*;";
-
-version(X86_64) {
-    enum VK_DEFINE_NON_DISPATCHABLE_HANDLE(string name) = VK_DEFINE_HANDLE!name;
-    enum VK_NULL_ND_HANDLE = null;
-} else {
-    enum VK_DEFINE_NON_DISPATCHABLE_HANDLE(string name) = "alias "~name~" = ulong;";
-    enum VK_NULL_ND_HANDLE = 0;
-}
 
 // Basic types definition
 
@@ -128,39 +116,73 @@ enum VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME = "VK_KHR_wayland_surface";
 
 // Handles
 
-mixin(VK_DEFINE_HANDLE!"VkInstance");
-mixin(VK_DEFINE_HANDLE!"VkPhysicalDevice");
-mixin(VK_DEFINE_HANDLE!"VkDevice");
-mixin(VK_DEFINE_HANDLE!"VkQueue");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkSemaphore");
-mixin(VK_DEFINE_HANDLE!"VkCommandBuffer");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkFence");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkDeviceMemory");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkBuffer");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkImage");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkEvent");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkQueryPool");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkBufferView");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkImageView");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkShaderModule");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkPipelineCache");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkPipelineLayout");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkRenderPass");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkPipeline");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkDescriptorSetLayout");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkSampler");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkDescriptorPool");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkDescriptorSet");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkFramebuffer");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkCommandPool");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkSurfaceKHR");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkSwapchainKHR");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkDisplayKHR");
-mixin(VK_DEFINE_NON_DISPATCHABLE_HANDLE!"VkDisplayModeKHR");
+struct VkInstance_T;
+alias VkInstance = VkInstance_T*;
+
+struct VkPhysicalDevice_T;
+alias VkPhysicalDevice = VkPhysicalDevice_T*;
+
+struct VkDevice_T;
+alias VkDevice = VkDevice_T*;
+
+struct VkQueue_T;
+alias VkQueue = VkQueue_T*;
+
+alias VkSemaphore = ulong;
+
+struct VkCommandBuffer_T;
+alias VkCommandBuffer = VkCommandBuffer_T*;
+
+alias VkFence = ulong;
+
+alias VkDeviceMemory = ulong;
+
+alias VkBuffer = ulong;
+
+alias VkImage = ulong;
+
+alias VkEvent = ulong;
+
+alias VkQueryPool = ulong;
+
+alias VkBufferView = ulong;
+
+alias VkImageView = ulong;
+
+alias VkShaderModule = ulong;
+
+alias VkPipelineCache = ulong;
+
+alias VkPipelineLayout = ulong;
+
+alias VkRenderPass = ulong;
+
+alias VkPipeline = ulong;
+
+alias VkDescriptorSetLayout = ulong;
+
+alias VkSampler = ulong;
+
+alias VkDescriptorPool = ulong;
+
+alias VkDescriptorSet = ulong;
+
+alias VkFramebuffer = ulong;
+
+alias VkCommandPool = ulong;
+
+alias VkSurfaceKHR = ulong;
+
+alias VkSwapchainKHR = ulong;
+
+alias VkDisplayKHR = ulong;
+
+alias VkDisplayModeKHR = ulong;
+
 
 // Fonction pointers
 
-extern(C) {
+extern(C) nothrow @nogc {
     alias PFN_vkAllocationFunction = void* function(void* pUserData, size_t size, size_t alignment, VkSystemAllocationScope allocationScope);
     alias PFN_vkReallocationFunction = void* function(void* pUserData, void* pOriginal, size_t size, size_t alignment, VkSystemAllocationScope allocationScope);
     alias PFN_vkFreeFunction = void function(void* pUserData, void* pMemory);

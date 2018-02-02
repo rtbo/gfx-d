@@ -229,22 +229,6 @@ class DGenerator(OutputGenerator):
             fg.endGuard(self.sf)
             self.sf()
 
-        self.sf("// Global definitions")
-        self.sf()
-        self.sf('enum VK_DEFINE_HANDLE(string name) = ')
-        with self.sf.indent_block():
-            self.sf('"struct "~name~"_handle; alias "~name~" = "~name~"_handle*;";')
-        self.sf()
-        self.sf("version(X86_64) {")
-        with self.sf.indent_block():
-            self.sf("enum VK_DEFINE_NON_DISPATCHABLE_HANDLE(string name) = VK_DEFINE_HANDLE!name;")
-            self.sf("enum VK_NULL_ND_HANDLE = null;")
-        self.sf("} else {")
-        with self.sf.indent_block():
-            self.sf('enum VK_DEFINE_NON_DISPATCHABLE_HANDLE(string name) = "alias "~name~" = ulong;";')
-            self.sf("enum VK_NULL_ND_HANDLE = 0;")
-        self.sf("}")
-
         def initSect(sect, comment):
             self.sf.section = sect
             self.sf()
@@ -256,7 +240,7 @@ class DGenerator(OutputGenerator):
             self.sf("alias %s = %s;", k, self.basicTypes[k])
 
         initSect(Sect.FUNCPTR, "Fonction pointers")
-        self.sf("extern(C) {")
+        self.sf("extern(C) nothrow @nogc {")
         self.sf.indent()
 
         initSect(Sect.CONST, "Constants")
@@ -311,9 +295,15 @@ class DGenerator(OutputGenerator):
             self.sf("alias %s = %s;", name, typeinfo.elem.find("type").text)
 
         elif category == "handle":
-            typeStr = typeinfo.elem.find("type").text
+            handleType = typeinfo.elem.find("type").text
             self.sf.section = Sect.HANDLE
-            self.sf('mixin(%s!"%s");', typeStr, name)
+            if handleType == "VK_DEFINE_HANDLE":
+                self.sf("struct %s_T;", name)
+                self.sf("alias %s = %s_T*;", name, name)
+            else:
+                assert handleType == "VK_DEFINE_NON_DISPATCHABLE_HANDLE"
+                self.sf("alias %s = ulong;", name)
+            self.sf()
 
         elif category == "struct" or category == "union":
             self.genStruct(typeinfo, name)

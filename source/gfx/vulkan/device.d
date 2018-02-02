@@ -327,7 +327,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         sci.clipped = VK_TRUE;
         sci.presentMode = pm.toVk;
         sci.compositeAlpha = compositeAlphaToVk(alpha);
-        sci.oldSwapchain = oldSc ? oldSc.vk : null;
+        sci.oldSwapchain = oldSc ? oldSc.vk : VK_NULL_ND_HANDLE;
 
         VkSwapchainKHR vkSc;
         vulkanEnforce(
@@ -602,7 +602,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
             auto vkRp = rp ? enforce(
                 cast(VulkanRenderPass)rp,
                 "did not supply a Vulkan render pass"
-            ).vk : null;
+            ).vk : VK_NULL_ND_HANDLE;
 
             // following bindings are not implemented yet
             auto vkTess = new VkPipelineTessellationStateCreateInfo;
@@ -636,7 +636,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         auto vkPls = new VkPipeline[infos.length];
         vulkanEnforce(
-            cmds.createGraphicsPipelines(vk, null, cast(uint)pcis.length, pcis.ptr, null, vkPls.ptr),
+            cmds.createGraphicsPipelines(vk, VK_NULL_ND_HANDLE, cast(uint)pcis.length, pcis.ptr, null, vkPls.ptr),
             "Could not create Vulkan graphics pipeline"
         );
 

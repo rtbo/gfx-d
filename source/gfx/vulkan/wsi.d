@@ -149,7 +149,7 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "destroySwapchainKHR"), Sw
         }
 
         uint img;
-        const res = cmds.acquireNextImageKHR(vkDev, vk, vkTimeout, sem.vk, null, &img);
+        const res = cmds.acquireNextImageKHR(vkDev, vk, vkTimeout, sem.vk, VK_NULL_ND_HANDLE, &img);
 
         if (res == VK_SUBOPTIMAL_KHR) {
             suboptimal = true;
