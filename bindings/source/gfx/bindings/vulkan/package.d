@@ -18,8 +18,14 @@ import std.exception;
     uint VK_VERSION_PATCH( uint ver ) { return ver & 0xfff; }
 }
 
+
 enum VK_NULL_HANDLE = null;
-enum VK_NULL_ND_HANDLE = 0;
+version(X86_64) {
+    enum VK_NULL_ND_HANDLE = null;
+}
+else {
+    enum VK_NULL_ND_HANDLE = 0;
+}
 
 VkGlobalCmds loadVulkanGlobalCmds() {
     version( Windows )

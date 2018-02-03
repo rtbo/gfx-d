@@ -6,193 +6,229 @@ version(linux) {
     alias wl_surface = wl_proxy;
 }
 
+enum VK_HEADER_VERSION =  67;
 
 // Basic types definition
 
-alias uint8_t = ubyte;
+alias uint8_t  = ubyte;
 alias uint16_t = ushort;
 alias uint32_t = uint;
 alias uint64_t = ulong;
-alias int8_t = byte;
-alias int16_t = short;
-alias int32_t = int;
-alias int64_t = long;
-alias VkFlags = uint32_t;
-alias VkInstanceCreateFlags = VkFlags;
-alias VkBool32 = uint32_t;
-alias VkFormatFeatureFlags = VkFlags;
-alias VkImageUsageFlags = VkFlags;
-alias VkImageCreateFlags = VkFlags;
-alias VkSampleCountFlags = VkFlags;
-alias VkDeviceSize = uint64_t;
-alias VkQueueFlags = VkFlags;
-alias VkMemoryPropertyFlags = VkFlags;
-alias VkMemoryHeapFlags = VkFlags;
-alias VkDeviceCreateFlags = VkFlags;
-alias VkDeviceQueueCreateFlags = VkFlags;
-alias VkPipelineStageFlags = VkFlags;
-alias VkMemoryMapFlags = VkFlags;
-alias VkImageAspectFlags = VkFlags;
-alias VkSparseImageFormatFlags = VkFlags;
-alias VkSparseMemoryBindFlags = VkFlags;
-alias VkFenceCreateFlags = VkFlags;
-alias VkSemaphoreCreateFlags = VkFlags;
-alias VkEventCreateFlags = VkFlags;
-alias VkQueryPoolCreateFlags = VkFlags;
-alias VkQueryPipelineStatisticFlags = VkFlags;
-alias VkQueryResultFlags = VkFlags;
-alias VkBufferCreateFlags = VkFlags;
-alias VkBufferUsageFlags = VkFlags;
-alias VkBufferViewCreateFlags = VkFlags;
-alias VkImageViewCreateFlags = VkFlags;
-alias VkShaderModuleCreateFlags = VkFlags;
-alias VkPipelineCacheCreateFlags = VkFlags;
-alias VkPipelineCreateFlags = VkFlags;
-alias VkPipelineShaderStageCreateFlags = VkFlags;
-alias VkPipelineVertexInputStateCreateFlags = VkFlags;
+alias int8_t   = byte;
+alias int16_t  = short;
+alias int32_t  = int;
+alias int64_t  = long;
+
+// VK_VERSION_1_0
+alias VkFlags                                 = uint32_t;
+alias VkInstanceCreateFlags                   = VkFlags;
+alias VkBool32                                = uint32_t;
+alias VkFormatFeatureFlags                    = VkFlags;
+alias VkImageUsageFlags                       = VkFlags;
+alias VkImageCreateFlags                      = VkFlags;
+alias VkSampleCountFlags                      = VkFlags;
+alias VkDeviceSize                            = uint64_t;
+alias VkQueueFlags                            = VkFlags;
+alias VkMemoryPropertyFlags                   = VkFlags;
+alias VkMemoryHeapFlags                       = VkFlags;
+alias VkDeviceCreateFlags                     = VkFlags;
+alias VkDeviceQueueCreateFlags                = VkFlags;
+alias VkPipelineStageFlags                    = VkFlags;
+alias VkMemoryMapFlags                        = VkFlags;
+alias VkImageAspectFlags                      = VkFlags;
+alias VkSparseImageFormatFlags                = VkFlags;
+alias VkSparseMemoryBindFlags                 = VkFlags;
+alias VkFenceCreateFlags                      = VkFlags;
+alias VkSemaphoreCreateFlags                  = VkFlags;
+alias VkEventCreateFlags                      = VkFlags;
+alias VkQueryPoolCreateFlags                  = VkFlags;
+alias VkQueryPipelineStatisticFlags           = VkFlags;
+alias VkQueryResultFlags                      = VkFlags;
+alias VkBufferCreateFlags                     = VkFlags;
+alias VkBufferUsageFlags                      = VkFlags;
+alias VkBufferViewCreateFlags                 = VkFlags;
+alias VkImageViewCreateFlags                  = VkFlags;
+alias VkShaderModuleCreateFlags               = VkFlags;
+alias VkPipelineCacheCreateFlags              = VkFlags;
+alias VkPipelineCreateFlags                   = VkFlags;
+alias VkPipelineShaderStageCreateFlags        = VkFlags;
+alias VkPipelineVertexInputStateCreateFlags   = VkFlags;
 alias VkPipelineInputAssemblyStateCreateFlags = VkFlags;
-alias VkPipelineTessellationStateCreateFlags = VkFlags;
-alias VkPipelineViewportStateCreateFlags = VkFlags;
+alias VkPipelineTessellationStateCreateFlags  = VkFlags;
+alias VkPipelineViewportStateCreateFlags      = VkFlags;
 alias VkPipelineRasterizationStateCreateFlags = VkFlags;
-alias VkCullModeFlags = VkFlags;
-alias VkPipelineMultisampleStateCreateFlags = VkFlags;
-alias VkSampleMask = uint32_t;
-alias VkPipelineDepthStencilStateCreateFlags = VkFlags;
-alias VkPipelineColorBlendStateCreateFlags = VkFlags;
-alias VkColorComponentFlags = VkFlags;
-alias VkPipelineDynamicStateCreateFlags = VkFlags;
-alias VkPipelineLayoutCreateFlags = VkFlags;
-alias VkShaderStageFlags = VkFlags;
-alias VkSamplerCreateFlags = VkFlags;
-alias VkDescriptorSetLayoutCreateFlags = VkFlags;
-alias VkDescriptorPoolCreateFlags = VkFlags;
-alias VkDescriptorPoolResetFlags = VkFlags;
-alias VkFramebufferCreateFlags = VkFlags;
-alias VkRenderPassCreateFlags = VkFlags;
-alias VkAttachmentDescriptionFlags = VkFlags;
-alias VkSubpassDescriptionFlags = VkFlags;
-alias VkAccessFlags = VkFlags;
-alias VkDependencyFlags = VkFlags;
-alias VkCommandPoolCreateFlags = VkFlags;
-alias VkCommandPoolResetFlags = VkFlags;
-alias VkCommandBufferUsageFlags = VkFlags;
-alias VkQueryControlFlags = VkFlags;
-alias VkCommandBufferResetFlags = VkFlags;
-alias VkStencilFaceFlags = VkFlags;
+alias VkCullModeFlags                         = VkFlags;
+alias VkPipelineMultisampleStateCreateFlags   = VkFlags;
+alias VkSampleMask                            = uint32_t;
+alias VkPipelineDepthStencilStateCreateFlags  = VkFlags;
+alias VkPipelineColorBlendStateCreateFlags    = VkFlags;
+alias VkColorComponentFlags                   = VkFlags;
+alias VkPipelineDynamicStateCreateFlags       = VkFlags;
+alias VkPipelineLayoutCreateFlags             = VkFlags;
+alias VkShaderStageFlags                      = VkFlags;
+alias VkSamplerCreateFlags                    = VkFlags;
+alias VkDescriptorSetLayoutCreateFlags        = VkFlags;
+alias VkDescriptorPoolCreateFlags             = VkFlags;
+alias VkDescriptorPoolResetFlags              = VkFlags;
+alias VkFramebufferCreateFlags                = VkFlags;
+alias VkRenderPassCreateFlags                 = VkFlags;
+alias VkAttachmentDescriptionFlags            = VkFlags;
+alias VkSubpassDescriptionFlags               = VkFlags;
+alias VkAccessFlags                           = VkFlags;
+alias VkDependencyFlags                       = VkFlags;
+alias VkCommandPoolCreateFlags                = VkFlags;
+alias VkCommandPoolResetFlags                 = VkFlags;
+alias VkCommandBufferUsageFlags               = VkFlags;
+alias VkQueryControlFlags                     = VkFlags;
+alias VkCommandBufferResetFlags               = VkFlags;
+alias VkStencilFaceFlags                      = VkFlags;
+
+// VK_KHR_surface
 alias VkSurfaceTransformFlagsKHR = VkFlags;
-alias VkCompositeAlphaFlagsKHR = VkFlags;
+alias VkCompositeAlphaFlagsKHR   = VkFlags;
+
+// VK_KHR_swapchain
 alias VkSwapchainCreateFlagsKHR = VkFlags;
-alias VkDisplayPlaneAlphaFlagsKHR = VkFlags;
-alias VkDisplayModeCreateFlagsKHR = VkFlags;
+
+// VK_KHR_display
+alias VkDisplayPlaneAlphaFlagsKHR    = VkFlags;
+alias VkDisplayModeCreateFlagsKHR    = VkFlags;
 alias VkDisplaySurfaceCreateFlagsKHR = VkFlags;
-alias VkWaylandSurfaceCreateFlagsKHR = VkFlags;
 
-// Constants
-
-enum VK_LOD_CLAMP_NONE = 1000.0f;
-enum VK_REMAINING_MIP_LEVELS = (~0u);
-enum VK_REMAINING_ARRAY_LAYERS = (~0u);
-enum VK_WHOLE_SIZE = (~0uL);
-enum VK_ATTACHMENT_UNUSED = (~0u);
-enum VK_TRUE = 1;
-enum VK_FALSE = 0;
-enum VK_QUEUE_FAMILY_IGNORED = (~0u);
-enum VK_SUBPASS_EXTERNAL = (~0u);
-enum VK_MAX_PHYSICAL_DEVICE_NAME_SIZE = 256;
-enum VK_UUID_SIZE = 16;
-enum VK_MAX_MEMORY_TYPES = 32;
-enum VK_MAX_MEMORY_HEAPS = 16;
-enum VK_MAX_EXTENSION_NAME_SIZE = 256;
-enum VK_MAX_DESCRIPTION_SIZE = 256;
-enum VK_KHR_SURFACE_SPEC_VERSION = 25;
-enum VK_KHR_SURFACE_EXTENSION_NAME = "VK_KHR_surface";
-enum VK_COLORSPACE_SRGB_NONLINEAR_KHR = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-enum VK_KHR_SWAPCHAIN_SPEC_VERSION = 68;
-enum VK_KHR_SWAPCHAIN_EXTENSION_NAME = "VK_KHR_swapchain";
-enum VK_KHR_DISPLAY_SPEC_VERSION = 21;
-enum VK_KHR_DISPLAY_EXTENSION_NAME = "VK_KHR_display";
-enum VK_KHR_WAYLAND_SURFACE_SPEC_VERSION = 6;
-enum VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME = "VK_KHR_wayland_surface";
+// VK_KHR_wayland_surface
+version(linux) {
+    alias VkWaylandSurfaceCreateFlagsKHR = VkFlags;
+}
 
 // Handles
 
-struct VkInstance_T;
-alias VkInstance = VkInstance_T*;
+// VK_VERSION_1_0
+struct VkInstance_T;       alias VkInstance       = VkInstance_T*;
+struct VkPhysicalDevice_T; alias VkPhysicalDevice = VkPhysicalDevice_T*;
+struct VkDevice_T;         alias VkDevice         = VkDevice_T*;
+struct VkQueue_T;          alias VkQueue          = VkQueue_T*;
+struct VkCommandBuffer_T;  alias VkCommandBuffer  = VkCommandBuffer_T*;
 
-struct VkPhysicalDevice_T;
-alias VkPhysicalDevice = VkPhysicalDevice_T*;
+// Non-dispatchable handles
 
-struct VkDevice_T;
-alias VkDevice = VkDevice_T*;
+version(X86_64) {
+    // VK_VERSION_1_0
+    struct VkSemaphore_T;           alias VkSemaphore           = VkSemaphore_T*;
+    struct VkFence_T;               alias VkFence               = VkFence_T*;
+    struct VkDeviceMemory_T;        alias VkDeviceMemory        = VkDeviceMemory_T*;
+    struct VkBuffer_T;              alias VkBuffer              = VkBuffer_T*;
+    struct VkImage_T;               alias VkImage               = VkImage_T*;
+    struct VkEvent_T;               alias VkEvent               = VkEvent_T*;
+    struct VkQueryPool_T;           alias VkQueryPool           = VkQueryPool_T*;
+    struct VkBufferView_T;          alias VkBufferView          = VkBufferView_T*;
+    struct VkImageView_T;           alias VkImageView           = VkImageView_T*;
+    struct VkShaderModule_T;        alias VkShaderModule        = VkShaderModule_T*;
+    struct VkPipelineCache_T;       alias VkPipelineCache       = VkPipelineCache_T*;
+    struct VkPipelineLayout_T;      alias VkPipelineLayout      = VkPipelineLayout_T*;
+    struct VkRenderPass_T;          alias VkRenderPass          = VkRenderPass_T*;
+    struct VkPipeline_T;            alias VkPipeline            = VkPipeline_T*;
+    struct VkDescriptorSetLayout_T; alias VkDescriptorSetLayout = VkDescriptorSetLayout_T*;
+    struct VkSampler_T;             alias VkSampler             = VkSampler_T*;
+    struct VkDescriptorPool_T;      alias VkDescriptorPool      = VkDescriptorPool_T*;
+    struct VkDescriptorSet_T;       alias VkDescriptorSet       = VkDescriptorSet_T*;
+    struct VkFramebuffer_T;         alias VkFramebuffer         = VkFramebuffer_T*;
+    struct VkCommandPool_T;         alias VkCommandPool         = VkCommandPool_T*;
 
-struct VkQueue_T;
-alias VkQueue = VkQueue_T*;
+    // VK_KHR_surface
+    struct VkSurfaceKHR_T; alias VkSurfaceKHR = VkSurfaceKHR_T*;
 
-alias VkSemaphore = ulong;
+    // VK_KHR_swapchain
+    struct VkSwapchainKHR_T; alias VkSwapchainKHR = VkSwapchainKHR_T*;
 
-struct VkCommandBuffer_T;
-alias VkCommandBuffer = VkCommandBuffer_T*;
-
-alias VkFence = ulong;
-
-alias VkDeviceMemory = ulong;
-
-alias VkBuffer = ulong;
-
-alias VkImage = ulong;
-
-alias VkEvent = ulong;
-
-alias VkQueryPool = ulong;
-
-alias VkBufferView = ulong;
-
-alias VkImageView = ulong;
-
-alias VkShaderModule = ulong;
-
-alias VkPipelineCache = ulong;
-
-alias VkPipelineLayout = ulong;
-
-alias VkRenderPass = ulong;
-
-alias VkPipeline = ulong;
-
-alias VkDescriptorSetLayout = ulong;
-
-alias VkSampler = ulong;
-
-alias VkDescriptorPool = ulong;
-
-alias VkDescriptorSet = ulong;
-
-alias VkFramebuffer = ulong;
-
-alias VkCommandPool = ulong;
-
-alias VkSurfaceKHR = ulong;
-
-alias VkSwapchainKHR = ulong;
-
-alias VkDisplayKHR = ulong;
-
-alias VkDisplayModeKHR = ulong;
-
-
-// Fonction pointers
-
-extern(C) nothrow @nogc {
-    alias PFN_vkAllocationFunction = void* function(void* pUserData, size_t size, size_t alignment, VkSystemAllocationScope allocationScope);
-    alias PFN_vkReallocationFunction = void* function(void* pUserData, void* pOriginal, size_t size, size_t alignment, VkSystemAllocationScope allocationScope);
-    alias PFN_vkFreeFunction = void function(void* pUserData, void* pMemory);
-    alias PFN_vkInternalAllocationNotification = void function(void* pUserData, size_t size, VkInternalAllocationType allocationType, VkSystemAllocationScope allocationScope);
-    alias PFN_vkInternalFreeNotification = void function(void* pUserData, size_t size, VkInternalAllocationType allocationType, VkSystemAllocationScope allocationScope);
-    alias PFN_vkVoidFunction = void function();
+    // VK_KHR_display
+    struct VkDisplayKHR_T;     alias VkDisplayKHR     = VkDisplayKHR_T*;
+    struct VkDisplayModeKHR_T; alias VkDisplayModeKHR = VkDisplayModeKHR_T*;
 }
+else {
+    // VK_VERSION_1_0
+    alias VkSemaphore           = ulong;
+    alias VkFence               = ulong;
+    alias VkDeviceMemory        = ulong;
+    alias VkBuffer              = ulong;
+    alias VkImage               = ulong;
+    alias VkEvent               = ulong;
+    alias VkQueryPool           = ulong;
+    alias VkBufferView          = ulong;
+    alias VkImageView           = ulong;
+    alias VkShaderModule        = ulong;
+    alias VkPipelineCache       = ulong;
+    alias VkPipelineLayout      = ulong;
+    alias VkRenderPass          = ulong;
+    alias VkPipeline            = ulong;
+    alias VkDescriptorSetLayout = ulong;
+    alias VkSampler             = ulong;
+    alias VkDescriptorPool      = ulong;
+    alias VkDescriptorSet       = ulong;
+    alias VkFramebuffer         = ulong;
+    alias VkCommandPool         = ulong;
+
+    // VK_KHR_surface
+    alias VkSurfaceKHR = ulong;
+
+    // VK_KHR_swapchain
+    alias VkSwapchainKHR = ulong;
+
+    // VK_KHR_display
+    alias VkDisplayKHR     = ulong;
+    alias VkDisplayModeKHR = ulong;
+}
+
+// Constants
+
+// VK_VERSION_1_0
+enum VK_LOD_CLAMP_NONE                = 1000.0f;
+enum VK_REMAINING_MIP_LEVELS          = ~0;
+enum VK_REMAINING_ARRAY_LAYERS        = ~0;
+enum VK_WHOLE_SIZE                    = ~0;
+enum VK_ATTACHMENT_UNUSED             = ~0;
+enum VK_TRUE                          = 1;
+enum VK_FALSE                         = 0;
+enum VK_QUEUE_FAMILY_IGNORED          = ~0;
+enum VK_SUBPASS_EXTERNAL              = ~0;
+enum VK_MAX_PHYSICAL_DEVICE_NAME_SIZE = 256;
+enum VK_UUID_SIZE                     = 16;
+enum VK_MAX_MEMORY_TYPES              = 32;
+enum VK_MAX_MEMORY_HEAPS              = 16;
+enum VK_MAX_EXTENSION_NAME_SIZE       = 256;
+enum VK_MAX_DESCRIPTION_SIZE          = 256;
+
+// VK_KHR_surface
+enum VK_KHR_SURFACE_SPEC_VERSION      = 25;
+enum VK_KHR_SURFACE_EXTENSION_NAME    = "VK_KHR_surface";
+enum VK_COLORSPACE_SRGB_NONLINEAR_KHR = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+
+// VK_KHR_swapchain
+enum VK_KHR_SWAPCHAIN_SPEC_VERSION   = 68;
+enum VK_KHR_SWAPCHAIN_EXTENSION_NAME = "VK_KHR_swapchain";
+
+// VK_KHR_display
+enum VK_KHR_DISPLAY_SPEC_VERSION   = 21;
+enum VK_KHR_DISPLAY_EXTENSION_NAME = "VK_KHR_display";
+
+// VK_KHR_wayland_surface
+version(linux) {
+    enum VK_KHR_WAYLAND_SURFACE_SPEC_VERSION   = 6;
+    enum VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME = "VK_KHR_wayland_surface";
+}
+
+// Function pointers
+
+// VK_VERSION_1_0
+alias PFN_vkAllocationFunction = void* function(void* pUserData, size_t size, size_t alignment, VkSystemAllocationScope allocationScope);
+alias PFN_vkReallocationFunction = void* function(void* pUserData, void* pOriginal, size_t size, size_t alignment, VkSystemAllocationScope allocationScope);
+alias PFN_vkFreeFunction = void function(void* pUserData, void* pMemory);
+alias PFN_vkInternalAllocationNotification = void function(void* pUserData, size_t size, VkInternalAllocationType allocationType, VkSystemAllocationScope allocationScope);
+alias PFN_vkInternalFreeNotification = void function(void* pUserData, size_t size, VkInternalAllocationType allocationType, VkSystemAllocationScope allocationScope);
+alias PFN_vkVoidFunction = void function();
 
 // Enumerations
 
+// VK_VERSION_1_0
 enum VkPipelineCacheHeaderVersion {
     VK_PIPELINE_CACHE_HEADER_VERSION_ONE = 1,
 }
@@ -2193,6 +2229,8 @@ enum VK_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_NVX   = VkObjectType.VK_OBJECT_TYPE
 enum VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR   = VkObjectType.VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR;
 enum VK_OBJECT_TYPE_VALIDATION_CACHE_EXT           = VkObjectType.VK_OBJECT_TYPE_VALIDATION_CACHE_EXT;
 
+
+// VK_KHR_surface
 enum VkSurfaceTransformFlagBitsKHR {
     VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR                     = 0x00000001,
     VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR                    = 0x00000002,
@@ -2273,11 +2311,15 @@ enum VK_PRESENT_MODE_FIFO_RELAXED_KHR              = VkPresentModeKHR.VK_PRESENT
 enum VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR     = VkPresentModeKHR.VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR;
 enum VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR = VkPresentModeKHR.VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR;
 
+
+// VK_KHR_swapchain
 enum VkSwapchainCreateFlagBitsKHR {
     VK_SWAPCHAIN_CREATE_BIND_SFR_BIT_KHX = 0x00000001,
 }
 enum VK_SWAPCHAIN_CREATE_BIND_SFR_BIT_KHX = VkSwapchainCreateFlagBitsKHR.VK_SWAPCHAIN_CREATE_BIND_SFR_BIT_KHX;
 
+
+// VK_KHR_display
 enum VkDisplayPlaneAlphaFlagBitsKHR {
     VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR                  = 0x00000001,
     VK_DISPLAY_PLANE_ALPHA_GLOBAL_BIT_KHR                  = 0x00000002,
@@ -2292,6 +2334,7 @@ enum VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR = VkDisplayPlaneAlph
 
 // Structures
 
+// VK_VERSION_1_0
 struct VkApplicationInfo {
     VkStructureType sType;
     const(void)*    pNext;
@@ -3260,6 +3303,8 @@ struct VkDrawIndirectCommand {
     uint32_t firstVertex;
     uint32_t firstInstance;
 }
+
+// VK_KHR_surface
 struct VkSurfaceCapabilitiesKHR {
     uint32_t                      minImageCount;
     uint32_t                      maxImageCount;
@@ -3276,6 +3321,8 @@ struct VkSurfaceFormatKHR {
     VkFormat        format;
     VkColorSpaceKHR colorSpace;
 }
+
+// VK_KHR_swapchain
 struct VkSwapchainCreateInfoKHR {
     VkStructureType               sType;
     const(void)*                  pNext;
@@ -3306,6 +3353,8 @@ struct VkPresentInfoKHR {
     const(uint32_t)*       pImageIndices;
     VkResult*              pResults;
 }
+
+// VK_KHR_display
 struct VkDisplayPropertiesKHR {
     VkDisplayKHR               display;
     const(char)*               displayName;
@@ -3356,6 +3405,8 @@ struct VkDisplaySurfaceCreateInfoKHR {
     VkDisplayPlaneAlphaFlagBitsKHR alphaMode;
     VkExtent2D                     imageExtent;
 }
+
+// VK_KHR_wayland_surface
 version(linux) {
     struct VkWaylandSurfaceCreateInfoKHR {
         VkStructureType                sType;
@@ -3366,13 +3417,10 @@ version(linux) {
     }
 }
 
-// Commands
+// Command pointer aliases
 
-enum VK_HEADER_VERSION =  67;
 extern(C) nothrow @nogc {
-
     // VK_VERSION_1_0
-
     alias PFN_vkCreateInstance = VkResult function (
         const(VkInstanceCreateInfo)*  pCreateInfo,
         const(VkAllocationCallbacks)* pAllocator,
@@ -4164,7 +4212,6 @@ extern(C) nothrow @nogc {
     );
 
     // VK_KHR_surface
-
     alias PFN_vkDestroySurfaceKHR = void function (
         VkInstance                    instance,
         VkSurfaceKHR                  surface,
@@ -4195,7 +4242,6 @@ extern(C) nothrow @nogc {
     );
 
     // VK_KHR_swapchain
-
     alias PFN_vkCreateSwapchainKHR = VkResult function (
         VkDevice                         device,
         const(VkSwapchainCreateInfoKHR)* pCreateInfo,
@@ -4227,7 +4273,6 @@ extern(C) nothrow @nogc {
     );
 
     // VK_KHR_display
-
     alias PFN_vkGetPhysicalDeviceDisplayPropertiesKHR = VkResult function (
         VkPhysicalDevice        physicalDevice,
         uint32_t*               pPropertyCount,
@@ -4271,7 +4316,6 @@ extern(C) nothrow @nogc {
     );
 
     // VK_KHR_wayland_surface
-
     version(linux) {
         alias PFN_vkCreateWaylandSurfaceKHR = VkResult function (
             VkInstance                            instance,
@@ -4287,9 +4331,10 @@ extern(C) nothrow @nogc {
     }
 }
 
-final class VkGlobalCmds {
 
-    // VK_VERSION_1_0
+// Global commands
+
+final class VkGlobalCmds {
     PFN_vkCreateInstance                       createInstance;
     PFN_vkGetInstanceProcAddr                  getInstanceProcAddr;
     PFN_vkEnumerateInstanceExtensionProperties enumerateInstanceExtensionProperties;
@@ -4297,16 +4342,15 @@ final class VkGlobalCmds {
 
     this (PFN_vkGetInstanceProcAddr loader) {
         getInstanceProcAddr = loader;
-
-        // VK_VERSION_1_0
         createInstance                       = cast(PFN_vkCreateInstance)                      loader(null, "vkCreateInstance");
         enumerateInstanceExtensionProperties = cast(PFN_vkEnumerateInstanceExtensionProperties)loader(null, "vkEnumerateInstanceExtensionProperties");
         enumerateInstanceLayerProperties     = cast(PFN_vkEnumerateInstanceLayerProperties)    loader(null, "vkEnumerateInstanceLayerProperties");
     }
 }
 
-final class VkInstanceCmds {
+// Instance commands
 
+final class VkInstanceCmds {
     // VK_VERSION_1_0
     PFN_vkDestroyInstance                                destroyInstance;
     PFN_vkEnumeratePhysicalDevices                       enumeratePhysicalDevices;
@@ -4346,7 +4390,6 @@ final class VkInstanceCmds {
 
     this (VkInstance instance, VkGlobalCmds globalCmds) {
         auto loader = globalCmds.getInstanceProcAddr;
-
         // VK_VERSION_1_0
         destroyInstance                                = cast(PFN_vkDestroyInstance)                               loader(instance, "vkDestroyInstance");
         enumeratePhysicalDevices                       = cast(PFN_vkEnumeratePhysicalDevices)                      loader(instance, "vkEnumeratePhysicalDevices");
@@ -4386,8 +4429,9 @@ final class VkInstanceCmds {
     }
 }
 
-final class VkDeviceCmds {
+// Device commands
 
+final class VkDeviceCmds {
     // VK_VERSION_1_0
     PFN_vkDestroyDevice                    destroyDevice;
     PFN_vkGetDeviceQueue                   getDeviceQueue;
@@ -4519,7 +4563,6 @@ final class VkDeviceCmds {
 
     this (VkDevice device, VkInstanceCmds instanceCmds) {
         auto loader = instanceCmds.getDeviceProcAddr;
-
         // VK_VERSION_1_0
         destroyDevice                    = cast(PFN_vkDestroyDevice)                   loader(device, "vkDestroyDevice");
         getDeviceQueue                   = cast(PFN_vkGetDeviceQueue)                  loader(device, "vkGetDeviceQueue");
@@ -4650,4 +4693,3 @@ final class VkDeviceCmds {
         queuePresentKHR                  = cast(PFN_vkQueuePresentKHR)                 loader(device, "vkQueuePresentKHR");
     }
 }
-

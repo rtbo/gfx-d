@@ -15,10 +15,10 @@ from enum import Enum, auto
 # General utility
 
 class Sect(Enum):
-    GLOBAL_DEF      = auto()
+    INTRO           = auto()
     BASETYPE        = auto()
-    CONST           = auto()
     HANDLE          = auto()
+    CONST           = auto()
     FUNCPTR         = auto()
     ENUM            = auto()
     STRUCT          = auto()
@@ -43,8 +43,8 @@ class SourceFile(object):
         for sect in Sect:
             self._sections[sect] = SourceFile._Section(sect)
 
-        self._sect = Sect.GLOBAL_DEF
-        self._section = self._sections[Sect.GLOBAL_DEF]
+        self._sect = Sect.INTRO
+        self._section = self._sections[Sect.INTRO]
         self._outFile = outFile
 
     @property
@@ -147,32 +147,78 @@ class DGenerator(OutputGenerator):
             self.versionGuard = versionGuard
             self.stmts = stmts
 
-        def beginGuard(self, sf):
+        def begin(self, sf):
             if len(self.versionGuard):
                 sf("version(%s) {", self.versionGuard)
                 sf.indent()
-        def endGuard(self, sf):
+        def end(self, sf):
             if len(self.versionGuard):
                 sf.unindent()
                 sf("}")
 
-    class Command:
-        def __init__(self, ret, name, params, feature, featureGuard):
-            self.returnType = ret
+    class BaseType:
+        def __init__(self, name, alias):
             self.name = name
-            self.params = params
-            self.feature = feature
-            self.featureGuard = featureGuard
+            self.alias = alias
 
-    class Param:
-        def __init__(self, typeStr, name):
-            self.typeStr = typeStr
+    class Const:
+        def __init__(self, name, value):
             self.name = name
+            self.value = value
+
+    class Enum:
+        def __init__(self, name, members, values):
+            assert len(members) == len(values)
+            self.name = name
+            self.members = members
+            self.values = values
+
+    # Param is both struct member and command param
+    class Param:
+        def __init__(self, name, typeStr):
+            self.name = name
+            self.typeStr = typeStr
+
+    class Struct:
+        def __init__(self, name, category, params):
+            self.name = name
+            self.category = category
+            self.params = params
+
+    class Command:
+        def __init__(self, name, ret, params):
+            self.name = name
+            self.returnType = ret
+            self.params = params
+
+    class Feature:
+        def __init__(self, name, guard):
+            self.name = name
+            self.guard = guard
+            self.baseTypes = []
+            self.handles = []
+            self.ndHandles = []
+            self.consts = []
+            self.funcptrs = []
+            self.enums = []
+            self.structs = []
+            self.cmds = []
+            self.instanceCmds = []
+            self.deviceCmds = []
+
+        def beginGuard(self, sf):
+            if self.guard != None:
+                self.guard.begin(sf)
+
+        def endGuard(self, sf):
+            if self.guard != None:
+                self.guard.end(sf)
 
     def __init__(self, moduleName, outFile):
         super().__init__()
         self.moduleName = moduleName
         self.outFile = outFile
+        self.headerVersion = ""
         self.basicTypes = {
             "uint8_t": "ubyte",
             "uint16_t": "ushort",
@@ -183,7 +229,7 @@ class DGenerator(OutputGenerator):
             "int32_t": "int",
             "int64_t": "long",
         }
-        self.cmds = []
+
         self.globalCmdNames = {
             "vkGetInstanceProcAddr",
             "vkEnumerateInstanceExtensionProperties",
@@ -191,12 +237,9 @@ class DGenerator(OutputGenerator):
             "vkCreateInstance"
         }
         self.globalCmds = []
-        self.instanceCmdNames = set()
-        self.instanceCmds = []
-        self.deviceCmdNames = set()
-        self.deviceCmds = []
 
-        self.feature = ""
+        self.features = []
+        self.feature = None
         self.featureGuards = {
             "VK_KHR_wayland_surface": DGenerator.FeatureGuard(
                 "linux",
@@ -205,7 +248,6 @@ class DGenerator(OutputGenerator):
         }
         for k in self.featureGuards:
             self.featureGuards[k].name = k
-        self.featureGuard = None
 
     def logMsg(self, level, *args):
         # shut down logging during dev to see debug output
@@ -216,72 +258,57 @@ class DGenerator(OutputGenerator):
         # generator base class open and close a file
         # don't want that here as we may output to stdout
         # not calling super on purpose
+
+        # Everything is written in endFile
+        pass
+
+    def endFile(self):
+        # not calling super on purpose (see beginFile comment)
         self.sf = SourceFile(self.outFile)
-        self.sf.section = Sect.GLOBAL_DEF
+        self.sf.section = Sect.INTRO
         self.sf("/// Vulkan D bindings generated by vkdgen.py for Gfx-d")
         self.sf("module %s;", self.moduleName)
         self.sf()
         for k in self.featureGuards:
             fg = self.featureGuards[k]
-            fg.beginGuard(self.sf)
+            fg.begin(self.sf)
             for s in fg.stmts:
                 self.sf(s)
-            fg.endGuard(self.sf)
+            fg.end(self.sf)
             self.sf()
 
-        def initSect(sect, comment):
-            self.sf.section = sect
-            self.sf()
-            self.sf("// %s", comment)
-            self.sf()
+        if self.headerVersion != "":
+            self.sf("enum VK_HEADER_VERSION = %s;", self.headerVersion)
 
-        initSect(Sect.BASETYPE, "Basic types definition")
-        for k in self.basicTypes:
-            self.sf("alias %s = %s;", k, self.basicTypes[k])
-
-        initSect(Sect.FUNCPTR, "Fonction pointers")
-        self.sf("extern(C) nothrow @nogc {")
-        self.sf.indent()
-
-        initSect(Sect.CONST, "Constants")
-        initSect(Sect.HANDLE, "Handles")
-        initSect(Sect.ENUM, "Enumerations")
-        initSect(Sect.STRUCT, "Structures")
-        initSect(Sect.CMD, "Commands")
-
-
-    def endFile(self):
-        # not calling super on purpose (see beginFile comment)
-        self.sf.section = Sect.FUNCPTR
-        self.sf.unindent()
-        self.sf("}")
+        self.issueBaseTypes()
+        self.issueHandles()
+        self.issueConsts()
+        self.issueFuncptrs()
+        self.issueEnums()
+        self.issueStructs()
 
         self.issueCmdPtrAliases()
-        self.issueCmdPtrStruct("VkGlobalCmds", self.globalCmds, DGenerator.issueGlobalLoader)
-        self.issueCmdPtrStruct("VkInstanceCmds", self.instanceCmds, DGenerator.issueInstanceLoader)
-        self.issueCmdPtrStruct("VkDeviceCmds", self.deviceCmds, DGenerator.issueDeviceLoader)
+        self.issueGlobalCmds()
+        self.issueInstanceCmds()
+        self.issueDeviceCmds()
 
         self.sf.writeOut()
 
     def beginFeature(self, interface, emit):
         super().beginFeature(interface, emit)
-        self.feature = interface.get("name")
 
-        if self.feature in self.featureGuards:
-            self.featureGuard = self.featureGuards[self.feature]
-        else:
-            self.featureGuard = None
+        feature = interface.get("name")
+        guard = None
+        if feature in self.featureGuards:
+            guard = self.featureGuards[feature]
 
-        if self.featureGuard != None:
-            self.sf.section = Sect.STRUCT
-            self.featureGuard.beginGuard(self.sf)
+        self.feature = DGenerator.Feature(feature, guard)
+
 
     def endFeature(self):
         super().endFeature()
-        if self.featureGuard != None:
-            self.sf.section = Sect.STRUCT
-            self.featureGuard.endGuard(self.sf)
-
+        self.features.append(self.feature)
+        self.feature = None
 
 
     def genType(self, typeinfo, name):
@@ -291,27 +318,24 @@ class DGenerator(OutputGenerator):
         category = typeinfo.elem.attrib["category"]
 
         if category == "basetype" or category == "bitmask":
-            self.sf.section = Sect.BASETYPE
-            self.sf("alias %s = %s;", name, typeinfo.elem.find("type").text)
+            self.feature.baseTypes.append(
+                DGenerator.BaseType(name, typeinfo.elem.find("type").text)
+            )
 
         elif category == "handle":
             handleType = typeinfo.elem.find("type").text
-            self.sf.section = Sect.HANDLE
             if handleType == "VK_DEFINE_HANDLE":
-                self.sf("struct %s_T;", name)
-                self.sf("alias %s = %s_T*;", name, name)
+                self.feature.handles.append(name)
             else:
                 assert handleType == "VK_DEFINE_NON_DISPATCHABLE_HANDLE"
-                self.sf("alias %s = ulong;", name)
-            self.sf()
+                self.feature.ndHandles.append(name)
 
         elif category == "struct" or category == "union":
             self.genStruct(typeinfo, name)
 
         elif category == 'define' and name == 'VK_HEADER_VERSION':
             for headerVersion in islice( typeinfo.elem.itertext(), 2, 3 ):	# get the version string from the one element list
-                self.section = Sect.GLOBAL_DEF
-                self.sf("enum VK_HEADER_VERSION = %s;", headerVersion)
+                self.headerVersion = headerVersion
                 break
 
         elif category == "funcpointer":
@@ -330,250 +354,391 @@ class DGenerator(OutputGenerator):
 
                 params = concatParams[ 2: ]
 
-            self.sf.section = Sect.FUNCPTR
-            self.sf("alias %s = %s function(%s", name, returnType, params)
+            self.feature.funcptrs.append(
+                "alias {} = {} function({}".format(name, returnType, params)
+            )
 
+    def issueBaseTypes(self):
+        self.sf.section = Sect.BASETYPE
+        self.sf()
+        self.sf("// Basic types definition")
+        self.sf()
+        maxLen = 0
+        for bt in self.basicTypes:
+            maxLen = max(maxLen, len(bt))
+        for bt in self.basicTypes:
+            spacer = " " * (maxLen - len(bt))
+            self.sf("alias %s%s = %s;", bt, spacer, self.basicTypes[bt])
+        for f in [f for f in self.features if len(f.baseTypes) > 0]:
+            self.sf()
+            self.sf("// %s", f.name)
+            f.beginGuard(self.sf)
+            maxLen = 0
+            for bt in f.baseTypes:
+                maxLen = max(maxLen, len(bt.name))
+            for bt in f.baseTypes:
+                spacer = " " * (maxLen - len(bt.name))
+                self.sf("alias %s%s = %s;", bt.name, spacer, bt.alias)
+            f.endGuard(self.sf)
 
+    def issueHandles(self):
+        self.sf.section = Sect.HANDLE
+        self.sf()
+        self.sf("// Handles")
+        self.sf()
+        feats = [f for f in self.features if len(f.handles) > 0]
+        for i, f in enumerate(feats):
+            if i != 0:
+                self.sf()
+            self.sf("// %s", f.name)
+            f.beginGuard(self.sf)
+            maxLen = 0
+            for h in f.handles:
+                maxLen = max(maxLen, len(h))
+            for h in f.handles:
+                spacer = " " * (maxLen - len(h))
+                self.sf("struct %s_T; %salias %s %s= %s_T*;", h, spacer, h, spacer, h)
+            f.endGuard(self.sf)
+
+        self.sf()
+        self.sf("// Non-dispatchable handles")
+        self.sf()
+        feats = [f for f in self.features if len(f.ndHandles) > 0]
+        self.sf("version(X86_64) {")
+        with self.sf.indent_block():
+            for i, f in enumerate(feats):
+                if i != 0:
+                    self.sf()
+                self.sf("// %s", f.name)
+                f.beginGuard(self.sf)
+                maxLen = 0
+                for h in f.ndHandles:
+                    maxLen = max(maxLen, len(h))
+                for h in f.ndHandles:
+                    spacer = " " * (maxLen - len(h))
+                    self.sf("struct %s_T; %salias %s %s= %s_T*;", h, spacer, h, spacer, h)
+                f.endGuard(self.sf)
+        self.sf("}")
+        self.sf("else {")
+        with self.sf.indent_block():
+            for i, f in enumerate(feats):
+                if i != 0:
+                    self.sf()
+                self.sf("// %s", f.name)
+                f.beginGuard(self.sf)
+                maxLen = 0
+                for h in f.ndHandles:
+                    maxLen = max(maxLen, len(h))
+                for h in f.ndHandles:
+                    spacer = " " * (maxLen - len(h))
+                    self.sf('alias %s %s= ulong;', h, spacer)
+                f.endGuard(self.sf)
+        self.sf("}")
+
+    def issueFuncptrs(self):
+        self.sf.section = Sect.FUNCPTR
+        self.sf()
+        self.sf("// Function pointers")
+        for f in [f for f in self.features if len(f.funcptrs) > 0]:
+            self.sf()
+            self.sf("// %s", f.name)
+            f.beginGuard(self.sf)
+            for fp in f.funcptrs:
+                self.sf(fp)
+            f.endGuard(self.sf)
+
+    # an enum is a single constant
     def genEnum(self, enuminfo, name):
         super().genEnum(enuminfo, name)
         (_, strVal) = self.enumToValue(enuminfo.elem, False)
-        self.sf.section = Sect.CONST
-        self.sf("enum %s = %s;", name,
-                strVal.replace("0ULL", "0uL").replace("0U", "0u"))
+        self.feature.consts.append(
+                DGenerator.Const(
+                    name,
+                    strVal
+                        .replace("0ULL", "0")
+                        .replace("0L", "0")
+                        .replace("0U", "0")
+                        .replace("(", "")
+                        .replace(")", "")
+            )
+        )
 
+    def issueConsts(self):
+        self.sf.section = Sect.CONST
+        self.sf()
+        self.sf("// Constants")
+        for f in [f for f in self.features if len(f.consts) > 0]:
+            self.sf()
+            self.sf("// %s", f.name)
+            f.beginGuard(self.sf)
+            maxLen = 0
+            for c in f.consts:
+                maxLen = max(maxLen, len(c.name))
+            for c in f.consts:
+                spacer = " " * (maxLen - len(c.name))
+                self.sf("enum %s%s = %s;", c.name, spacer, c.value)
+            f.endGuard(self.sf)
+
+
+    # a group is an enumeration of several related constants
     def genGroup(self, groupinfo, name):
         super().genGroup(groupinfo, name)
-        repStr = ""
-        if name.endswith("FlagBits"):
-            repStr = " : VkFlags"
 
-        maxLen = 0
         members = []
+        values = []
         for elem in groupinfo.elem.findall("enum"):
             (numVal, strVal) = self.enumToValue(elem, True)
-            membName = elem.get("name")
-            maxLen = max(maxLen, len(membName))
-            members.append([membName, strVal])
+            members.append(elem.get("name"))
+            values.append(strVal)
 
+        self.feature.enums.append(
+            DGenerator.Enum(name, members, values)
+        )
+
+    def issueEnums(self):
         self.sf.section = Sect.ENUM
-        self.sf("enum %s%s {", name, repStr)
-        with self.sf.indent_block():
-            for m in members:
-                spacer = " " * (maxLen - len(m[0]))
-                self.sf("%s%s = %s,", m[0], spacer, m[1])
-        self.sf("}")
-        for m in members:
-            spacer = " " * (maxLen - len(m[0]))
-            self.sf("enum %s%s = %s.%s;", m[0], spacer, name, m[0])
         self.sf()
+        self.sf("// Enumerations")
+        for f in [f for f in self.features if len(f.enums) > 0]:
+            self.sf()
+            self.sf("// %s", f.name)
+            f.beginGuard(self.sf)
+            for e in f.enums:
+                repStr = ""
+                if e.name.endswith("FlagBits"):
+                    repStr = " : VkFlags"
+
+                maxLen = 0
+                for m in e.members:
+                    maxLen = max(maxLen, len(m))
+
+                self.sf("enum %s%s {", e.name, repStr)
+                with self.sf.indent_block():
+                    for i in range(len(e.members)):
+                        spacer = " " * (maxLen - len(e.members[i]))
+                        self.sf("%s%s = %s,", e.members[i], spacer, e.values[i])
+                self.sf("}")
+                for m in e.members:
+                    spacer = " " * (maxLen - len(m))
+                    self.sf("enum %s%s = %s.%s;", m, spacer, e.name, m)
+                self.sf()
+            f.endGuard(self.sf)
+
 
     def genStruct(self, typeinfo, name):
         super().genStruct(typeinfo, name)
         category = typeinfo.elem.attrib["category"]
-        maxLen = 0
-        members = []
+        params = []
         for member in typeinfo.elem.findall(".//member"):
             typeStr = makeDParamType(member)
-            maxLen = max(maxLen, len(typeStr))
             memName = member.find("name").text
-            members.append([typeStr, mapDName(memName)])
+            if memName in dkeywords:
+                memName += "_"
+            params.append(
+                DGenerator.Param(memName, typeStr)
+            )
+
+        self.feature.structs.append(
+            DGenerator.Struct(name, category, params)
+        )
+
+    def issueStructs(self):
+        self.sf()
         self.sf.section = Sect.STRUCT
-        self.sf("%s %s {", category, name)
-        with self.sf.indent_block():
-            for member in members:
-                spacer = " " * (maxLen - len(member[0]) + 1)
-                self.sf("%s%s%s;", member[0], spacer, member[1])
-        self.sf("}")
+        self.sf("// Structures")
+        for f in [f for f in self.features if len(f.structs) > 0]:
+            self.sf()
+            self.sf("// %s", f.name)
+            f.beginGuard(self.sf)
+            for s in f.structs:
+                maxLen = 0
+                for p in s.params:
+                    maxLen = max(maxLen, len(p.typeStr))
+                self.sf.section = Sect.STRUCT
+                self.sf("%s %s {", s.category, s.name)
+                with self.sf.indent_block():
+                    for p in s.params:
+                        spacer = " " * (maxLen - len(p.typeStr))
+                        self.sf("%s%s %s;", p.typeStr, spacer, p.name)
+                self.sf("}")
+
+            f.endGuard(self.sf)
+
 
     def genCmd(self, cmdinfo, name):
         super().genCmd(cmdinfo, name)
         typeStr = cmdinfo.elem.findall("./proto/type")[0].text
         params=[]
         for pElem in cmdinfo.elem.findall("./param"):
-            p = DGenerator.Param(makeDParamType(pElem), pElem.find("name").text)
+            p = DGenerator.Param(pElem.find("name").text, makeDParamType(pElem))
             params.append(p)
 
-        cmd = DGenerator.Command(typeStr, name, params, self.feature, self.featureGuard)
+        cmd = DGenerator.Command(name, typeStr, params)
 
-        self.cmds.append(cmd)
+        self.feature.cmds.append(cmd)
 
         if name in self.globalCmdNames:
             self.globalCmds.append(cmd)
         elif name != "vkGetDeviceProcAddr" and len(params) and params[0].typeStr in { "VkDevice", "VkQueue", "VkCommandBuffer" }:
-            self.deviceCmds.append(cmd)
-            self.deviceCmdNames.add(name)
+            self.feature.deviceCmds.append(cmd)
         else:
-            self.instanceCmds.append(cmd)
-            self.instanceCmdNames.add(name)
+            self.feature.instanceCmds.append(cmd)
 
     def issueCmdPtrAliases(self):
-        feature = ""
-        featureGuard = None
         self.sf.section = Sect.CMD
+        self.sf()
+        self.sf("// Command pointer aliases")
+        self.sf()
         self.sf("extern(C) nothrow @nogc {")
         with self.sf.indent_block():
-            for cmd in self.cmds:
-
-                if feature != cmd.feature:
-                    if featureGuard != None:
-                        featureGuard.endGuard(self.sf)
+            feats = [f for f in self.features if len(f.cmds) > 0]
+            for i, f in enumerate(feats):
+                if i != 0:
                     self.sf()
-                    self.sf("// %s", cmd.feature)
-                    self.sf()
-                    feature = cmd.feature
-                    featureGuard = cmd.featureGuard
-                    if featureGuard != None:
-                        featureGuard.beginGuard(self.sf)
-
-                maxLen = 0
-                for p in cmd.params:
-                    maxLen = max(maxLen, len(p.typeStr))
-                fstLine = "alias PFN_{} = {} function (".format(cmd.name, cmd.returnType)
-                if len(cmd.params) == 0:
-                    self.sf(fstLine+");")
-                    continue
-                if len(cmd.params) == 1:
-                    self.sf("%s%s %s);", fstLine, cmd.params[0].typeStr, cmd.params[0].name)
-                    continue
-
-                self.sf(fstLine)
-                with self.sf.indent_block():
+                self.sf("// %s", f.name)
+                f.beginGuard(self.sf)
+                for cmd in f.cmds:
+                    maxLen = 0
                     for p in cmd.params:
-                        spacer = " " * (maxLen-len(p.typeStr))
-                        self.sf("%s%s %s,", p.typeStr, spacer, p.name)
-                self.sf(");")
+                        maxLen = max(maxLen, len(p.typeStr))
+                    fstLine = "alias PFN_{} = {} function (".format(cmd.name, cmd.returnType)
+                    if len(cmd.params) == 0:
+                        self.sf(fstLine+");")
+                        continue
+                    if len(cmd.params) == 1:
+                        self.sf("%s%s %s);", fstLine, cmd.params[0].typeStr, cmd.params[0].name)
+                        continue
 
-            if featureGuard != None:
-                featureGuard.endGuard(self.sf)
+                    self.sf(fstLine)
+                    with self.sf.indent_block():
+                        for p in cmd.params:
+                            spacer = " " * (maxLen-len(p.typeStr))
+                            self.sf("%s%s %s,", p.typeStr, spacer, p.name)
+                    self.sf(");")
+
+                f.endGuard(self.sf)
 
         self.sf("}")
         self.sf()
 
-    def issueCmdPtrStruct(self, name, cmds, issueLoader):
-        feature = ""
-        featureGuard = None
+    def issueGlobalCmds(self):
         maxLen = 0
-        for cmd in cmds:
+        for cmd in self.globalCmds:
             maxLen = max(maxLen, len(cmd.name))
+
         self.sf.section = Sect.CMD
-        self.sf("final class %s {", name)
+        self.sf()
+        self.sf("// Global commands")
+        self.sf()
+        self.sf("final class VkGlobalCmds {")
         with self.sf.indent_block():
-            for cmd in cmds:
-
-                if feature != cmd.feature:
-                    if featureGuard != None:
-                        featureGuard.endGuard(self.sf)
-                    self.sf()
-                    self.sf("// %s", cmd.feature)
-                    feature = cmd.feature
-                    featureGuard = cmd.featureGuard
-                    if featureGuard != None:
-                        featureGuard.beginGuard(self.sf)
-
+            for cmd in self.globalCmds:
                 spacer = " " * (maxLen - len(cmd.name))
                 # vkCmdName => cmdName
                 membName = cmd.name[2].lower() + cmd.name[3:]
                 self.sf("PFN_%s%s %s;", cmd.name, spacer, membName)
-
-            if featureGuard != None:
-                featureGuard.endGuard(self.sf)
-
             self.sf()
-            issueLoader(self, maxLen)
-
+            self.sf("this (PFN_vkGetInstanceProcAddr loader) {")
+            with self.sf.indent_block():
+                self.sf("getInstanceProcAddr = loader;")
+                for cmd in [cmd for cmd in self.globalCmds if cmd.name != "vkGetInstanceProcAddr"]:
+                    spacer = " " * (maxLen - len(cmd.name))
+                    membName = cmd.name[2].lower() + cmd.name[3:]
+                    self.sf(
+                        "%s%s = cast(PFN_%s)%sloader(null, \"%s\");",
+                        membName, spacer, cmd.name, spacer, cmd.name
+                    )
+            self.sf("}")
         self.sf("}")
+
+
+    def issueInstanceCmds(self):
+        maxLen = 0
+        for f in self.features:
+            for cmd in f.instanceCmds:
+                maxLen = max(maxLen, len(cmd.name))
+
+        self.sf.section = Sect.CMD
         self.sf()
-
-    def issueGlobalLoader(self, maxLen):
-        feature = ""
-        featureGuard = None
-        self.sf("this (PFN_vkGetInstanceProcAddr loader) {")
+        self.sf("// Instance commands")
+        self.sf()
+        self.sf("final class VkInstanceCmds {")
         with self.sf.indent_block():
-            self.sf("getInstanceProcAddr = loader;")
-            for cmd in self.globalCmds:
-                if cmd.name == "vkGetInstanceProcAddr":
-                    continue
+            feats = [f for f in self.features if len(f.instanceCmds) > 0]
+            for f in feats:
+                self.sf("// %s", f.name)
+                f.beginGuard(self.sf)
+                for cmd in f.instanceCmds:
+                    spacer = " " * (maxLen - len(cmd.name))
+                    # vkCmdName => cmdName
+                    membName = cmd.name[2].lower() + cmd.name[3:]
+                    self.sf("PFN_%s%s %s;", cmd.name, spacer, membName)
+                f.endGuard(self.sf)
+                self.sf()
 
-                if feature != cmd.feature:
-                    if featureGuard != None:
-                        featureGuard.endGuard(self.sf)
-                    self.sf()
-                    self.sf("// %s", cmd.feature)
-                    feature = cmd.feature
-                    featureGuard = cmd.featureGuard
-                    if featureGuard != None:
-                        featureGuard.beginGuard(self.sf)
+            self.sf("this (VkInstance instance, VkGlobalCmds globalCmds) {")
+            with self.sf.indent_block():
+                self.sf("auto loader = globalCmds.getInstanceProcAddr;")
+                for i, f in enumerate(feats):
+                    if i != 0:
+                        self.sf()
+                    self.sf("// %s", f.name)
+                    f.beginGuard(self.sf)
+                    for cmd in f.instanceCmds:
+                        spacer = " " * (maxLen - len(cmd.name))
+                        membName = cmd.name[2].lower() + cmd.name[3:]
+                        self.sf(
+                            "%s%s = cast(PFN_%s)%sloader(instance, \"%s\");",
+                            membName, spacer, cmd.name, spacer, cmd.name
+                        )
+                    f.endGuard(self.sf)
 
-                spacer = " " * (maxLen - len(cmd.name))
-                membName = cmd.name[2].lower() + cmd.name[3:]
-                self.sf(
-                    "%s%s = cast(PFN_%s)%sloader(null, \"%s\");",
-                    membName, spacer, cmd.name, spacer, cmd.name
-                )
-
-            if featureGuard != None:
-                featureGuard.endGuard(self.sf)
-
+            self.sf("}")
         self.sf("}")
 
-    def issueInstanceLoader(self, maxLen):
-        feature = ""
-        featureGuard = None
-        self.sf("this (VkInstance instance, VkGlobalCmds globalCmds) {")
+
+    def issueDeviceCmds(self):
+        maxLen = 0
+        for f in self.features:
+            for cmd in f.deviceCmds:
+                maxLen = max(maxLen, len(cmd.name))
+
+        self.sf.section = Sect.CMD
+        self.sf()
+        self.sf("// Device commands")
+        self.sf()
+        self.sf("final class VkDeviceCmds {")
         with self.sf.indent_block():
-            self.sf("auto loader = globalCmds.getInstanceProcAddr;")
-            for cmd in self.instanceCmds:
+            feats = [f for f in self.features if len(f.deviceCmds) > 0]
+            for f in feats:
+                self.sf("// %s", f.name)
+                f.beginGuard(self.sf)
+                for cmd in f.deviceCmds:
+                    spacer = " " * (maxLen - len(cmd.name))
+                    # vkCmdName => cmdName
+                    membName = cmd.name[2].lower() + cmd.name[3:]
+                    self.sf("PFN_%s%s %s;", cmd.name, spacer, membName)
+                f.endGuard(self.sf)
+                self.sf()
 
-                if feature != cmd.feature:
-                    if featureGuard != None:
-                        featureGuard.endGuard(self.sf)
-                    self.sf()
-                    self.sf("// %s", cmd.feature)
-                    feature = cmd.feature
-                    featureGuard = cmd.featureGuard
-                    if featureGuard != None:
-                        featureGuard.beginGuard(self.sf)
+            self.sf("this (VkDevice device, VkInstanceCmds instanceCmds) {")
+            with self.sf.indent_block():
+                self.sf("auto loader = instanceCmds.getDeviceProcAddr;")
+                for i, f in enumerate(feats):
+                    if i != 0:
+                        self.sf()
+                    self.sf("// %s", f.name)
+                    f.beginGuard(self.sf)
+                    for cmd in f.deviceCmds:
+                        spacer = " " * (maxLen - len(cmd.name))
+                        membName = cmd.name[2].lower() + cmd.name[3:]
+                        self.sf(
+                            "%s%s = cast(PFN_%s)%sloader(device, \"%s\");",
+                            membName, spacer, cmd.name, spacer, cmd.name
+                        )
+                    f.endGuard(self.sf)
 
-                spacer = " " * (maxLen - len(cmd.name))
-                membName = cmd.name[2].lower() + cmd.name[3:]
-                self.sf(
-                    "%s%s = cast(PFN_%s)%sloader(instance, \"%s\");",
-                    membName, spacer, cmd.name, spacer, cmd.name
-                )
-
-            if featureGuard != None:
-                featureGuard.endGuard(self.sf)
-
-        self.sf("}")
-
-    def issueDeviceLoader(self, maxLen):
-        feature = ""
-        featureGuard = None
-        self.sf("this (VkDevice device, VkInstanceCmds instanceCmds) {")
-        with self.sf.indent_block():
-            self.sf("auto loader = instanceCmds.getDeviceProcAddr;")
-            for cmd in self.deviceCmds:
-
-                if feature != cmd.feature:
-                    if featureGuard != None:
-                        featureGuard.endGuard(self.sf)
-                    self.sf()
-                    self.sf("// %s", cmd.feature)
-                    feature = cmd.feature
-                    featureGuard = cmd.featureGuard
-                    if featureGuard != None:
-                        featureGuard.beginGuard(self.sf)
-
-                spacer = " " * (maxLen - len(cmd.name))
-                membName = cmd.name[2].lower() + cmd.name[3:]
-                self.sf(
-                    "%s%s = cast(PFN_%s)%sloader(device, \"%s\");",
-                    membName, spacer, cmd.name, spacer, cmd.name
-                )
-
-            if featureGuard != None:
-                featureGuard.endGuard(self.sf)
-
+            self.sf("}")
         self.sf("}")
 
 
