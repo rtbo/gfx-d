@@ -1,6 +1,7 @@
 /// Reference counting module
 module gfx.core.rc;
 
+import std.typecons : Flag, No, Yes;
 
 /// A resource that can be disposed
 interface Disposable
@@ -21,16 +22,22 @@ interface AtomicRefCounted : Disposable
     shared @property size_t refCountShared() const;
 
     /// Atomically increment the reference count.
-    final void retain() {
-        (cast(shared(AtomicRefCounted))this).retainShared();
+    /// Returns: a reference to this
+    final AtomicRefCounted retain() {
+        return cast(AtomicRefCounted)(cast(shared(AtomicRefCounted))this).retainShared();
     }
     /// ditto
-    shared void retainShared();
+    shared(AtomicRefCounted) retainShared() shared;
 
     /// Atomically decrement the reference count.
-    /// If refCount reaches zero, the object is locked with its own mutex,
-    /// and dispose is called.
-    final void release()
+    /// If refCount reaches zero, and disposeOnZero is set,
+    /// the object is locked with its own mutex, and dispose is called.
+    /// In most cases, the calling code should set disposeOnZero, unless it
+    /// is intended to release the object to give it away.
+    /// (such as at the end of a builder function)
+    /// Returns: null if the object was disposed during this call, a reference
+    /// to this otherwise
+    final AtomicRefCounted release(in Flag!"disposeOnZero" disposeOnZero = Yes.disposeOnZero)
     in {
         assert(
             refCount > 0,
@@ -38,10 +45,10 @@ interface AtomicRefCounted : Disposable
         );
     }
     body {
-        (cast(shared(AtomicRefCounted))this).releaseShared();
+        return cast(AtomicRefCounted)(cast(shared(AtomicRefCounted))this).releaseShared(disposeOnZero);
     }
     /// ditto
-    shared void releaseShared()
+    shared(AtomicRefCounted) releaseShared(in Flag!"disposeOnZero" disposeOnZero = Yes.disposeOnZero) shared
     in {
         assert(
             refCountShared > 0,
@@ -103,23 +110,25 @@ size_t countObj(T)(T obj) if (isAtomicRefCounted!T) {
 
 /// Retains a single object.
 /// Useful for shared-agnostic generic code.
-void retainObj(T)(T obj) if (isAtomicRefCounted!T) {
+T retainObj(T)(T obj) if (isAtomicRefCounted!T) {
     static if (is(T == shared)) {
-        obj.retainShared();
+        return cast(T)obj.retainShared();
     }
     else {
-        obj.retain();
+        return cast(T)obj.retain();
     }
 }
 
 /// Releases a single object.
 /// Useful for shared-agnostic generic code.
-void releaseObj(T)(T obj) if (isAtomicRefCounted!T) {
+T releaseObj(T)(T obj, in Flag!"disposeOnZero" disposeOnZero = Yes.disposeOnZero)
+if (isAtomicRefCounted!T)
+{
     static if (is(T == shared)) {
-        obj.releaseShared();
+        return cast(T)obj.releaseShared(disposeOnZero);
     }
     else {
-        obj.release();
+        return cast(T)obj.release(disposeOnZero);
     }
 }
 
@@ -249,13 +258,13 @@ struct Rc(T) if (isAtomicRefCounted!T)
     /// Removes a reference to the held reference.
     ~this()
     {
-        if(_obj) releaseObj(_obj);
+        if(_obj) releaseObj(_obj, Yes.disposeOnZero);
     }
 
     /// Assign another resource. Release the previously held ref and retain the new one.
     void opAssign(T obj)
     {
-        if(_obj) releaseObj(_obj);
+        if(_obj) releaseObj(_obj, Yes.disposeOnZero);
         _obj = obj;
         if(_obj) retainObj(_obj);
     }
@@ -279,6 +288,20 @@ struct Rc(T) if (isAtomicRefCounted!T)
             releaseObj(_obj);
             _obj = null;
         }
+    }
+
+    /// Decrease the ref count and return the object without calling dispose
+    T giveAway()
+    in {
+        assert(_obj, "giving away invalid object");
+    }
+    out(obj) {
+        assert(obj);
+    }
+    body {
+        auto obj = releaseObj(_obj, No.disposeOnZero);
+        _obj = null;
+        return obj;
     }
 
     /// Access to the held resource.
@@ -323,13 +346,15 @@ struct Weak(T) if (is(T : Disposable))
 
 private enum sharedAtomicMethods = q{
 
+    import std.typecons : Flag, Yes;
+
     public final shared override @property size_t refCountShared() const
     {
         import core.atomic : atomicLoad;
         return atomicLoad(_refCount);
     }
 
-    public final shared override void retainShared()
+    public final shared override shared(typeof(this)) retainShared()
     {
         import core.atomic : atomicOp;
         immutable rc = atomicOp!"+="(_refCount, 1);
@@ -337,9 +362,10 @@ private enum sharedAtomicMethods = q{
             import std.experimental.logger : logf;
             logf("retain %s: %s", typeof(this).stringof, rc);
         }
+        return this;
     }
 
-    public final shared override void releaseShared()
+    public final shared override shared(typeof(this)) releaseShared(in Flag!"disposeOnZero" disposeOnZero = Yes.disposeOnZero)
     {
         import core.atomic : atomicOp;
         immutable rc = atomicOp!"-="(_refCount, 1);
@@ -348,7 +374,7 @@ private enum sharedAtomicMethods = q{
             import std.experimental.logger : logf;
             logf("release %s: %s", typeof(this).stringof, rc);
         }
-        if (rc == 0) {
+        if (rc == 0 && disposeOnZero) {
             debug(rc) {
                 import std.experimental.logger : logf;
                 logf("dispose %s", typeof(this).stringof);
@@ -359,6 +385,10 @@ private enum sharedAtomicMethods = q{
                 auto obj = cast(Unqual!(typeof(this)))this;
                 obj.dispose();
             }
+            return null;
+        }
+        else {
+            return this;
         }
     }
 
