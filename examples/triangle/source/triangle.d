@@ -121,6 +121,7 @@ class TriangleExample : Example
                 )
             ], surfaceSize[0], surfaceSize[1], 1);
         }
+        retainArray(framebuffers);
     }
 
     void preparePipeline()
