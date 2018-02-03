@@ -546,7 +546,7 @@ final class VulkanPhysicalDevice : PhysicalDevice
         foreach(i; 0 .. vkProps.memoryHeapCount) {
             const vkHeap = vkProps.memoryHeaps[i];
             props.heaps ~= MemoryHeap(
-                vkHeap.size, cast(MemProps)0, (vkHeap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) != 0
+                cast(size_t)vkHeap.size, cast(MemProps)0, (vkHeap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) != 0
             );
         }
         foreach(i; 0 .. vkProps.memoryTypeCount) {

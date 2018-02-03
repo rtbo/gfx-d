@@ -78,7 +78,7 @@ VkImageLayout toVk(in ImageLayout layout)
 
 MemoryRequirements toGfx(in VkMemoryRequirements mr) {
     return MemoryRequirements(
-        mr.size, mr.alignment, memPropsToGfx(mr.memoryTypeBits)
+        cast(size_t)mr.size, cast(size_t)mr.alignment, memPropsToGfx(mr.memoryTypeBits)
     );
 }
 
