@@ -218,13 +218,39 @@ version(linux) {
 
 // Function pointers
 
-// VK_VERSION_1_0
-alias PFN_vkAllocationFunction = void* function(void* pUserData, size_t size, size_t alignment, VkSystemAllocationScope allocationScope);
-alias PFN_vkReallocationFunction = void* function(void* pUserData, void* pOriginal, size_t size, size_t alignment, VkSystemAllocationScope allocationScope);
-alias PFN_vkFreeFunction = void function(void* pUserData, void* pMemory);
-alias PFN_vkInternalAllocationNotification = void function(void* pUserData, size_t size, VkInternalAllocationType allocationType, VkSystemAllocationScope allocationScope);
-alias PFN_vkInternalFreeNotification = void function(void* pUserData, size_t size, VkInternalAllocationType allocationType, VkSystemAllocationScope allocationScope);
-alias PFN_vkVoidFunction = void function();
+extern(C) nothrow @nogc {
+    // VK_VERSION_1_0
+    alias PFN_vkAllocationFunction = void* function(
+        void*                   pUserData,
+        size_t                  size,
+        size_t                  alignment,
+        VkSystemAllocationScope allocationScope
+    );
+    alias PFN_vkReallocationFunction = void* function(
+        void*                   pUserData,
+        void*                   pOriginal,
+        size_t                  size,
+        size_t                  alignment,
+        VkSystemAllocationScope allocationScope
+    );
+    alias PFN_vkFreeFunction = void function(
+        void* pUserData,
+        void* pMemory
+    );
+    alias PFN_vkInternalAllocationNotification = void function(
+        void*                    pUserData,
+        size_t                   size,
+        VkInternalAllocationType allocationType,
+        VkSystemAllocationScope  allocationScope
+    );
+    alias PFN_vkInternalFreeNotification = void function(
+        void*                    pUserData,
+        size_t                   size,
+        VkInternalAllocationType allocationType,
+        VkSystemAllocationScope  allocationScope
+    );
+    alias PFN_vkVoidFunction = void function();
+}
 
 // Enumerations
 
@@ -3516,8 +3542,12 @@ extern(C) nothrow @nogc {
         const(VkSubmitInfo)* pSubmits,
         VkFence              fence,
     );
-    alias PFN_vkQueueWaitIdle = VkResult function (VkQueue queue);
-    alias PFN_vkDeviceWaitIdle = VkResult function (VkDevice device);
+    alias PFN_vkQueueWaitIdle = VkResult function (
+        VkQueue queue,
+    );
+    alias PFN_vkDeviceWaitIdle = VkResult function (
+        VkDevice device,
+    );
     alias PFN_vkAllocateMemory = VkResult function (
         VkDevice                      device,
         const(VkMemoryAllocateInfo)*  pAllocateInfo,
@@ -3912,7 +3942,9 @@ extern(C) nothrow @nogc {
         VkCommandBuffer                  commandBuffer,
         const(VkCommandBufferBeginInfo)* pBeginInfo,
     );
-    alias PFN_vkEndCommandBuffer = VkResult function (VkCommandBuffer commandBuffer);
+    alias PFN_vkEndCommandBuffer = VkResult function (
+        VkCommandBuffer commandBuffer,
+    );
     alias PFN_vkResetCommandBuffer = VkResult function (
         VkCommandBuffer           commandBuffer,
         VkCommandBufferResetFlags flags,
@@ -4204,7 +4236,9 @@ extern(C) nothrow @nogc {
         VkCommandBuffer   commandBuffer,
         VkSubpassContents contents,
     );
-    alias PFN_vkCmdEndRenderPass = void function (VkCommandBuffer commandBuffer);
+    alias PFN_vkCmdEndRenderPass = void function (
+        VkCommandBuffer commandBuffer,
+    );
     alias PFN_vkCmdExecuteCommands = void function (
         VkCommandBuffer         commandBuffer,
         uint32_t                commandBufferCount,

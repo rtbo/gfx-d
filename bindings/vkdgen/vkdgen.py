@@ -339,23 +339,26 @@ class DGenerator(OutputGenerator):
                 break
 
         elif category == "funcpointer":
-            returnType = re.match( re_funcptr, typeinfo.elem.text ).group( 1 )
-            params = "".join( islice( typeinfo.elem.itertext(), 2, None ))[ 2: ]
-            if params == "void);" or params == " void );" : params = ");"
-            #else: params = ' '.join( ' '.join( line.strip() for line in params.splitlines()).split())
-            else:
-                concatParams = ""
-                for line in params.splitlines():
-                    lineSplit = line.split()
-                    if len( lineSplit ) > 2:
-                        concatParams += ' ' + convertDTypeConst( lineSplit[ 0 ] + ' ' + lineSplit[ 1 ] ) + ' ' + lineSplit[ 2 ]
-                    else:
-                        concatParams += ' ' + ' '.join( param for param in lineSplit )
 
-                params = concatParams[ 2: ]
+            returnType = re.match( re_funcptr, typeinfo.elem.text ).group( 1 )
+
+            paramsTxt = "".join( islice( typeinfo.elem.itertext(), 2, None ))[ 2: ]
+            params = []
+
+            if paramsTxt != "void);" and paramsTxt != " void );":
+                for line in paramsTxt.splitlines():
+                    lineSplit = line.split()
+                    if len(lineSplit) == 0:
+                        continue
+                    assert len(lineSplit) == 2
+                    typeStr = lineSplit[0]
+                    paramName = lineSplit[1].replace(",", "").replace(")", "").replace(";", "")
+                    params.append(
+                        DGenerator.Param(paramName, typeStr)
+                    )
 
             self.feature.funcptrs.append(
-                "alias {} = {} function({}".format(name, returnType, params)
+                DGenerator.Command(name, returnType, params)
             )
 
     def issueBaseTypes(self):
@@ -439,13 +442,30 @@ class DGenerator(OutputGenerator):
         self.sf.section = Sect.FUNCPTR
         self.sf()
         self.sf("// Function pointers")
-        for f in [f for f in self.features if len(f.funcptrs) > 0]:
-            self.sf()
-            self.sf("// %s", f.name)
-            f.beginGuard(self.sf)
-            for fp in f.funcptrs:
-                self.sf(fp)
-            f.endGuard(self.sf)
+        self.sf()
+        self.sf("extern(C) nothrow @nogc {")
+        with self.sf.indent_block():
+            feats = [f for f in self.features if len(f.funcptrs) > 0]
+            for i, f in enumerate(feats):
+                if i != 0: self.sf()
+                self.sf("// %s", f.name)
+                f.beginGuard(self.sf)
+                for fp in f.funcptrs:
+                    if not len(fp.params):
+                        self.sf("alias %s = %s function();", fp.name, fp.returnType)
+                    else:
+                        maxLen = 0
+                        for p in fp.params:
+                            maxLen = max(maxLen, len(p.typeStr))
+                        self.sf("alias %s = %s function(", fp.name, fp.returnType)
+                        with self.sf.indent_block():
+                            for i, p in enumerate(fp.params):
+                                spacer = " " * (maxLen - len(p.typeStr))
+                                endLine = "" if i == len(fp.params)-1 else ","
+                                self.sf("%s%s %s%s", p.typeStr, spacer, p.name, endLine)
+                        self.sf(");")
+                f.endGuard(self.sf)
+        self.sf("}")
 
     # an enum is a single constant
     def genEnum(self, enuminfo, name):
@@ -604,9 +624,6 @@ class DGenerator(OutputGenerator):
                     fstLine = "alias PFN_{} = {} function (".format(cmd.name, cmd.returnType)
                     if len(cmd.params) == 0:
                         self.sf(fstLine+");")
-                        continue
-                    if len(cmd.params) == 1:
-                        self.sf("%s%s %s);", fstLine, cmd.params[0].typeStr, cmd.params[0].name)
                         continue
 
                     self.sf(fstLine)
