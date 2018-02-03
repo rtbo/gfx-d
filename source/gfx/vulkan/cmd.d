@@ -250,6 +250,12 @@ final class VulkanCommandBuffer : CommandBuffer
         cmds.cmdBindVertexBuffers(vk, firstBinding, cast(uint)bindings.length, vkBufs.ptr, vkOffsets.ptr);
     }
 
+    override void pushConstants(PipelineLayout layout, ShaderStage stages,
+                                size_t offset, size_t size, const(void)* data)
+    {
+        auto vkPl = enforce(cast(VulkanPipelineLayout)layout).vk;
+        cmds.cmdPushConstants(vk, vkPl, shaderStageToVk(stages), cast(uint)offset, cast(uint)size, data);
+    }
 
     override void draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance)
     {

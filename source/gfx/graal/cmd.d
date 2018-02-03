@@ -83,6 +83,10 @@ enum PipelineStage {
     allCommands                 = 0x00010000,
 }
 
+enum PipelineBindPoint {
+    graphics, compute
+}
+
 /// Values to be given to a clear image color command
 /// The type should be f32, unless the image format has numeric format of sInt or uInt.
 struct ClearColorValues
@@ -175,6 +179,9 @@ interface CommandBuffer
 
     void bindPipeline(Pipeline pipeline);
     void bindVertexBuffers(uint firstBinding, VertexBinding[] bindings);
+
+    void pushConstants(PipelineLayout layout, ShaderStage stages,
+                       size_t offset, size_t size, const(void)* data);
 
     void draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance);
 

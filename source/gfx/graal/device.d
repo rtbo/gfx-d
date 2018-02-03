@@ -157,6 +157,7 @@ interface Device : AtomicRefCounted
     ShaderModule createShaderModule(ShaderLanguage language, string code, string entryPoint);
 
     DescriptorSetLayout createDescriptorSetLayout(in PipelineLayoutBinding[] bindings);
+
     PipelineLayout createPipelineLayout(DescriptorSetLayout[] layouts, PushConstantRange[] ranges);
 
     Pipeline[] createPipelines(PipelineInfo[] infos);
