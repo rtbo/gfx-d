@@ -99,7 +99,7 @@ struct MappedMemorySet
     }
 
     package(gfx) void addMM(MM mm) {
-        (cast(RcHack!DeviceMemory)mm.dm).retain();
+        mm.dm.retain();
         mms ~= mm;
     }
 
@@ -108,12 +108,12 @@ struct MappedMemorySet
 
     this(this) {
         import std.algorithm : each;
-        mms.each!(m => (cast(RcHack!DeviceMemory)m.dm).retain());
+        mms.each!(m => m.dm.retain());
     }
 
     ~this() {
         import std.algorithm : each;
-        mms.each!(m => (cast(RcHack!DeviceMemory)m.dm).release());
+        mms.each!(m => m.dm.release());
     }
 }
 

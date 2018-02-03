@@ -1,22 +1,6 @@
 /// Reference counting module
 module gfx.core.rc;
 
-/// definition of how the gfx package itself implements reference counting
-version(GfxRcAtomic)
-{
-    alias GfxRefCounted = AtomicRefCounted;
-    enum gfxRcCode = atomicRcCode;
-}
-else version(GfxRcMixed)
-{
-    alias GfxRefCounted = AtomicRefCounted;
-    enum gfxRcCode = mixedRcCode;
-}
-else {
-    alias GfxRefCounted = RefCounted;
-    enum gfxRcCode = rcCode;
-}
-
 
 /// A resource that can be disposed
 interface Disposable
@@ -25,95 +9,130 @@ interface Disposable
     void dispose();
 }
 
-/// A non-atomic reference counted resource.
-/// Objects implementing this interface should have exterior locking if used
-/// as shared.
-interface RefCounted : Disposable
-{
-    /// The number of active references
-    @property size_t refCount() const;
-
-    /// Increment the reference count.
-    void retain();
-
-    /// Decrement the reference count and dispose if it reaches zero.
-    void release()
-    in { assert(refCount > 0); }
-
-    /// Get a copy of this RefCounted instance if the refCount >= 1.
-    /// This increases the refCount by 1. This should only be used to keep
-    /// weak reference and ensures that the resource is not disposed.
-    RefCounted rcLock()
-    out(res) { assert((res && refCount >= 2) || (!res && !refCount)); }
-
-    override void dispose()
-    in { assert(refCount == 0); } // add this additional contract
-}
-
 /// A atomic reference counted resource.
-/// Objects implementing this interface can be safely used as shared.
-///
-/// Important note: AtomicRefCounted extends RefCounted (non-atomic).
-/// If it is implemented using mixedRcCode, then the following statements apply
-///   - When the object is shared, the atomic reference count is used.
-///   - When the object is not shared, the non-atomic reference count is used.
-///
-/// Although this sounds neat, it makes certain things quite difficult to implement
-/// Eg. having some rc in a parallel loop. (parallel spawns threads without any guard or lock
-/// - see the gfx-d:shadow example)
-/// For that reason, the atomicRcCode enum is available that implements both
-/// RefCounted and AtomicRefCounted atomically.
-interface AtomicRefCounted : RefCounted
+/// Objects implementing this interface can be safely manipulated as shared.
+interface AtomicRefCounted : Disposable
 {
-    /// Atomically load the number of active references.
-    shared @property size_t refCount() const;
+    /// Atomically loads the number of active references.
+    final @property size_t refCount() const {
+        return (cast(shared(AtomicRefCounted))this).refCountShared;
+    }
+    /// ditto
+    shared @property size_t refCountShared() const;
 
     /// Atomically increment the reference count.
-    shared void retain();
+    final void retain() {
+        (cast(shared(AtomicRefCounted))this).retainShared();
+    }
+    /// ditto
+    shared void retainShared();
 
-    /// Atomically decrement the reference count and dispose if it reaches zero.
-    /// The object is locked using its own mutex when dispose is called.
-    shared void release()
-    in { assert(refCount > 0); }
+    /// Atomically decrement the reference count.
+    /// If refCount reaches zero, the object is locked with its own mutex,
+    /// and dispose is called.
+    final void release()
+    in {
+        assert(
+            refCount > 0,
+            "inconsistent ref count for "~(cast(Object)this).classinfo.name
+        );
+    }
+    body {
+        (cast(shared(AtomicRefCounted))this).releaseShared();
+    }
+    /// ditto
+    shared void releaseShared()
+    in {
+        assert(
+            refCountShared > 0,
+            "inconsistent ref count for "~(cast(Object)this).classinfo.name
+        );
+    }
 
-    /// Get a copy of this RefCounted instance if the refCount >= 1.
-    /// This increases the refCount by 1. This should only be used to keep
+    /// Get a reference to this if the refCount >= 1.
+    /// This increases the refCount by 1. rcLock should be used to keep
     /// weak reference and ensures that the resource is not disposed.
     /// The operation is atomic.
-    shared shared(AtomicRefCounted) rcLock();
+    final AtomicRefCounted rcLock()
+    out(res) {
+        assert(
+            (res && refCount >= 2) || (!res && !refCount),
+            "inconsistent ref count for "~(cast(Object)this).classinfo.name
+        );
+    }
+    body {
+        return cast(AtomicRefCounted)(cast(shared(AtomicRefCounted))this).rcLockShared();
+    }
+    /// ditto
+    shared shared(AtomicRefCounted) rcLockShared();
     // out(res) {
-    //     assert((res && this.refCount >= 1) || (!res && !this.refCount));
+    //     assert(
+    //         (res && refCountShared >= 2) || (!res && !refCountShared),
+    //         "inconsistent ref count for "~(cast(Object)this).classinfo.name
+    //     );
     // }
-    // this contract create a failure on ldc2:
+    // this contract compiles with dmd but create a failure on ldc2:
     // cannot implicitely convert shared(T) to const(AtomicRefCounted)
+
+    override void dispose()
+    in { assert(refCount == 0); } // override to add this contract
 }
 
-/// compile time check that T can be ref counted non-atomically.
-enum isNonAtomicRefCounted(T) = is(T : RefCounted) && !is(T == shared);
 /// compile time check that T can be ref counted atomically.
-enum isAtomicRefCounted(T) = is(T : shared(AtomicRefCounted));
-/// compile time check that T can be ref counted (either shared or not)
-enum isRefCounted(T) = isNonAtomicRefCounted!T || isAtomicRefCounted!T;
+enum isAtomicRefCounted(T) = is(T : shared(AtomicRefCounted)) || is(T : AtomicRefCounted);
 
 
-/// A string that can be mixed-in a class declaration to implement RefCounted.
-enum rcCode = nonSharedNonAtomicMethods ~ q{
+/// A string that can be mixed-in a class declaration to implement AtomicRefCounted.
+/// dispose is not implemented of course, but is called by release while the object is locked.
+/// Classes implementing it are free to do it in a non-thread safe manner as long
+/// as dispose does not manipulate external state.
+enum atomicRcCode = sharedAtomicMethods ~ q{
     private size_t _refCount=0;
 };
 
-/// A string that can be mixed-in a class declaration to implement AtomicRefCounted.
-/// The RefCounted methods (non-shared) are implemented without atomicity.
-/// The AtomicRefCounted methods (shared) are implemented atomically.
-enum mixedRcCode = nonSharedNonAtomicMethods ~ sharedAtomicMethods ~ q{
-    private size_t _refCount=0;
-};
+/// Counts the number of references of a single object.
+/// Useful for shared-agnostic generic code.
+size_t countObj(T)(T obj) if (isAtomicRefCounted!T) {
+    static if (is(T == shared)) {
+        return obj.refCountShared;
+    }
+    else {
+        return obj.refCount;
+    }
+}
 
-/// A string that can be mixed-in a class declaration to implement AtomicRefCounted.
-/// Both shared and non-shared methods are implemented atomically.
-/// This is useful for things such as a parallel loop
-enum atomicRcCode = nonSharedAtomicMethods ~ sharedAtomicMethods ~ q{
-    private shared size_t _refCount=0;
-};
+/// Retains a single object.
+/// Useful for shared-agnostic generic code.
+void retainObj(T)(T obj) if (isAtomicRefCounted!T) {
+    static if (is(T == shared)) {
+        obj.retainShared();
+    }
+    else {
+        obj.retain();
+    }
+}
+
+/// Releases a single object.
+/// Useful for shared-agnostic generic code.
+void releaseObj(T)(T obj) if (isAtomicRefCounted!T) {
+    static if (is(T == shared)) {
+        obj.releaseShared();
+    }
+    else {
+        obj.release();
+    }
+}
+
+/// Locks a single object.
+/// Useful for shared-agnostic generic code.
+T lockObj(T)(T obj) if (isAtomicRefCounted!T) {
+    static if (is(T == shared)) {
+        return obj.rcLockShared();
+    }
+    else {
+        return obj.rcLock();
+    }
+}
 
 /// Dispose GC allocated array of resources
 void disposeArray(T)(ref T[] arr) if (is(T : Disposable) && !isRefCounted!T)
@@ -124,50 +143,39 @@ void disposeArray(T)(ref T[] arr) if (is(T : Disposable) && !isRefCounted!T)
 }
 
 /// Dispose GC allocated associative array of resources
-void disposeArray(T, K)(ref T[K] arr) if (is(T : Disposable) && !isRefCounted!T)
+void disposeArray(T, K)(ref T[K] arr) if (is(T : Disposable) && !isAtomicRefCounted!T)
 {
     import std.algorithm : each;
     arr.each!((k, el) { el.dispose(); });
     arr = null;
 }
 
-/// Cast hack to get around a bug in DMD front-end.
-/// Cast non shared atomic rc interfaces when calling retain or release.
-/// See https://issues.dlang.org/show_bug.cgi?id=18138
-template RcHack(T) if (isRefCounted!T) {
-    static if (is(T == interface) && is(T : AtomicRefCounted) && !is(T == shared)) {
-        alias RcHack = RefCounted;
-    }
-    else {
-        alias RcHack = T;
-    }
+/// Retain GC allocated array of ref-counted resources
+void retainArray(T)(ref T[] arr) if (isAtomicRefCounted!T)
+{
+    import std.algorithm : each;
+    arr.each!(el => retainObj(el));
 }
 
-/// Retain GC allocated array of ref-counted resources
-void retainArray(T)(ref T[] arr) if (isRefCounted!T)
-{
-    import std.algorithm : each;
-    arr.each!(el => (cast(RcHack!T)el).retain());
-}
 /// Retain GC allocated associative array of ref-counted resources
-void retainArray(T, K)(ref T[K] arr) if (isRefCounted!T)
+void retainArray(T, K)(ref T[K] arr) if (isAtomicRefCounted!T)
 {
     import std.algorithm : each;
-    arr.each!((k, el) { (cast(RcHack!T)el).retain(); });
+    arr.each!((k, el) => retainObj(el));
 }
 
 /// Release GC allocated array of ref-counted resources
-void releaseArray(T)(ref T[] arr) if (isRefCounted!T)
+void releaseArray(T)(ref T[] arr) if (isAtomicRefCounted!T)
 {
     import std.algorithm : each;
-    arr.each!(el => (cast(RcHack!T)el).release());
+    arr.each!(el => releaseObj(el));
     arr = null;
 }
 /// Release GC allocated associative array of ref-counted resources
-void releaseArray(T, K)(ref T[K] arr) if (isRefCounted!T)
+void releaseArray(T, K)(ref T[K] arr) if (isAtomicRefCounted!T)
 {
     import std.algorithm : each;
-    arr.each!((k, el) { (cast(RcHack!T)el).release(); });
+    arr.each!((k, el) => releaseObj(el));
     arr = null;
 }
 
@@ -200,7 +208,7 @@ template makeRc(T) if (isRefCounted!T)
 }
 
 /// Helper that places an instance of T within a Rc!T
-template rc(T) if (isRefCounted!T)
+template rc(T) if (isAtomicRefCounted!T)
 {
     Rc!T rc(T obj)
     {
@@ -213,44 +221,43 @@ template rc(T) if (isRefCounted!T)
     }
 }
 
-@property Rc!T nullRc(T)() if (isRefCounted!T) {
+/// Produces an Rc!T holding a null object
+@property Rc!T nullRc(T)() if (isAtomicRefCounted!T) {
     return Rc!T.init;
 }
 
 /// Helper struct that manages the reference count of an object using RAII.
-struct Rc(T) if (isRefCounted!T)
+struct Rc(T) if (isAtomicRefCounted!T)
 {
     private T _obj;
-
-    private alias HackT = RcHack!T;
 
     /// Build a Rc instance with the provided resource
     this(T obj)
     {
         _obj = obj;
         if (obj) {
-            (cast(HackT)_obj).retain();
+            retainObj(_obj);
         }
     }
 
     /// Postblit adds a reference to the held reference.
     this(this)
     {
-        if (_obj) (cast(HackT)_obj).retain();
+        if (_obj) retainObj(_obj);
     }
 
     /// Removes a reference to the held reference.
     ~this()
     {
-        if(_obj) (cast(HackT)_obj).release();
+        if(_obj) releaseObj(_obj);
     }
 
     /// Assign another resource. Release the previously held ref and retain the new one.
     void opAssign(T obj)
     {
-        if(_obj) (cast(HackT)_obj).release();
+        if(_obj) releaseObj(_obj);
         _obj = obj;
-        if(_obj) (cast(HackT)_obj).retain();
+        if(_obj) retainObj(_obj);
     }
 
     /// Check whether this Rc is assigned to a resource.
@@ -269,7 +276,7 @@ struct Rc(T) if (isRefCounted!T)
     void unload()
     {
         if(_obj) {
-            (cast(HackT)_obj).release();
+            releaseObj(_obj);
             _obj = null;
         }
     }
@@ -284,13 +291,6 @@ struct Rc(T) if (isRefCounted!T)
 struct Weak(T) if (is(T : Disposable))
 {
     private T _obj;
-    static if (is(T == interface) && is(T : AtomicRefCounted) && !is(T == shared)) {
-        // see https://issues.dlang.org/show_bug.cgi?id=18138
-        private alias HackT = RefCounted;
-    }
-    else {
-        private alias HackT = T;
-    }
 
     /// Build a Weak instance.
     this(T obj)
@@ -314,130 +314,22 @@ struct Weak(T) if (is(T : Disposable))
     Rc!T lock()
     {
         Rc!T rc;
-        rc._obj = _obj ? cast(T)((cast(HackT)_obj).rcLock()) : null;
+        rc._obj = _obj ? lockObj(_obj) : null;
         if (!rc._obj) _obj = null;
         return rc;
     }
 }
 
-private enum nonSharedNonAtomicMethods = q{
-
-    public final override @property size_t refCount() const { return _refCount; }
-
-    public final override void retain()
-    {
-        _refCount += 1;
-        debug(rc) {
-            import std.experimental.logger : tracef;
-            tracef("retain %s: %s", typeof(this).stringof, refCount);
-        }
-    }
-
-    public final override void release()
-    {
-        _refCount -= 1;
-        debug(rc) {
-            import std.experimental.logger : tracef;
-            tracef("release %s: %s", typeof(this).stringof, refCount);
-        }
-        if (!_refCount) {
-            debug(rc) {
-                import std.experimental.logger : tracef;
-                tracef("dispose %s", typeof(this).stringof);
-            }
-            dispose();
-        }
-    }
-
-    public final override typeof(this) rcLock()
-    {
-        if (_refCount) {
-            ++_refCount;
-            debug(rc) {
-                import std.experimental.logger : tracef;
-                tracef("rcLock %s: %s", typeof(this).stringof, _refCount);
-            }
-            return this;
-        }
-        else {
-            debug(rc) {
-                import std.experimental.logger : tracef;
-                tracef("rcLock %s: %s", typeof(this).stringof, _refCount);
-            }
-            return null;
-        }
-    }
-};
-
-private enum nonSharedAtomicMethods = q{
-
-    public final override @property size_t refCount() const
-    {
-        import core.atomic : atomicLoad;
-        return atomicLoad(_refCount);
-    }
-
-    public final override void retain()
-    {
-        import core.atomic : atomicOp;
-        immutable rc = atomicOp!"+="(_refCount, 1);
-        debug(rc) {
-            import std.experimental.logger : logf;
-            logf("retain %s: %s", typeof(this).stringof, rc);
-        }
-    }
-
-    public final override void release()
-    {
-        import core.atomic : atomicOp;
-        immutable rc = atomicOp!"-="(_refCount, 1);
-
-        debug(rc) {
-            import std.experimental.logger : logf;
-            logf("release %s: %s", typeof(this).stringof, rc);
-        }
-        if (rc == 0) {
-            debug(rc) {
-                import std.experimental.logger : logf;
-                logf("dispose %s", typeof(this).stringof);
-            }
-            synchronized(this) {
-                this.dispose();
-            }
-        }
-    }
-
-    public final override typeof(this) rcLock()
-    {
-        import core.atomic : atomicLoad, cas;
-        while (1) {
-            immutable c = atomicLoad(_refCount);
-
-            if (c == 0) {
-                debug(rc) {
-                    logf("rcLock %s: %s", typeof(this).stringof, c);
-                }
-                return null;
-            }
-            if (cas(&_refCount, c, c+1)) {
-                debug(rc) {
-                    logf("rcLock %s: %s", typeof(this).stringof, c+1);
-                }
-                return this;
-            }
-        }
-    }
-};
 
 private enum sharedAtomicMethods = q{
 
-    public final shared override @property size_t refCount() const
+    public final shared override @property size_t refCountShared() const
     {
         import core.atomic : atomicLoad;
         return atomicLoad(_refCount);
     }
 
-    public final shared override void retain()
+    public final shared override void retainShared()
     {
         import core.atomic : atomicOp;
         immutable rc = atomicOp!"+="(_refCount, 1);
@@ -447,7 +339,7 @@ private enum sharedAtomicMethods = q{
         }
     }
 
-    public final shared override void release()
+    public final shared override void releaseShared()
     {
         import core.atomic : atomicOp;
         immutable rc = atomicOp!"-="(_refCount, 1);
@@ -470,7 +362,7 @@ private enum sharedAtomicMethods = q{
         }
     }
 
-    public final shared override shared(typeof(this)) rcLock()
+    public final shared override shared(typeof(this)) rcLockShared()
     {
         import core.atomic : atomicLoad, cas;
         while (1) {
@@ -512,9 +404,9 @@ private
     int rcCount = 0;
     int structCount = 0;
 
-    class RcClass : RefCounted
+    class RcClass : AtomicRefCounted
     {
-        mixin(rcCode);
+        mixin(atomicRcCode);
 
         this()
         {
