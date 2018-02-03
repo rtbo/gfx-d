@@ -193,6 +193,35 @@ class Example : Disposable
         //     presentPool.reset();
         // }
     }
+
+    final Buffer createBuffer(T)(const(T)[] data, BufferUsage usage)
+    {
+        const dataSize = data.length * T.sizeof;
+
+        auto buf = device.createBuffer( usage, dataSize ).rc;
+
+        const mr = buf.memoryRequirements;
+        const props = mr.props | MemProps.hostVisible;
+        const devMemProps = physicalDevice.memoryProperties;
+
+        auto memType = devMemProps.types.find!(mt => (mt.props & props) == props);
+        enforce (memType.length, "Could not find a memory type");
+
+        const memTypeInd = cast(uint)(devMemProps.types.length - memType.length);
+
+        auto mem = device.allocateMemory(memTypeInd, mr.size).rc;
+        {
+            auto mm = mapMemory!T(mem, 0, data.length);
+            mm[] = data;
+            MappedMemorySet mms;
+            mm.addToSet(mms);
+            device.flushMappedMemory(mms);
+        }
+
+        buf.bindMemory(mem, 0);
+
+        return buf.giveAway();
+    }
 }
 
 /// Return a format suitable for the surface.
@@ -228,3 +257,4 @@ PresentMode choosePresentMode(PhysicalDevice pd, Surface surface)
     assert(pd.surfacePresentModes(surface).canFind(PresentMode.fifo));
     return PresentMode.fifo;
 }
+

@@ -65,32 +65,8 @@ class TriangleExample : Example
             Vertex([ 0.7f,  0.7f, 0f, 1f], [ 1f, 0f, 0f, 1f ]),
             Vertex([   0f, -0.7f, 0f, 1f], [ 0f, 0f, 1f, 1f ]),
         ];
-        const dataSize = vertexData.length * Vertex.sizeof;
 
-        vertBuf = device.createBuffer( BufferUsage.vertex, dataSize );
-
-        const mr = vertBuf.memoryRequirements;
-        const props = mr.props | MemProps.hostVisible;
-        const devMemProps = physicalDevice.memoryProperties;
-        uint memTypeInd = uint.max;
-        foreach (uint i, mt; devMemProps.types) {
-            if ((mt.props & props) == props) {
-                memTypeInd = i;
-                break;
-            }
-        }
-        enforce(memTypeInd != uint.max, "Could not find a memory type");
-
-        auto mem = device.allocateMemory(memTypeInd, mr.size).rc;
-        {
-            auto mm = mapMemory!Vertex(mem, 0, vertexData.length);
-            mm[] = vertexData;
-            MappedMemorySet mms;
-            mm.addToSet(mms);
-            device.flushMappedMemory(mms);
-        }
-
-        vertBuf.bindMemory(mem, 0);
+        vertBuf = createBuffer(vertexData, BufferUsage.vertex);
     }
 
     void prepareRenderPass() {
