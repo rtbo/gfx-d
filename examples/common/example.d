@@ -12,6 +12,7 @@ import gfx.window;
 import std.algorithm;
 import std.exception;
 import std.typecons;
+import std.traits : isArray;
 
 class Example : Disposable
 {
@@ -194,10 +195,9 @@ class Example : Disposable
         // }
     }
 
-    final Buffer createBuffer(T)(const(T)[] data, BufferUsage usage)
+    /// Allocate a buffer, binds memory to it, and leave content undefined
+    final Buffer allocateBuffer(size_t dataSize, BufferUsage usage)
     {
-        const dataSize = data.length * T.sizeof;
-
         auto buf = device.createBuffer( usage, dataSize ).rc;
 
         const mr = buf.memoryRequirements;
@@ -210,15 +210,43 @@ class Example : Disposable
         const memTypeInd = cast(uint)(devMemProps.types.length - memType.length);
 
         auto mem = device.allocateMemory(memTypeInd, mr.size).rc;
+
+        buf.bindMemory(mem, 0);
+
+        return buf.giveAway();
+    }
+
+    final Buffer createBuffer(T)(const(T)[] data, BufferUsage usage)
+    {
+        const dataSize = data.length * T.sizeof;
+
+        auto buf = allocateBuffer(dataSize, usage).rc;
+
         {
-            auto mm = mapMemory!T(mem, 0, data.length);
+            auto mm = mapMemory!T(buf.boundMemory, 0, data.length);
             mm[] = data;
             MappedMemorySet mms;
             mm.addToSet(mms);
             device.flushMappedMemory(mms);
         }
 
-        buf.bindMemory(mem, 0);
+        return buf.giveAway();
+    }
+
+    final Buffer createBuffer(T)(in T data, BufferUsage usage)
+    if (!isArray!T)
+    {
+        const dataSize = T.sizeof;
+
+        auto buf = allocateBuffer(dataSize, usage).rc;
+
+        {
+            auto mm = mapMemory!T(buf.boundMemory, 0, 1);
+            mm[0] = data;
+            MappedMemorySet mms;
+            mm.addToSet(mms);
+            device.flushMappedMemory(mms);
+        }
 
         return buf.giveAway();
     }
@@ -257,4 +285,3 @@ PresentMode choosePresentMode(PhysicalDevice pd, Surface surface)
     assert(pd.surfacePresentModes(surface).canFind(PresentMode.fifo));
     return PresentMode.fifo;
 }
-

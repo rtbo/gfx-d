@@ -13,7 +13,8 @@
         "genmesh",
 
         "examples/swapchain",
-        "examples/triangle"
+        "examples/triangle",
+        "examples/crate"
     ],
     "dependencies": {
         "gfx:bindings": "*"
