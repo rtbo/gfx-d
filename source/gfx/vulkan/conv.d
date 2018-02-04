@@ -229,6 +229,10 @@ VkIndexType toVk(in IndexType type) {
     return cast(VkIndexType)type;
 }
 
+VkPipelineBindPoint toVk(in PipelineBindPoint bp) {
+    return cast(VkPipelineBindPoint)bp;
+}
+
 // flags conversion
 
 MemProps memPropsToGfx(in VkMemoryPropertyFlags vkFlags)

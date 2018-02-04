@@ -181,6 +181,9 @@ interface CommandBuffer
     void bindVertexBuffers(uint firstBinding, VertexBinding[] bindings);
     void bindIndexBuffer(Buffer indexBuf, size_t offset, IndexType type);
 
+    void bindDescriptorSets(PipelineBindPoint bindPoint, PipelineLayout layout,
+                            uint firstSet, DescriptorSet[] sets);
+
     void pushConstants(PipelineLayout layout, ShaderStage stages,
                        size_t offset, size_t size, const(void)* data);
 

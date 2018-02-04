@@ -535,7 +535,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         return new VulkanDescriptorPool(vkP, this);
     }
 
-    override void updateDescritorSets(WriteDescriptorSet[] writeOps, CopyDescritporSet[] copyOps)
+    override void updateDescriptorSets(WriteDescriptorSet[] writeOps, CopyDescritporSet[] copyOps)
     {
         import gfx.core.util : unsafeCast;
         import std.algorithm : map;

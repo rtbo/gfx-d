@@ -255,6 +255,17 @@ final class VulkanCommandBuffer : CommandBuffer
         cmds.cmdBindIndexBuffer(vk, vkBuf, offset, type.toVk());
     }
 
+    override void bindDescriptorSets(PipelineBindPoint bindPoint, PipelineLayout layout,
+                                     uint firstSet, DescriptorSet[] sets)
+    {
+        import std.algorithm : map;
+        import std.array : array;
+        auto vkSets = sets.map!(s => enforce(cast(VulkanDescriptorSet)s).vk).array;
+        cmds.cmdBindDescriptorSets( vk, bindPoint.toVk(),
+            enforce(cast(VulkanPipelineLayout)layout).vk,
+            firstSet, cast(uint)vkSets.length, vkSets.ptr, 0, null);
+    }
+
     override void pushConstants(PipelineLayout layout, ShaderStage stages,
                                 size_t offset, size_t size, const(void)* data)
     {

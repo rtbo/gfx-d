@@ -162,7 +162,7 @@ interface Device : AtomicRefCounted
 
     DescriptorPool createDescriptorPool(in uint maxSets, in DescriptorPoolSize[] sizes);
 
-    void updateDescritorSets(WriteDescriptorSet[] writeOps, CopyDescritporSet[] copyOps);
+    void updateDescriptorSets(WriteDescriptorSet[] writeOps, CopyDescritporSet[] copyOps);
 
     Pipeline[] createPipelines(PipelineInfo[] infos);
 }
