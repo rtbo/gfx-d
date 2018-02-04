@@ -2,7 +2,7 @@
 
 if [ "$#" -eq 0 ] || [ ! -d "$1" ]; then
     echo "Must pass example dir as first argument of gen_example_spirv.sh"
-    exit 1
+    exit 2
 fi
 
 EX_DIR=$1
@@ -14,7 +14,8 @@ function gen_spirv() {
 
     if [ ! -f "$spirv" ] || [ "$spirv" -ot "$glsl" ]; then
         echo "Generating $spirv"
-        glslangValidator -V $glsl -o $spirv > /dev/null
+        glslangValidator -V $glsl -o $spirv || exit 1
+
     else
         echo "$spirv is up-to-date"
     fi
