@@ -24,12 +24,12 @@ struct CubeGenerator(Flag!"normals" normals) {
         static if (normals == Yes.normals) {
             float[3] normal () {
                 switch (fi) {
-                    case 0: return [ 0,  0,  1];
-                    case 1: return [ 0,  0, -1];
-                    case 2: return [ 0,  1,  0];
-                    case 3: return [ 0, -1,  0];
-                    case 4: return [ 1,  0,  0];
-                    case 5: return [-1,  0,  0];
+                    case 0: return [ 0,  0,  1 ];
+                    case 1: return [ 0,  0, -1 ];
+                    case 2: return [ 0,  1,  0 ];
+                    case 3: return [ 0, -1,  0 ];
+                    case 4: return [ 1,  0,  0 ];
+                    case 5: return [-1,  0,  0 ];
                     default: assert(false);
                 }
             }
