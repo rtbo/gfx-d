@@ -53,6 +53,10 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, "destroyBuffer"), Buffer
         _vdm.retain();
     }
 
+    override @property DeviceMemory boundMemory() {
+        return _vdm;
+    }
+
     override VulkanBufferView createView(Format format, size_t offset, size_t size)
     {
         VkBufferViewCreateInfo bvci;

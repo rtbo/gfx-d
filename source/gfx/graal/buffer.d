@@ -24,7 +24,16 @@ interface Buffer : AtomicRefCounted
     @property BufferUsage usage();
     @property MemoryRequirements memoryRequirements();
     /// The buffer keeps a reference to the device memory
-    void bindMemory(DeviceMemory mem, in size_t offset);
+    void bindMemory(DeviceMemory mem, in size_t offset)
+    in {
+        assert(mem);
+        assert(!boundMemory);
+    }
+    out {
+        assert(boundMemory);
+    }
+
+    @property DeviceMemory boundMemory();
 
     BufferView createView(Format format, size_t offset, size_t size);
 }
