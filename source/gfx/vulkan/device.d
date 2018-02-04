@@ -511,6 +511,30 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         return new VulkanPipelineLayout(vkPl, this);
     }
 
+    override DescriptorPool createDescriptorPool(in uint maxSets, in DescriptorPoolSize[] sizes)
+    {
+        import std.algorithm : map;
+        import std.array : array;
+
+        auto vkSizes = sizes.map!(
+            s => VkDescriptorPoolSize(s.type.toVk(), s.count)
+        ).array;
+
+        VkDescriptorPoolCreateInfo ci;
+        ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        ci.maxSets = maxSets;
+        ci.poolSizeCount = cast(uint)vkSizes.length;
+        ci.pPoolSizes = vkSizes.ptr;
+
+        VkDescriptorPool vkP;
+        vulkanEnforce(
+            cmds.createDescriptorPool(vk, &ci, null, &vkP),
+            "Could not create Vulkan Descriptor Pool"
+        );
+
+        return new VulkanDescriptorPool(vkP, this);
+    }
+
     override Pipeline[] createPipelines(PipelineInfo[] infos) {
         import std.algorithm : map, max;
         import std.array : array;

@@ -160,5 +160,7 @@ interface Device : AtomicRefCounted
 
     PipelineLayout createPipelineLayout(DescriptorSetLayout[] layouts, PushConstantRange[] ranges);
 
+    DescriptorPool createDescriptorPool(in uint maxSets, in DescriptorPoolSize[] sizes);
+
     Pipeline[] createPipelines(PipelineInfo[] infos);
 }

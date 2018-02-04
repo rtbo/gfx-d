@@ -22,6 +22,20 @@ interface Pipeline : AtomicRefCounted
 interface DescriptorSetLayout : AtomicRefCounted
 {}
 
+interface DescriptorPool : AtomicRefCounted
+{
+    /// Allocate a descriptor set per descriptor layout passed as argument
+    DescriptorSet[] allocate(DescriptorSetLayout[] layouts);
+
+    /// Reset this pool.
+    /// All descriptors allocated with this pool are invalid after this call
+    void reset();
+}
+
+interface DescriptorSet
+{
+    @property DescriptorPool pool();
+}
 
 struct PipelineInfo {
     GraphicsShaderSet shaders;
@@ -255,4 +269,9 @@ struct PushConstantRange {
     ShaderStage stages;
     uint offset;
     uint size;
+}
+
+struct DescriptorPoolSize {
+    DescriptorType type;
+    uint count;
 }
