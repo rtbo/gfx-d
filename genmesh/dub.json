@@ -1,0 +1,9 @@
+{
+	"name": "genmesh",
+	"authors": [
+		"Remi Thebault"
+	],
+	"description": "Mesh generation routines",
+	"copyright": "Copyright © 2018, Remi Thebault",
+	"license": "MIT"
+}
