@@ -535,6 +535,100 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         return new VulkanDescriptorPool(vkP, this);
     }
 
+    override void updateDescritorSets(WriteDescriptorSet[] writeOps, CopyDescritporSet[] copyOps)
+    {
+        import gfx.core.util : unsafeCast;
+        import std.algorithm : map;
+        import std.array : array;
+
+        auto vkWrites = writeOps.map!((WriteDescriptorSet wds) {
+            VkWriteDescriptorSet vkWds;
+            vkWds.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            vkWds.dstSet = enforce(cast(VulkanDescriptorSet)wds.dstSet).vk;
+            vkWds.dstBinding = wds.dstBinding;
+            vkWds.dstArrayElement = wds.dstArrayElem;
+            vkWds.descriptorCount = cast(uint)wds.writes.count;
+            vkWds.descriptorType = wds.writes.type.toVk();
+
+            switch (wds.writes.type) {
+            case DescriptorType.sampler:
+                auto w = unsafeCast!(SamplerDescWrites)(wds.writes);
+                auto vkArr = w.descs.map!((Sampler s) {
+                    VkDescriptorImageInfo dii;
+                    dii.sampler = enforce(cast(VulkanSampler)s).vk;
+                    return dii;
+                }).array;
+                vkWds.pImageInfo = vkArr.ptr;
+                break;
+            case DescriptorType.combinedImageSampler:
+                auto w = unsafeCast!(CombinedImageSamplerDescWrites)(wds.writes);
+                auto vkArr = w.descs.map!((CombinedImageSampler cis) {
+                    VkDescriptorImageInfo dii;
+                    dii.sampler = enforce(cast(VulkanSampler)cis.sampler).vk;
+                    dii.imageView = enforce(cast(VulkanImageView)cis.view).vk;
+                    dii.imageLayout = cis.layout.toVk();
+                    return dii;
+                }).array;
+                vkWds.pImageInfo = vkArr.ptr;
+                break;
+            case DescriptorType.sampledImage:
+            case DescriptorType.storageImage:
+            case DescriptorType.inputAttachment:
+                auto w = unsafeCast!(TDescWritesBase!(ImageViewLayout))(wds.writes);
+                auto vkArr = w.descs.map!((ImageViewLayout ivl) {
+                    VkDescriptorImageInfo dii;
+                    dii.imageView = enforce(cast(VulkanImageView)ivl.view).vk;
+                    dii.imageLayout = ivl.layout.toVk();
+                    return dii;
+                }).array;
+                vkWds.pImageInfo = vkArr.ptr;
+                break;
+            case DescriptorType.uniformBuffer:
+            case DescriptorType.storageBuffer:
+                auto w = unsafeCast!(TDescWritesBase!(BufferRange))(wds.writes);
+                auto vkArr = w.descs.map!((BufferRange br) {
+                    VkDescriptorBufferInfo dbi;
+                    dbi.buffer = enforce(cast(VulkanBuffer)br.buffer).vk;
+                    dbi.offset = br.offset;
+                    dbi.range = br.range;
+                    return dbi;
+                }).array;
+                vkWds.pBufferInfo = vkArr.ptr;
+                break;
+            case DescriptorType.uniformTexelBuffer:
+            case DescriptorType.storageTexelBuffer:
+                auto w = unsafeCast!(TDescWritesBase!(BufferView))(wds.writes);
+                auto vkArr = w.descs.map!((BufferView bv) {
+                    return enforce(cast(VulkanBufferView)bv).vk;
+                }).array;
+                vkWds.pTexelBufferView = vkArr.ptr;
+                break;
+            default:
+                vkWds.descriptorCount = 0;
+                break;
+            }
+
+            return vkWds;
+        }).array;
+
+        auto vkCopies = copyOps.map!((CopyDescritporSet cds) {
+            VkCopyDescriptorSet vkCds;
+            vkCds.sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
+            vkCds.srcSet = enforce(cast(VulkanDescriptorSet)cds.set.from).vk;
+            vkCds.srcBinding = cds.binding.from;
+            vkCds.srcArrayElement = cds.arrayElem.from;
+            vkCds.dstSet = enforce(cast(VulkanDescriptorSet)cds.set.to).vk;
+            vkCds.dstBinding = cds.binding.to;
+            vkCds.dstArrayElement = cds.arrayElem.to;
+            return vkCds;
+        }).array;
+
+        cmds.updateDescriptorSets(vk,
+            cast(uint)vkWrites.length, vkWrites.ptr,
+            cast(uint)vkCopies.length, vkCopies.ptr
+        );
+    }
+
     override Pipeline[] createPipelines(PipelineInfo[] infos) {
         import std.algorithm : map, max;
         import std.array : array;

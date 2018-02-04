@@ -3,7 +3,9 @@ module gfx.graal.pipeline;
 import gfx.core.rc;
 import gfx.core.typecons;
 import gfx.core.types;
+import gfx.graal.buffer;
 import gfx.graal.format;
+import gfx.graal.image;
 import gfx.graal.renderpass;
 
 import std.typecons : Flag;
@@ -275,3 +277,78 @@ struct DescriptorPoolSize {
     DescriptorType type;
     uint count;
 }
+
+struct WriteDescriptorSet {
+    DescriptorSet dstSet;
+    uint dstBinding;
+    uint dstArrayElem;
+    DescriptorWrites writes;
+}
+
+struct CopyDescritporSet {
+    Trans!DescriptorSet set;
+    Trans!uint          binding;
+    Trans!uint          arrayElem;
+}
+
+abstract class DescriptorWrites
+{
+    this(DescriptorType type, size_t count) {
+        _type = type;
+        _count = count;
+    }
+    final @property DescriptorType type() const {
+        return _type;
+    }
+    final @property size_t count() const {
+        return _count;
+    }
+    private DescriptorType _type;
+    private size_t _count;
+}
+
+class TDescWritesBase(Desc) : DescriptorWrites
+{
+    this(Desc[] descs, DescriptorType type) {
+        super(type, descs.length);
+        _descs = descs;
+    }
+    final @property Desc[] descs() {
+        return _descs;
+    }
+    private Desc[] _descs;
+}
+
+final class TDescWrites(Desc, DescriptorType ctType) : TDescWritesBase!Desc
+{
+    this(Desc[] descs) {
+        super(descs, ctType);
+    }
+}
+
+struct CombinedImageSampler {
+    Sampler sampler;
+    ImageView view;
+    ImageLayout layout;
+}
+
+struct ImageViewLayout {
+    ImageView view;
+    ImageLayout layout;
+}
+
+struct BufferRange {
+    Buffer buffer;
+    size_t offset;
+    size_t range;
+}
+
+alias SamplerDescWrites = TDescWrites!(Sampler, DescriptorType.sampler);
+alias CombinedImageSamplerDescWrites = TDescWrites!(CombinedImageSampler, DescriptorType.combinedImageSampler);
+alias SampledImageDescWrites = TDescWrites!(ImageViewLayout, DescriptorType.sampledImage);
+alias StorageImageDescWrites = TDescWrites!(ImageViewLayout, DescriptorType.storageImage);
+alias InputAttachmentDescWrites = TDescWrites!(ImageViewLayout, DescriptorType.inputAttachment);
+alias UniformBufferDescWrites = TDescWrites!(BufferRange, DescriptorType.uniformBuffer);
+alias StorageBufferDescWrites = TDescWrites!(BufferRange, DescriptorType.storageBuffer);
+alias UniformTexelBufferDescWrites = TDescWrites!(BufferView, DescriptorType.uniformTexelBuffer);
+alias StorageTexelBufferDescWrites = TDescWrites!(BufferView, DescriptorType.storageTexelBuffer);
