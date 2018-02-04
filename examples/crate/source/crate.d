@@ -119,8 +119,8 @@ class CrateExample : Example
             return vec4(vec).normalized().vector;
         }
         const lights = Lights( [
-            Light(normalize([1.0, 1.0, -1.0, 0.0]),    [0.8, 0.5, 0.2, 1.0]),
-            Light(normalize([-1.0, 1.0, -1.0, 0.0]),    [0.2, 0.5, 0.8, 1.0]),
+            Light(normalize([1.0, 1.0, 1.0, 0.0]),    [0.8, 0.5, 0.2, 1.0]),
+            Light(normalize([-1.0, 1.0, 1.0, 0.0]),    [0.2, 0.5, 0.8, 1.0]),
             Light.init, Light.init, Light.init
         ], 2);
 
@@ -316,7 +316,7 @@ int main() {
         // 6 RPM at 60 FPS
         const puls = 6 * 2*PI / 3600f;
         auto angle = 0f;
-        const view = mat4.look_at(vec3(0, -5, 3), vec3(0, 0, 0), vec3(0, 0, 1));
+        const view = mat4.look_at(vec3(0, -5, -3), vec3(0, 0, 0), vec3(0, -1, 0));
         const proj = mat4.perspective(640, 480, 45, 1, 10);
         const viewProj = proj*view;
 
