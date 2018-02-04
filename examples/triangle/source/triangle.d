@@ -66,7 +66,7 @@ class TriangleExample : Example
             Vertex([   0f, -0.7f, 0f, 1f], [ 0f, 0f, 1f, 1f ]),
         ];
 
-        vertBuf = createBuffer(vertexData, BufferUsage.vertex);
+        vertBuf = createStaticBuffer(vertexData, BufferUsage.vertex);
     }
 
     void prepareRenderPass() {

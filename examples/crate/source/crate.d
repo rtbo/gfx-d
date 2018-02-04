@@ -125,11 +125,11 @@ class CrateExample : Example
         ], 2);
 
         indices = crate.indices;
-        vertBuf = createBuffer(crate.vertices, BufferUsage.vertex);
-        indBuf = createBuffer(crate.indices, BufferUsage.index);
+        vertBuf = createStaticBuffer(crate.vertices, BufferUsage.vertex);
+        indBuf = createStaticBuffer(crate.indices, BufferUsage.index);
 
-        matBuf = allocateBuffer(Matrices.sizeof, BufferUsage.uniform);
-        ligBuf = createBuffer(lights, BufferUsage.uniform);
+        matBuf = createDynamicBuffer(Matrices.sizeof, BufferUsage.uniform);
+        ligBuf = createStaticBuffer(lights, BufferUsage.uniform);
     }
 
     void prepareRenderPass() {

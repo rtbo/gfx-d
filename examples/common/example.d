@@ -195,60 +195,118 @@ class Example : Disposable
         // }
     }
 
-    /// Allocate a buffer, binds memory to it, and leave content undefined
-    final Buffer allocateBuffer(size_t dataSize, BufferUsage usage)
+    /// Create a buffer for usage, bind memory of dataSize with memProps
+    /// Return null if no memory type can be found
+    final Buffer createBuffer(size_t dataSize, BufferUsage usage, MemProps memProps)
     {
         auto buf = device.createBuffer( usage, dataSize ).rc;
 
         const mr = buf.memoryRequirements;
-        const props = mr.props | MemProps.hostVisible;
+        const props = mr.props | memProps;
         const devMemProps = physicalDevice.memoryProperties;
 
         auto memType = devMemProps.types.find!(mt => (mt.props & props) == props);
-        enforce (memType.length, "Could not find a memory type");
+        if (!memType.length) return null;
 
         const memTypeInd = cast(uint)(devMemProps.types.length - memType.length);
-
         auto mem = device.allocateMemory(memTypeInd, mr.size).rc;
-
         buf.bindMemory(mem, 0);
 
         return buf.giveAway();
     }
 
-    final Buffer createBuffer(T)(const(T)[] data, BufferUsage usage)
+    /// Create a buffer, binds memory to it, and leave content undefined
+    /// The buffer will be host visible and host coherent such as content
+    /// can be updated without staging buffer
+    final Buffer createDynamicBuffer(size_t dataSize, BufferUsage usage)
     {
-        const dataSize = data.length * T.sizeof;
+        return createBuffer(dataSize, usage, MemProps.hostVisible | MemProps.hostCoherent);
+    }
 
-        auto buf = allocateBuffer(dataSize, usage).rc;
+    /// Create a buffer, and bind it with memory filled with data.
+    /// The bound memory will be deviceLocal, without guarantee to be host visible.
+    final Buffer createStaticBuffer(const(void)[] data, BufferUsage usage)
+    {
+        const dataSize = data.length;
 
-        {
-            auto mm = mapMemory!T(buf.boundMemory, 0, data.length);
-            mm[] = data;
-            MappedMemorySet mms;
-            mm.addToSet(mms);
-            device.flushMappedMemory(mms);
+        // on embedded gpus, device local memory is often also host visible
+        // attempting to create one that way
+        if (physicalDevice.type != DeviceType.discreteGpu) {
+            auto buf = createBuffer(
+                dataSize, usage,
+                MemProps.hostVisible | MemProps.hostCoherent | MemProps.deviceLocal
+            ).rc;
+            if (buf) {
+                auto mm = mapMemory!void(buf.boundMemory, 0, data.length);
+                mm[] = data;
+                return buf.giveAway();
+            }
         }
 
+        // did not happen :-(
+        // will go the usual way: staging buffer then device local buffer
+
+        // create staging buffer
+        auto stagingBuf = enforce(createBuffer(
+            dataSize, BufferUsage.transferSrc, MemProps.hostVisible | MemProps.hostCoherent
+        )).rc;
+
+        // populate data
+        {
+            auto mm = mapMemory!void(stagingBuf.boundMemory, 0, data.length);
+            mm[] = data;
+        }
+
+        // create actual buffer
+        auto buf = enforce(createBuffer(
+            dataSize, usage | BufferUsage.transferDst, MemProps.deviceLocal
+        )).rc;
+
+        // copy from staging buffer
+        copyBuffer(stagingBuf, buf, dataSize);
+
+        // return data
         return buf.giveAway();
     }
 
-    final Buffer createBuffer(T)(in T data, BufferUsage usage)
+    /// ditto
+    final Buffer createStaticBuffer(T)(const(T)[] data, BufferUsage usage)
+    if (!is(T == void))
+    {
+        return createStaticBuffer(untypeSlice(data), usage);
+    }
+
+    /// ditto
+    final Buffer createStaticBuffer(T)(in T data, BufferUsage usage)
     if (!isArray!T)
     {
-        const dataSize = T.sizeof;
+        const start = cast(const(void)*)&data;
+        return createStaticBuffer(start[0 .. data.sizeof], usage);
+    }
 
-        auto buf = allocateBuffer(dataSize, usage).rc;
-
-        {
-            auto mm = mapMemory!T(buf.boundMemory, 0, 1);
-            mm[0] = data;
-            MappedMemorySet mms;
-            mm.addToSet(mms);
-            device.flushMappedMemory(mms);
+    /// copy the content of one buffer to another
+    /// srcBuf and dstBuf must support transferSrc and transferDst respectively.
+    final void copyBuffer(Buffer srcBuf, Buffer dstBuf,
+                          size_t size, CommandPool pool=null)
+    {
+        Rc!CommandPool cmdPool = pool;
+        if (!cmdPool) {
+            cmdPool = enforce(this.cmdPool);
         }
 
-        return buf.giveAway();
+        auto cmdBufs = cmdPool.allocate(1);
+        auto cmdBuf = cmdBufs[0];
+
+        cmdBuf.begin(No.persistent);
+        cmdBuf.copyBuffer(trans(srcBuf, dstBuf), [CopyRegion(trans!size_t(0, 0), size)]);
+        cmdBuf.end();
+
+        graphicsQueue.submit([
+            Submission([],[], cmdBufs)
+        ], null);
+        graphicsQueue.waitIdle();
+
+        cmdPool.free(cmdBufs);
     }
 }
 
