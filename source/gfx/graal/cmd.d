@@ -149,6 +149,12 @@ struct VertexBinding {
     size_t offset;
 }
 
+struct CopyRegion
+{
+    Trans!size_t offset;
+    size_t size;
+}
+
 interface CommandBuffer
 {
     @property CommandPool pool();
@@ -169,6 +175,8 @@ interface CommandBuffer
     void clearDepthStencilImage(Image image, ImageLayout layout,
                                 in ClearDepthStencilValues clearValues,
                                 ImageSubresourceRange[] ranges);
+
+    void copyBuffer(Trans!Buffer buffers, CopyRegion[] regions);
 
     void beginRenderPass(RenderPass rp, Framebuffer fb,
                          Rect area, ClearValues[] clearValues);

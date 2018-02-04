@@ -176,6 +176,22 @@ final class VulkanCommandBuffer : CommandBuffer
         cmds.cmdClearDepthStencilImage(vk, vkImg, vkLayout, &vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
     }
 
+    override void copyBuffer(Trans!Buffer buffers, CopyRegion[] regions)
+    {
+        import std.algorithm : map;
+        import std.array : array;
+
+        auto vkRegions = regions.map!(
+            r => VkBufferCopy(r.offset.from, r.offset.to, r.size)
+        ).array;
+
+        cmds.cmdCopyBuffer(vk,
+            enforce(cast(VulkanBuffer)buffers.from).vk,
+            enforce(cast(VulkanBuffer)buffers.to).vk,
+            cast(uint)vkRegions.length, vkRegions.ptr
+        );
+    }
+
     override void beginRenderPass(RenderPass rp, Framebuffer fb,
                                   Rect area, ClearValues[] clearValues)
     {
