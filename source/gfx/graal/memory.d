@@ -75,9 +75,6 @@ struct MemoryMap(T)
     T[] opIndex() {
         return data;
     }
-    T opIndex(size_t index) {
-        return data[index];
-    }
     T[] opIndex(in size_t[2] slice) {
         return data[ slice[0] .. slice[1] ];
     }
@@ -85,14 +82,20 @@ struct MemoryMap(T)
     void opIndexAssign(in T[] vals) {
         data[] = vals;
     }
-    void opIndexAssign(in T val, size_t ind) {
-        data[ind] = val;
-    }
-    void opIndexAssign(in T val, size_t[2] slice) {
-        data[slice[0] .. slice[1]] = val;
-    }
     void opIndexAssign(in T[] vals, size_t[2] slice) {
         data[slice[0] .. slice[1]] = vals;
+    }
+
+    static if (!is(T == void)) {
+        T opIndex(size_t index) {
+            return data[index];
+        }
+        void opIndexAssign(in T val, size_t ind) {
+            data[ind] = val;
+        }
+        void opIndexAssign(in T val, size_t[2] slice) {
+            data[slice[0] .. slice[1]] = val;
+        }
     }
 }
 
@@ -116,6 +119,7 @@ auto mapMemory(T)(DeviceMemory dm, in size_t offset, in size_t count)
 interface DeviceMemory : AtomicRefCounted
 {
     @property uint typeIndex();
+    @property MemProps props();
     @property size_t size();
 
     void* map(in size_t offset, in size_t size);

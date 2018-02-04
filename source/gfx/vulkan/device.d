@@ -141,7 +141,9 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         VkDeviceMemory vkMem;
         vulkanEnforce(cmds.allocateMemory(vk, &mai, null, &vkMem), "Could not allocate device memory");
 
-        return new VulkanDeviceMemory(vkMem, this, memTypeIndex, size);
+        const props = pd.memoryProperties.types[memTypeIndex].props;
+
+        return new VulkanDeviceMemory(vkMem, this, props, size, memTypeIndex);
     }
 
     override void flushMappedMemory(MappedMemorySet set)
