@@ -197,4 +197,3 @@ struct Option(T)
     }
 
 }
-
