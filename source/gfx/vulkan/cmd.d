@@ -250,6 +250,11 @@ final class VulkanCommandBuffer : CommandBuffer
         cmds.cmdBindVertexBuffers(vk, firstBinding, cast(uint)bindings.length, vkBufs.ptr, vkOffsets.ptr);
     }
 
+    override void bindIndexBuffer(Buffer indexBuf, size_t offset, IndexType type) {
+        auto vkBuf = enforce(cast(VulkanBuffer)indexBuf).vk;
+        cmds.cmdBindIndexBuffer(vk, vkBuf, offset, type.toVk());
+    }
+
     override void pushConstants(PipelineLayout layout, ShaderStage stages,
                                 size_t offset, size_t size, const(void)* data)
     {
@@ -260,6 +265,11 @@ final class VulkanCommandBuffer : CommandBuffer
     override void draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance)
     {
         cmds.cmdDraw(vk, vertexCount, instanceCount, firstVertex, firstInstance);
+    }
+
+    override void drawIndexed(uint indexCount, uint instanceCount, uint firstVertex, int vertexOffset, uint firstInstance)
+    {
+        cmds.cmdDrawIndexed(vk, indexCount, instanceCount, firstVertex, vertexOffset, firstInstance);
     }
 
     private VkCommandBuffer _vk;

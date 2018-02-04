@@ -225,6 +225,9 @@ VkDescriptorType toVk(in DescriptorType dt) {
     return cast(VkDescriptorType)dt;
 }
 
+VkIndexType toVk(in IndexType type) {
+    return cast(VkIndexType)type;
+}
 
 // flags conversion
 

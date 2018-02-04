@@ -18,6 +18,10 @@ enum BufferUsage
     indirect        = 0x0100,
 }
 
+enum IndexType {
+    u16, u32
+}
+
 interface Buffer : AtomicRefCounted
 {
     @property size_t size();

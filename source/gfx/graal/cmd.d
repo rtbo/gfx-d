@@ -179,10 +179,11 @@ interface CommandBuffer
 
     void bindPipeline(Pipeline pipeline);
     void bindVertexBuffers(uint firstBinding, VertexBinding[] bindings);
+    void bindIndexBuffer(Buffer indexBuf, size_t offset, IndexType type);
 
     void pushConstants(PipelineLayout layout, ShaderStage stages,
                        size_t offset, size_t size, const(void)* data);
 
     void draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance);
-
+    void drawIndexed(uint indexCount, uint instanceCount, uint firstVertex, int vertexOffset, uint firstInstance);
 }
