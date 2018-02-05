@@ -1,4 +1,4 @@
-/// Image module
+/// ImageBase module
 module gfx.graal.image;
 
 import gfx.core.rc;
@@ -118,7 +118,7 @@ enum CompSwizzle : ubyte
 
 alias Swizzle = CompSwizzle[4];
 
-interface Image
+interface ImageBase
 {
     @property ImageType type();
     @property Format format();
@@ -129,7 +129,7 @@ interface Image
     ImageView createView(ImageType viewtype, ImageSubresourceRange isr, Swizzle swizzle);
 }
 
-interface ImageRc : Image, AtomicRefCounted
+interface Image : ImageBase, AtomicRefCounted
 {
     @property MemoryRequirements memoryRequirements();
     /// The image keeps a reference of the device memory
@@ -138,7 +138,7 @@ interface ImageRc : Image, AtomicRefCounted
 
 interface ImageView : AtomicRefCounted
 {
-    @property Image image();
+    @property ImageBase image();
     @property ImageSubresourceRange subresourceRange();
     @property Swizzle swizzle();
 }

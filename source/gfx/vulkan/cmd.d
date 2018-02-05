@@ -134,7 +134,7 @@ final class VulkanCommandBuffer : CommandBuffer
             vkImgMb.newLayout = imgMb.layoutTrans.to.toVk();
             vkImgMb.srcQueueFamilyIndex = imgMb.queueFamIndexTrans.from;
             vkImgMb.dstQueueFamilyIndex = imgMb.queueFamIndexTrans.to;
-            vkImgMb.image = enforce(cast(VulkanImage)imgMb.image, "Did not pass a Vulkan image").vk;
+            vkImgMb.image = enforce(cast(VulkanImageBase)imgMb.image, "Did not pass a Vulkan image").vk;
             vkImgMb.subresourceRange = imgMb.range.toVk();
             return vkImgMb;
         }).array;
@@ -147,13 +147,13 @@ final class VulkanCommandBuffer : CommandBuffer
         );
     }
 
-    override void clearColorImage(Image image, ImageLayout layout,
+    override void clearColorImage(ImageBase image, ImageLayout layout,
                          in ClearColorValues clearValues, ImageSubresourceRange[] ranges)
     {
         import std.algorithm : map;
         import std.array : array;
 
-        auto vkImg = enforce(cast(VulkanImage)image, "Did not pass a vulkan image").vk;
+        auto vkImg = enforce(cast(VulkanImageBase)image, "Did not pass a vulkan image").vk;
         auto vkLayout = layout.toVk();
         auto vkClear = cast(const(VkClearColorValue)*) cast(const(void)*) &clearValues.values;
         auto vkRanges = ranges.map!(r => r.toVk()).array;
@@ -161,14 +161,14 @@ final class VulkanCommandBuffer : CommandBuffer
         cmds.cmdClearColorImage(vk, vkImg, vkLayout, vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
     }
 
-    override void clearDepthStencilImage(Image image, ImageLayout layout,
+    override void clearDepthStencilImage(ImageBase image, ImageLayout layout,
                                          in ClearDepthStencilValues clearValues,
                                          ImageSubresourceRange[] ranges)
     {
         import std.algorithm : map;
         import std.array : array;
 
-        auto vkImg = enforce(cast(VulkanImage)image, "Did not pass a vulkan image").vk;
+        auto vkImg = enforce(cast(VulkanImageBase)image, "Did not pass a vulkan image").vk;
         auto vkLayout = layout.toVk();
         auto vkClear = VkClearDepthStencilValue(clearValues.depth, clearValues.stencil);
         auto vkRanges = ranges.map!(r => r.toVk()).array;

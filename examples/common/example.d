@@ -28,7 +28,7 @@ class Example : Disposable
     uint[2] surfaceSize;
     bool hasAlpha;
     Rc!Swapchain swapchain;
-    Image[] scImages;
+    ImageBase[] scImages;
     Rc!Semaphore imageAvailableSem;
     Rc!Semaphore renderingFinishSem;
     Rc!CommandPool cmdPool;

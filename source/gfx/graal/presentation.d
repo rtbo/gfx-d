@@ -45,7 +45,7 @@ interface Swapchain : AtomicRefCounted
     /// Get the list of images owned by this swapchain.
     /// The index of each image is meaningful and is often used to reference
     /// the image (such as the index returned by acquireNextImage)
-    @property Image[] images();
+    @property ImageBase[] images();
 
     /// use negative timeout to specify no timeout at all
     /// Params:

@@ -14,7 +14,7 @@ import gfx.vulkan.device;
 import gfx.vulkan.error;
 import gfx.vulkan.memory;
 
-class VulkanImage : Image
+class VulkanImageBase : ImageBase
 {
     this(VkImage vk, VulkanDevice dev, ImageType type, ImageDims dims, Format format)
     {
@@ -87,7 +87,7 @@ class VulkanImage : Image
     private uint _levels;
 }
 
-class VulkanImageRc : VulkanImage, ImageRc
+class VulkanImage : VulkanImageBase, Image
 {
     mixin(atomicRcCode);
 
@@ -127,7 +127,7 @@ class VulkanImageView : VulkanDevObj!(VkImageView, "destroyImageView"), ImageVie
 {
     mixin(atomicRcCode);
 
-    this(VkImageView vk, VulkanImage img, ImageSubresourceRange isr, Swizzle swizzle)
+    this(VkImageView vk, VulkanImageBase img, ImageSubresourceRange isr, Swizzle swizzle)
     {
         super(vk, img.dev);
         _img = img;
@@ -141,7 +141,7 @@ class VulkanImageView : VulkanDevObj!(VkImageView, "destroyImageView"), ImageVie
         _img = null;
     }
 
-    override @property VulkanImage image() {
+    override @property VulkanImageBase image() {
         return _img;
     }
 
@@ -153,7 +153,7 @@ class VulkanImageView : VulkanDevObj!(VkImageView, "destroyImageView"), ImageVie
         return _swizzle;
     }
 
-    private VulkanImage _img;
+    private VulkanImageBase _img;
     private ImageSubresourceRange _isr;
     private Swizzle _swizzle;
 }

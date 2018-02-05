@@ -51,7 +51,7 @@ struct ImageMemoryBarrier {
     Trans!Access accessMaskTrans;
     Trans!ImageLayout layoutTrans;
     Trans!uint queueFamIndexTrans;
-    Image image;
+    ImageBase image;
     ImageSubresourceRange range;
 }
 
@@ -168,11 +168,11 @@ interface CommandBuffer
                          BufferMemoryBarrier[] bufMbs,
                          ImageMemoryBarrier[] imgMbs);
 
-    void clearColorImage(Image image, ImageLayout layout,
+    void clearColorImage(ImageBase image, ImageLayout layout,
                          in ClearColorValues clearValues,
                          ImageSubresourceRange[] ranges);
 
-    void clearDepthStencilImage(Image image, ImageLayout layout,
+    void clearDepthStencilImage(ImageBase image, ImageLayout layout,
                                 in ClearDepthStencilValues clearValues,
                                 ImageSubresourceRange[] ranges);
 

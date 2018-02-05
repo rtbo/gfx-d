@@ -107,7 +107,7 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "destroySwapchainKHR"), Sw
 
     // not releasing images on purpose, the lifetime is owned by implementation
 
-    override @property Image[] images() {
+    override @property ImageBase[] images() {
 
         if (!_images.length) {
             uint count;
@@ -126,8 +126,8 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "destroySwapchainKHR"), Sw
             _images = vkImgs
                     .map!((VkImage vkImg) {
                         const dims = ImageDims.d2(_size[0], _size[1]);
-                        auto img = new VulkanImage(vkImg, dev, ImageType.d2, dims, _format);
-                        return cast(Image)img;
+                        auto img = new VulkanImageBase(vkImg, dev, ImageType.d2, dims, _format);
+                        return cast(ImageBase)img;
                     })
                     .array;
         }
@@ -161,7 +161,7 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "destroySwapchainKHR"), Sw
         return img;
     }
 
-    private Image[] _images;
+    private ImageBase[] _images;
     private uint[2] _size;
     private Format _format;
 }

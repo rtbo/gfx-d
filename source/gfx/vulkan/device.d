@@ -190,7 +190,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         return new VulkanBuffer(vkBuf, this, usage, size);
     }
 
-    override Image createImage(ImageType type, ImageDims dims, Format format,
+    override ImageBase createImage(ImageType type, ImageDims dims, Format format,
                                ImageUsage usage, uint samples, uint levels=1)
     {
         VkImageCreateInfo ici;
@@ -209,7 +209,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         VkImage vkImg;
         vulkanEnforce(cmds.createImage(vk, &ici, null, &vkImg), "Could not create a Vulkan image");
 
-        return new VulkanImage(vkImg, this, type, dims, format);
+        return new VulkanImageBase(vkImg, this, type, dims, format);
     }
 
     Sampler createSampler(in SamplerInfo info) {
