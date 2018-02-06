@@ -59,3 +59,14 @@ template unsafeCast(U) if (is(U == const))
     }
 }
 
+
+/// Return a bit by bit unchecked identical representation of the passed argument
+@system
+U transmute(U, T)(in T value)
+{
+    static assert(T.sizeof == U.sizeof, "can only transmute to identical object size");
+    static assert(!is(T == class) && !is(T == interface), "cannot used transmute on objects");
+    static assert(!is(U == class) && !is(U == interface), "cannot used transmute on objects");
+
+    return *cast(U*)cast(void*)&value;
+}
