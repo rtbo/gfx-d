@@ -45,7 +45,7 @@ enum Access {
     memoryWrite                 = 0x00010000,
 }
 
-enum queueFamilyIgnored = ~0;
+enum queueFamilyIgnored = 0xffffffff;
 
 struct ImageMemoryBarrier {
     Trans!Access accessMaskTrans;
@@ -155,6 +155,22 @@ struct CopyRegion
     size_t size;
 }
 
+struct ImageCopyRegion
+{
+    Trans!ImageSubresourceRange isr;
+    Trans!(float[3]) offset;
+}
+
+struct BufferImageCopy
+{
+    size_t bufferOffset;
+    uint bufferWidth;
+    uint bufferHeight;
+    ImageSubresourceLayer imageLayers;
+    int[3] offset;
+    uint[3] extent;
+}
+
 interface CommandBuffer
 {
     @property CommandPool pool();
@@ -177,6 +193,8 @@ interface CommandBuffer
                                 ImageSubresourceRange[] ranges);
 
     void copyBuffer(Trans!Buffer buffers, CopyRegion[] regions);
+    void copyBufferToImage(Buffer srcBuffer, ImageBase dstImage,
+                           in ImageLayout dstLayout, in BufferImageCopy[] regions);
 
     void beginRenderPass(RenderPass rp, Framebuffer fb,
                          Rect area, ClearValues[] clearValues);

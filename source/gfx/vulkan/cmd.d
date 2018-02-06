@@ -192,6 +192,26 @@ final class VulkanCommandBuffer : CommandBuffer
         );
     }
 
+    void copyBufferToImage(Buffer srcBuffer, ImageBase dstImage,
+                           in ImageLayout dstLayout, in BufferImageCopy[] regions)
+    {
+        import gfx.core.util : transmute;
+        import std.algorithm : map;
+        import std.array : array;
+
+        auto vkRegions = regions.map!(
+            bic => transmute!VkBufferImageCopy(bic)
+        ).array;
+
+        cmds.cmdCopyBufferToImage(
+            vk,
+            enforce(cast(VulkanBuffer)srcBuffer).vk,
+            enforce(cast(VulkanImageBase)dstImage).vk,
+            dstLayout.toVk(),
+            cast(uint)vkRegions.length, vkRegions.ptr
+        );
+    }
+
     override void beginRenderPass(RenderPass rp, Framebuffer fb,
                                   Rect area, ClearValues[] clearValues)
     {

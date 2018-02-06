@@ -100,13 +100,21 @@ enum ImageAspect {
 }
 
 
+struct ImageSubresourceLayer
+{
+    ImageAspect aspect;
+    uint mipLevel       = 0;
+    uint firstLayer     = 0;
+    uint layers         = 1;
+}
+
 struct ImageSubresourceRange
 {
     ImageAspect aspect;
-    size_t firstLevel;
-    size_t levels;
-    size_t firstLayer;
-    size_t layers;
+    size_t firstLevel   = 0;
+    size_t levels       = 1;
+    size_t firstLayer   = 0;
+    size_t layers       = 1;
 }
 
 enum CompSwizzle : ubyte
