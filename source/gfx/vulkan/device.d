@@ -111,7 +111,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
             }
         }
 
-        auto q = new VulkanQueue(vkQ, cmds);
+        auto q = new VulkanQueue(vkQ, this);
         _queues ~= q;
         return q;
     }

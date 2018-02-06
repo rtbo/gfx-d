@@ -8,15 +8,17 @@ import gfx.bindings.vulkan;
 import gfx.core.rc;
 import gfx.graal.queue;
 import gfx.vulkan.conv;
+import gfx.vulkan.device;
 import gfx.vulkan.error;
 import gfx.vulkan.sync;
 import gfx.vulkan.wsi;
 
 final class VulkanQueue : Queue
 {
-    this (VkQueue vk, VkDeviceCmds cmds) {
+    this (VkQueue vk, VulkanDevice dev) {
         _vk = vk;
-        _cmds = cmds;
+        _dev = dev; // weak reference, no retain
+        _cmds = dev.cmds;
     }
 
     @property VkQueue vk() {
@@ -25,6 +27,10 @@ final class VulkanQueue : Queue
 
     @property VkDeviceCmds cmds() {
         return _cmds;
+    }
+
+    @property Device device() {
+        return cast(Device)_dev.rcLock();
     }
 
     void waitIdle() {
@@ -121,5 +127,6 @@ final class VulkanQueue : Queue
     }
 
     private VkQueue _vk;
+    private VulkanDevice _dev; // device is kept as weak reference
     private VkDeviceCmds _cmds;
 }

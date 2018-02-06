@@ -2,6 +2,7 @@ module gfx.graal.queue;
 
 import gfx.core.rc;
 import gfx.graal.cmd;
+import gfx.graal.device;
 import gfx.graal.presentation;
 import gfx.graal.sync;
 
@@ -34,6 +35,7 @@ struct PresentRequest {
 
 interface Queue
 {
+    @property Device device();
     void waitIdle();
     void submit(Submission[] submissions, Fence fence);
     void present(Semaphore[] waitSems, PresentRequest[] prs);
