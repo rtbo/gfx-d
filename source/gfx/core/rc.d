@@ -380,9 +380,8 @@ private enum sharedAtomicMethods = q{
                 logf("dispose %s", typeof(this).stringof);
             }
             synchronized(this) {
-                import std.traits : Unqual;
                 // cast shared away
-                auto obj = cast(Unqual!(typeof(this)))this;
+                auto obj = cast(Disposable)this;
                 obj.dispose();
             }
             return null;
@@ -400,12 +399,14 @@ private enum sharedAtomicMethods = q{
 
             if (c == 0) {
                 debug(rc) {
+                    import std.experimental.logger : logf;
                     logf("rcLock %s: %s", typeof(this).stringof, c);
                 }
                 return null;
             }
             if (cas(&_refCount, c, c+1)) {
                 debug(rc) {
+                    import std.experimental.logger : logf;
                     logf("rcLock %s: %s", typeof(this).stringof, c+1);
                 }
                 return this;
