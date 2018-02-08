@@ -35,6 +35,8 @@ class CrateExample : Example
     Rc!Buffer indBuf;
     Rc!Buffer matBuf;
     Rc!Buffer ligBuf;
+    Rc!Image texImg;
+    Rc!ImageView texView;
     Rc!DescriptorPool descPool;
     Rc!DescriptorSetLayout setLayout;
     DescriptorSet set;
@@ -78,6 +80,8 @@ class CrateExample : Example
         indBuf.unload();
         matBuf.unload();
         ligBuf.unload();
+        texImg.unload();
+        texView.unload();
         setLayout.unload();
         descPool.unload();
         layout.unload();
@@ -90,6 +94,7 @@ class CrateExample : Example
     override void prepare() {
         super.prepare();
         prepareBuffers();
+        prepareTexture();
         prepareRenderPass();
         preparePipeline();
         prepareDescriptorSet();
@@ -130,6 +135,15 @@ class CrateExample : Example
 
         matBuf = createDynamicBuffer(Matrices.sizeof, BufferUsage.uniform);
         ligBuf = createStaticBuffer(lights, BufferUsage.uniform);
+    }
+
+    void prepareTexture() {
+        import img : ImageFormat, ImgImage = Image;
+        auto img = ImgImage.loadFromView!("crate.jpg")(ImageFormat.argb);
+        texImg = createTexture(
+            cast(const(void)[])img.data, ImageType.d2, ImageDims.d2(img.width, img.height), Format.rgba8_uNorm
+        );
+        texView = texImg.createView(ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.init);
     }
 
     void prepareRenderPass() {

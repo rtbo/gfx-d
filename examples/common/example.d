@@ -4,6 +4,7 @@ import gfx.core.rc;
 import gfx.graal;
 import gfx.graal.cmd;
 import gfx.graal.device;
+import gfx.graal.image;
 import gfx.graal.queue;
 import gfx.graal.sync;
 import gfx.vulkan;
@@ -195,20 +196,32 @@ class Example : Disposable
         // }
     }
 
+
+    // Following functions are general utility that can be used by subclassing
+    // examples.
+
+    /// Return the index of a memory type supporting all of props,
+    /// or uint.max if none was found.
+    uint findMemType(MemProps props)
+    {
+        const devMemProps = physicalDevice.memoryProperties;
+        auto memType = devMemProps.types.find!(mt => (mt.props & props) == props);
+        if (!memType.length) return uint.max;
+
+        return cast(uint)(devMemProps.types.length - memType.length);
+    }
+
+
     /// Create a buffer for usage, bind memory of dataSize with memProps
     /// Return null if no memory type can be found
-    final Buffer createBuffer(size_t dataSize, BufferUsage usage, MemProps memProps)
+    final Buffer createBuffer(size_t dataSize, BufferUsage usage, MemProps props)
     {
         auto buf = device.createBuffer( usage, dataSize ).rc;
 
         const mr = buf.memoryRequirements;
-        const props = mr.props | memProps;
-        const devMemProps = physicalDevice.memoryProperties;
+        const memTypeInd = findMemType(mr.props | props);
+        if (memTypeInd == uint.max) return null;
 
-        auto memType = devMemProps.types.find!(mt => (mt.props & props) == props);
-        if (!memType.length) return null;
-
-        const memTypeInd = cast(uint)(devMemProps.types.length - memType.length);
         auto mem = device.allocateMemory(memTypeInd, mr.size).rc;
         buf.bindMemory(mem, 0);
 
@@ -229,8 +242,8 @@ class Example : Disposable
     {
         const dataSize = data.length;
 
-        // on embedded gpus, device local memory is often also host visible
-        // attempting to create one that way
+        // On embedded gpus, device local memory is often also host visible.
+        // Attempting to create one that way.
         if (physicalDevice.type != DeviceType.discreteGpu) {
             auto buf = createBuffer(
                 dataSize, usage,
@@ -262,8 +275,10 @@ class Example : Disposable
             dataSize, usage | BufferUsage.transferDst, MemProps.deviceLocal
         )).rc;
 
+        auto b = autoCmdBuf().rc;
+
         // copy from staging buffer
-        copyBuffer(stagingBuf, buf, dataSize);
+        copyBuffer(stagingBuf, buf, dataSize, b.cmdBuf);
 
         // return data
         return buf.giveAway();
@@ -284,30 +299,120 @@ class Example : Disposable
         return createStaticBuffer(start[0 .. data.sizeof], usage);
     }
 
+    /// create an image to be used as texture
+    Image createTexture(const(void)[] data, ImageType type, ImageDims dims,
+                      Format format, uint levels=1)
+    {
+        const FormatFeatures requirement = FormatFeatures.sampledImage;
+        const formatProps = physicalDevice.formatProperties(format);
+        enforce( (formatProps.optimalTiling & requirement) == requirement );
+
+        // create staging buffer
+        auto stagingBuf = enforce(createBuffer(
+            data.length, BufferUsage.transferSrc, MemProps.hostVisible | MemProps.hostCoherent
+        )).rc;
+
+        // populate data to buffer
+        {
+            auto mm = mapMemory!void(stagingBuf.boundMemory, 0, data.length);
+            mm[] = data;
+        }
+
+        // create an image
+        auto img = enforce(device.createImage(
+            type, dims, format, ImageUsage.sampled | ImageUsage.transferDst, 1, levels
+        )).rc;
+
+        // allocate memory image
+        const mr = img.memoryRequirements;
+        const memTypeInd = findMemType(mr.props | MemProps.deviceLocal);
+        if (memTypeInd == uint.max) return null;
+
+        auto mem = device.allocateMemory(memTypeInd, mr.size).rc;
+        img.bindMemory(mem, 0);
+
+        {
+            auto b = autoCmdBuf().rc;
+
+            b.cmdBuf.pipelineBarrier(
+                trans(PipelineStage.topOfPipe, PipelineStage.transfer), [], [
+                    ImageMemoryBarrier(
+                        trans(Access.none, Access.transferWrite),
+                        trans(ImageLayout.undefined, ImageLayout.transferDstOptimal),
+                        trans(queueFamilyIgnored, queueFamilyIgnored),
+                        img, ImageSubresourceRange(ImageAspect.color)
+                    )
+                ]
+            );
+            copyBufferToImage(stagingBuf, img, b.cmdBuf);
+        }
+
+        return img.giveAway();
+    }
+
     /// copy the content of one buffer to another
     /// srcBuf and dstBuf must support transferSrc and transferDst respectively.
-    final void copyBuffer(Buffer srcBuf, Buffer dstBuf,
-                          size_t size, CommandPool pool=null)
+    final void copyBuffer(Buffer srcBuf, Buffer dstBuf, size_t size, CommandBuffer cmdBuf)
+    {
+        cmdBuf.copyBuffer(trans(srcBuf, dstBuf), [CopyRegion(trans!size_t(0, 0), size)]);
+    }
+
+    /// copy the content of one buffer to an image.
+    /// the image layout must be transferDstOptimal buffer the call
+    final void copyBufferToImage(Buffer srcBuf, Image dstImg, CommandBuffer cmdBuf)
+    {
+        const dims = dstImg.dims;
+
+        BufferImageCopy region;
+        region.extent = [dims.width, dims.height, dims.depth];
+        const regions = (&region)[0 .. 1];
+        cmdBuf.copyBufferToImage(srcBuf, dstImg, ImageLayout.transferDstOptimal, regions);
+    }
+
+    /// Get a RAII command buffer that is meant to be trashed after usage.
+    /// Returned buffer is ready to record data, and execute commands on the graphics queue
+    /// at end of scope.
+    AutoCmdBuf autoCmdBuf(CommandPool pool=null)
     {
         Rc!CommandPool cmdPool = pool;
         if (!cmdPool) {
             cmdPool = enforce(this.cmdPool);
         }
-
-        auto cmdBufs = cmdPool.allocate(1);
-        auto cmdBuf = cmdBufs[0];
-
-        cmdBuf.begin(No.persistent);
-        cmdBuf.copyBuffer(trans(srcBuf, dstBuf), [CopyRegion(trans!size_t(0, 0), size)]);
-        cmdBuf.end();
-
-        graphicsQueue.submit([
-            Submission([],[], cmdBufs)
-        ], null);
-        graphicsQueue.waitIdle();
-
-        cmdPool.free(cmdBufs);
+        return new AutoCmdBuf(cmdPool, graphicsQueue);
     }
+}
+
+/// Utility command buffer for a one time submission that automatically submit
+/// when disposed.
+/// Generally used for transfer operations.
+class AutoCmdBuf : AtomicRefCounted
+{
+    mixin(atomicRcCode);
+
+    Rc!CommandPool pool;
+    Queue queue;
+    Rc!Device device; // device holds queue,
+    CommandBuffer cmdBuf;
+
+    this(CommandPool pool, Queue queue) {
+        this.pool = pool;
+        this.queue = queue;
+        this.device = queue.device;
+        this.cmdBuf = this.pool.allocate(1)[0];
+        this.cmdBuf.begin(No.persistent);
+    }
+
+    override void dispose() {
+        this.cmdBuf.end();
+        this.queue.submit([
+            Submission([], [], [ this.cmdBuf ])
+        ], null);
+        this.queue.waitIdle();
+        this.pool.free([ this.cmdBuf ]);
+        this.pool.unload();
+        this.device.unload();
+    }
+
 }
 
 /// Return a format suitable for the surface.
