@@ -5,7 +5,7 @@
 
 layout(location = 0) in vec3 i_Position;
 layout(location = 1) in vec3 i_Normal;
-layout(location = 2) in vec4 i_Color;
+layout(location = 2) in vec2 i_TexCoord;
 
 layout(std140, binding = 0) uniform Matrices {
 	mat4 mvpMat;
@@ -17,10 +17,10 @@ out gl_PerVertex {
 };
 
 layout(location = 0) out vec3 v_Normal;
-layout(location = 1) out vec4 v_Color;
+layout(location = 1) out vec2 v_TexCoord;
 
 void main() {
     gl_Position = ubo.mvpMat * vec4(i_Position, 1.0);
     v_Normal = mat3(ubo.normalMat) * i_Normal;
-    v_Color = i_Color;
+    v_TexCoord = i_TexCoord;
 }

@@ -37,6 +37,7 @@ class CrateExample : Example
     Rc!Buffer ligBuf;
     Rc!Image texImg;
     Rc!ImageView texView;
+    Rc!Sampler texSampler;
     Rc!DescriptorPool descPool;
     Rc!DescriptorSetLayout setLayout;
     DescriptorSet set;
@@ -48,7 +49,7 @@ class CrateExample : Example
     struct Vertex {
         float[3] position;
         float[3] normal;
-        float[4] color;
+        float[2] tex;
     }
 
     struct Matrices {
@@ -82,6 +83,7 @@ class CrateExample : Example
         ligBuf.unload();
         texImg.unload();
         texView.unload();
+        texSampler.unload();
         setLayout.unload();
         descPool.unload();
         layout.unload();
@@ -107,14 +109,12 @@ class CrateExample : Example
                 vertices, WindingOrder;
         import std.algorithm : map;
 
-        const float[4] col = [ 0.8f, 0.2f, 0.2f, 1f ];
-
         auto crate = genCube()
                 .map!(f => quad(
-                    Vertex( f[0].p, f[0].n, col ),
-                    Vertex( f[1].p, f[1].n, col ),
-                    Vertex( f[2].p, f[2].n, col ),
-                    Vertex( f[3].p, f[3].n, col ),
+                    Vertex( f[0].p, f[0].n, [ 0f, 0f ] ),
+                    Vertex( f[1].p, f[1].n, [ 0f, 1f ] ),
+                    Vertex( f[2].p, f[2].n, [ 1f, 1f ] ),
+                    Vertex( f[3].p, f[3].n, [ 1f, 0f ] ),
                 ))
                 .triangulate(WindingOrder.rightHandCCW)
                 .vertices()
@@ -144,6 +144,14 @@ class CrateExample : Example
             cast(const(void)[])img.data, ImageType.d2, ImageDims.d2(img.width, img.height), Format.rgba8_uNorm
         );
         texView = texImg.createView(ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.init);
+
+        import gfx.core.typecons : some;
+
+        texSampler = device.createSampler(SamplerInfo(
+            Filter.linear, Filter.linear, Filter.nearest,
+            [WrapMode.repeat, WrapMode.repeat, WrapMode.repeat],
+            some(16f), 0f, [0f, 0f]
+        ));
     }
 
     void prepareRenderPass() {
@@ -189,6 +197,7 @@ class CrateExample : Example
         const layoutBindings = [
             PipelineLayoutBinding(0, DescriptorType.uniformBuffer, 1, ShaderStage.vertex),
             PipelineLayoutBinding(1, DescriptorType.uniformBuffer, 1, ShaderStage.fragment),
+            PipelineLayoutBinding(2, DescriptorType.combinedImageSampler, 1, ShaderStage.fragment),
         ];
 
         setLayout = device.createDescriptorSetLayout(layoutBindings);
@@ -203,7 +212,7 @@ class CrateExample : Example
         info.inputAttribs = [
             VertexInputAttrib(0, 0, Format.rgb32_sFloat, 0),
             VertexInputAttrib(1, 0, Format.rgb32_sFloat, Vertex.normal.offsetof),
-            VertexInputAttrib(2, 0, Format.rgba32_sFloat, Vertex.color.offsetof),
+            VertexInputAttrib(2, 0, Format.rg32_sFloat, Vertex.tex.offsetof),
         ];
         info.assembly = InputAssembly(Primitive.triangleList, No.primitiveRestart);
         info.rasterizer = Rasterizer(
@@ -236,7 +245,8 @@ class CrateExample : Example
 
     void prepareDescriptorSet() {
         const poolSizes = [
-            DescriptorPoolSize(DescriptorType.uniformBuffer, 2)
+            DescriptorPoolSize(DescriptorType.uniformBuffer, 2),
+            DescriptorPoolSize(DescriptorType.combinedImageSampler, 1)
         ];
         descPool = device.createDescriptorPool(1, poolSizes);
         set = descPool.allocate([ setLayout ])[0];
@@ -247,6 +257,9 @@ class CrateExample : Example
             ])),
             WriteDescriptorSet(set, 1, 0, new UniformBufferDescWrites([
                 BufferRange(ligBuf, 0, Lights.sizeof)
+            ])),
+            WriteDescriptorSet(set, 2, 0, new CombinedImageSamplerDescWrites([
+                CombinedImageSampler(texSampler, texView, ImageLayout.shaderReadOnlyOptimal)
             ]))
         ];
         device.updateDescriptorSets(writes, []);

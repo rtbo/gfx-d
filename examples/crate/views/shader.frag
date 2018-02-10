@@ -4,7 +4,7 @@
 #extension GL_ARB_shading_language_420pack : enable
 
 layout(location = 0) in vec3 v_Normal;
-layout(location = 1) in vec4 v_Color;
+layout(location = 1) in vec2 v_TexCoord;
 
 layout(location = 0) out vec4 o_Color;
 
@@ -23,9 +23,11 @@ layout(binding = 1) uniform Lights {
 } lig;
 
 
+layout(binding = 2) uniform sampler2D texSampler;
+
 void main() {
     vec3 normal = normalize(v_Normal);
-    vec4 col = v_Color;
+    vec4 col = texture(texSampler, v_TexCoord);
 
     vec3 bright = vec3(0.0, 0.0, 0.0);
     for (int i=0; i<lig.num && i<MAX_LIGHTS; ++i) {
