@@ -1,4 +1,4 @@
-module crate;
+module texture;
 
 import example;
 
@@ -70,7 +70,7 @@ class CrateExample : Example
     }
 
     this() {
-        super("Crate");
+        super("Texture");
     }
 
     override void dispose() {

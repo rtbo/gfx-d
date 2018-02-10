@@ -1,9 +1,9 @@
 {
-	"name": "crate",
+	"name": "texture",
 	"authors": [
 		"Remi Thebault"
 	],
-	"description": "gfx-d crate example",
+	"description": "gfx-d texture example",
 	"copyright": "Copyright © 2016, Remi Thebault",
 	"license": "MIT",
 	"targetType": "executable",
