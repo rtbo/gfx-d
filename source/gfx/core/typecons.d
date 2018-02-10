@@ -72,10 +72,12 @@ auto option(R)(R input) if (isInputRange!R)
 
 struct Option(T)
 {
-    private T _val = T.init;
+    import std.traits : Unqual;
+    alias ValT = Unqual!T;
+    private ValT _val = ValT.init;
 
-    static if (isNullAssignable!T) {
-        this(inout T val) inout {
+    static if (isNullAssignable!ValT) {
+        this(inout ValT val) inout {
             _val = val;
         }
 
@@ -98,7 +100,7 @@ struct Option(T)
     else {
         private bool _isSome    = false;
 
-        this(inout T val) inout {
+        this(inout ValT val) inout {
             _val = val;
             _isSome = true;
         }
@@ -116,7 +118,7 @@ struct Option(T)
             _isSome = false;
         }
 
-        void opAssign()(T val) {
+        void opAssign()(ValT val) {
             _val = val;
             _isSome = true;
         }
@@ -127,7 +129,7 @@ struct Option(T)
         return Option!U(val_);
     }
 
-    @property ref inout(T) get() inout @safe pure nothrow
+    @property ref inout(ValT) get() inout @safe pure nothrow
     {
         enum message = "Called `get' on none Option!" ~ T.stringof ~ ".";
         assert(isSome, message);
@@ -178,22 +180,57 @@ struct Option(T)
         setNone();
     }
 
-    static if (isNullAssignable!T) {
-        @property inout(T) front() inout {
+    static if (isNullAssignable!ValT) {
+        @property inout(ValT) front() inout {
             return get;
         }
-        @property Option!(inout(T)) save() inout {
-            return Option!(inout(T))(_val);
+        @property Option!(inout(ValT)) save() inout {
+            return Option!(inout(ValT))(_val);
         }
     }
     else {
-        @property T front() const {
+        @property ValT front() const {
             return get;
         }
 
-        @property Option!T save() const {
-            return isSome ? Option!T(_val) : none!T;
+        @property Option!ValT save() const {
+            return isSome ? Option!ValT(_val) : none!T;
         }
     }
 
+}
+
+
+template isOption(T)
+{
+    import std.traits : TemplateOf;
+
+    static if (__traits(compiles, TemplateOf!T)) {
+        enum isOption = __traits(isSame, TemplateOf!T, Option);
+    }
+    else {
+        enum isOption = false;
+    }
+}
+
+static assert (isOption!(Option!int));
+// static assert (isOption!(Option!Object));
+static assert (!isOption!(Object));
+
+
+/// execute fun with option value as parameter if option isSome
+auto ifSome(alias fun, OptT)(OptT opt) {
+    static assert(isOption!OptT, "ifSome must be called with Option");
+    if (opt.isSome) {
+        fun(opt.get);
+    }
+    return opt;
+}
+/// execute fun without parameter if option isNone
+auto ifNone(alias fun, OptT)(OptT opt) {
+    static assert(isOption!OptT, "ifNone must be called with Option");
+    if (opt.isNone) {
+        fun();
+    }
+    return opt;
 }
