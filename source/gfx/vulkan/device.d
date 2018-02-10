@@ -213,7 +213,9 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
     }
 
     Sampler createSampler(in SamplerInfo info) {
+        import gfx.core.typecons : ifNone, ifSome;
         import std.algorithm : each;
+
         VkSamplerCreateInfo sci;
         sci.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         sci.minFilter = info.minFilter.toVk();
@@ -223,9 +225,12 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         sci.addressModeV = info.wrapMode[1].toVk();
         sci.addressModeW = info.wrapMode[2].toVk();
         sci.mipLodBias = info.lodBias;
-        info.anisotropy.save.each!((float max) {
+        info.anisotropy.save.ifSome!((float max) {
             sci.anisotropyEnable = VK_TRUE;
             sci.maxAnisotropy = max;
+        }).ifNone!({
+            sci.anisotropyEnable = VK_FALSE;
+            sci.maxAnisotropy = 1f;
         });
         info.compare.save.each!((CompareOp op) {
             sci.compareEnable = VK_TRUE;
