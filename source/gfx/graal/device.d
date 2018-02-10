@@ -18,6 +18,18 @@ import std.typecons : Flag;
 
 struct DeviceFeatures {
     bool presentation;
+    bool anisotropy;
+
+    static @property DeviceFeatures all() {
+        return DeviceFeatures(
+            true, true
+        );
+    }
+    static @property DeviceFeatures none() {
+        return DeviceFeatures(
+            false, false
+        );
+    }
 }
 
 struct DeviceLimits {
@@ -77,7 +89,7 @@ interface PhysicalDevice : AtomicRefCounted
 
     /// Open a logical device with the specified queues.
     /// Returns: null if it can't meet all requested queues, the opened device otherwise.
-    Device open(in QueueRequest[] queues)
+    Device open(in QueueRequest[] queues, in DeviceFeatures features=DeviceFeatures.all)
     in {
         assert(queues.isConsistentWith(queueFamilies));
     }

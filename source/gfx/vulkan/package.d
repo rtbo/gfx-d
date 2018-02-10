@@ -523,10 +523,12 @@ final class VulkanPhysicalDevice : PhysicalDevice
         import std.algorithm : canFind, map;
         import gfx.vulkan.wsi : swapChainExtension;
 
-        auto exts = vulkanDeviceExtensions(this);
+        VkPhysicalDeviceFeatures vkFeats;
+        cmds.getPhysicalDeviceFeatures(vk, &vkFeats);
 
         DeviceFeatures features;
-        features.presentation = exts
+        features.anisotropy = vkFeats.samplerAnisotropy == VK_TRUE;
+        features.presentation = vulkanDeviceExtensions(this)
                 .map!(e => e.extensionName)
                 .canFind(swapChainExtension);
         return features;
@@ -665,12 +667,13 @@ final class VulkanPhysicalDevice : PhysicalDevice
                 .array;
     }
 
-    override Device open(in QueueRequest[] queues)
+    override Device open(in QueueRequest[] queues, in DeviceFeatures features=DeviceFeatures.all)
     {
-        import std.algorithm : map, sort;
+        import std.algorithm : filter, map, sort;
         import std.array : array;
         import std.exception : enforce;
         import std.string : toStringz;
+        import gfx.vulkan.wsi : swapChainExtension;
 
         if (!queues.length) {
             return null;
@@ -686,7 +689,11 @@ final class VulkanPhysicalDevice : PhysicalDevice
         }).array;
 
         const layers = _openLayers.map!toStringz.array;
-        const extensions = _openExtensions.map!toStringz.array;
+        const extensions = _openExtensions
+                .filter!(e => e != swapChainExtension || features.presentation)
+                .map!toStringz.array;
+        VkPhysicalDeviceFeatures vkFeats;
+        vkFeats.samplerAnisotropy = features.anisotropy ? VK_TRUE : VK_FALSE;
 
         VkDeviceCreateInfo ci;
         ci.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -696,6 +703,7 @@ final class VulkanPhysicalDevice : PhysicalDevice
         ci.ppEnabledLayerNames = &layers[0];
         ci.enabledExtensionCount = cast(uint)extensions.length;
         ci.ppEnabledExtensionNames = &extensions[0];
+        ci.pEnabledFeatures = &vkFeats;
 
         VkDevice vkDev;
         vulkanEnforce(cmds.createDevice(_vk, &ci, null, &vkDev),
