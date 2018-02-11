@@ -76,6 +76,11 @@ VkImageLayout toVk(in ImageLayout layout)
     return cast(VkImageLayout)layout;
 }
 
+VkImageTiling toVk(in ImageTiling tiling)
+{
+    return cast(VkImageTiling)tiling;
+}
+
 MemoryRequirements toGfx(in VkMemoryRequirements mr) {
     return MemoryRequirements(
         cast(size_t)mr.size, cast(size_t)mr.alignment, memPropsToGfx(mr.memoryTypeBits)

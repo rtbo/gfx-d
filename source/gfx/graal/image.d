@@ -92,6 +92,11 @@ enum ImageLayout {
     presentSrc                      = 1000001002, // TODO impl actual mapping to vulkan
 }
 
+enum ImageTiling {
+    optimal,
+    linear,
+}
+
 enum ImageAspect {
     color           = 0x01,
     depth           = 0x02,

@@ -320,7 +320,8 @@ class Example : Disposable
 
         // create an image
         auto img = enforce(device.createImage(
-            type, dims, format, ImageUsage.sampled | ImageUsage.transferDst, 1, levels
+            type, dims, format, ImageUsage.sampled | ImageUsage.transferDst,
+            ImageTiling.optimal, 1, levels
         )).rc;
 
         // allocate memory image

@@ -191,7 +191,8 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
     }
 
     override Image createImage(ImageType type, ImageDims dims, Format format,
-                               ImageUsage usage, uint samples, uint levels=1)
+                               ImageUsage usage, ImageTiling tiling, uint samples,
+                               uint levels=1)
     {
         VkImageCreateInfo ici;
         ici.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -202,7 +203,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         ici.mipLevels = levels;
         ici.arrayLayers = dims.layers;
         ici.samples = cast(typeof(ici.samples))samples;
-        ici.tiling = VK_IMAGE_TILING_OPTIMAL;
+        ici.tiling = tiling.toVk();
         ici.usage = imageUsageToVk(usage);
         ici.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
