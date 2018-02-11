@@ -140,7 +140,7 @@ class CrateExample : Example
     void prepareTexture() {
         import img : ImageFormat, ImgImage = Image;
         auto img = ImgImage.loadFromView!("crate.jpg")(ImageFormat.argb);
-        texImg = createTexture(
+        texImg = createTextureImage(
             cast(const(void)[])img.data, ImageType.d2, ImageDims.d2(img.width, img.height), Format.rgba8_uNorm
         );
         // argb swizzling

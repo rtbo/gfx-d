@@ -26,10 +26,9 @@ import std.math;
 class CrateExample : Example
 {
     Rc!RenderPass renderPass;
-    Framebuffer[] framebuffers;
     Rc!Pipeline pipeline;
     Rc!PipelineLayout layout;
-    PerImage[] perImages;
+    PerImage[] framebuffers;
     size_t cubeLen;
     enum cubeCount = 3;
     const(ushort)[] indices;
@@ -37,13 +36,16 @@ class CrateExample : Example
     Rc!Buffer indBuf;
     Rc!Buffer matBuf;
     Rc!Buffer ligBuf;
-    Rc!Image texImg;
     Rc!DescriptorPool descPool;
     Rc!DescriptorSetLayout setLayout;
     DescriptorSet set;
 
     struct PerImage {
-        bool undefinedLayout=true;
+        ImageBase       color;
+        Rc!ImageView    colorView;
+        Rc!Image        depth;
+        Rc!ImageView    depthView;
+        Rc!Framebuffer  framebuffer;
     }
 
     struct Vertex {
@@ -81,12 +83,12 @@ class CrateExample : Example
         indBuf.unload();
         matBuf.unload();
         ligBuf.unload();
+        reinitArray(framebuffers);
         setLayout.unload();
         descPool.unload();
         layout.unload();
         pipeline.unload();
         renderPass.unload();
-        releaseArray(framebuffers);
         super.dispose();
     }
 
@@ -94,6 +96,7 @@ class CrateExample : Example
         super.prepare();
         prepareBuffers();
         prepareRenderPass();
+        prepareFramebuffers();
         preparePipeline();
         prepareDescriptorSet();
     }
@@ -156,28 +159,68 @@ class CrateExample : Example
                 AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
                 trans(ImageLayout.presentSrc, ImageLayout.presentSrc),
                 No.mayAlias
+            ),
+            AttachmentDescription(findDepthFormat(), 1,
+                AttachmentOps(LoadOp.clear, StoreOp.dontCare),
+                AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
+                trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
+                No.mayAlias
             )
         ];
         const subpasses = [
             SubpassDescription(
                 [], [ AttachmentRef(0, ImageLayout.colorAttachmentOptimal) ],
-                none!AttachmentRef, []
+                some(AttachmentRef(1, ImageLayout.depthStencilAttachmentOptimal)),
+                []
             )
         ];
 
         renderPass = device.createRenderPass(attachments, subpasses, []);
+    }
 
-        framebuffers = new Framebuffer[scImages.length];
-        foreach (i; 0 .. scImages.length) {
-            framebuffers[i] = device.createFramebuffer(renderPass, [
-                scImages[i].createView(
-                    ImageType.d2,
-                    ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1),
-                    Swizzle.init
-                )
+    void prepareFramebuffers()
+    {
+        auto b = autoCmdBuf().rc;
+
+        foreach (img; scImages) {
+            PerImage pi;
+            pi.color = img;
+            pi.colorView = img.createView(
+                ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.init
+            );
+            pi.depth = createDepthImage(surfaceSize[0], surfaceSize[1]).rc;
+            pi.depthView = pi.depth.createView(
+                ImageType.d2, ImageSubresourceRange(ImageAspect.depth), Swizzle.init
+            ).rc;
+            pi.framebuffer = device.createFramebuffer(renderPass, [
+                pi.colorView.obj, pi.depthView.obj
             ], surfaceSize[0], surfaceSize[1], 1);
+
+            framebuffers ~= pi;
+
+            b.cmdBuf.pipelineBarrier(
+                trans(PipelineStage.colorAttachment, PipelineStage.colorAttachment), [],
+                [ ImageMemoryBarrier(
+                    trans(Access.none, Access.colorAttachmentWrite),
+                    trans(ImageLayout.undefined, ImageLayout.presentSrc),
+                    trans(queueFamilyIgnored, queueFamilyIgnored),
+                    img, ImageSubresourceRange(ImageAspect.color)
+                ) ]
+            );
+
+            const hasStencil = formatDesc(pi.depth.format).surfaceType.stencilBits > 0;
+            const aspect = hasStencil ? ImageAspect.depthStencil : ImageAspect.depth;
+            b.cmdBuf.pipelineBarrier(
+                trans(PipelineStage.topOfPipe, PipelineStage.earlyFragmentTests), [], [
+                    ImageMemoryBarrier(
+                        trans(Access.none, Access.depthStencilAttachmentRead | Access.depthStencilAttachmentWrite),
+                        trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
+                        trans(queueFamilyIgnored, queueFamilyIgnored),
+                        pi.depth, ImageSubresourceRange(aspect)
+                    )
+                ]
+            );
         }
-        retainArray(framebuffers);
     }
 
     void preparePipeline()
@@ -219,6 +262,9 @@ class CrateExample : Example
                 Rect(0, 0, surfaceSize[0], surfaceSize[1])
             )
         ];
+        info.depthInfo = DepthInfo(
+            Yes.enabled, Yes.write, CompareOp.less, No.boundsTest, 0f, 1f
+        );
         info.blendInfo = ColorBlendInfo(
             none!LogicOp, [
                 ColorBlendAttachment(No.enabled,
@@ -267,34 +313,18 @@ class CrateExample : Example
     override void recordCmds(size_t cmdBufInd, size_t imgInd) {
         import gfx.core.typecons : trans;
 
-        if (!perImages.length) {
-            perImages = new PerImage[scImages.length];
-        }
-
-        const cv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
-        auto subrange = ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1);
+        const ccv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
+        const dcv = ClearDepthStencilValues(1f, 0);
 
         auto buf = cmdBufs[cmdBufInd];
+        auto fb = framebuffers[imgInd];
 
-        //buf.reset();
         buf.begin(No.persistent);
 
-        if (perImages[imgInd].undefinedLayout) {
-            buf.pipelineBarrier(
-                trans(PipelineStage.colorAttachment, PipelineStage.colorAttachment), [],
-                [ ImageMemoryBarrier(
-                    trans(Access.none, Access.colorAttachmentWrite),
-                    trans(ImageLayout.undefined, ImageLayout.presentSrc),
-                    trans(graphicsQueueIndex, graphicsQueueIndex),
-                    scImages[imgInd], subrange
-                ) ]
-            );
-            perImages[imgInd].undefinedLayout = false;
-        }
-
         buf.beginRenderPass(
-            renderPass, framebuffers[imgInd],
-            Rect(0, 0, surfaceSize[0], surfaceSize[1]), [ ClearValues(cv) ]
+            renderPass, fb.framebuffer,
+            Rect(0, 0, surfaceSize[0], surfaceSize[1]),
+            [ ClearValues(ccv), ClearValues(dcv) ]
         );
 
         buf.bindPipeline(pipeline);

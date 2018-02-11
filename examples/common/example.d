@@ -200,6 +200,31 @@ class Example : Disposable
     // Following functions are general utility that can be used by subclassing
     // examples.
 
+    /// Find a format supported by the device for the given tiling and features
+    Format findSupportedFormat(in Format[] candidates, in ImageTiling tiling, in FormatFeatures features)
+    {
+        foreach (f; candidates) {
+            const props = physicalDevice.formatProperties(f);
+            if (tiling == ImageTiling.optimal &&
+                    (props.optimalTiling & features) == features) {
+                return f;
+            }
+            if (tiling == ImageTiling.linear &&
+                    (props.linearTiling & features) == features) {
+                return f;
+            }
+        }
+        throw new Exception("could not find supported format");
+    }
+
+    /// Find a supported depth format
+    Format findDepthFormat() {
+        return findSupportedFormat(
+            [ Format.d32_sFloat, Format.d32s8_sFloat, Format.d24s8_uNorm, Format.d16_uNorm, Format.d16s8_uNorm ],
+            ImageTiling.optimal, FormatFeatures.depthStencilAttachment
+        );
+    }
+
     /// Return the index of a memory type supporting all of props,
     /// or uint.max if none was found.
     uint findMemType(MemProps props)
@@ -300,7 +325,7 @@ class Example : Disposable
     }
 
     /// create an image to be used as texture
-    Image createTexture(const(void)[] data, ImageType type, ImageDims dims,
+    Image createTextureImage(const(void)[] data, ImageType type, ImageDims dims,
                       Format format, uint levels=1)
     {
         const FormatFeatures requirement = FormatFeatures.sampledImage;
@@ -347,6 +372,29 @@ class Example : Disposable
             );
             copyBufferToImage(stagingBuf, img, b.cmdBuf);
         }
+
+        return img.giveAway();
+    }
+
+    /// Create an image for depth attachment usage
+    Image createDepthImage(uint width, uint height)
+    {
+        // find the format of the image
+        const f = findDepthFormat();
+
+        // create an image
+        auto img = enforce(device.createImage(
+            ImageType.d2, ImageDims.d2(width, height), f, ImageUsage.depthStencilAttachment,
+            ImageTiling.optimal, 1, 1
+        )).rc;
+
+        // allocate memory image
+        const mr = img.memoryRequirements;
+        const memTypeInd = findMemType(mr.props | MemProps.deviceLocal);
+        if (memTypeInd == uint.max) return null;
+
+        auto mem = device.allocateMemory(memTypeInd, mr.size).rc;
+        img.bindMemory(mem, 0);
 
         return img.giveAway();
     }
