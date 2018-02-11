@@ -14,7 +14,8 @@
 
         "examples/swapchain",
         "examples/triangle",
-        "examples/texture"
+        "examples/texture",
+        "examples/depth"
     ],
     "dependencies": {
         "gfx:bindings": "*"
