@@ -143,7 +143,18 @@ class CrateExample : Example
         texImg = createTexture(
             cast(const(void)[])img.data, ImageType.d2, ImageDims.d2(img.width, img.height), Format.rgba8_uNorm
         );
-        texView = texImg.createView(ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.init);
+        // argb swizzling
+        version(LittleEndian) {
+            const Swizzle swizzle = [
+                CompSwizzle.b, CompSwizzle.g, CompSwizzle.r, CompSwizzle.a
+            ];
+        }
+        else {
+            const Swizzle swizzle = [
+                CompSwizzle.a, CompSwizzle.r, CompSwizzle.g, CompSwizzle.b
+            ];
+        }
+        texView = texImg.createView(ImageType.d2, ImageSubresourceRange(ImageAspect.color), swizzle);
 
         import gfx.core.typecons : some;
 
