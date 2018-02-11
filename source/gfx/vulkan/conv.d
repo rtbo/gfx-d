@@ -16,6 +16,7 @@ import gfx.graal.presentation;
 import gfx.graal.queue;
 import gfx.graal.renderpass;
 
+import std.typecons : Flag;
 
 // structures and enums conversion
 
@@ -236,6 +237,14 @@ VkIndexType toVk(in IndexType type) {
 
 VkPipelineBindPoint toVk(in PipelineBindPoint bp) {
     return cast(VkPipelineBindPoint)bp;
+}
+
+
+// template conversion
+
+VkBool32 flagToVk(F)(F val)
+{
+    return val ? VK_TRUE : VK_FALSE;
 }
 
 // flags conversion

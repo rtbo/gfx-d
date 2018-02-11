@@ -49,7 +49,10 @@ struct PipelineInfo {
     /// For dynamic viewport, leave this array empty
     ViewportConfig[] viewports;
 
-    // TODO: tesselation, multisample, depth-stencil
+    // TODO: tesselation, multisample
+
+    DepthInfo depthInfo;
+    StencilInfo stencilInfo;
     ColorBlendInfo blendInfo;
 
     DynamicState[] dynamicStates;
@@ -155,6 +158,55 @@ enum CompareOp
 {
     never, less, equal, lessOrEqual, greater, notEqual, greaterOrEqual, always,
 }
+
+enum StencilOp
+{
+    keep,
+    zero,
+    replace,
+    incrementAndClamp,
+    decrementAndClamp,
+    invert,
+    incrementAndWrap,
+    decrementAndWrap,
+}
+
+struct StencilOpState
+{
+    StencilOp failOp;
+    StencilOp passOp;
+    StencilOp depthFailOp;
+    CompareOp compareOp;
+    uint compareMask;
+    uint writeMask;
+    uint reference;
+}
+
+struct DepthInfo
+{
+    Flag!"enabled" enabled;
+    Flag!"write" write;
+    CompareOp compareOp;
+    Flag!"boundsTest" boundsTest;
+    float minBounds;
+    float maxBounds;
+
+    @property static DepthInfo none() {
+        return DepthInfo.init;
+    }
+}
+
+struct StencilInfo
+{
+    Flag!"enabled" enabled;
+    StencilOpState front;
+    StencilOpState back;
+
+    @property static StencilInfo none() {
+        return StencilInfo.init;
+    }
+}
+
 
 enum BlendFactor
 {

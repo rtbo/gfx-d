@@ -640,6 +640,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
     }
 
     override Pipeline[] createPipelines(PipelineInfo[] infos) {
+        import gfx.core.util : transmute;
         import std.algorithm : map, max;
         import std.array : array;
         import std.string : toStringz;
@@ -733,6 +734,20 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
                 vkRasterizer.depthBiasSlopeFactor = 0f;
             }
 
+            const depthInfo = infos[i].depthInfo;
+            const stencilInfo = infos[i].stencilInfo;
+            auto vkDepthStencil = new VkPipelineDepthStencilStateCreateInfo;
+            vkDepthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+            vkDepthStencil.depthTestEnable = flagToVk(depthInfo.enabled);
+            vkDepthStencil.depthWriteEnable = flagToVk(depthInfo.write);
+            vkDepthStencil.depthCompareOp = depthInfo.compareOp.toVk();
+            vkDepthStencil.depthBoundsTestEnable = flagToVk(depthInfo.boundsTest);
+            vkDepthStencil.stencilTestEnable = flagToVk(stencilInfo.enabled);
+            vkDepthStencil.front = transmute!VkStencilOpState(stencilInfo.front);
+            vkDepthStencil.back = transmute!VkStencilOpState(stencilInfo.back);
+            vkDepthStencil.minDepthBounds = depthInfo.minBounds;
+            vkDepthStencil.maxDepthBounds = depthInfo.maxBounds;
+
             const blendInfo = infos[i].blendInfo;
             auto vkColorAttachments = blendInfo.attachments.map!(
                 cba => VkPipelineColorBlendAttachmentState (
@@ -777,8 +792,6 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
             auto vkMs = new VkPipelineMultisampleStateCreateInfo;
             vkMs.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
             vkMs.minSampleShading = 1f;
-            auto vkDepthStencil = new VkPipelineDepthStencilStateCreateInfo;
-            vkDepthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 
             pcis[i].sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
             pcis[i].stageCount = cast(uint)sscis.length;
