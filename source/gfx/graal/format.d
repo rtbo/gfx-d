@@ -120,7 +120,7 @@ enum fmtDescriptors = AliasSeq!(
     "E5_B9_G9_R9",      true,       NumFormat.uFloat,
     "D16",              false,      NumFormat.uNorm,
     "X8_D24",           true,       NumFormat.uNorm,
-    "D32",              false,      NumFormat.uNorm,
+    "D32",              false,      NumFormat.sFloat,
     "S8",               false,      NumFormat.uInt,
     "D16_S8",           false,      NumFormat.uNorm,  // note: stencil is always uint
     "D24_S8",           false,      NumFormat.uNorm,
@@ -143,6 +143,7 @@ shared static this()
     import std.format : format;
 
     FormatDesc[] fd;
+    fd ~= FormatDesc.init; //undefined
 
     foreach (sfd; surfFmtDescs) {
         mixin(format("alias SurfT = %s;", sfd.surfName));
