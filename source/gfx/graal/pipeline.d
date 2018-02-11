@@ -350,5 +350,7 @@ alias StorageImageDescWrites = TDescWrites!(ImageViewLayout, DescriptorType.stor
 alias InputAttachmentDescWrites = TDescWrites!(ImageViewLayout, DescriptorType.inputAttachment);
 alias UniformBufferDescWrites = TDescWrites!(BufferRange, DescriptorType.uniformBuffer);
 alias StorageBufferDescWrites = TDescWrites!(BufferRange, DescriptorType.storageBuffer);
+alias UniformBufferDynamicDescWrites = TDescWrites!(BufferRange, DescriptorType.uniformBufferDynamic);
+alias StorageBufferDynamicDescWrites = TDescWrites!(BufferRange, DescriptorType.storageBufferDynamic);
 alias UniformTexelBufferDescWrites = TDescWrites!(BufferView, DescriptorType.uniformTexelBuffer);
 alias StorageTexelBufferDescWrites = TDescWrites!(BufferView, DescriptorType.storageTexelBuffer);

@@ -208,7 +208,7 @@ interface CommandBuffer
     void bindIndexBuffer(Buffer indexBuf, size_t offset, IndexType type);
 
     void bindDescriptorSets(PipelineBindPoint bindPoint, PipelineLayout layout,
-                            uint firstSet, DescriptorSet[] sets);
+                            uint firstSet, DescriptorSet[] sets, in size_t[] dynamicOffsets);
 
     void pushConstants(PipelineLayout layout, ShaderStage stages,
                        size_t offset, size_t size, const(void)* data);

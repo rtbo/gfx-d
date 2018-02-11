@@ -592,6 +592,8 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
                 break;
             case DescriptorType.uniformBuffer:
             case DescriptorType.storageBuffer:
+            case DescriptorType.uniformBufferDynamic:
+            case DescriptorType.storageBufferDynamic:
                 auto w = unsafeCast!(TDescWritesBase!(BufferRange))(wds.writes);
                 auto vkArr = w.descs.map!((BufferRange br) {
                     VkDescriptorBufferInfo dbi;

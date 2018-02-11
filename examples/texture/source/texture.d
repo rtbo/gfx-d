@@ -309,7 +309,7 @@ class CrateExample : Example
         buf.bindPipeline(pipeline);
         buf.bindVertexBuffers(0, [ VertexBinding(vertBuf, 0) ]);
         buf.bindIndexBuffer(indBuf, 0, IndexType.u16);
-        buf.bindDescriptorSets(PipelineBindPoint.graphics, layout, 0, [set]);
+        buf.bindDescriptorSets(PipelineBindPoint.graphics, layout, 0, [set], []);
         buf.drawIndexed(cast(uint)indices.length, 1, 0, 0, 0);
 
         buf.endRenderPass();
