@@ -186,12 +186,12 @@ class CrateExample : Example
             PerImage pi;
             pi.color = img;
             pi.colorView = img.createView(
-                ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.init
+                ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
             );
-            pi.depth = createDepthImage(surfaceSize[0], surfaceSize[1]).rc;
+            pi.depth = createDepthImage(surfaceSize[0], surfaceSize[1]);
             pi.depthView = pi.depth.createView(
-                ImageType.d2, ImageSubresourceRange(ImageAspect.depth), Swizzle.init
-            ).rc;
+                ImageType.d2, ImageSubresourceRange(ImageAspect.depth), Swizzle.identity
+            );
             pi.framebuffer = device.createFramebuffer(renderPass, [
                 pi.colorView.obj, pi.depthView.obj
             ], surfaceSize[0], surfaceSize[1], 1);

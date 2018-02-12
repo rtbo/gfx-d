@@ -145,14 +145,10 @@ class CrateExample : Example
         );
         // argb swizzling
         version(LittleEndian) {
-            const Swizzle swizzle = [
-                CompSwizzle.b, CompSwizzle.g, CompSwizzle.r, CompSwizzle.a
-            ];
+            const swizzle = Swizzle.bgra;
         }
         else {
-            const Swizzle swizzle = [
-                CompSwizzle.a, CompSwizzle.r, CompSwizzle.g, CompSwizzle.b
-            ];
+            const swizzle = Swizzle.argb;
         }
         texView = texImg.createView(ImageType.d2, ImageSubresourceRange(ImageAspect.color), swizzle);
 
@@ -188,8 +184,8 @@ class CrateExample : Example
             framebuffers[i] = device.createFramebuffer(renderPass, [
                 scImages[i].createView(
                     ImageType.d2,
-                    ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1),
-                    Swizzle.init
+                    ImageSubresourceRange(ImageAspect.color),
+                    Swizzle.identity
                 )
             ], surfaceSize[0], surfaceSize[1], 1);
         }

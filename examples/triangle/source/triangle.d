@@ -92,8 +92,8 @@ class TriangleExample : Example
             framebuffers[i] = device.createFramebuffer(renderPass, [
                 scImages[i].createView(
                     ImageType.d2,
-                    ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1),
-                    Swizzle.init
+                    ImageSubresourceRange(ImageAspect.color),
+                    Swizzle.identity
                 )
             ], surfaceSize[0], surfaceSize[1], 1);
         }
