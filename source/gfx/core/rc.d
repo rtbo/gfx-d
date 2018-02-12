@@ -139,12 +139,12 @@ T lockObj(T)(T obj) if (isAtomicRefCounted!T) {
         return obj.rcLockShared();
     }
     else {
-        return obj.rcLock();
+        return cast(T)obj.rcLock();
     }
 }
 
 /// Dispose GC allocated array of resources
-void disposeArray(T)(ref T[] arr) if (is(T : Disposable) && !isRefCounted!T)
+void disposeArray(T)(ref T[] arr) if (is(T : Disposable) && !isAtomicRefCounted!T)
 {
     import std.algorithm : each;
     arr.each!(el => el.dispose());
@@ -208,7 +208,7 @@ void reinitArray(T, K)(ref T[K] arr) if (is(T == struct))
 }
 
 /// Helper that build a new instance of T and returns it within a Rc!T
-template makeRc(T) if (isRefCounted!T)
+template makeRc(T) if (isAtomicRefCounted!T)
 {
     Rc!T makeRc(Args...)(Args args)
     {
@@ -258,7 +258,10 @@ struct Rc(T) if (isAtomicRefCounted!T)
     /// Removes a reference to the held reference.
     ~this()
     {
-        if(_obj) releaseObj(_obj, Yes.disposeOnZero);
+        if(_obj) {
+            releaseObj(_obj, Yes.disposeOnZero);
+            _obj = null;
+        }
     }
 
     /// Assign another resource. Release the previously held ref and retain the new one.
