@@ -129,7 +129,94 @@ enum CompSwizzle : ubyte
     r, g, b, a,
 }
 
-alias Swizzle = CompSwizzle[4];
+struct Swizzle {
+    private CompSwizzle[4] rep;
+
+    this(in CompSwizzle r, in CompSwizzle g, in CompSwizzle b, in CompSwizzle a)
+    {
+        rep = [r, g, b, a];
+    }
+
+    static @property Swizzle identity() {
+        return Swizzle(
+            CompSwizzle.identity, CompSwizzle.identity,
+            CompSwizzle.identity, CompSwizzle.identity
+        );
+    }
+
+    static @property Swizzle one() {
+        return Swizzle(
+            CompSwizzle.one, CompSwizzle.one,
+            CompSwizzle.one, CompSwizzle.one
+        );
+    }
+
+    static @property Swizzle zero() {
+        return Swizzle(
+            CompSwizzle.zero, CompSwizzle.zero,
+            CompSwizzle.zero, CompSwizzle.zero
+        );
+    }
+
+    static @property Swizzle opDispatch(string name)() {
+        bool isSwizzleIdent() {
+            foreach (char c; name) {
+                switch (c) {
+                case 'r': break;
+                case 'g': break;
+                case 'b': break;
+                case 'a': break;
+                case 'i': break;
+                case 'o': break;
+                case 'z': break;
+                default: return false;
+                }
+            }
+            return true;
+        }
+        CompSwizzle getComp(char c) {
+            switch (c) {
+            case 'r': return CompSwizzle.r;
+            case 'g': return CompSwizzle.g;
+            case 'b': return CompSwizzle.b;
+            case 'a': return CompSwizzle.a;
+            case 'i': return CompSwizzle.identity;
+            case 'o': return CompSwizzle.one;
+            case 'z': return CompSwizzle.zero;
+            default: assert(false);
+            }
+        }
+
+        static assert(name.length == 4, "Error: Swizzle."~name~". Swizzle identifier must have four components.");
+        static assert(isSwizzleIdent(), "Wrong swizzle identifier: Swizzle."~name);
+        return Swizzle(
+            getComp(name[0]), getComp(name[1]), getComp(name[2]), getComp(name[3])
+        );
+    }
+
+    size_t opDollar() const { return 4; }
+    CompSwizzle opIndex(size_t ind) const { return rep[ind]; }
+    const(CompSwizzle)[] opIndex() const { return rep[]; }
+    size_t[2] opSlice(size_t dim)(size_t start, size_t end) const {
+        return [start, end];
+    }
+    const(CompSwizzle)[] opIndex(size_t[2] slice) const {
+        return rep[slice[0] .. slice[1]];
+    }
+}
+
+///
+unittest {
+    assert(!__traits(compiles, Swizzle.rrr));
+    assert(!__traits(compiles, Swizzle.qwer));
+
+    assert(Swizzle.rgba == Swizzle(CompSwizzle.r, CompSwizzle.g, CompSwizzle.b, CompSwizzle.a));
+    assert(Swizzle.rrbb == Swizzle(CompSwizzle.r, CompSwizzle.r, CompSwizzle.b, CompSwizzle.b));
+    assert(Swizzle.aaag == Swizzle(CompSwizzle.a, CompSwizzle.a, CompSwizzle.a, CompSwizzle.g));
+    assert(Swizzle.iiii == Swizzle.identity);
+    assert(Swizzle.oooo == Swizzle.one);
+    assert(Swizzle.zzzz == Swizzle.zero);
+}
 
 interface ImageBase
 {
