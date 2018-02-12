@@ -40,12 +40,19 @@ class CrateExample : Example
     Rc!DescriptorSetLayout setLayout;
     DescriptorSet set;
 
-    struct PerImage {
+    class PerImage : Disposable {
         ImageBase       color;
         Rc!ImageView    colorView;
         Rc!Image        depth;
         Rc!ImageView    depthView;
         Rc!Framebuffer  framebuffer;
+
+        override void dispose() {
+            colorView.unload();
+            depth.unload();
+            depthView.unload();
+            framebuffer.unload();
+        }
     }
 
     struct Vertex {
@@ -83,7 +90,7 @@ class CrateExample : Example
         indBuf.unload();
         matBuf.unload();
         ligBuf.unload();
-        reinitArray(framebuffers);
+        disposeArray(framebuffers);
         setLayout.unload();
         descPool.unload();
         layout.unload();
@@ -183,7 +190,7 @@ class CrateExample : Example
         auto b = autoCmdBuf().rc;
 
         foreach (img; scImages) {
-            PerImage pi;
+            auto pi = new PerImage;
             pi.color = img;
             pi.colorView = img.createView(
                 ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
@@ -195,8 +202,6 @@ class CrateExample : Example
             pi.framebuffer = device.createFramebuffer(renderPass, [
                 pi.colorView.obj, pi.depthView.obj
             ], surfaceSize[0], surfaceSize[1], 1);
-
-            framebuffers ~= pi;
 
             b.cmdBuf.pipelineBarrier(
                 trans(PipelineStage.colorAttachment, PipelineStage.colorAttachment), [],
@@ -220,6 +225,8 @@ class CrateExample : Example
                     )
                 ]
             );
+
+            framebuffers ~= pi;
         }
     }
 
