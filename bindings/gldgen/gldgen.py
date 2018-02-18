@@ -4,26 +4,8 @@
     Reads OpenGL XML API definition to produce the D bindings code.
 """
 
-from reg import GeneratorOptions, OutputGenerator, Registry
-
 import re
-import xml.etree.ElementTree as etree
-from enum import Enum, auto
-
-# Turn a list of strings into a regexp string matching exactly those strings
-def makeREstring(list):
-    return '^(' + '|'.join(list) + ')$'
-
-# Descriptive names for various regexp patterns used to select
-# versions and extensions
-
-allVersions       = allExtensions = '.*'
-noVersions        = noExtensions = None
-gl12andLaterPat   = '1\.[2-9]|[234]\.[0-9]'
-# Extensions in old glcorearb.h but not yet tagged accordingly in gl.xml
-glCoreARBPat      = None
-glx13andLaterPat  = '1\.[3-9]'
-
+from reg import GeneratorOptions, OutputGenerator, regSortFeatures
 
 # General utility
 
@@ -111,6 +93,28 @@ def mapDName(name):
     else:
         return name
 
+# generator options
+
+class DGeneratorOptions(GeneratorOptions):
+    """Represents options during C header production from an API registry"""
+    def __init__(self,
+                 filename = None,
+                 apiname = None,
+                 profile = None,
+                 versions = '.*',
+                 emitversions = '.*',
+                 defaultExtensions = None,
+                 addExtensions = None,
+                 removeExtensions = None,
+                 sortProcedure = regSortFeatures,
+                 module = "",
+                 stmts = []):
+        GeneratorOptions.__init__(self, filename, apiname, profile,
+                                  versions, emitversions, defaultExtensions,
+                                  addExtensions, removeExtensions, sortProcedure)
+        self.module = module
+        self.stmts = stmts
+
 # the main generator
 
 class DGenerator(OutputGenerator):
@@ -183,20 +187,8 @@ class DGenerator(OutputGenerator):
             self.parentClsName = parentClsName
             self.cmds = cmds
 
-    def __init__(self, moduleName, outFile):
+    def __init__(self):
         super().__init__()
-        self.moduleName = moduleName
-        self.outFile = outFile
-        self.basicTypes = {
-            "uint8_t": "ubyte",
-            "uint16_t": "ushort",
-            "uint32_t": "uint",
-            "uint64_t": "ulong",
-            "int8_t": "byte",
-            "int16_t": "short",
-            "int32_t": "int",
-            "int64_t": "long",
-        }
         self.features = []
         self.feature = None
         self.featureGuards = {}
@@ -207,8 +199,7 @@ class DGenerator(OutputGenerator):
         self.lastLoaderClsName = ""
 
     def logMsg(self, level, *args):
-        # shut down logging during dev to see debug output
-        # super().logMsg(level, *args)
+        # shut down logging
         pass
 
     def beginFile(self, opts):
@@ -217,6 +208,8 @@ class DGenerator(OutputGenerator):
         # not calling super on purpose
 
         # Everything is written in endFile
+
+        self.opts = opts
         self.apiname = opts.apiname
         self.versionTag = self.apiname.upper() + "_VERSION_"
         self.base = self.apiname[0].upper() + self.apiname[1:].lower()
@@ -235,7 +228,10 @@ class DGenerator(OutputGenerator):
     def endFile(self):
         sf = SourceFile()
         sf("/// GL bindings for D. Generated automatically by gldgen.py")
-        sf("module %s;", self.moduleName)
+        sf("module %s;", self.opts.module)
+        sf()
+        for stmt in self.opts.stmts:
+            sf(stmt)
 
         self.issueTypes(sf)
         self.issueFuncptrs(sf)
@@ -246,7 +242,8 @@ class DGenerator(OutputGenerator):
         self.issueExtensionsLoader(sf)
         self.issueCoreLoaders(sf)
 
-        sf.writeOut(self.outFile)
+        with open(self.opts.filename, "w") as outFile:
+            sf.writeOut(outFile)
 
 
     def beginFeature(self, interface, emit):
@@ -361,61 +358,6 @@ class DGenerator(OutputGenerator):
                 DGenerator.Command(name, returnType, params, "PFN_"+name)
             )
 
-
-    def issueTypes(self, sf):
-        sf()
-        sf("// Base Types")
-        maxLen = 0
-        for bt in self.basicTypes:
-            maxLen = max(maxLen, len(bt))
-        for bt in self.basicTypes:
-            spacer = " " * (maxLen - len(bt))
-            sf("alias %s%s = %s;", bt, spacer, self.basicTypes[bt])
-        for f in [f for f in self.features if len(f.baseTypes)+len(f.structDecls) > 0]:
-            sf()
-            sf("// Types for %s", f.name)
-            f.beginGuard(sf)
-            maxLen = 0
-            for sd in f.structDecls:
-                sf("struct %s;", sd)
-            for bt in f.baseTypes:
-                maxLen = max(maxLen, len(bt.name))
-            for bt in f.baseTypes:
-                spacer = " " * (maxLen - len(bt.name))
-                sf("alias %s%s = %s;", bt.name, spacer, bt.type)
-            f.endGuard(sf)
-
-
-    def issueFuncptrs(self, sf):
-        sf()
-        sf("// Function pointers")
-        sf()
-        sf("extern(C) nothrow @nogc {")
-        sf()
-        with sf.indent_block():
-            feats = [f for f in self.features if len(f.funcptrs) > 0]
-            for i, f in enumerate(feats):
-                if i != 0: sf()
-                sf("// for %s", f.name)
-                f.beginGuard(sf)
-                for fp in f.funcptrs:
-                    if not len(fp.params):
-                        sf("alias %s = %s function();", fp.name, fp.type)
-                    else:
-                        maxLen = 0
-                        for p in fp.params:
-                            maxLen = max(maxLen, len(p.type))
-                        sf("alias %s = %s function(", fp.name, fp.type)
-                        with sf.indent_block():
-                            for i, p in enumerate(fp.params):
-                                spacer = " " * (maxLen - len(p.type))
-                                endLine = "" if i == len(fp.params)-1 else ","
-                                sf("%s%s %s%s", p.type, spacer, p.name, endLine)
-                        sf(");")
-                f.endGuard(sf)
-        sf("}")
-
-
     def genEnum(self, enuminfo, name):
         super().genEnum(enuminfo, name)
         value = enuminfo.elem.get("value")
@@ -430,20 +372,6 @@ class DGenerator(OutputGenerator):
                         .replace(")", "")
             )
         )
-
-    def issueConsts(self, sf):
-        sf()
-        for f in [f for f in self.features if len(f.consts) > 0]:
-            sf()
-            sf("// Constants for %s", f.name)
-            f.beginGuard(sf)
-            maxLen = 0
-            for c in f.consts:
-                maxLen = max(maxLen, len(c.name))
-            for c in f.consts:
-                spacer = " " * (maxLen - len(c.name))
-                sf("enum %s%s = %s;", c.name, spacer, c.value)
-            f.endGuard(sf)
 
 
     def genCmd(self, cmdinfo, name):
@@ -475,14 +403,87 @@ class DGenerator(OutputGenerator):
         self.feature.cmds.append(DGenerator.Command(name, returnType, params, "PFN_"+name))
 
 
+
+    def issueTypes(self, sf):
+        feats = [f for f in self.features if len(f.baseTypes)+len(f.structDecls) > 0]
+        if not len(feats): return
+
+        sf()
+        sf("// Base Types")
+        for f in feats:
+            sf()
+            sf("// Types for %s", f.name)
+            f.beginGuard(sf)
+            maxLen = 0
+            for sd in f.structDecls:
+                sf("struct %s;", sd)
+            for bt in f.baseTypes:
+                maxLen = max(maxLen, len(bt.name))
+            for bt in f.baseTypes:
+                spacer = " " * (maxLen - len(bt.name))
+                sf("alias %s%s = %s;", bt.name, spacer, bt.type)
+            f.endGuard(sf)
+
+
+    def issueFuncptrs(self, sf):
+        feats = [f for f in self.features if len(f.funcptrs) > 0]
+        if not len(feats): return
+
+        sf()
+        sf("// Function pointers")
+        sf()
+        sf("extern(C) nothrow @nogc {")
+        sf()
+        with sf.indent_block():
+            for i, f in enumerate(feats):
+                if i != 0: sf()
+                sf("// for %s", f.name)
+                f.beginGuard(sf)
+                for fp in f.funcptrs:
+                    if not len(fp.params):
+                        sf("alias %s = %s function();", fp.name, fp.type)
+                    else:
+                        maxLen = 0
+                        for p in fp.params:
+                            maxLen = max(maxLen, len(p.type))
+                        sf("alias %s = %s function(", fp.name, fp.type)
+                        with sf.indent_block():
+                            for i, p in enumerate(fp.params):
+                                spacer = " " * (maxLen - len(p.type))
+                                endLine = "" if i == len(fp.params)-1 else ","
+                                sf("%s%s %s%s", p.type, spacer, p.name, endLine)
+                        sf(");")
+                f.endGuard(sf)
+        sf("}")
+
+
+    def issueConsts(self, sf):
+        feats = [f for f in self.features if len(f.consts) > 0]
+        if not len(feats): return
+
+        sf()
+        for f in feats:
+            sf()
+            sf("// Constants for %s", f.name)
+            f.beginGuard(sf)
+            maxLen = 0
+            for c in f.consts:
+                maxLen = max(maxLen, len(c.name))
+            for c in f.consts:
+                spacer = " " * (maxLen - len(c.name))
+                sf("enum %s%s = %s;", c.name, spacer, c.value)
+            f.endGuard(sf)
+
     def issueCmdPtrAliases(self, sf):
+        feats = [f for f in self.features if len(f.cmds) > 0]
+        if not len(feats): return
+
         sf()
         sf("// Command pointer aliases")
         sf()
         sf("extern(C) nothrow @nogc {")
         sf()
         with sf.indent_block():
-            feats = [f for f in self.features if len(f.cmds) > 0]
             for i, f in enumerate(feats):
                 if i != 0:
                     sf()
@@ -510,6 +511,8 @@ class DGenerator(OutputGenerator):
 
 
     def issueVersionEnum(self, sf):
+        if not len(self.cores): return
+
         sf()
         sf("/// %s describes the version of %s", self.versionEnum, self.humanName)
         sf("enum %s {", self.versionEnum)
@@ -528,42 +531,47 @@ class DGenerator(OutputGenerator):
 
 
     def issueExtensionsLoader(self, sf):
+        hasExtensions = len(self.extensions) > 0
         sf()
         sf("/// %s loader base class", self.humanName)
-        sf("/// %s attempts to load all extensions given as parameters", self.baseCls)
-        sf("/// Throws an exception if one of the requested extension could not be loaded")
+        if hasExtensions:
+            sf("/// %s attempts to load all extensions given as parameters", self.baseCls)
+            sf("/// Throws an exception if one of the requested extension could not be loaded")
         sf("abstract class %s {", self.baseCls)
         with sf.indent_block():
-
             sf()
-            sf("/// Build %s instance and attempt to load the extensions passed", self.baseCls)
-            sf("/// as arguments.")
-            sf("this (SymbolLoader loader, string[] extensions) {")
-            with sf.indent_block():
-                sf("import std.algorithm : canFind;")
-                sf("import std.exception : enforce;")
-                for ext in self.extensions:
-                    maxLen = 0
-                    for cmd in ext.cmds:
-                        maxLen = max(maxLen, len(cmd.name))
-                    sf()
-                    sf("if (extensions.canFind(\"%s\")) {", ext.name)
-                    with sf.indent_block():
+            if hasExtensions:
+                sf("/// Build %s instance and attempt to load the extensions passed", self.baseCls)
+                sf("/// as arguments.")
+                sf("this (SymbolLoader loader, string[] extensions) {")
+                with sf.indent_block():
+                    sf("import std.algorithm : canFind;")
+                    sf("import std.exception : enforce;")
+                    for ext in self.extensions:
+                        maxLen = 0
                         for cmd in ext.cmds:
-                            spacer = " " * (maxLen-len(cmd.name))
-                            sf("_%s %s= cast(%s)%senforce(loader(\"%s\"), %s\"Could not load %s. Requested by %s\");",
-                                    cmd.field, spacer, cmd.alias, spacer, cmd.name, spacer, cmd.name, ext.name)
-                        sf("_%s = true;", ext.name)
-                    sf("}")
+                            maxLen = max(maxLen, len(cmd.name))
+                        sf()
+                        sf("if (extensions.canFind(\"%s\")) {", ext.name)
+                        with sf.indent_block():
+                            for cmd in ext.cmds:
+                                spacer = " " * (maxLen-len(cmd.name))
+                                sf("_%s %s= cast(%s)%senforce(loader(\"%s\"), %s\"Could not load %s. Requested by %s\");",
+                                        cmd.field, spacer, cmd.alias, spacer, cmd.name, spacer, cmd.name, ext.name)
+                            sf("_%s = true;", ext.name)
+                        sf("}")
+                    sf()
+                    sf("_extensions = extensions;")
+                sf("}")
                 sf()
-                sf("_extensions = extensions;")
-            sf("}")
+                sf("public final @property const(string[]) extensions() const {")
+                with sf.indent_block():
+                    sf("return _extensions;")
+                sf("}")
+            else:
+                sf("this() {")
+                sf("}")
 
-            sf()
-            sf("public final @property const(string[]) extensions() const {")
-            with sf.indent_block():
-                sf("return _extensions;")
-            sf("}")
             sf()
             sf("public final @property %s %s() const {", self.versionEnum, self.versionField)
             with sf.indent_block():
@@ -584,7 +592,8 @@ class DGenerator(OutputGenerator):
                         sf("return _%s;", cmd.field)
                     sf("}")
 
-            sf("private string[] _extensions;")
+            if hasExtensions:
+                sf("private string[] _extensions;")
             sf("private %s _%s;", self.versionEnum, self.versionField)
             for ext in self.extensions:
                 sf()
@@ -600,6 +609,7 @@ class DGenerator(OutputGenerator):
         sf("}")
 
     def issueCoreLoaders(self, sf):
+        hasExtensions = len(self.extensions) > 0
         for core in self.cores:
             maxLen = 0
             for cmd in core.cmds:
@@ -608,15 +618,24 @@ class DGenerator(OutputGenerator):
             sf("/// Loader for %s.", core.name)
             sf("class %s : %s {", core.clsName, core.parentClsName)
             with sf.indent_block():
+                extText = ""
+                extParam = ""
+                superArgs = ""
+                if hasExtensions:
+                    extText = " and all passed extensions"
+                    extParam = ", string[] extensions"
+                    superArgs = "loader, extensions"
+                elif core.parentClsName != self.baseCls:
+                    superArgs = "loader"
                 sf()
-                sf("/// Build instance by loading all symbols needed by %s and all passed extensions.", core.name)
+                sf("/// Build instance by loading all symbols needed by %s%s.", core.name, extText)
                 sf("/// throws if a requested symbol could not be loaded")
-                sf("public this(SymbolLoader loader, string[] extensions) {")
+                sf("public this(SymbolLoader loader%s) {", extParam)
                 with sf.indent_block():
                     sf("import std.exception : enforce;")
                     sf()
                     num = core.clsName[-2:]
-                    sf("super(loader, extensions);")
+                    sf("super(%s);", superArgs)
                     sf()
                     for cmd in core.cmds:
                         spacer = " " * (maxLen-len(cmd.name))
@@ -651,40 +670,64 @@ if __name__ == "__main__":
     import sys
     import os
     from os import path
-    import argparse
 
-    gldgenDir = os.path.dirname(os.path.realpath(__file__))
-    glXml = path.join(gldgenDir, "gl.xml")
+    import xml.etree.ElementTree as etree
 
-    parser = argparse.ArgumentParser(description="Generate OpenGL D bindings")
+    from reg import Registry
 
-    parser.add_argument("-m, --module", dest="module", metavar="MODULE",
-                help="D module name")
-    parser.add_argument("-r, --registry", dest="registry", metavar="REGISTRY",
-                help="Path to the XML registry [{}]".format(glXml), default=glXml)
-    parser.add_argument("-o, --output", dest="output", metavar="OUTPUT",
-                help="D output file to generate [stdout].", default="[stdout]")
-
-    args = parser.parse_args(sys.argv[1:])
-
+    # Turn a list of strings into a regexp string matching exactly those strings
     def makeREstring(list):
-        return '^(' + '|'.join(list) + ')$'
+        return "^(" + "|".join(list) + ")$"
 
-    outFile = sys.stdout if args.output == "[stdout]" else open(args.output, "w")
+    # Descriptive names for various regexp patterns used to select
+    # versions and extensions
 
-    gen = DGenerator(args.module, outFile)
-    reg = Registry()
-    reg.loadElementTree( etree.parse( args.registry ))
-    reg.setGenerator( gen )
-    reg.apiGen( GeneratorOptions(
-        apiname           = 'gl',
-        profile           = 'core',
-        versions          = allVersions,
-        emitversions      = allVersions,
-        defaultExtensions = 'glcore',               # Default extensions for GL core profile (only)
-        addExtensions     = glCoreARBPat,
-        removeExtensions  = None,
-    ))
+    allVersions       = allExtensions = ".*"
+    noVersions        = noExtensions = None
+    gl12andLaterPat   = "1\.[2-9]|[234]\.[0-9]"
+    # Extensions in old glcorearb.h but not yet tagged accordingly in gl.xml
+    glCoreARBPat      = None
+    glx13andLaterPat  = "1\.[3-9]"
 
-    if args.output != "[stdout]":
-        outFile.close()
+    gldgenDir = path.dirname(path.realpath(__file__))
+    bindingsDir = path.dirname(gldgenDir)
+    srcDir = path.join(bindingsDir, "source", "gfx", "bindings", "opengl")
+
+    buildList = [
+        DGeneratorOptions(
+            filename            = path.join(srcDir, "gl.d"),
+            apiname             = "gl",
+            profile             = "core",
+            versions            = allVersions,
+            emitversions        = allVersions,
+            defaultExtensions   = "glcore",
+            addExtensions       = glCoreARBPat,
+            removeExtensions    = None,
+            module              = "gfx.bindings.opengl.gl",
+            stmts               = [
+                "alias uint64_t = ulong;",
+                "alias int64_t  = long;",
+            ]
+        ),
+        #DGeneratorOptions(      # equivalent of glxext.h
+        #    filename            = path.join(srcDir, "glx.d"),
+        #    apiname             = "glx",
+        #    profile             = None,
+        #    versions            = allVersions,
+        #    emitversions        = glx13andLaterPat,
+        #    defaultExtensions   = "glx",
+        #    addExtensions       = None,
+        #    removeExtensions    = None,
+        #    module              = "gfx.bindings.opengl.glx",
+        #    stmts               = [
+        #    ]
+        #)
+    ]
+
+    for opts in buildList:
+        gen = DGenerator()
+        reg = Registry()
+        reg.loadElementTree( etree.parse( path.join(gldgenDir, opts.apiname+".xml") ))
+        reg.setGenerator( gen )
+        reg.apiGen(opts)
+
