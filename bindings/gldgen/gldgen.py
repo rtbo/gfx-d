@@ -71,49 +71,72 @@ class SourceFile(object):
 
 # D specific utilities
 
-re_single_const = re.compile(r"^const\s+(.+)\*\s*$")
-re_double_const = re.compile(r"^const\s+(.+)\*\s+const\*\s*$")
+reSingleConst = re.compile(
+    r"^const\s+(.+)\*\s*$"
+)
+reDoubleConst = re.compile(
+    r"^const\s+(.+)\*\s+const\*\s*$"
+)
+reTypeAlias = re.compile(   # reStructAlias must be tested before reTypeAlias
+    r"^typedef\s+(.*[\s\*])(\w+)\s*;\s*$"
+)
+reStructAlias = re.compile(
+    r"^typedef\s+struct\s+([^{]+)\s*\*\s*(\w+);\s*$"
+)
+reFuncPtrAlias = re.compile(
+    r"^typedef\s+(.*)\s+\(\s*\*\s*(\w+)\)\s*\((.*)\)\s*;\s*$",
+    re.MULTILINE | re.DOTALL
+)
+reFuncParam = re.compile(
+    r"^(.*[\s\*])(\w+)$"
+)
+reStructDecl = re.compile(
+    r"^struct\s+(\w+);$"
+)
+# struct definition regex
+# match all fields in a single blob that can be passed to reStructFields
+reStructDef  = re.compile(
+    r"^typedef\s+struct\s+\{(.*)\}\s*(\w+)\s*;\s*$",
+    re.MULTILINE | re.DOTALL
+)
+# match examples for struct fields:
+#   int type;
+#   unsigned long serial;
+#   char pipeName[80]; /* Should be [GLX_HYPERPIPE_PIPE_NAME_LENGTH_SGIX] */
+#   int XOrigin, YOrigin, maxHeight, maxWidth;
+reStructFields = re.compile(
+    r"(^\s*(.*?[\s\*])(((\w+),\s)*(\w+))(\[.+\])?;.*$)+",
+    re.MULTILINE
+)
 
 def convertDTypeConst( typ ):
     """
     Converts C const syntax to D const syntax
     """
-    doubleConstMatch = re.match( re_double_const, typ )
-    if doubleConstMatch:
-        return "const({}*)*".format( doubleConstMatch.group( 1 ))
+    match = re.match( reDoubleConst, typ )
+    if match:
+        return "const({}*)*".format(match.group(1).strip())
     else:
-        singleConstMatch = re.match( re_single_const, typ )
-        if singleConstMatch:
-            return "const({})*".format( singleConstMatch.group( 1 ))
+        match = re.match( reSingleConst, typ )
+        if match:
+            return "const({})*".format(match.group(1).strip())
     return typ
+
+def mapDType(t):
+    return convertDTypeConst(
+        t   .replace("unsigned char", "ubyte")
+            .replace("unsigned short", "ushort")
+            .replace("unsigned int", "uint")
+            .replace("unsigned long", "c_ulong")
+            .replace("signed char", "byte")
+            .strip()
+    )
 
 def mapDName(name):
     if name in [ "ref" ]:
         return name + "_"
     else:
         return name
-
-# generator options
-
-class DGeneratorOptions(GeneratorOptions):
-    """Represents options during C header production from an API registry"""
-    def __init__(self,
-                 filename = None,
-                 apiname = None,
-                 profile = None,
-                 versions = '.*',
-                 emitversions = '.*',
-                 defaultExtensions = None,
-                 addExtensions = None,
-                 removeExtensions = None,
-                 sortProcedure = regSortFeatures,
-                 module = "",
-                 stmts = []):
-        GeneratorOptions.__init__(self, filename, apiname, profile,
-                                  versions, emitversions, defaultExtensions,
-                                  addExtensions, removeExtensions, sortProcedure)
-        self.module = module
-        self.stmts = stmts
 
 # the main generator
 
@@ -138,11 +161,11 @@ class DGenerator(OutputGenerator):
         def __init__(self, name, guard):
             self.name = name
             self.guard = guard
-            self.baseTypes = []
-            self.structDecls = []
-            self.funcptrs = []      # Command[]
+            self.aliases = []
+            self.structs = []
+            self.funcptrs = []
             self.consts = []
-            self.cmds = []          # Command[]
+            self.cmds = []
 
         def beginGuard(self, sf):
             if self.guard != None:
@@ -152,7 +175,7 @@ class DGenerator(OutputGenerator):
             if self.guard != None:
                 self.guard.end(sf)
 
-    class BaseType:
+    class Alias:
         def __init__(self, name, type):
             self.name = name
             self.type = type
@@ -167,13 +190,24 @@ class DGenerator(OutputGenerator):
             self.name = name
             self.type = type
 
+    class Struct:
+        def __init__(self, name, params):
+            self.name = name
+            self.params = params
+
+    class FuncPtr:
+        def __init__(self, name, type, params):
+            self.name = name
+            self.type = type
+            self.params = params
+
     class Command:
-        def __init__(self, name, type, params, alias):
+        def __init__(self, name, type, params, alias, field):
             self.name = name
             self.type = type
             self.params = params
             self.alias = alias
-            self.field = name[2].lower() + name[3:]
+            self.field = field
 
     class Extension:
         def __init__(self, name, cmds):
@@ -194,9 +228,15 @@ class DGenerator(OutputGenerator):
         self.featureGuards = {}
         for k in self.featureGuards:
             self.featureGuards[k].name = k
+        self.structDecls = []
         self.extensions = []
         self.cores = []
         self.lastLoaderClsName = ""
+
+    def addStructDecl(self, decl):
+        if self.opts and decl in self.opts.importedStructDecls: return
+        if decl in self.structDecls: return
+        self.structDecls.append(decl)
 
     def logMsg(self, level, *args):
         # shut down logging
@@ -216,23 +256,17 @@ class DGenerator(OutputGenerator):
         self.baseCls = self.base + "Cmds"
         self.versionEnum = self.base + "Version"
         self.versionField = self.base.lower() + "Version"
-        humanNames = {
-            "gl":   "OpenGL",
-            "gles": "OpenGLES",
-            "wgl":  "WinGL",
-            "glx":  "GLX"
-        }
-        self.humanName = humanNames[self.apiname]
         pass
 
     def endFile(self):
         sf = SourceFile()
-        sf("/// GL bindings for D. Generated automatically by gldgen.py")
+        sf("/// %s bindings for D. Generated automatically by gldgen.py", self.opts.humanName)
         sf("module %s;", self.opts.module)
         sf()
         for stmt in self.opts.stmts:
             sf(stmt)
 
+        self.issueStructDecls(sf)
         self.issueTypes(sf)
         self.issueFuncptrs(sf)
         self.issueConsts(sf)
@@ -288,75 +322,81 @@ class DGenerator(OutputGenerator):
             # filter preprocessing declarations
             return
 
-        self.parseBaseType(typeinfo, name)
+        self.parseType(typeinfo, name)
 
 
-    def parseBaseType(self, typeinfo, name):
+    def parseType(self, typeinfo, name):
         typeElem = typeinfo.elem
         s = noneStr(typeElem.text)
-
         for elem in typeElem:
-            if elem.tag != "name":
-                s += noneStr(elem.text)
-            elif elem.text.startswith("struct "):
-                self.feature.structDecls.append(elem.text[len("struct "):])
-                return
+            s += noneStr(elem.text)
             s += noneStr(elem.tail)
 
-        s = s.strip()   .replace(" ( *)", " (*) ")  \
-                        .replace(",", " , ")        \
-                        .replace(" *", " * ")        \
-                        .replace(");", " );")
-        if len(s) == 0:
+        match = re.match(reStructDecl, s)
+        if match:
+            struct = match.group(1).strip()
+            self.addStructDecl(struct)
             return
 
-        words = s.split(" ")
-        if words[0] == "typedef": words = words[1:]
-        if words[0] == "struct":
-            self.feature.structDecls.append(words[1])
-            words = words[1:]
-        if len(words) < 2 or words[1] != "(*)":
-            t = "".join(words)
-            if t.endswith(";"): t = t[:-1]
-            t = t   .replace("unsignedint", "uint")         \
-                    .replace("unsignedchar", "ubyte")       \
-                    .replace("unsignedshort", "ushort")     \
-                    .replace("signedchar", "byte")
-            self.feature.baseTypes.append(
-                DGenerator.BaseType(name, t)
+        match = re.match(reStructAlias, s)
+        if match:
+            assert name == match.group(2)
+            struct = match.group(1).strip()
+            self.addStructDecl(struct)
+            self.feature.aliases.append(
+                DGenerator.Alias(name, struct+"*")
             )
-        else:
-            # ex: words == ['void', '(*)', '(GLenum', 'source', ',', 'GLenum',
-            #               'type', ',', 'GLuint', 'id', ',', 'GLenum', 'severity',
-            #               ',', 'GLsizei', 'length', ',', 'const', 'GLchar', '*',
-            #               'message', ',', 'const', 'void', '*', 'userParam', ');']
-            returnType = words[0]
+            return
+
+        match = re.match(reTypeAlias, s)
+        if match:
+            assert name == match.group(2)
+            type = mapDType(match.group(1).strip())
+
+            self.feature.aliases.append(
+                DGenerator.Alias(name, type)
+            )
+            return
+
+        match = re.match(reFuncPtrAlias, s)
+        if match:
+            assert name == match.group(2)
+            t = mapDType(match.group(1))
+            p = match.group(3).strip()
+            if p == "void": p = ""
             params = []
-            w = words[2:]
-            while len(w):
-                # handle opening parenthesis
-                if len(params) == 0 and w[0].startswith("("):
-                    w[0] = w[0][1:]
-                p = []
-                nextParent = False
-                while w[0] != "," and w[0] != ");":
-                    if nextParent:
-                        w[0] = "("+w[0]+")"
-                        nextParent = False
-                    elif w[0] == "const":
-                        nextParent = True
-                    p.append(w[0])
-                    w = w[1:]
-                #eat , or );
-                w = w[1:]
-                if len(p) < 2:
-                    continue
-                t = "".join(p[:-1])
-                n = p[-1]
-                params.append(DGenerator.Param(n, t))
+            for pstr in p.split(","):
+                if not len(pstr.strip()): continue
+                match = re.match(reFuncParam, pstr)
+                params.append(
+                    DGenerator.Param(match.group(2), mapDType(match.group(1).strip()))
+                )
             self.feature.funcptrs.append(
-                DGenerator.Command(name, returnType, params, "PFN_"+name)
+                DGenerator.FuncPtr(name, t, params)
             )
+            return
+
+        match = re.match(reStructDef, s)
+        if match:
+            assert name == match.group(2)
+            fields = match.group(1)
+            fieldsMatches = re.findall(reStructFields, fields)
+            params = []
+            for m in fieldsMatches:
+                typ = m[1].strip()
+                index = m[6]
+                names = m[2]
+                for n in names.split(","):
+                    params.append(
+                        DGenerator.Param(n.strip(), mapDType(typ+index))
+                    )
+            self.feature.structs.append(
+                DGenerator.Struct(name, params)
+            )
+            return
+
+        print("no match for", s)
+
 
     def genEnum(self, enuminfo, name):
         super().genEnum(enuminfo, name)
@@ -384,7 +424,7 @@ class DGenerator(OutputGenerator):
             if el.tag != "name":
                 returnType += noneStr(el.text)
             returnType += noneStr(el.tail)
-        returnType = returnType.strip()
+        returnType = mapDType(returnType.strip())
         if not len(returnType): return
 
         params = []
@@ -397,15 +437,22 @@ class DGenerator(OutputGenerator):
                 t += noneStr(el.tail)
             t = t.replace(" *", "*")
             if t.count("const") > 1: t = t.replace("*const*", "**")
-            t = convertDTypeConst(t)
+            t = mapDType(t)
             if t.startswith("struct "): t = t[len("struct "):]
             params.append(DGenerator.Param(n, t.strip()))
-        self.feature.cmds.append(DGenerator.Command(name, returnType, params, "PFN_"+name))
+        cpl = len(self.opts.cmdPrefix)
+        field = name[cpl].lower() + name[cpl+1:]
+        self.feature.cmds.append(DGenerator.Command(name, returnType, params, "PFN_"+name, field))
 
-
+    def issueStructDecls(self, sf):
+        if not len(self.structDecls): return
+        sf()
+        sf("// Struct declarations")
+        for sd in self.structDecls:
+            sf("struct %s;", sd)
 
     def issueTypes(self, sf):
-        feats = [f for f in self.features if len(f.baseTypes)+len(f.structDecls) > 0]
+        feats = [f for f in self.features if len(f.aliases) > 0]
         if not len(feats): return
 
         sf()
@@ -415,13 +462,11 @@ class DGenerator(OutputGenerator):
             sf("// Types for %s", f.name)
             f.beginGuard(sf)
             maxLen = 0
-            for sd in f.structDecls:
-                sf("struct %s;", sd)
-            for bt in f.baseTypes:
-                maxLen = max(maxLen, len(bt.name))
-            for bt in f.baseTypes:
-                spacer = " " * (maxLen - len(bt.name))
-                sf("alias %s%s = %s;", bt.name, spacer, bt.type)
+            for a in f.aliases:
+                maxLen = max(maxLen, len(a.name))
+            for a in f.aliases:
+                spacer = " " * (maxLen - len(a.name))
+                sf("alias %s%s = %s;", a.name, spacer, a.type)
             f.endGuard(sf)
 
 
@@ -514,7 +559,7 @@ class DGenerator(OutputGenerator):
         if not len(self.cores): return
 
         sf()
-        sf("/// %s describes the version of %s", self.versionEnum, self.humanName)
+        sf("/// %s describes the version of %s", self.versionEnum, self.opts.humanName)
         sf("enum %s {", self.versionEnum)
         with sf.indent_block():
             for core in self.cores:
@@ -533,7 +578,7 @@ class DGenerator(OutputGenerator):
     def issueExtensionsLoader(self, sf):
         hasExtensions = len(self.extensions) > 0
         sf()
-        sf("/// %s loader base class", self.humanName)
+        sf("/// %s loader base class", self.opts.humanName)
         if hasExtensions:
             sf("/// %s attempts to load all extensions given as parameters", self.baseCls)
             sf("/// Throws an exception if one of the requested extension could not be loaded")
@@ -661,6 +706,36 @@ class DGenerator(OutputGenerator):
 
 
 
+# generator options
+
+class DGeneratorOptions(GeneratorOptions):
+    """Represents options during C header production from an API registry"""
+    def __init__(self,
+                 filename = None,
+                 apiname = None,
+                 profile = None,
+                 versions = '.*',
+                 emitversions = '.*',
+                 defaultExtensions = None,
+                 addExtensions = None,
+                 removeExtensions = None,
+                 sortProcedure = regSortFeatures,
+                 regFile = "",
+                 module = "",
+                 humanName = "",
+                 cmdPrefix = "",
+                 importedStructDecls = [],
+                 stmts = []):
+        GeneratorOptions.__init__(self, filename, apiname, profile,
+                                  versions, emitversions, defaultExtensions,
+                                  addExtensions, removeExtensions, sortProcedure)
+        self.regFile = regFile
+        self.module = module
+        self.humanName = humanName
+        self.cmdPrefix = cmdPrefix
+        self.importedStructDecls = importedStructDecls
+        self.stmts = stmts
+
 
 
 # main driver starts here
@@ -694,7 +769,7 @@ if __name__ == "__main__":
     srcDir = path.join(bindingsDir, "source", "gfx", "bindings", "opengl")
 
     buildList = [
-        DGeneratorOptions(
+        DGeneratorOptions(      # equivalent of glcorearb.h
             filename            = path.join(srcDir, "gl.d"),
             apiname             = "gl",
             profile             = "core",
@@ -703,31 +778,67 @@ if __name__ == "__main__":
             defaultExtensions   = "glcore",
             addExtensions       = glCoreARBPat,
             removeExtensions    = None,
+            regFile             = path.join(gldgenDir, "gl.xml"),
             module              = "gfx.bindings.opengl.gl",
+            humanName           = "OpenGL",
+            cmdPrefix           = "gl",
+            importedStructDecls = [],
             stmts               = [
+                "",
                 "alias uint64_t = ulong;",
                 "alias int64_t  = long;",
             ]
         ),
-        #DGeneratorOptions(      # equivalent of glxext.h
-        #    filename            = path.join(srcDir, "glx.d"),
-        #    apiname             = "glx",
-        #    profile             = None,
-        #    versions            = allVersions,
-        #    emitversions        = glx13andLaterPat,
-        #    defaultExtensions   = "glx",
-        #    addExtensions       = None,
-        #    removeExtensions    = None,
-        #    module              = "gfx.bindings.opengl.glx",
-        #    stmts               = [
-        #    ]
-        #)
+        DGeneratorOptions(
+            filename            = path.join(srcDir, "glx.d"),
+            apiname             = "glx",
+            profile             = None,
+            versions            = allVersions,
+            emitversions        = allVersions,
+            defaultExtensions   = None,
+            addExtensions       = None,
+            removeExtensions    = None,
+            regFile             = path.join(gldgenDir, "glx.xml"),
+            humanName           = "GLX",
+            cmdPrefix           = "glX",
+            module              = "gfx.bindings.opengl.glx",
+            importedStructDecls = [],
+            stmts               = [
+                "version(linux):",
+                "",
+                "import core.stdc.config;",
+                "import gfx.bindings.opengl.gl;",
+                "import X11.Xlib;",
+                "",
+                "alias int32_t = int;",
+                "alias int64_t = long;",
+            ]
+        ),
+        DGeneratorOptions(      # equivalent of wglext.h
+            filename            = path.join(srcDir, "wgl.d"),
+            apiname             = "wgl",
+            profile             = None,
+            versions            = allVersions,
+            emitversions        = None,
+            defaultExtensions   = "wgl",
+            addExtensions       = None,
+            removeExtensions    = None,
+            regFile             = path.join(gldgenDir, "wgl.xml"),
+            humanName           = "WinGL",
+            cmdPrefix           = "wgl",
+            module              = "gfx.bindings.opengl.wgl",
+            importedStructDecls = [],
+            stmts               = [
+                "version(Windows):",
+            ]
+        )
     ]
 
     for opts in buildList:
+        if opts.apiname == "wgl": continue
         gen = DGenerator()
         reg = Registry()
-        reg.loadElementTree( etree.parse( path.join(gldgenDir, opts.apiname+".xml") ))
+        reg.loadElementTree( etree.parse( opts.regFile ))
         reg.setGenerator( gen )
         reg.apiGen(opts)
 
