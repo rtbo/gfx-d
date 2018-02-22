@@ -19,6 +19,10 @@ SharedSym loadSharedSym(SharedLib lib, string name);
 void closeSharedLib(SharedLib lib);
 
 
+/// Generic Dynamic lib symbol loader.
+/// Symbols loaded with such loader must be cast to the appropriate function type.
+alias SymbolLoader = SharedSym* delegate (string name);
+
 
 version(Posix)
 {

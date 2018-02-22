@@ -95,8 +95,16 @@ reStructDecl = re.compile(
 )
 # struct definition regex
 # match all fields in a single blob that can be passed to reStructFields
-reStructDef  = re.compile(
+# form:
+# typedef struct { fields } name;
+reStructTypedefDef  = re.compile(
     r"^typedef\s+struct\s+\{(.*)\}\s*(\w+)\s*;\s*$",
+    re.MULTILINE | re.DOTALL
+)
+# form:
+# struct name { fields }
+reStructDef = re.compile(
+    r"^struct\s+(\w+)\s+\{(.*)\}\s*;\s*$",
     re.MULTILINE | re.DOTALL
 )
 # match examples for struct fields:
@@ -266,15 +274,16 @@ class DGenerator(OutputGenerator):
         for stmt in self.opts.stmts:
             sf(stmt)
 
-        self.issueStructDecls(sf)
         self.issueTypes(sf)
+        self.issueStructDecls(sf)
+        self.issueStructDefs(sf)
         self.issueFuncptrs(sf)
         self.issueConsts(sf)
         self.issueCmdPtrAliases(sf)
         self.issueVersionEnum(sf)
-        self.issueSymbolLoader(sf)
         self.issueExtensionsLoader(sf)
         self.issueCoreLoaders(sf)
+        self.issueLoaderFunc(sf)
 
         with open(self.opts.filename, "w") as outFile:
             sf.writeOut(outFile)
@@ -293,21 +302,22 @@ class DGenerator(OutputGenerator):
 
     def endFeature(self):
         super().endFeature()
-        # adding feature with commands to cores or extensions
-        if self.feature.name.startswith(self.versionTag):
-            clsName = self.feature.name                \
-                    .replace(self.versionTag, self.baseCls)    \
-                    .replace("_", "")
-            parentClsName = self.lastLoaderClsName
-            self.lastLoaderClsName = clsName
-            if len(parentClsName) == 0:
-                parentClsName = self.baseCls   # first core extends GlCmds, which is the extension loader
-            if len(self.feature.cmds):
-                self.cores.append(
-                    DGenerator.GlCore(self.feature.name, clsName, parentClsName, self.feature.cmds)
-                )
-        else:
-            if len(self.feature.cmds):
+
+        if len(self.feature.cmds):
+            # adding feature with commands to cores or extensions
+            if self.feature.name.startswith(self.versionTag):
+                clsName = self.feature.name                \
+                        .replace(self.versionTag, self.baseCls)    \
+                        .replace("_", "")
+                parentClsName = self.lastLoaderClsName
+                self.lastLoaderClsName = clsName
+                if len(parentClsName) == 0:
+                    parentClsName = self.baseCls   # first core extends GlCmds, which is the extension loader
+                if len(self.feature.cmds):
+                    self.cores.append(
+                        DGenerator.GlCore(self.feature.name, clsName, parentClsName, self.feature.cmds)
+                    )
+            else:
                 self.extensions.append(
                     DGenerator.Extension(self.feature.name, self.feature.cmds)
                 )
@@ -376,10 +386,14 @@ class DGenerator(OutputGenerator):
             )
             return
 
-        match = re.match(reStructDef, s)
-        if match:
-            assert name == match.group(2)
-            fields = match.group(1)
+        match1 = re.match(reStructDef, s)
+        match2 = re.match(reStructTypedefDef, s)
+        if match1 or match2:
+            match = match1 if match1 else match2
+            nameGr = 1 if match1 else 2
+            fieldsGr = 2 if match1 else 1
+            assert name == match.group(nameGr)
+            fields = match.group(fieldsGr)
             fieldsMatches = re.findall(reStructFields, fields)
             params = []
             for m in fieldsMatches:
@@ -401,15 +415,22 @@ class DGenerator(OutputGenerator):
     def genEnum(self, enuminfo, name):
         super().genEnum(enuminfo, name)
         value = enuminfo.elem.get("value")
+        if "EGL_CAST" in value:
+            value = value                               \
+                    .replace("EGL_CAST", "EGL_CAST!")   \
+                    .replace(",", ")(")
+        else:
+            value = value                               \
+                    .replace("0ULL", "0")               \
+                    .replace("0L", "0")                 \
+                    .replace("0U", "0")                 \
+                    .replace("(", "")                   \
+                    .replace(")", "")
+
         self.feature.consts.append(
                 DGenerator.Const(
                     name,
                     value
-                        .replace("0ULL", "0")
-                        .replace("0L", "0")
-                        .replace("0U", "0")
-                        .replace("(", "")
-                        .replace(")", "")
             )
         )
 
@@ -437,12 +458,15 @@ class DGenerator(OutputGenerator):
                 t += noneStr(el.tail)
             t = t.replace(" *", "*")
             if t.count("const") > 1: t = t.replace("*const*", "**")
-            t = mapDType(t)
             if t.startswith("struct "): t = t[len("struct "):]
+            t = t.replace(" struct ", " ")
+            t = mapDType(t)
             params.append(DGenerator.Param(n, t.strip()))
         cpl = len(self.opts.cmdPrefix)
         field = name[cpl].lower() + name[cpl+1:]
         self.feature.cmds.append(DGenerator.Command(name, returnType, params, "PFN_"+name, field))
+
+
 
     def issueStructDecls(self, sf):
         if not len(self.structDecls): return
@@ -450,6 +474,27 @@ class DGenerator(OutputGenerator):
         sf("// Struct declarations")
         for sd in self.structDecls:
             sf("struct %s;", sd)
+
+    def issueStructDefs(self, sf):
+        feats = [f for f in self.features if len(f.structs) > 0]
+        if not len(feats): return
+
+        sf()
+        sf("// struct definitions")
+        for f in feats:
+            sf("// Structs for %s", f.name)
+            f.beginGuard(sf)
+            for s in f.structs:
+                maxLen = 0
+                for p in s.params:
+                    maxLen = max(maxLen, len(p.type))
+                sf("struct %s {", s.name)
+                with sf.indent_block():
+                    for p in s.params:
+                        spacer = " " * (maxLen - len(p.type))
+                        sf("%s %s;", p.type, p.name)
+                sf("}")
+            f.endGuard(sf)
 
     def issueTypes(self, sf):
         feats = [f for f in self.features if len(f.aliases) > 0]
@@ -566,13 +611,6 @@ class DGenerator(OutputGenerator):
                 num = core.clsName[-2:]
                 sf("%s,", self.base.lower()+num)
         sf("}")
-
-
-    def issueSymbolLoader(self, sf):
-        sf()
-        sf("/// Generic Dynamic lib symbol loader.")
-        sf("/// Symbols loaded with such loader must be cast to the appropriate function type.")
-        sf("alias SymbolLoader = void* delegate (string name);")
 
 
     def issueExtensionsLoader(self, sf):
@@ -704,6 +742,24 @@ class DGenerator(OutputGenerator):
                     sf("private %s %s_%s;", cmd.alias, spacer, cmd.field)
             sf("}")
 
+    def issueLoaderFunc(self, sf):
+        sf()
+        sf("/// Load %s symbols of the given version and with the given extensions", self.opts.humanName)
+        sf("%s load%s(SymbolLoader loader, %s ver, string[] extensions) {",
+                self.baseCls, self.opts.humanName, self.versionEnum)
+        with sf.indent_block():
+            sf("final switch(ver) {")
+            clsName = ""
+            for core in self.cores:
+                num = core.clsName[-2:]
+                sf("case %s.%s:", self.versionEnum, self.base.lower()+num)
+                if len(core.cmds):
+                    clsName = core.clsName
+                assert clsName != ""
+                with sf.indent_block():
+                    sf("return new %s(loader, extensions);", clsName)
+            sf("}")
+        sf("}")
 
 
 # generator options
@@ -784,9 +840,8 @@ if __name__ == "__main__":
             cmdPrefix           = "gl",
             importedStructDecls = [],
             stmts               = [
-                "",
-                "alias uint64_t = ulong;",
-                "alias int64_t  = long;",
+                "import core.stdc.stdint;",
+                "import gfx.bindings.core;"
             ]
         ),
         DGeneratorOptions(
@@ -795,9 +850,11 @@ if __name__ == "__main__":
             profile             = None,
             versions            = allVersions,
             emitversions        = allVersions,
-            defaultExtensions   = None,
+            defaultExtensions   = "glx",
             addExtensions       = None,
-            removeExtensions    = None,
+            removeExtensions    = makeREstring([
+                "GLX_SGIX_dmbuffer", "GLX_SGIX_video_source"
+            ]),
             regFile             = path.join(gldgenDir, "glx.xml"),
             humanName           = "GLX",
             cmdPrefix           = "glX",
@@ -807,11 +864,10 @@ if __name__ == "__main__":
                 "version(linux):",
                 "",
                 "import core.stdc.config;",
+                "import core.stdc.stdint;",
+                "import gfx.bindings.core;",
                 "import gfx.bindings.opengl.gl;",
                 "import X11.Xlib;",
-                "",
-                "alias int32_t = int;",
-                "alias int64_t = long;",
             ]
         ),
         DGeneratorOptions(      # equivalent of wglext.h
@@ -830,8 +886,30 @@ if __name__ == "__main__":
             importedStructDecls = [],
             stmts               = [
                 "version(Windows):",
+                "import gfx.bindings.core;"
             ]
-        )
+        ),
+        DGeneratorOptions(
+            filename            = path.join(srcDir, "egl.d"),
+            apiname             = "egl",
+            profile             = None,
+            versions            = allVersions,
+            emitversions        = allVersions,
+            defaultExtensions   = "egl",
+            addExtensions       = None,
+            removeExtensions    = None,
+            regFile             = path.join(gldgenDir, "egl.xml"),
+            humanName           = "EGL",
+            cmdPrefix           = "egl",
+            module              = "gfx.bindings.opengl.egl",
+            importedStructDecls = [],
+            stmts               = [
+                "import core.stdc.stdint;",
+                "import gfx.bindings.core;",
+                "import gfx.bindings.opengl.eglplatform;",
+                "import gfx.bindings.opengl.khrplatform;",
+            ]
+        ),
     ]
 
     for opts in buildList:
