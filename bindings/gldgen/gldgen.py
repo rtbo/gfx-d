@@ -33,7 +33,7 @@ class SourceFile(object):
         self._indent = 0
 
 
-    def indent_block(self):
+    def indentBlock(self):
         class Indenter(object):
             def __init__(self, sf):
                 self.sf = sf
@@ -489,7 +489,7 @@ class DGenerator(OutputGenerator):
                 for p in s.params:
                     maxLen = max(maxLen, len(p.type))
                 sf("struct %s {", s.name)
-                with sf.indent_block():
+                with sf.indentBlock():
                     for p in s.params:
                         spacer = " " * (maxLen - len(p.type))
                         sf("%s %s;", p.type, p.name)
@@ -524,7 +524,7 @@ class DGenerator(OutputGenerator):
         sf()
         sf("extern(C) nothrow @nogc {")
         sf()
-        with sf.indent_block():
+        with sf.indentBlock():
             for i, f in enumerate(feats):
                 if i != 0: sf()
                 sf("// for %s", f.name)
@@ -537,7 +537,7 @@ class DGenerator(OutputGenerator):
                         for p in fp.params:
                             maxLen = max(maxLen, len(p.type))
                         sf("alias %s = %s function(", fp.name, fp.type)
-                        with sf.indent_block():
+                        with sf.indentBlock():
                             for i, p in enumerate(fp.params):
                                 spacer = " " * (maxLen - len(p.type))
                                 endLine = "" if i == len(fp.params)-1 else ","
@@ -573,7 +573,7 @@ class DGenerator(OutputGenerator):
         sf()
         sf("extern(C) nothrow @nogc {")
         sf()
-        with sf.indent_block():
+        with sf.indentBlock():
             for i, f in enumerate(feats):
                 if i != 0:
                     sf()
@@ -589,7 +589,7 @@ class DGenerator(OutputGenerator):
                         continue
 
                     sf(fstLine)
-                    with sf.indent_block():
+                    with sf.indentBlock():
                         for p in cmd.params:
                             spacer = " " * (maxLen-len(p.type))
                             sf("%s%s %s,", p.type, spacer, p.name)
@@ -606,7 +606,7 @@ class DGenerator(OutputGenerator):
         sf()
         sf("/// %s describes the version of %s", self.versionEnum, self.opts.humanName)
         sf("enum %s {", self.versionEnum)
-        with sf.indent_block():
+        with sf.indentBlock():
             for core in self.cores:
                 num = core.clsName[-2:]
                 sf("%s,", self.base.lower()+num)
@@ -621,13 +621,13 @@ class DGenerator(OutputGenerator):
             sf("/// %s attempts to load all extensions given as parameters", self.baseCls)
             sf("/// Throws an exception if one of the requested extension could not be loaded")
         sf("abstract class %s {", self.baseCls)
-        with sf.indent_block():
+        with sf.indentBlock():
             sf()
             if hasExtensions:
                 sf("/// Build %s instance and attempt to load the extensions passed", self.baseCls)
                 sf("/// as arguments.")
                 sf("this (SymbolLoader loader, string[] extensions) {")
-                with sf.indent_block():
+                with sf.indentBlock():
                     sf("import std.algorithm : canFind;")
                     sf("import std.exception : enforce;")
                     for ext in self.extensions:
@@ -636,7 +636,7 @@ class DGenerator(OutputGenerator):
                             maxLen = max(maxLen, len(cmd.name))
                         sf()
                         sf("if (extensions.canFind(\"%s\")) {", ext.name)
-                        with sf.indent_block():
+                        with sf.indentBlock():
                             for cmd in ext.cmds:
                                 spacer = " " * (maxLen-len(cmd.name))
                                 sf("_%s %s= cast(%s)%senforce(loader(\"%s\"), %s\"Could not load %s. Requested by %s\");",
@@ -648,7 +648,7 @@ class DGenerator(OutputGenerator):
                 sf("}")
                 sf()
                 sf("public final @property const(string[]) extensions() const {")
-                with sf.indent_block():
+                with sf.indentBlock():
                     sf("return _extensions;")
                 sf("}")
             else:
@@ -657,7 +657,7 @@ class DGenerator(OutputGenerator):
 
             sf()
             sf("public final @property %s %s() const {", self.versionEnum, self.versionField)
-            with sf.indent_block():
+            with sf.indentBlock():
                 sf("return _%s;", self.versionField)
             sf("}")
 
@@ -665,13 +665,13 @@ class DGenerator(OutputGenerator):
                 sf()
                 sf("/// Accessors for %s", ext.name)
                 sf("public final @property bool %s() const {", ext.name)
-                with sf.indent_block():
+                with sf.indentBlock():
                     sf("return _%s;", ext.name)
                 sf("}")
                 for cmd in ext.cmds:
                     sf("/// ditto")
                     sf("public final @property %s %s() {", cmd.alias, cmd.field)
-                    with sf.indent_block():
+                    with sf.indentBlock():
                         sf("return _%s;", cmd.field)
                     sf("}")
 
@@ -700,7 +700,7 @@ class DGenerator(OutputGenerator):
             sf()
             sf("/// Loader for %s.", core.name)
             sf("class %s : %s {", core.clsName, core.parentClsName)
-            with sf.indent_block():
+            with sf.indentBlock():
                 extText = ""
                 extParam = ""
                 superArgs = ""
@@ -714,7 +714,7 @@ class DGenerator(OutputGenerator):
                 sf("/// Build instance by loading all symbols needed by %s%s.", core.name, extText)
                 sf("/// throws if a requested symbol could not be loaded")
                 sf("public this(SymbolLoader loader%s) {", extParam)
-                with sf.indent_block():
+                with sf.indentBlock():
                     sf("import std.exception : enforce;")
                     sf()
                     num = core.clsName[-2:]
@@ -732,7 +732,7 @@ class DGenerator(OutputGenerator):
                 for cmd in core.cmds:
                     spacer = " " * (maxLen - len(cmd.name))
                     sf("public final @property %s %s() {", cmd.alias, cmd.field)
-                    with sf.indent_block():
+                    with sf.indentBlock():
                         sf("return _%s;", cmd.field)
                     sf("}")
 
@@ -747,7 +747,7 @@ class DGenerator(OutputGenerator):
         sf("/// Load %s symbols of the given version and with the given extensions", self.opts.humanName)
         sf("%s load%s(SymbolLoader loader, %s ver, string[] extensions) {",
                 self.baseCls, self.opts.humanName, self.versionEnum)
-        with sf.indent_block():
+        with sf.indentBlock():
             sf("final switch(ver) {")
             clsName = ""
             for core in self.cores:
@@ -756,7 +756,7 @@ class DGenerator(OutputGenerator):
                 if len(core.cmds):
                     clsName = core.clsName
                 assert clsName != ""
-                with sf.indent_block():
+                with sf.indentBlock():
                     sf("return new %s(loader, extensions);", clsName)
             sf("}")
         sf("}")
