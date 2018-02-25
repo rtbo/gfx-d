@@ -2,7 +2,11 @@
 module gfx.bindings.vulkan.vk;
 
 version(linux) {
-    import wayland.native.client;
+    import xcb.xcb : xcb_connection_t, xcb_visualid_t, xcb_window_t;
+}
+
+version(linux) {
+    import wayland.native.client : wl_display, wl_proxy;
     alias wl_surface = wl_proxy;
 }
 
@@ -94,6 +98,11 @@ alias VkSwapchainCreateFlagsKHR = VkFlags;
 alias VkDisplayPlaneAlphaFlagsKHR    = VkFlags;
 alias VkDisplayModeCreateFlagsKHR    = VkFlags;
 alias VkDisplaySurfaceCreateFlagsKHR = VkFlags;
+
+// VK_KHR_xcb_surface
+version(linux) {
+    alias VkXcbSurfaceCreateFlagsKHR = VkFlags;
+}
 
 // VK_KHR_wayland_surface
 version(linux) {
@@ -209,6 +218,12 @@ enum VK_KHR_SWAPCHAIN_EXTENSION_NAME = "VK_KHR_swapchain";
 // VK_KHR_display
 enum VK_KHR_DISPLAY_SPEC_VERSION   = 21;
 enum VK_KHR_DISPLAY_EXTENSION_NAME = "VK_KHR_display";
+
+// VK_KHR_xcb_surface
+version(linux) {
+    enum VK_KHR_XCB_SURFACE_SPEC_VERSION   = 6;
+    enum VK_KHR_XCB_SURFACE_EXTENSION_NAME = "VK_KHR_xcb_surface";
+}
 
 // VK_KHR_wayland_surface
 version(linux) {
@@ -3432,6 +3447,17 @@ struct VkDisplaySurfaceCreateInfoKHR {
     VkExtent2D                     imageExtent;
 }
 
+// VK_KHR_xcb_surface
+version(linux) {
+    struct VkXcbSurfaceCreateInfoKHR {
+        VkStructureType            sType;
+        const(void)*               pNext;
+        VkXcbSurfaceCreateFlagsKHR flags;
+        xcb_connection_t*          connection;
+        xcb_window_t               window;
+    }
+}
+
 // VK_KHR_wayland_surface
 version(linux) {
     struct VkWaylandSurfaceCreateInfoKHR {
@@ -4349,6 +4375,22 @@ extern(C) nothrow @nogc {
         VkSurfaceKHR*                         pSurface,
     );
 
+    // VK_KHR_xcb_surface
+    version(linux) {
+        alias PFN_vkCreateXcbSurfaceKHR = VkResult function (
+            VkInstance                        instance,
+            const(VkXcbSurfaceCreateInfoKHR)* pCreateInfo,
+            const(VkAllocationCallbacks)*     pAllocator,
+            VkSurfaceKHR*                     pSurface,
+        );
+        alias PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR = VkBool32 function (
+            VkPhysicalDevice  physicalDevice,
+            uint32_t          queueFamilyIndex,
+            xcb_connection_t* connection,
+            xcb_visualid_t    visual_id,
+        );
+    }
+
     // VK_KHR_wayland_surface
     version(linux) {
         alias PFN_vkCreateWaylandSurfaceKHR = VkResult function (
@@ -4416,6 +4458,12 @@ final class VkInstanceCmds {
     PFN_vkGetDisplayPlaneCapabilitiesKHR                 getDisplayPlaneCapabilitiesKHR;
     PFN_vkCreateDisplayPlaneSurfaceKHR                   createDisplayPlaneSurfaceKHR;
 
+    // VK_KHR_xcb_surface
+    version(linux) {
+        PFN_vkCreateXcbSurfaceKHR                            createXcbSurfaceKHR;
+        PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR     getPhysicalDeviceXcbPresentationSupportKHR;
+    }
+
     // VK_KHR_wayland_surface
     version(linux) {
         PFN_vkCreateWaylandSurfaceKHR                        createWaylandSurfaceKHR;
@@ -4454,6 +4502,12 @@ final class VkInstanceCmds {
         createDisplayModeKHR                           = cast(PFN_vkCreateDisplayModeKHR)                          loader(instance, "vkCreateDisplayModeKHR");
         getDisplayPlaneCapabilitiesKHR                 = cast(PFN_vkGetDisplayPlaneCapabilitiesKHR)                loader(instance, "vkGetDisplayPlaneCapabilitiesKHR");
         createDisplayPlaneSurfaceKHR                   = cast(PFN_vkCreateDisplayPlaneSurfaceKHR)                  loader(instance, "vkCreateDisplayPlaneSurfaceKHR");
+
+        // VK_KHR_xcb_surface
+        version(linux) {
+            createXcbSurfaceKHR                            = cast(PFN_vkCreateXcbSurfaceKHR)                           loader(instance, "vkCreateXcbSurfaceKHR");
+            getPhysicalDeviceXcbPresentationSupportKHR     = cast(PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR)    loader(instance, "vkGetPhysicalDeviceXcbPresentationSupportKHR");
+        }
 
         // VK_KHR_wayland_surface
         version(linux) {
