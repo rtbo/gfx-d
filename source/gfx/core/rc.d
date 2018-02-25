@@ -384,6 +384,7 @@ private enum sharedAtomicMethods = q{
             }
             synchronized(this) {
                 // cast shared away
+                import gfx.core.rc : Disposable;
                 auto obj = cast(Disposable)this;
                 obj.dispose();
             }
