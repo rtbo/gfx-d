@@ -15,27 +15,12 @@ import wayland.util;
 
 // FIXME: multithreading
 
-private WaylandDisplay g_dpy;
-private uint g_refCount;
 
-WaylandDisplay refDisplay() {
-    if (g_refCount == 0) {
-        g_dpy = new WaylandDisplay();
-    }
-    ++g_refCount;
-    return g_dpy;
-}
-
-void unrefDisplay() {
-    --g_refCount;
-    if (g_refCount == 0) {
-        g_dpy.close();
-        g_dpy = null;
-    }
-}
-
-class WaylandDisplay
+class WaylandDisplay : Display
 {
+    import gfx.core.rc : atomicRcCode;
+    mixin(atomicRcCode);
+
     private WlDisplay display;
     private WlCompositor compositor;
     private WlSeat seat;
@@ -45,9 +30,10 @@ class WaylandDisplay
     private WlShell wlShell;
     private ZxdgShellV6 xdgShell;
 
-    private WaylandWindowBase[] windows;
+    private WaylandWindowBase[] wldWindows;
     private WaylandWindowBase pointedWindow;
     private WaylandWindowBase focusWindow;
+    private Window[] _windows;
 
     this() {
         display = WlDisplay.connect();
@@ -87,27 +73,46 @@ class WaylandDisplay
         reg.destroy();
     }
 
-    Window createWindow(Instance instance) {
+    override @property Window[] windows() {
+        return _windows;
+    }
+
+    override Window createWindow(Instance instance) {
         if (xdgShell) {
-            return new XdgWaylandWindow(instance, xdgShell);
+            auto w = new XdgWaylandWindow(this, instance, xdgShell);
+            w.prepareSurface();
+            wldWindows ~= w;
+            _windows ~= w;
+            return w;
         }
         else if (wlShell) {
-            return new WaylandWindow(instance, wlShell);
+            auto w = new WaylandWindow(this, instance, wlShell);
+            w.prepareSurface();
+            wldWindows ~= w;
+            _windows ~= w;
+            return w;
         }
         else {
             return null;
         }
     }
 
-    package void refWindow(WaylandWindowBase w) {
-        windows ~= w;
+    override void pollAndDispatch() {
+        while (display.prepareRead() != 0) {
+            display.dispatchPending();
+        }
+        display.flush();
+        display.readEvents();
+        display.dispatchPending();
     }
 
-    package void unrefWindow(WaylandWindowBase w) {
+
+    package void unrefWindow(WaylandWindowBase window) {
         import std.algorithm : remove;
-        windows = windows.remove!(_w => _w is w);
-        if (w is pointedWindow) pointedWindow = null;
-        if (w is focusWindow) focusWindow = null;
+        wldWindows = wldWindows.remove!(w => w is window);
+        _windows = _windows.remove!(w => w is window);
+        if (window is pointedWindow) pointedWindow = null;
+        if (window is focusWindow) focusWindow = null;
     }
 
     private void seatCapChanged (WlSeat seat, WlSeat.Capability cap)
@@ -142,7 +147,7 @@ class WaylandDisplay
     private void pointerEnter(WlPointer pointer, uint serial, WlSurface surface,
                         WlFixed surfaceX, WlFixed surfaceY)
     {
-        foreach (w; windows) {
+        foreach (w; wldWindows) {
             if (w.wlSurface is surface) {
                 pointedWindow = w;
                 w.pointerEnter(surfaceX, surfaceY);
@@ -174,7 +179,7 @@ class WaylandDisplay
             pointedWindow = null;
         }
         else {
-            foreach (w; windows) {
+            foreach (w; wldWindows) {
                 if (w.wlSurface is surface) {
                     w.pointerLeave();
                     break;
@@ -189,13 +194,21 @@ class WaylandDisplay
         if (focusWindow) {
             focusWindow.key(key, state);
         }
-        else if (windows.length) {
-            windows[0].key(key, state);
+        else if (wldWindows.length) {
+            wldWindows[0].key(key, state);
         }
     }
 
 
-    private void close() {
+    override void dispose()
+    {
+        if (wldWindows.length) {
+            auto ws = wldWindows.dup;
+            foreach (w; ws) w.close();
+        }
+        assert(!wldWindows.length);
+        assert(!_windows.length);
+
         if (pointer) {
             pointer.destroy();
             pointer = null;
@@ -219,16 +232,22 @@ class WaylandDisplay
 
 private abstract class WaylandWindowBase : Window
 {
-    this(Instance instance)
+    this(WaylandDisplay display, Instance instance)
     {
-        this.dpy = refDisplay();
-        this.dpy.refWindow(this);
+        this.dpy = display;
         this.instance = instance;
+    }
+
+    override void close() {
+        closeShell();
+        wlSurface.destroy();
+        wlSurface = null;
+        dpy.unrefWindow(this);
     }
 
     abstract protected void prepareShell(WlSurface wlSurf);
 
-    override void prepareSurface()
+    private void prepareSurface()
     {
         import std.exception : enforce;
 
@@ -246,14 +265,6 @@ private abstract class WaylandWindowBase : Window
     }
 
     abstract protected void closeShell();
-
-    override void close() {
-        closeShell();
-        wlSurface.destroy();
-        wlSurface = null;
-        dpy.unrefWindow(this);
-        unrefDisplay();
-    }
 
     override @property void mouseMove(MouseHandler handler) {
         moveHandler = handler;
@@ -273,15 +284,6 @@ private abstract class WaylandWindowBase : Window
 
     override @property Surface surface() {
         return gfxSurface;
-    }
-
-    override void pollAndDispatch() {
-        while (dpy.display.prepareRead() != 0) {
-            dpy.display.dispatchPending();
-        }
-        dpy.display.flush();
-        dpy.display.readEvents();
-        dpy.display.dispatchPending();
     }
 
     private void pointerButton(WlPointer.ButtonState state) {
@@ -341,8 +343,8 @@ private abstract class WaylandWindowBase : Window
 
 private class WaylandWindow : WaylandWindowBase
 {
-    this (Instance instance, WlShell wlShell) {
-        super(instance);
+    this (WaylandDisplay display, Instance instance, WlShell wlShell) {
+        super(display, instance);
         this.wlShell = wlShell;
     }
 
@@ -367,9 +369,9 @@ private class WaylandWindow : WaylandWindowBase
 
 private class XdgWaylandWindow : WaylandWindowBase
 {
-    this (Instance instance, ZxdgShellV6 xdgShell)
+    this (WaylandDisplay display, Instance instance, ZxdgShellV6 xdgShell)
     {
-        super(instance);
+        super(display, instance);
         this.xdgShell = xdgShell;
     }
 

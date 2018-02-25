@@ -1,15 +1,23 @@
 /// Optional window package, mainly to run gfx-d examples
 module gfx.window;
 
+import gfx.core.rc : AtomicRefCounted;
 import gfx.graal : Instance;
-import gfx.graal.presentation;
 
 alias MouseHandler = void delegate(uint x, uint y);
 alias KeyHandler = void delegate(uint key);
 
+interface Display : AtomicRefCounted
+{
+    @property Window[] windows();
+    Window createWindow(Instance instance);
+    void pollAndDispatch();
+}
+
 interface Window
 {
-    void prepareSurface();
+    import gfx.graal.presentation : Surface;
+
     void show(uint width, uint height);
     void close();
 
@@ -20,22 +28,16 @@ interface Window
     @property void mouseOff(MouseHandler handler);
     @property void keyOn(KeyHandler handler);
     @property void keyOff(KeyHandler handler);
-
-    void pollAndDispatch();
 }
 
-Window createWindow(Instance instance)
+Display createDisplay()
 {
     version(linux) {
-        import gfx.window.wayland : refDisplay, unrefDisplay;
-        auto dpy = refDisplay();
-        scope(exit) unrefDisplay();
-        auto win = dpy.createWindow(instance);
-        win.prepareSurface();
-        return win;
+        import gfx.window.wayland : WaylandDisplay;
+        return new WaylandDisplay;
     }
     else {
-        pragma(msg, "unsupported window");
-        return null;
+        pragma(msg, "Unsupported platform");
+        assert(false, "Unsupported platform");
     }
 }

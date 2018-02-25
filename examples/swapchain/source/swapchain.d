@@ -19,6 +19,7 @@ import std.typecons;
 class SwapchainExample : Disposable
 {
     Rc!Instance instance;
+    Rc!Display display;
     Window window;
     uint graphicsQueueIndex;
     uint presentQueueIndex;
@@ -41,9 +42,10 @@ class SwapchainExample : Disposable
         vulkanInit();
         // create a vulkan instance
         instance = createVulkanInstance("Triangle", VulkanVersion(0, 0, 1)).rc;
-        // create a window for the running platform
+        // create a display and window for the running platform
         // the window surface is created during this process
-        window = createWindow(instance);
+        display = createDisplay();
+        window = display.createWindow(instance);
 
         // the rest of the preparation
         prepareDevice();
@@ -199,6 +201,7 @@ class SwapchainExample : Disposable
         if (window) {
             window.close();
         }
+        display.unload();
         instance.unload();
     }
 }
@@ -259,7 +262,7 @@ int main() {
         enum reportFreq = 100;
 
         while (!exitFlag) {
-            example.window.pollAndDispatch();
+            example.display.pollAndDispatch();
             example.render();
             ++ frameCount;
             if ((frameCount % reportFreq) == 0) {

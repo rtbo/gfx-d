@@ -215,7 +215,7 @@ int main() {
         enum reportFreq = 100;
 
         while (!exitFlag) {
-            example.window.pollAndDispatch();
+            example.display.pollAndDispatch();
             example.render();
             ++ frameCount;
             if ((frameCount % reportFreq) == 0) {

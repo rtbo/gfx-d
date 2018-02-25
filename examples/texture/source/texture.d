@@ -365,7 +365,7 @@ int main() {
                 normals.transposed().matrix
             ) );
 
-            example.window.pollAndDispatch();
+            example.display.pollAndDispatch();
             example.render();
             ++ frameCount;
             if ((frameCount % reportFreq) == 0) {

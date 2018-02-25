@@ -19,6 +19,7 @@ class Example : Disposable
 {
     string title;
     Rc!Instance instance;
+    Rc!Display display;
     Window window;
     uint graphicsQueueIndex;
     uint presentQueueIndex;
@@ -63,6 +64,7 @@ class Example : Disposable
         if (window) {
             window.close();
         }
+        display.unload();
         instance.unload();
     }
 
@@ -76,9 +78,11 @@ class Example : Disposable
             format("Gfx-d %s Example", title),
             VulkanVersion(0, 0, 1)
         ).rc;
-        // create a window for the running platform
+
+        // create a display and window for the running platform
         // the window surface is created during this process
-        window = createWindow(instance);
+        display = createDisplay();
+        window = display.createWindow(instance);
 
         // the rest of the preparation
         prepareDevice();
