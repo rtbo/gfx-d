@@ -83,6 +83,7 @@ class Example : Disposable
         // the window surface is created during this process
         display = createDisplay();
         window = display.createWindow(instance);
+        window.show(640, 480);
 
         // the rest of the preparation
         prepareDevice();

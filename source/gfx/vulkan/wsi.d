@@ -34,7 +34,8 @@ version(linux) {
 enum swapChainExtension = "VK_KHR_swapchain";
 
 version(linux) {
-    import wayland.client;
+    import wayland.client : WlDisplay, WlSurface;
+    import xcb.xcb : xcb_connection_t, xcb_window_t;
 
     // TODO: fall back from wayland to XCB
     enum surfaceInstanceExtensions = [
@@ -57,6 +58,27 @@ version(linux) {
         vulkanEnforce(
             inst.cmds.createWaylandSurfaceKHR(inst.vk, &sci, null, &vkSurf),
             "Could not create Vulkan Wayland Surface"
+        );
+
+        return new VulkanSurface(vkSurf, inst);
+    }
+
+    Surface createVulkanXcbSurface(Instance graalInst, xcb_connection_t* conn, xcb_window_t win)
+    {
+        auto inst = enforce(
+            cast(VulkanInstance)graalInst,
+            "createVulkanXcbSurface called with non-vulkan instance"
+        );
+
+        VkXcbSurfaceCreateInfoKHR sci;
+        sci.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+        sci.connection = conn;
+        sci.window = win;
+
+        VkSurfaceKHR vkSurf;
+        vulkanEnforce(
+            inst.cmds.createXcbSurfaceKHR(inst.vk, &sci, null, &vkSurf),
+            "Could not create Vulkan Xcb Surface"
         );
 
         return new VulkanSurface(vkSurf, inst);
