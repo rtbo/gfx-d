@@ -639,7 +639,7 @@ class DGenerator(OutputGenerator):
                         with sf.indentBlock():
                             for cmd in ext.cmds:
                                 spacer = " " * (maxLen-len(cmd.name))
-                                sf("_%s %s= cast(%s)%senforce(loader(\"%s\"), %s\"Could not load %s. Requested by %s\");",
+                                sf("%s %s= cast(%s)%senforce(loader(\"%s\"), %s\"Could not load %s. Requested by %s\");",
                                         cmd.field, spacer, cmd.alias, spacer, cmd.name, spacer, cmd.name, ext.name)
                             sf("_%s = true;", ext.name)
                         sf("}")
@@ -663,32 +663,28 @@ class DGenerator(OutputGenerator):
 
             for ext in self.extensions:
                 sf()
-                sf("/// Accessors for %s", ext.name)
+                sf("/// Whether %s has been loaded", ext.name)
                 sf("public final @property bool %s() const {", ext.name)
                 with sf.indentBlock():
                     sf("return _%s;", ext.name)
                 sf("}")
+                maxLen = 0
                 for cmd in ext.cmds:
-                    sf("/// ditto")
-                    sf("public final @property %s %s() {", cmd.alias, cmd.field)
-                    with sf.indentBlock():
-                        sf("return _%s;", cmd.field)
-                    sf("}")
+                    maxLen = max(maxLen, len(cmd.alias))
+                for i, cmd in enumerate(ext.cmds):
+                    spacer = " " * (maxLen - len(cmd.alias))
+                    if i == 0:
+                        sf("/// Commands for %s", ext.name)
+                    else:
+                        sf("/// ditto")
+                    sf("public %s %s%s;", cmd.alias, spacer, cmd.field)
 
+            sf()
             if hasExtensions:
                 sf("private string[] _extensions;")
             sf("private %s _%s;", self.versionEnum, self.versionField)
             for ext in self.extensions:
-                sf()
-                sf("// Fields for %s", ext.name)
-                maxLen = 0
-                for cmd in ext.cmds:
-                    maxLen = max(maxLen, len(cmd.alias))
-                spacer = " " * (maxLen - len("bool"))
                 sf("private bool %s_%s;", spacer, ext.name)
-                for cmd in ext.cmds:
-                    spacer = " " * (maxLen - len(cmd.alias))
-                    sf("private %s %s_%s;", cmd.alias, spacer, cmd.field)
         sf("}")
 
     def issueCoreLoaders(self, sf):
@@ -722,24 +718,20 @@ class DGenerator(OutputGenerator):
                     sf()
                     for cmd in core.cmds:
                         spacer = " " * (maxLen-len(cmd.name))
-                        sf("_%s %s= cast(%s)%senforce(loader(\"%s\"), %s\"Could not load %s. Requested by %s\");",
+                        sf("%s %s= cast(%s)%senforce(loader(\"%s\"), %s\"Could not load %s. Requested by %s\");",
                                 cmd.field, spacer, cmd.alias, spacer, cmd.name, spacer, cmd.name, core.name)
                     sf()
                     sf("_%s = %s.%s;", self.versionField, self.versionEnum, self.base.lower()+num)
                 sf("}")
 
                 sf()
-                for cmd in core.cmds:
+                for i, cmd in enumerate(core.cmds):
                     spacer = " " * (maxLen - len(cmd.name))
-                    sf("public final @property %s %s() {", cmd.alias, cmd.field)
-                    with sf.indentBlock():
-                        sf("return _%s;", cmd.field)
-                    sf("}")
-
-                sf()
-                for cmd in core.cmds:
-                    spacer = " " * (maxLen - len(cmd.name))
-                    sf("private %s %s_%s;", cmd.alias, spacer, cmd.field)
+                    if i == 0:
+                        sf("/// Commands for %s", core.name)
+                    else:
+                        sf("/// ditto")
+                    sf("public %s %s%s;", cmd.alias, spacer, cmd.field)
             sf("}")
 
     def issueLoaderFunc(self, sf):
