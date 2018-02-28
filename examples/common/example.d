@@ -18,9 +18,9 @@ import std.traits : isArray;
 class Example : Disposable
 {
     string title;
-    Rc!Instance instance;
     Rc!Display display;
     Window window;
+    Rc!Instance instance;
     uint graphicsQueueIndex;
     uint presentQueueIndex;
     Rc!PhysicalDevice physicalDevice;
@@ -70,22 +70,16 @@ class Example : Disposable
 
     void prepare()
     {
-        import std.format : format;
-        // initialize vulkan library
-        vulkanInit();
-        // create a vulkan instance
-        instance = createVulkanInstance(
-            format("Gfx-d %s Example", title),
-            VulkanVersion(0, 0, 1)
-        ).rc;
-
-        // create a display and window for the running platform
-        // the window surface is created during this process
+        // Create a display for the running platform
+        // The instance is created by the display. Backend is chosen at runtime
+        // depending on detected API support. (i.e. Vulkan is preferred)
         display = createDisplay();
-        window = display.createWindow(instance);
+        instance = display.instance;
+        // Create a window. The surface is created during the call to show.
+        window = display.createWindow();
         window.show(640, 480);
 
-        // the rest of the preparation
+        // The rest of the preparation.
         prepareDevice();
         prepareSwapchain(null);
         prepareSync();

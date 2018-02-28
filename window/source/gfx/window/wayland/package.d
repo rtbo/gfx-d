@@ -18,7 +18,7 @@ import wayland.util;
 
 class WaylandDisplay : Display
 {
-    import gfx.core.rc : atomicRcCode;
+    import gfx.core.rc : atomicRcCode, Rc;
     mixin(atomicRcCode);
 
     private WlDisplay display;
@@ -30,12 +30,21 @@ class WaylandDisplay : Display
     private WlShell wlShell;
     private ZxdgShellV6 xdgShell;
 
+    private Rc!Instance _instance;
+
     private WaylandWindowBase[] wldWindows;
     private WaylandWindowBase pointedWindow;
     private WaylandWindowBase focusWindow;
     private Window[] _windows;
 
     this() {
+        {
+            // Only vulkan is supported. Let failure throw it.
+            import gfx.vulkan : createVulkanInstance, vulkanInit;
+            vulkanInit();
+            _instance = createVulkanInstance();
+        }
+
         display = WlDisplay.connect();
         auto reg = display.getRegistry();
         reg.onGlobal = (WlRegistry reg, uint name, string iface, uint ver) {
@@ -73,21 +82,23 @@ class WaylandDisplay : Display
         reg.destroy();
     }
 
+    override @property Instance instance() {
+        return _instance;
+    }
+
     override @property Window[] windows() {
         return _windows;
     }
 
-    override Window createWindow(Instance instance) {
+    override Window createWindow() {
         if (xdgShell) {
-            auto w = new XdgWaylandWindow(this, instance, xdgShell);
-            w.prepareSurface();
+            auto w = new XdgWaylandWindow(this, _instance, xdgShell);
             wldWindows ~= w;
             _windows ~= w;
             return w;
         }
         else if (wlShell) {
-            auto w = new WaylandWindow(this, instance, wlShell);
-            w.prepareSurface();
+            auto w = new WaylandWindow(this, _instance, wlShell);
             wldWindows ~= w;
             _windows ~= w;
             return w;
@@ -247,7 +258,7 @@ private abstract class WaylandWindowBase : Window
 
     abstract protected void prepareShell(WlSurface wlSurf);
 
-    private void prepareSurface()
+    override void show (uint width, uint height)
     {
         import std.exception : enforce;
 
@@ -258,10 +269,6 @@ private abstract class WaylandWindowBase : Window
             "Could ont create a Vulkan surface"
         );
         wlSurface.commit();
-    }
-
-    override void show (uint width, uint height)
-    {
     }
 
     abstract protected void closeShell();

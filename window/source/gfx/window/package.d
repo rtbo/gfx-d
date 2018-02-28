@@ -9,8 +9,9 @@ alias KeyHandler = void delegate(uint key);
 
 interface Display : AtomicRefCounted
 {
+    @property Instance instance();
     @property Window[] windows();
-    Window createWindow(Instance instance);
+    Window createWindow();
     void pollAndDispatch();
 }
 
@@ -33,10 +34,15 @@ interface Window
 Display createDisplay()
 {
     version(linux) {
-        import gfx.window.xcb : XcbDisplay;
-        return new XcbDisplay;
-        // import gfx.window.wayland : WaylandDisplay;
-        // return new WaylandDisplay;
+        enum useWayland = false;
+        static if (useWayland) {
+            import gfx.window.wayland : WaylandDisplay;
+            return new WaylandDisplay;
+        }
+        else {
+            import gfx.window.xcb : XcbDisplay;
+            return new XcbDisplay;
+        }
     }
     else {
         pragma(msg, "Unsupported platform");

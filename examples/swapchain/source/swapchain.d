@@ -38,14 +38,13 @@ class SwapchainExample : Disposable
 
 
     void prepare() {
-        // initialize vulkan library
-        vulkanInit();
-        // create a vulkan instance
-        instance = createVulkanInstance("Triangle", VulkanVersion(0, 0, 1)).rc;
-        // create a display and window for the running platform
-        // the window surface is created during this process
+        // Create a display for the running platform
+        // The instance is created by the display. Backend is chosen at runtime
+        // depending on detected API support. (i.e. Vulkan is preferred)
         display = createDisplay();
-        window = display.createWindow(instance);
+        instance = display.instance;
+        // Create a window. The surface is created during the call to show.
+        window = display.createWindow();
         window.show(640, 480);
 
         // the rest of the preparation

@@ -41,13 +41,15 @@ enum Atom
 
 class XcbDisplay : Display
 {
-    import gfx.core.rc : atomicRcCode;
+    import gfx.core.rc : atomicRcCode, Rc;
     mixin(atomicRcCode);
 
     private xcb_connection_t* _conn;
     private xcb_atom_t[Atom] _atoms;
     private int _mainScreenNum;
     private xcb_screen_t*[] _screens;
+
+    private Rc!Instance _instance;
 
     private Window[] _windows;
     private XcbWindow[] _xcbWindows;
@@ -57,6 +59,7 @@ class XcbDisplay : Display
         _conn = xcb_connect(null, &_mainScreenNum) ;
         initializeAtoms();
         initializeScreens();
+        initializeInstance();
     }
 
     override void dispose()
@@ -67,54 +70,8 @@ class XcbDisplay : Display
         }
         assert(!_windows.length);
 
+        _instance.unload();
         xcb_disconnect(_conn);
-    }
-
-    override @property Window[] windows()
-    {
-        return _windows;
-    }
-
-    override Window createWindow(Instance instance)
-    {
-        return new XcbWindow(this, instance);
-    }
-
-    override void pollAndDispatch()
-    {
-        while (true) {
-            auto e = xcb_poll_for_event(_conn);
-            if (!e) break;
-            handleEvent(e);
-        }
-    }
-
-    private XcbWindow xcbWindow(xcb_window_t win) {
-        foreach(w; _xcbWindows) {
-            if (w._win == win) return w;
-        }
-        return null;
-    }
-
-    void registerWindow(XcbWindow window) {
-        _windows ~= window;
-        _xcbWindows ~= window;
-    }
-
-    void unregisterWindow(XcbWindow window) {
-        import std.algorithm : remove;
-        _windows = _windows.remove!(w => w is window);
-        _xcbWindows = _xcbWindows.remove!(w => w is window);
-    }
-
-    private @property int mainScreenNum()
-    {
-        return _mainScreenNum;
-    }
-
-    private @property xcb_screen_t* mainScreen()
-    {
-        return _screens[_mainScreenNum];
     }
 
     private void initializeAtoms()
@@ -161,6 +118,79 @@ class XcbDisplay : Display
         {
             _screens ~= iter.data;
         }
+    }
+
+    private void initializeInstance()
+    {
+        import std.experimental.logger : info;
+        assert(!_instance);
+        try {
+            import gfx.vulkan : createVulkanInstance, vulkanInit;
+            vulkanInit();
+            _instance = createVulkanInstance();
+            info("Creating a Vulkan instance");
+        }
+        catch (Exception ex) {
+            info("Vulkan is not available, falling back to OpenGL");
+        }
+        if (_instance) return;
+
+        try {
+
+        }
+        catch (Exception ex) {
+        }
+    }
+
+    override @property Instance instance() {
+        return _instance;
+    }
+
+    override @property Window[] windows()
+    {
+        return _windows;
+    }
+
+    override Window createWindow()
+    {
+        return new XcbWindow(this, _instance);
+    }
+
+    override void pollAndDispatch()
+    {
+        while (true) {
+            auto e = xcb_poll_for_event(_conn);
+            if (!e) break;
+            handleEvent(e);
+        }
+    }
+
+    private XcbWindow xcbWindow(xcb_window_t win) {
+        foreach(w; _xcbWindows) {
+            if (w._win == win) return w;
+        }
+        return null;
+    }
+
+    void registerWindow(XcbWindow window) {
+        _windows ~= window;
+        _xcbWindows ~= window;
+    }
+
+    void unregisterWindow(XcbWindow window) {
+        import std.algorithm : remove;
+        _windows = _windows.remove!(w => w is window);
+        _xcbWindows = _xcbWindows.remove!(w => w is window);
+    }
+
+    private @property int mainScreenNum()
+    {
+        return _mainScreenNum;
+    }
+
+    private @property xcb_screen_t* mainScreen()
+    {
+        return _screens[_mainScreenNum];
     }
 
     private void handleEvent(xcb_generic_event_t* e)
