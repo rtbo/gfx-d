@@ -618,15 +618,15 @@ class DGenerator(OutputGenerator):
         sf()
         sf("/// %s loader base class", self.opts.humanName)
         if hasExtensions:
-            sf("/// %s attempts to load all extensions given as parameters", self.baseCls)
-            sf("/// Throws an exception if one of the requested extension could not be loaded")
+            sf("/// %s is also a container for the extensions.", self.baseCls)
         sf("abstract class %s {", self.baseCls)
         with sf.indentBlock():
             sf()
             if hasExtensions:
-                sf("/// Build %s instance and attempt to load the extensions passed", self.baseCls)
-                sf("/// as arguments.")
-                sf("this (SymbolLoader loader, string[] extensions) {")
+                sf("/// Attempt to load the extensions passed as arguments.")
+                sf("/// Caller has responsibility to check beforehand that the extensions are available.")
+                sf("/// Throws an exception if one of the requested extension could not be loaded")
+                sf("void loadExtensions (SymbolLoader loader, in string[] extensions) {")
                 with sf.indentBlock():
                     sf("import std.algorithm : canFind;")
                     sf("import std.exception : enforce;")
@@ -644,15 +644,12 @@ class DGenerator(OutputGenerator):
                             sf("_%s = true;", ext.name)
                         sf("}")
                     sf()
-                    sf("_extensions = extensions;")
+                    sf("_extensions ~= extensions;")
                 sf("}")
                 sf()
                 sf("public final @property const(string[]) extensions() const {")
                 with sf.indentBlock():
                     sf("return _extensions;")
-                sf("}")
-            else:
-                sf("this() {")
                 sf("}")
 
             sf()
@@ -697,24 +694,16 @@ class DGenerator(OutputGenerator):
             sf("/// Loader for %s.", core.name)
             sf("class %s : %s {", core.clsName, core.parentClsName)
             with sf.indentBlock():
-                extText = ""
-                extParam = ""
-                superArgs = ""
-                if hasExtensions:
-                    extText = " and all passed extensions"
-                    extParam = ", string[] extensions"
-                    superArgs = "loader, extensions"
-                elif core.parentClsName != self.baseCls:
-                    superArgs = "loader"
                 sf()
-                sf("/// Build instance by loading all symbols needed by %s%s.", core.name, extText)
+                sf("/// Build instance by loading all symbols needed by %s.", core.name)
                 sf("/// throws if a requested symbol could not be loaded")
-                sf("public this(SymbolLoader loader%s) {", extParam)
+                sf("public this(SymbolLoader loader) {")
                 with sf.indentBlock():
                     sf("import std.exception : enforce;")
-                    sf()
                     num = core.clsName[-2:]
-                    sf("super(%s);", superArgs)
+                    if core.parentClsName != self.baseCls:
+                        sf()
+                        sf("super(loader);")
                     sf()
                     for cmd in core.cmds:
                         spacer = " " * (maxLen-len(cmd.name))
@@ -736,8 +725,8 @@ class DGenerator(OutputGenerator):
 
     def issueLoaderFunc(self, sf):
         sf()
-        sf("/// Load %s symbols of the given version and with the given extensions", self.opts.humanName)
-        sf("%s load%s(SymbolLoader loader, %s ver, string[] extensions) {",
+        sf("/// Load %s symbols of the given version", self.opts.humanName)
+        sf("%s load%s(SymbolLoader loader, %s ver) {",
                 self.baseCls, self.opts.humanName, self.versionEnum)
         with sf.indentBlock():
             sf("final switch(ver) {")
@@ -749,7 +738,7 @@ class DGenerator(OutputGenerator):
                     clsName = core.clsName
                 assert clsName != ""
                 with sf.indentBlock():
-                    sf("return new %s(loader, extensions);", clsName)
+                    sf("return new %s(loader);", clsName)
             sf("}")
         sf("}")
 
