@@ -42,8 +42,11 @@ enum Atom
 class XcbDisplay : Display
 {
     import gfx.core.rc : atomicRcCode, Rc;
+    import X11.Xlib : XDisplay = Display;
+
     mixin(atomicRcCode);
 
+    private XDisplay *_dpy;
     private xcb_connection_t* _conn;
     private xcb_atom_t[Atom] _atoms;
     private int _mainScreenNum;
@@ -56,7 +59,18 @@ class XcbDisplay : Display
 
     this()
     {
-        _conn = xcb_connect(null, &_mainScreenNum) ;
+        import std.exception : enforce;
+        import X11.Xlib : XCloseDisplay, XDefaultScreen, XOpenDisplay;
+        import X11.Xlib_xcb : XGetXCBConnection, XSetEventQueueOwner, XCBOwnsEventQueue;
+
+        _dpy = enforce(XOpenDisplay(null));
+        scope(failure) {
+            XCloseDisplay(_dpy);
+        }
+        _conn = enforce(XGetXCBConnection(_dpy));
+        XSetEventQueueOwner(_dpy, XCBOwnsEventQueue);
+        _mainScreenNum = XDefaultScreen(_dpy);
+
         initializeAtoms();
         initializeScreens();
         initializeInstance();
@@ -64,6 +78,8 @@ class XcbDisplay : Display
 
     override void dispose()
     {
+        import X11.Xlib : XCloseDisplay;
+
         if (_windows.length) {
             auto ws = _windows.dup;
             foreach (w; ws) w.close();
@@ -71,7 +87,7 @@ class XcbDisplay : Display
         assert(!_windows.length);
 
         _instance.unload();
-        xcb_disconnect(_conn);
+        XCloseDisplay(_dpy);
     }
 
     private void initializeAtoms()
@@ -133,9 +149,13 @@ class XcbDisplay : Display
         catch (Exception ex) {
             info("Vulkan is not available, falling back to OpenGL");
         }
-        if (_instance) return;
+        //if (_instance) return;
 
         try {
+            import gfx.core.rc : makeRc;
+            import gfx.gl3.context : GlAttribs;
+            import gfx.window.xcb.context : XcbGlContext;
+            auto ctx = makeRc!XcbGlContext(_dpy, _mainScreenNum, GlAttribs.init);
 
         }
         catch (Exception ex) {
