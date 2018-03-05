@@ -26,7 +26,7 @@ struct FormatDesc
 }
 
 /// get the description of a format
-FormatDesc formatDesc(Format fmt) {
+FormatDesc formatDesc(in Format fmt) pure {
     return fmtDescs[cast(uint)fmt];
 }
 
@@ -233,7 +233,7 @@ enum Format {
 }
 
 /// Get the totalBits of an image surface.
-@property uint totalBits (in SurfaceType st) {
+@property uint totalBits (in SurfaceType st) pure {
     switch(st) {
     case SurfaceType.R4_G4: return 8;
     case SurfaceType.R4_G4_B4_A4: return 16;
@@ -278,7 +278,7 @@ enum Format {
 }
 
 /// Get the numComponents of an image surface.
-@property uint numComponents (in SurfaceType st) {
+@property uint numComponents (in SurfaceType st) pure {
     switch(st) {
     case SurfaceType.R4_G4: return 2;
     case SurfaceType.R4_G4_B4_A4: return 4;
@@ -323,7 +323,7 @@ enum Format {
 }
 
 /// Get the redBits of an image surface.
-@property uint redBits (in SurfaceType st) {
+@property uint redBits (in SurfaceType st) pure {
     switch(st) {
     case SurfaceType.R4_G4: return 4;
     case SurfaceType.R4_G4_B4_A4: return 4;
@@ -361,7 +361,7 @@ enum Format {
 }
 
 /// Get the greenBits of an image surface.
-@property uint greenBits (in SurfaceType st) {
+@property uint greenBits (in SurfaceType st) pure {
     switch(st) {
     case SurfaceType.R4_G4: return 4;
     case SurfaceType.R4_G4_B4_A4: return 4;
@@ -395,7 +395,7 @@ enum Format {
 }
 
 /// Get the blueBits of an image surface.
-@property uint blueBits (in SurfaceType st) {
+@property uint blueBits (in SurfaceType st) pure {
     switch(st) {
     case SurfaceType.R4_G4_B4_A4: return 4;
     case SurfaceType.B4_G4_R4_A4: return 4;
@@ -424,7 +424,7 @@ enum Format {
 }
 
 /// Get the alphaBits of an image surface.
-@property uint alphaBits (in SurfaceType st) {
+@property uint alphaBits (in SurfaceType st) pure {
     switch(st) {
     case SurfaceType.R4_G4_B4_A4: return 4;
     case SurfaceType.B4_G4_R4_A4: return 4;
@@ -444,7 +444,7 @@ enum Format {
 }
 
 /// Get the sharedExpBits of an image surface.
-@property uint sharedExpBits (in SurfaceType st) {
+@property uint sharedExpBits (in SurfaceType st) pure {
     switch(st) {
     case SurfaceType.E5_B9_G9_R9: return 5;
     default: return 0;
@@ -452,7 +452,7 @@ enum Format {
 }
 
 /// Get the depthBits of an image surface.
-@property uint depthBits (in SurfaceType st) {
+@property uint depthBits (in SurfaceType st) pure {
     switch(st) {
     case SurfaceType.D16: return 16;
     case SurfaceType.X8_D24: return 24;
@@ -465,7 +465,7 @@ enum Format {
 }
 
 /// Get the stencilBits of an image surface.
-@property uint stencilBits (in SurfaceType st) {
+@property uint stencilBits (in SurfaceType st) pure {
     switch(st) {
     case SurfaceType.S8: return 8;
     case SurfaceType.D16_S8: return 8;
@@ -2199,7 +2199,7 @@ struct D32s8_sFloat {
     enum packed = false;
 }
 
-private immutable(FormatDesc)[] fmtDescs;
+private immutable(FormatDesc[]) fmtDescs;
 
 shared static this() {
     import std.exception : assumeUnique;

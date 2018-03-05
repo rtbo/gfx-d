@@ -100,7 +100,7 @@ def issueSurfProps(surfaces, cg):
     def switchProp(propName):
         cg()
         cg("/// Get the %s of an image surface.", propName)
-        cg("@property uint %s (in SurfaceType st) {", propName)
+        cg("@property uint %s (in SurfaceType st) pure {", propName)
         with cg.indentBlock():
             cg("switch(st) {")
             for s in surfaces:
@@ -167,7 +167,7 @@ def issueFormatStructs(surfaces, cg):
 
 def issueFmtDescs(surfaces, cg):
     cg()
-    cg("private immutable(FormatDesc)[] fmtDescs;")
+    cg("private immutable(FormatDesc[]) fmtDescs;")
     cg()
     cg("shared static this() {")
     with cg.indentBlock():

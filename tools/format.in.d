@@ -26,7 +26,7 @@ struct FormatDesc
 }
 
 /// get the description of a format
-FormatDesc formatDesc(Format fmt) {
+FormatDesc formatDesc(in Format fmt) pure {
     return fmtDescs[cast(uint)fmt];
 }
 
