@@ -60,9 +60,11 @@ class XcbDisplay : Display
     this()
     {
         import std.exception : enforce;
+        import std.experimental.logger : trace;
         import X11.Xlib : XCloseDisplay, XDefaultScreen, XOpenDisplay;
         import X11.Xlib_xcb : XGetXCBConnection, XSetEventQueueOwner, XCBOwnsEventQueue;
 
+        trace("opening X display");
         _dpy = enforce(XOpenDisplay(null));
         scope(failure) {
             XCloseDisplay(_dpy);
@@ -78,6 +80,7 @@ class XcbDisplay : Display
 
     override void dispose()
     {
+        import std.experimental.logger : trace;
         import X11.Xlib : XCloseDisplay;
 
         if (_windows.length) {
@@ -87,6 +90,7 @@ class XcbDisplay : Display
         assert(!_windows.length);
 
         _instance.unload();
+        trace("closing X display");
         XCloseDisplay(_dpy);
     }
 
@@ -151,15 +155,10 @@ class XcbDisplay : Display
         }
         //if (_instance) return;
 
-        try {
-            import gfx.core.rc : makeRc;
-            import gfx.gl3.context : GlAttribs;
-            import gfx.window.xcb.context : XcbGlContext;
-            auto ctx = makeRc!XcbGlContext(_dpy, _mainScreenNum, GlAttribs.init);
-
-        }
-        catch (Exception ex) {
-        }
+        import gfx.core.rc : makeRc;
+        import gfx.gl3.context : GlAttribs;
+        import gfx.window.xcb.context : XcbGlContext;
+        auto ctx = makeRc!XcbGlContext(_dpy, _mainScreenNum, GlAttribs.init);
     }
 
     override @property Instance instance() {

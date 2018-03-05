@@ -1,5 +1,6 @@
 module gfx.gl3.context;
 
+import gfx.bindings.opengl.gl : GlCmds30;
 import gfx.core.rc : AtomicRefCounted;
 import gfx.graal.format : Format;
 
@@ -14,31 +15,28 @@ struct GlAttribs
     enum profile = GlProfile.core;
     enum doublebuffer = true;
 
-    uint majorVersion = 3;
-    uint minorVersion = 0;
+    enum uint majorVersion = 3;
+    enum uint minorVersion = 0;
 
-    uint samples;
+    uint samples = 1;
 
-    @property Format colorFormat() const {
+    @property Format colorFormat() const pure {
         return _colorFormat;
     }
-    @property Format depthStencilFormat() const {
+    @property Format depthStencilFormat() const pure {
         return _depthStencilFormat;
     }
 
     private Format _colorFormat = Format.rgba8_uNorm;
     private Format _depthStencilFormat = Format.d24s8_uNorm;
 
-    @property int decimalVersion() const
-    {
+    @property int decimalVersion() const pure {
         return majorVersion * 10 + minorVersion;
     }
 }
 
 interface GlContext : AtomicRefCounted
 {
-    import gfx.bindings.opengl.gl : GlCmds30;
-
     @property GlCmds30 cmds();
 
     @property GlAttribs attribs();
@@ -62,12 +60,6 @@ interface GlContext : AtomicRefCounted
 immutable string[] glRequiredExtensions = [];
 immutable string[] glOptionalExtensions = [];
 
-string[] glExtensionsToLoad(in string[] availableExts) {
-    return extensionsToLoad(
-        availableExts, glRequiredExtensions, glOptionalExtensions
-    );
-}
-
 string[] extensionsToLoad(in string[] availableExts,
                           in string[] requiredExtensions,
                           in string[] optionalExtensions)
@@ -78,4 +70,26 @@ string[] extensionsToLoad(in string[] availableExts,
         if (availableExts.canFind(ext)) toLoad ~= ext;
     }
     return requiredExtensions ~ toLoad;
+}
+
+string[] glExtensionsToLoad(in string[] availableExts) {
+    return extensionsToLoad(
+        availableExts, glRequiredExtensions, glOptionalExtensions
+    );
+}
+
+string[] glAvailableExtensions(GlCmds30 gl)
+{
+    import gfx.bindings.opengl.gl : GLint, GL_EXTENSIONS, GL_NUM_EXTENSIONS;
+
+    GLint num;
+    gl.getIntegerv(GL_NUM_EXTENSIONS, &num);
+    string[] exts;
+    foreach (i; 0 .. num)
+    {
+        import std.string : fromStringz;
+        auto cStr = cast(const(char)*)gl.getStringi(GL_EXTENSIONS, i);
+        exts ~= fromStringz(cStr).idup;
+    }
+    return exts;
 }
