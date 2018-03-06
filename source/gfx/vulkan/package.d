@@ -500,18 +500,6 @@ final class VulkanPhysicalDevice : PhysicalDevice
         return _cmds;
     }
 
-    override @property uint apiVersion() {
-        return _vkProps.apiVersion;
-    }
-    override @property uint driverVersion() {
-        return _vkProps.driverVersion;
-    }
-    override @property uint vendorId() {
-        return _vkProps.vendorID;
-    }
-    override @property uint deviceId() {
-        return _vkProps.deviceID;
-    }
     override @property string name() {
         import std.string : fromStringz;
         return fromStringz(_vkProps.deviceName.ptr).idup;

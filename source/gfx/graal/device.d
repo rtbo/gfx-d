@@ -57,14 +57,6 @@ struct QueueRequest
 /// device and open a logical device out of it.
 interface PhysicalDevice : AtomicRefCounted
 {
-    @property uint apiVersion();
-
-    @property uint driverVersion();
-
-    @property uint vendorId();
-
-    @property uint deviceId();
-
     @property string name();
 
     @property DeviceType type();
