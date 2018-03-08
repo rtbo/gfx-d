@@ -77,6 +77,8 @@ enum ImageUsage {
     depthStencilAttachment  = 0x20,
     transientAttachment     = 0x40,
     inputAttachment         = 0x80,
+
+    transfer                = transferSrc | transferDst,
 }
 
 enum ImageLayout {
