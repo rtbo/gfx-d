@@ -126,8 +126,9 @@ class GlPhysicalDevice : PhysicalDevice
 
     /// Open a logical device with the specified queues.
     /// Returns: null if it can't meet all requested queues, the opened device otherwise.
-    override Device open(in QueueRequest[] queues, in DeviceFeatures features=DeviceFeatures.all)
+    override Device open(in QueueRequest[], in DeviceFeatures)
     {
-        return null;
+        import gfx.gl3.device : GlDevice;
+        return new GlDevice(_ctx);
     }
 }
