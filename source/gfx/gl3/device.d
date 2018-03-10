@@ -6,14 +6,16 @@ class GlDevice : Device
 {
     import core.time :              Duration;
     import gfx.bindings.opengl.gl : GlCmds30;
-    import gfx.core.rc :            atomicRcCode;
+    import gfx.core.rc :            atomicRcCode, Rc;
+    import gfx.gl3 :                GlPhysicalDevice;
     import gfx.gl3.context :        GlContext;
     import gfx.graal.buffer :       Buffer, BufferUsage;
     import gfx.graal.cmd :          CommandPool;
+    import gfx.graal.device :       MappedMemorySet;
     import gfx.graal.format :       Format;
     import gfx.graal.image :        Image, ImageDims, ImageTiling, ImageType,
                                     ImageView, ImageUsage, Sampler, SamplerInfo;
-    import gfx.graal.memory :       DeviceMemory, MappedMemorySet;
+    import gfx.graal.memory :       DeviceMemory, MemoryProperties;
     import gfx.graal.presentation : CompositeAlpha, PresentMode, Surface,
                                     Swapchain;
     import gfx.graal.queue :        Queue;
@@ -31,15 +33,17 @@ class GlDevice : Device
 
     mixin(atomicRcCode);
 
-    private GlContext _ctx;
-    private GlCmds30 gl;
+    private Rc!GlContext _ctx;
+    private MemoryProperties _memProps;
 
-    this (GlContext ctx) {
+    this (GlPhysicalDevice phd, GlContext ctx) {
         _ctx = ctx;
-        gl = ctx.cmds;
+        _memProps = phd.memoryProperties;
     }
 
-    override void dispose() {}
+    override void dispose() {
+        _ctx.unload();
+    }
 
     override void waitIdle() {}
 
@@ -52,8 +56,10 @@ class GlDevice : Device
     }
 
     DeviceMemory allocateMemory(uint memPropIndex, size_t size) {
-        return null;
+        import gfx.gl3.memory : GlDeviceMemory;
+        return new GlDeviceMemory(memPropIndex, _memProps.types[memPropIndex].props, size);
     }
+
     void flushMappedMemory(MappedMemorySet set) {}
     void invalidateMappedMemory(MappedMemorySet set) {}
 

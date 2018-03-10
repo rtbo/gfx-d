@@ -129,6 +129,6 @@ class GlPhysicalDevice : PhysicalDevice
     override Device open(in QueueRequest[], in DeviceFeatures)
     {
         import gfx.gl3.device : GlDevice;
-        return new GlDevice(_ctx);
+        return new GlDevice(this, _ctx);
     }
 }
