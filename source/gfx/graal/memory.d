@@ -30,8 +30,13 @@ struct MemoryType {
 }
 
 struct MemoryRequirements {
+    /// minimal allocation requirement
     size_t size;
+    /// alignment required when binding the resource to a memory with offset
     size_t alignment;
+    /// mask where each bit is set if the corresponding memory type is supported.
+    /// For example if the resource supports types 0 and 2 from MemoryProperties,
+    /// memTypeMask will be 00000101
     size_t memTypeMask;
 }
 

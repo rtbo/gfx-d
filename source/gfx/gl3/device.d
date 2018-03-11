@@ -1,5 +1,7 @@
 module gfx.gl3.device;
 
+package:
+
 import gfx.graal.device : Device;
 
 class GlDevice : Device
@@ -56,7 +58,7 @@ class GlDevice : Device
     }
 
     DeviceMemory allocateMemory(uint memPropIndex, size_t size) {
-        import gfx.gl3.memory : GlDeviceMemory;
+        import gfx.gl3.resource : GlDeviceMemory;
         return new GlDeviceMemory(memPropIndex, _memProps.types[memPropIndex].props, size);
     }
 

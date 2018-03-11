@@ -82,12 +82,11 @@ class GlPhysicalDevice : PhysicalDevice
 
     override @property MemoryProperties memoryProperties() {
         import gfx.graal.memory : MemoryHeap, MemProps, MemoryType;
-        const props = MemProps.deviceLocal | MemProps.hostVisible |
-                      MemProps.hostCoherent | MemProps.hostCached;
+        const props = MemProps.deviceLocal | MemProps.hostVisible | MemProps.hostCoherent;
         // TODO: buffer storage
         return MemoryProperties(
-            [ MemoryHeap(size_t.max, props, true) ],
-            [ MemoryType(0, 0, size_t.max, props) ]
+            [ MemoryHeap(size_t.max, true) ],
+            [ MemoryType(props, 0) ]
         );
     }
 
