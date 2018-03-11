@@ -21,21 +21,18 @@ struct MemoryProperties {
 
 struct MemoryHeap {
     size_t size;
-    MemProps props;
     bool deviceLocal;
 }
 
 struct MemoryType {
-    uint index;
-    uint heapIndex;
-    size_t heapSize;
     MemProps props;
+    uint heapIndex;
 }
 
 struct MemoryRequirements {
     size_t size;
     size_t alignment;
-    MemProps props;
+    size_t memTypeMask;
 }
 
 struct MemoryMap(T)

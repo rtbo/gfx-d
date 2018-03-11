@@ -226,13 +226,15 @@ class Example : Disposable
 
     /// Return the index of a memory type supporting all of props,
     /// or uint.max if none was found.
-    uint findMemType(MemProps props)
+    uint findMemType(MemoryRequirements mr, MemProps props)
     {
         const devMemProps = physicalDevice.memoryProperties;
-        auto memType = devMemProps.types.find!(mt => (mt.props & props) == props);
-        if (!memType.length) return uint.max;
-
-        return cast(uint)(devMemProps.types.length - memType.length);
+        foreach (i, mt; devMemProps.types) {
+            if ((mr.memTypeMask & (1 << i)) != 0 && (mt.props & props) == props) {
+                return cast(uint)i;
+            }
+        }
+        return uint.max;
     }
 
 
@@ -243,7 +245,7 @@ class Example : Disposable
         auto buf = device.createBuffer( usage, dataSize ).rc;
 
         const mr = buf.memoryRequirements;
-        const memTypeInd = findMemType(mr.props | props);
+        const memTypeInd = findMemType(mr, props);
         if (memTypeInd == uint.max) return null;
 
         auto mem = device.allocateMemory(memTypeInd, mr.size).rc;
@@ -350,7 +352,7 @@ class Example : Disposable
 
         // allocate memory image
         const mr = img.memoryRequirements;
-        const memTypeInd = findMemType(mr.props | MemProps.deviceLocal);
+        const memTypeInd = findMemType(mr, MemProps.deviceLocal);
         if (memTypeInd == uint.max) return null;
 
         auto mem = device.allocateMemory(memTypeInd, mr.size).rc;
@@ -389,7 +391,7 @@ class Example : Disposable
 
         // allocate memory image
         const mr = img.memoryRequirements;
-        const memTypeInd = findMemType(mr.props | MemProps.deviceLocal);
+        const memTypeInd = findMemType(mr, MemProps.deviceLocal);
         if (memTypeInd == uint.max) return null;
 
         auto mem = device.allocateMemory(memTypeInd, mr.size).rc;

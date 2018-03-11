@@ -536,17 +536,15 @@ final class VulkanPhysicalDevice : PhysicalDevice
         foreach(i; 0 .. vkProps.memoryHeapCount) {
             const vkHeap = vkProps.memoryHeaps[i];
             props.heaps ~= MemoryHeap(
-                cast(size_t)vkHeap.size, cast(MemProps)0, (vkHeap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) != 0
+                cast(size_t)vkHeap.size, (vkHeap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) != 0
             );
         }
         foreach(i; 0 .. vkProps.memoryTypeCount) {
             const vkMemType = vkProps.memoryTypes[i];
-            const type = MemoryType(
-                i, vkMemType.heapIndex, props.heaps[vkMemType.heapIndex].size,
-                memPropsToGfx(vkMemType.propertyFlags)
+            props.types ~= MemoryType(
+                memPropsToGfx(vkMemType.propertyFlags),
+                vkMemType.heapIndex,
             );
-            props.types ~= type;
-            props.heaps[i].props |= type.props;
         }
 
         return props;
