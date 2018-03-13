@@ -39,10 +39,11 @@ class GlPhysicalDevice : PhysicalDevice
     import gfx.bindings.opengl.gl : GlCmds30;
     import gfx.core.rc : atomicRcCode;
     import gfx.gl3.context : GlContext;
-    import gfx.graal.device : Device, DeviceFeatures, DeviceLimits, DeviceType;
+    import gfx.graal.device : Device, DeviceFeatures, DeviceLimits, DeviceType,
+                              QueueRequest;
     import gfx.graal.format : Format, FormatProperties;
     import gfx.graal.memory : MemoryProperties;
-    import gfx.graal.queue : QueueFamily, QueueRequest;
+    import gfx.graal.queue : QueueFamily;
     import gfx.graal.presentation : PresentMode, Surface, SurfaceCaps;
 
     mixin(atomicRcCode);

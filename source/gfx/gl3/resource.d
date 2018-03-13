@@ -22,7 +22,7 @@ final class GlDeviceMemory : DeviceMemory
     private MemProps _props;
     private size_t _size;
     private ResBinding[] _bindings;
-    private ResBinding[] _mapping;
+    private ResBinding[] _mapped;
     private void[] _cache;
     private size_t _mapOffset;
     private size_t _mapSize;
@@ -49,46 +49,73 @@ final class GlDeviceMemory : DeviceMemory
     }
 
     override void* map(in size_t offset, in size_t size) {
+        import std.algorithm : max, min;
+        import std.exception : enforce;
+
+        enforce(!_mapped.length, "Cannot map a mapped memory");
+
         _mapOffset = offset;
-        _mapSize = size;
-        _mapping = bindingOverlap(offset, size);
-        if (_mapping.length == 1) {
-            const bo = _mapping[0].offset;
-            const bs = _mapping[0].size;
+        _mapSize = min(size, _size-offset);
+
+        _mapped = bindingOverlap(offset, size);
+
+        enforce(_mapped.length, "GL backend requires a bound buffer before mapping");
+
+        // check if the mapped range fits in a single binding
+        if (_mapped.length == 1) {
+            const bo = _mapped[0].offset;
+            const bs = _mapped[0].size;
             if (offset >= bo && offset+size <= bs) {
-                _mapping[0].map = null;
-                return _mapping[0].res.map(offset-bo, size);
+                _mapped[0].map = null;
+                return _mapped[0].res.map(offset-bo, _mapSize);
             }
         }
-        if (!_cache.length) _cache = new void[_size];
-        foreach (ref b; _mapping) {
-            import std.algorithm : max, min;
+
+        // TODO bindingContinuty (should take possible alignement gap into account)
+        // enforce(bindingContinuity);
+
+        // we need a local cache to mimic binding
+        _cache = new void[_mapSize];
+
+        // copy the content of our buffers into it
+        foreach (ref b; _mapped) {
+
+            //  ...-------.....     map
+            //  ..-----.----...     bindings
             const bStart = offset > b.offset ? offset-b.offset : 0;
-            const bSize = min(b.size, offset+size-bStart);
-            const cStart = max(offset, bStart);
-            const cSize = bSize;
-            b.map = b.res.map(bStart, bSize);
-            _cache[cStart .. cStart + cSize] = b.map[0 .. bSize];
+            const cStart = bStart+b.offset - offset;
+            const copyLen = min(b.size-bStart, offset+_mapSize-b.offset);
+
+            b.map = b.res.map(bStart, copyLen);
+            _cache[cStart .. cStart + copyLen] = b.map[0 .. copyLen];
         }
-        return &_cache[offset];
+
+        return &_cache[0];
     }
 
     override void unmap() {
-        foreach (ref b; _mapping) {
+
+        foreach (ref b; _mapped)
+        {
+            //  ...-------.....     map
+            //  ..-----.----...     bindings
+
             if (_cache.length && b.map !is null) {
                 import std.algorithm : max, min;
                 const bStart = _mapOffset > b.offset ? _mapOffset-b.offset : 0;
-                const bSize = min(b.size, _mapOffset+_mapSize-bStart);
-                const cStart = max(_mapOffset, bStart);
-                const cSize = bSize;
-                b.map[0 .. bSize] = _cache[cStart .. cStart+bSize];
+                const cStart = bStart+b.offset - _mapOffset;
+                const copyLen = min(b.size-bStart, _mapOffset+_mapSize-b.offset);
+
+                b.map[0 .. copyLen] = _cache[cStart .. cStart+copyLen];
                 b.map = null;
             }
             b.res.unmap();
         }
+        _mapped = null;
+        _cache = null;
     }
 
-    ResBinding[] bindingOverlap(in size_t offset, in size_t size) {
+    private ResBinding[] bindingOverlap(in size_t offset, in size_t size) {
         size_t start=size_t.max;
         size_t end=size_t.max;
         foreach (i, b; _bindings) {
@@ -100,6 +127,7 @@ final class GlDeviceMemory : DeviceMemory
         if (start == size_t.max) return null;
         return _bindings[start .. end+1];
     }
+
 }
 
 private interface GlResource {
