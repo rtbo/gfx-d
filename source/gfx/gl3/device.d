@@ -7,10 +7,8 @@ import gfx.graal.device : Device;
 class GlDevice : Device
 {
     import core.time :              Duration;
-    import gfx.bindings.opengl.gl : GlCmds30;
     import gfx.core.rc :            atomicRcCode, Rc;
-    import gfx.gl3 :                GlPhysicalDevice;
-    import gfx.gl3.context :        GlContext;
+    import gfx.gl3 :                GlPhysicalDevice, GlShare;
     import gfx.graal.buffer :       Buffer, BufferUsage;
     import gfx.graal.cmd :          CommandPool;
     import gfx.graal.device :       MappedMemorySet;
@@ -35,16 +33,16 @@ class GlDevice : Device
 
     mixin(atomicRcCode);
 
-    private Rc!GlContext _ctx;
+    private Rc!GlShare _share;
     private MemoryProperties _memProps;
 
-    this (GlPhysicalDevice phd, GlContext ctx) {
-        _ctx = ctx;
+    this (GlPhysicalDevice phd, GlShare share) {
+        _share = share;
         _memProps = phd.memoryProperties;
     }
 
     override void dispose() {
-        _ctx.unload();
+        _share.unload();
     }
 
     override void waitIdle() {}
@@ -66,7 +64,8 @@ class GlDevice : Device
     void invalidateMappedMemory(MappedMemorySet set) {}
 
     Buffer createBuffer(BufferUsage usage, size_t size) {
-        return null;
+        import gfx.gl3.resource : GlBuffer;
+        return new GlBuffer(_share, usage, size);
     }
 
     Image createImage(ImageType type, ImageDims dims, Format format,

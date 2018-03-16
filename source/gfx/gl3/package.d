@@ -1,5 +1,6 @@
 module gfx.gl3;
 
+import gfx.core.rc : AtomicRefCounted;
 import gfx.graal : Instance;
 import gfx.graal.device : PhysicalDevice;
 
@@ -34,10 +35,63 @@ class GlInstance : Instance
     }
 }
 
+package:
+
+import gfx.bindings.opengl.gl : Gl;
+
+struct GlExts
+{
+    bool bufferStorage;
+
+    private static GlExts fetch (Gl gl) {
+        import gfx.gl3.context : glAvailableExtensions;
+        import std.algorithm : canFind;
+
+        const exts = glAvailableExtensions(gl);
+        GlExts ge;
+        ge.bufferStorage = exts.canFind("GL_ARB_buffer_storage");
+        return ge;
+    }
+}
+
+
+class GlShare : AtomicRefCounted
+{
+    import gfx.core.rc : atomicRcCode, Rc;
+    import gfx.gl3.context : GlContext;
+
+    mixin(atomicRcCode);
+
+    private GlExts _exts;
+    private Rc!GlContext _ctx;
+    private Gl _gl;
+
+    this(GlContext ctx) {
+        _ctx = ctx;
+        _gl = ctx.gl;
+        _exts = GlExts.fetch(_gl);
+    }
+
+    override void dispose() {
+        _ctx.unload();
+    }
+
+    @property inout(GlContext) ctx() inout {
+        return _ctx.obj;
+    }
+    @property inout(Gl) gl() inout {
+        return _gl;
+    }
+    @property GlExts exts() const {
+        return _exts;
+    }
+}
+
+
 class GlPhysicalDevice : PhysicalDevice
 {
-    import gfx.bindings.opengl.gl : GlCmds30;
-    import gfx.core.rc : atomicRcCode;
+    import gfx.bindings.opengl.gl : Gl;
+    import gfx.core.rc : atomicRcCode, Rc;
     import gfx.gl3.context : GlContext;
     import gfx.graal.device : Device, DeviceFeatures, DeviceLimits, DeviceType,
                               QueueRequest;
@@ -48,20 +102,20 @@ class GlPhysicalDevice : PhysicalDevice
 
     mixin(atomicRcCode);
 
-    private GlContext _ctx;
-    private GlCmds30 gl;
+    private Rc!GlShare _share;
     private string _name;
 
     this(GlContext ctx) {
-        _ctx = ctx;
-        gl = ctx.cmds;
+        _share = new GlShare(ctx);
 
         import gfx.bindings.opengl.gl : GL_RENDERER;
         import std.string : fromStringz;
-        _name = fromStringz(cast(const(char)*)gl.getString(GL_RENDERER)).idup;
+        _name = fromStringz(cast(const(char)*)ctx.gl.GetString(GL_RENDERER)).idup;
     }
 
-    override void dispose() {}
+    override void dispose() {
+        _share.unload();
+    }
 
     override @property string name() {
         return _name;
@@ -129,6 +183,6 @@ class GlPhysicalDevice : PhysicalDevice
     override Device open(in QueueRequest[], in DeviceFeatures)
     {
         import gfx.gl3.device : GlDevice;
-        return new GlDevice(this, _ctx);
+        return new GlDevice(this, _share);
     }
 }

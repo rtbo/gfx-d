@@ -12,21 +12,10 @@ final class GlDeviceMemory : DeviceMemory
 
     mixin(atomicRcCode);
 
-    private struct ResBinding {
-        size_t offset;
-        size_t size;
-        GlResource res;
-        void *map;
-    }
     private uint _typeIndex;
     private MemProps _props;
     private size_t _size;
-    private ResBinding[] _bindings;
-    private ResBinding[] _mapped;
-    private void[] _cache;
-    private size_t _mapOffset;
-    private size_t _mapSize;
-
+    private GlBuffer _buffer;
 
 
     this (in uint typeIndex, in MemProps props, in size_t size) {
@@ -49,96 +38,24 @@ final class GlDeviceMemory : DeviceMemory
     }
 
     override void* map(in size_t offset, in size_t size) {
-        import std.algorithm : max, min;
         import std.exception : enforce;
-
-        enforce(!_mapped.length, "Cannot map a mapped memory");
-
-        _mapOffset = offset;
-        _mapSize = min(size, _size-offset);
-
-        _mapped = bindingOverlap(offset, size);
-
-        enforce(_mapped.length, "GL backend requires a bound buffer before mapping");
-
-        // check if the mapped range fits in a single binding
-        if (_mapped.length == 1) {
-            const bo = _mapped[0].offset;
-            const bs = _mapped[0].size;
-            if (offset >= bo && offset+size <= bs) {
-                _mapped[0].map = null;
-                return _mapped[0].res.map(offset-bo, _mapSize);
-            }
-        }
-
-        // TODO bindingContinuty (should take possible alignement gap into account)
-        // enforce(bindingContinuity);
-
-        // we need a local cache to mimic binding
-        _cache = new void[_mapSize];
-
-        // copy the content of our buffers into it
-        foreach (ref b; _mapped) {
-
-            //  ...-------.....     map
-            //  ..-----.----...     bindings
-            const bStart = offset > b.offset ? offset-b.offset : 0;
-            const cStart = bStart+b.offset - offset;
-            const copyLen = min(b.size-bStart, offset+_mapSize-b.offset);
-
-            b.map = b.res.map(bStart, copyLen);
-            _cache[cStart .. cStart + copyLen] = b.map[0 .. copyLen];
-        }
-
-        return &_cache[0];
+        enforce(_buffer, "GL backend does not support mapping without bound buffer");
+        return _buffer.map(offset, size);
     }
 
     override void unmap() {
-
-        foreach (ref b; _mapped)
-        {
-            //  ...-------.....     map
-            //  ..-----.----...     bindings
-
-            if (_cache.length && b.map !is null) {
-                import std.algorithm : max, min;
-                const bStart = _mapOffset > b.offset ? _mapOffset-b.offset : 0;
-                const cStart = bStart+b.offset - _mapOffset;
-                const copyLen = min(b.size-bStart, _mapOffset+_mapSize-b.offset);
-
-                b.map[0 .. copyLen] = _cache[cStart .. cStart+copyLen];
-                b.map = null;
-            }
-            b.res.unmap();
-        }
-        _mapped = null;
-        _cache = null;
+        import std.exception : enforce;
+        enforce(_buffer, "GL backend does not support mapping without bound buffer");
+        _buffer.unmap();
     }
-
-    private ResBinding[] bindingOverlap(in size_t offset, in size_t size) {
-        size_t start=size_t.max;
-        size_t end=size_t.max;
-        foreach (i, b; _bindings) {
-            if (offset < b.offset+b.size && offset+size > b.offset) {
-                if (start == size_t.max) start = i;
-                end = i;
-            }
-        }
-        if (start == size_t.max) return null;
-        return _bindings[start .. end+1];
-    }
-
 }
 
-private interface GlResource {
-    void* map(in size_t offset, in size_t size);
-    void unmap();
-}
 
 final class GlBuffer : Buffer
 {
-    import gfx.bindings.opengl.gl : GlCmds30, GLenum, GLuint;
+    import gfx.bindings.opengl.gl;
     import gfx.core.rc : atomicRcCode, Rc;
+    import gfx.gl3 : GlExts, GlShare;
     import gfx.gl3.context : GlContext;
     import gfx.graal.buffer : BufferUsage, BufferView;
     import gfx.graal.format : Format;
@@ -146,30 +63,27 @@ final class GlBuffer : Buffer
 
     mixin(atomicRcCode);
 
-    private Rc!GlContext _ctx;
-    private GlCmds30 gl;
-    private GLuint _handle;
+    private GlExts exts;
+    private Gl gl;
     private BufferUsage _usage;
     private size_t _size;
-    private GLenum _target;
+    private GLuint _handle;
+    private GLbitfield _accessFlags;
     private Rc!GlDeviceMemory _mem;
-    private size_t _offset;
 
-    this(GlContext ctx, in BufferUsage usage, in size_t size) {
+    this(GlShare share, in BufferUsage usage, in size_t size) {
         import gfx.gl3.conv : toGl;
-        _ctx = ctx;
-        gl = _ctx.cmds;
+        gl = share.gl;
+        exts = share.exts;
         _usage = usage;
         _size = size;
-        _target = usage.toGl();
-        gl.genBuffers(1, &_handle);
+        gl.GenBuffers(1, &_handle);
     }
 
     override void dispose() {
-        gl.deleteBuffers(1, &_handle);
+        gl.DeleteBuffers(1, &_handle);
         _handle = 0;
         _mem.unload();
-        _ctx.unload();
     }
 
     override @property size_t size() {
@@ -189,11 +103,24 @@ final class GlBuffer : Buffer
 
     override void bindMemory(DeviceMemory mem, in size_t offset) {
         _mem = cast(GlDeviceMemory)mem;
-        _offset = offset;
-        auto ptr = _mem.map(_offset, _size);
-        scope(exit) _mem.unmap();
+        _mem._buffer = this;
 
+        const props = mem.props;
 
+        gl.BindBuffer(GL_ARRAY_BUFFER, _handle);
+
+        if (exts.bufferStorage) {
+            GLbitfield flags = 0;
+            if (props.hostVisible) flags |= (GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+            if (props.hostCoherent) flags |= GL_MAP_COHERENT_BIT;
+            gl.BufferStorage(GL_ARRAY_BUFFER, cast(GLsizeiptr)_size, null, flags);
+        }
+        else {
+            const glUsage = GL_STATIC_DRAW; //?
+            gl.BufferData(GL_ARRAY_BUFFER, cast(GLsizeiptr)_size, null, glUsage);
+        }
+
+        gl.BindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
     override @property DeviceMemory boundMemory() {
@@ -202,5 +129,25 @@ final class GlBuffer : Buffer
 
     override BufferView createView(Format format, size_t offset, size_t size) {
         return null;
+    }
+
+    private void* map(in size_t offset, in size_t size) {
+        const props = _mem.props;
+
+        GLbitfield flags = GL_MAP_INVALIDATE_RANGE_BIT;
+        if (props.hostVisible) flags |= (GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+        if (props.hostCoherent) flags |= GL_MAP_COHERENT_BIT;
+        else flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
+
+        gl.BindBuffer(GL_ARRAY_BUFFER, _handle);
+        auto ptr = gl.MapBufferRange(GL_ARRAY_BUFFER, cast(GLintptr)offset, cast(GLsizeiptr)size, flags);
+        gl.BindBuffer(GL_ARRAY_BUFFER, 0);
+        return ptr;
+    }
+
+    private void unmap() {
+        gl.BindBuffer(GL_ARRAY_BUFFER, _handle);
+        gl.UnmapBuffer(GL_ARRAY_BUFFER);
+        gl.BindBuffer(GL_ARRAY_BUFFER, 0);
     }
 }

@@ -6,8 +6,8 @@ import gfx.gl3.context : GlContext, GlAttribs;
 class XcbGlContext : GlContext
 {
     import gfx.bindings.core : SharedSym;
-    import gfx.bindings.opengl.gl : GlCmds30;
-    import gfx.bindings.opengl.glx : GlxCmds13, GLXContext, GLXFBConfig;
+    import gfx.bindings.opengl.gl : Gl;
+    import gfx.bindings.opengl.glx : Glx, GLXContext, GLXFBConfig;
     import gfx.core.rc : atomicRcCode, Disposable;
     import X11.Xlib : XDisplay = Display;
 
@@ -16,11 +16,15 @@ class XcbGlContext : GlContext
     private XDisplay* _dpy;
     private int _mainScreenNum;
     private GlAttribs _attribs;
-    private GlxCmds13 _glxCmds;
-    private GlCmds30 _cmds;
+    private Glx _glx;
+    private Gl _gl;
     private string[] _glxAvailExts;
     private string[] _glAvailExts;
     private GLXContext _ctx;
+    private bool ARB_create_context;
+    private bool MESA_query_renderer;
+    private bool MESA_swap_control;
+    private bool EXT_swap_control;
 
     this (XDisplay* dpy, in int mainScreenNum, in GlAttribs attribs)
     {
@@ -45,49 +49,25 @@ class XcbGlContext : GlContext
             return cast(SharedSym)getProcAddress(cast(const(ubyte)*)toStringz(symbol));
         }
 
-        _glxCmds = new GlxCmds13(&loadSymbol);
-        _glxAvailExts = splitExtString(_glxCmds.queryExtensionsString(_dpy, _mainScreenNum));
+        _glx = new Glx(&loadSymbol);
 
-        const string[] requiredExts = [ "GLX_ARB_create_context" ];
-        const optionalExts = [ "GLX_MESA_query_renderer" ];
-        const swapIntExts = [
-            "GLX_EXT_swap_control", "GLX_MESA_swap_control"
-        ];
+        const glxExts = splitExtString(_glx.QueryExtensionsString(_dpy, _mainScreenNum));
+        ARB_create_context = glxExts.canFind("GLX_ARB_create_context");
+        MESA_query_renderer = glxExts.canFind("GLX_MESA_query_renderer");
+        MESA_swap_control = glxExts.canFind("GLX_MESA_swap_control");
+        EXT_swap_control = glxExts.canFind("GLX_EXT_swap_control");
 
-        string[] extsToLoad = extensionsToLoad(_glxAvailExts, requiredExts, optionalExts);
-        foreach(ext; swapIntExts) {
-            if (_glxAvailExts.canFind(ext)) {
-                extsToLoad ~= ext;
-                break;
-            }
-        }
-        _glxCmds.loadExtensions(&loadSymbol, extsToLoad);
-        enforce( _glxCmds.GLX_ARB_create_context && (
-            _glxCmds.GLX_MESA_swap_control ||
-            _glxCmds.GLX_EXT_swap_control
-        ));
+        enforce( ARB_create_context && ( MESA_swap_control || EXT_swap_control ));
 
         auto fbc = getGlxFBConfig(_attribs);
         const ctxAttribs = getCtxAttribs(_attribs);
         tracef("creating OpenGL %s.%s context", _attribs.majorVersion, _attribs.minorVersion);
         _ctx = enforce(
-            _glxCmds.createContextAttribsARB(_dpy, fbc, null, 1, &ctxAttribs[0])
+            _glx.CreateContextAttribsARB(_dpy, fbc, null, 1, &ctxAttribs[0])
         );
         XSync(_dpy, 0);
 
-        _cmds = new GlCmds30(&loadSymbol);
-        {
-            auto dummy = new DummyWindow(_dpy, _glxCmds, fbc);
-            scope(exit) dummy.dispose();
-
-            _glxCmds.makeCurrent(_dpy, dummy.win, _ctx);
-            scope(exit) _glxCmds.makeCurrent(_dpy, 0, null);
-
-            const availExts = glAvailableExtensions(_cmds);
-            const glExtsToLoad = glExtensionsToLoad(availExts);
-            trace("loading OpenGL extensions: ", glExtsToLoad);
-            _cmds.loadExtensions(&loadSymbol, glExtsToLoad);
-        }
+        _gl = new Gl(&loadSymbol);
 
         trace("done loading GL/GLX");
     }
@@ -96,13 +76,13 @@ class XcbGlContext : GlContext
         import gfx.bindings.core : closeSharedLib;
         import std.experimental.logger : trace;
 
-        _glxCmds.destroyContext(_dpy, _ctx);
+        _glx.DestroyContext(_dpy, _ctx);
         trace("destroyed GL/GLX context");
     }
 
 
-    override @property GlCmds30 cmds() {
-        return _cmds;
+    override @property Gl gl() {
+        return _gl;
     }
 
     override @property GlAttribs attribs() {
@@ -112,32 +92,32 @@ class XcbGlContext : GlContext
     override bool makeCurrent(size_t nativeHandle)
     {
         import gfx.bindings.opengl.glx : GLXDrawable;
-        return _glxCmds.makeCurrent(_dpy, cast(GLXDrawable)nativeHandle, _ctx) != 0;
+        return _glx.MakeCurrent(_dpy, cast(GLXDrawable)nativeHandle, _ctx) != 0;
     }
 
     override void doneCurrent()
     {
-        _glxCmds.makeCurrent(_dpy, 0, null);
+        _glx.MakeCurrent(_dpy, 0, null);
     }
 
     override @property bool current() const
     {
-        return _glxCmds.getCurrentContext() is _ctx;
+        return _glx.GetCurrentContext() is _ctx;
     }
 
     override @property int swapInterval()
     {
         import gfx.bindings.opengl.glx : GLXDrawable;
-        if (_glxCmds.GLX_MESA_swap_control) {
-            return _glxCmds.getSwapIntervalMESA();
+        if (MESA_swap_control) {
+            return _glx.GetSwapIntervalMESA();
         }
-        else if (_glxCmds.GLX_EXT_swap_control) {
-            GLXDrawable drawable = _glxCmds.getCurrentDrawable();
+        else if (EXT_swap_control) {
+            GLXDrawable drawable = _glx.GetCurrentDrawable();
             uint swap;
 
             if (drawable) {
                 import gfx.bindings.opengl.glx : GLX_SWAP_INTERVAL_EXT;
-                _glxCmds.queryDrawable(_dpy, drawable, GLX_SWAP_INTERVAL_EXT, &swap);
+                _glx.QueryDrawable(_dpy, drawable, GLX_SWAP_INTERVAL_EXT, &swap);
                 return swap;
             }
             else {
@@ -154,14 +134,14 @@ class XcbGlContext : GlContext
     {
         import gfx.bindings.opengl.glx : GLXDrawable;
 
-        if (_glxCmds.GLX_MESA_swap_control) {
-            _glxCmds.swapIntervalMESA(interval);
+        if (MESA_swap_control) {
+            _glx.SwapIntervalMESA(interval);
         }
-        else if (_glxCmds.GLX_EXT_swap_control) {
-            GLXDrawable drawable = _glxCmds.getCurrentDrawable();
+        else if (EXT_swap_control) {
+            GLXDrawable drawable = _glx.GetCurrentDrawable();
 
             if (drawable) {
-                _glxCmds.swapIntervalEXT(_dpy, drawable, interval);
+                _glx.SwapIntervalEXT(_dpy, drawable, interval);
             }
             else {
                 import std.experimental.logger : warningf;
@@ -173,7 +153,7 @@ class XcbGlContext : GlContext
     override void swapBuffers(size_t nativeHandle)
     {
         import gfx.bindings.opengl.glx : GLXDrawable;
-        _glxCmds.swapBuffers(_dpy, cast(GLXDrawable)nativeHandle);
+        _glx.SwapBuffers(_dpy, cast(GLXDrawable)nativeHandle);
     }
 
     private GLXFBConfig getGlxFBConfig(in GlAttribs attribs)
@@ -183,7 +163,7 @@ class XcbGlContext : GlContext
         const glxAttribs = getGlxAttribs(attribs);
 
         int numConfigs;
-        auto fbConfigs = _glxCmds.chooseFBConfig(_dpy, _mainScreenNum, &glxAttribs[0], &numConfigs);
+        auto fbConfigs = _glx.ChooseFBConfig(_dpy, _mainScreenNum, &glxAttribs[0], &numConfigs);
 
         if (!fbConfigs || !numConfigs)
         {
@@ -205,10 +185,10 @@ class XcbGlContext : GlContext
         XColormap cmap;
         XDisplay* dpy;
 
-        this (XDisplay* dpy, GlxCmds13 glx, GLXFBConfig fbc)
+        this (XDisplay* dpy, Glx glx, GLXFBConfig fbc)
         {
             this.dpy = dpy;
-            auto vi = glx.getVisualFromFBConfig( dpy, fbc );
+            auto vi = glx.GetVisualFromFBConfig( dpy, fbc );
             scope(exit) {
                 XFree(vi);
             }

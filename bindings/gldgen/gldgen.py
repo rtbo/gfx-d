@@ -210,12 +210,13 @@ class DGenerator(OutputGenerator):
             self.params = params
 
     class Command:
-        def __init__(self, name, type, params, alias, field):
+        def __init__(self, name, type, params, typedef, field):
             self.name = name
             self.type = type
             self.params = params
-            self.alias = alias
+            self.typedef = typedef
             self.field = field
+            self.aliases = []
 
     class Extension:
         def __init__(self, name, cmds):
@@ -261,6 +262,7 @@ class DGenerator(OutputGenerator):
         self.apiname = opts.apiname
         self.versionTag = self.apiname.upper() + "_VERSION_"
         self.base = self.apiname[0].upper() + self.apiname[1:].lower()
+        self.loaderClass = self.base
         self.baseCls = self.base + "Cmds"
         self.versionEnum = self.base + "Version"
         self.versionField = self.base.lower() + "Version"
@@ -281,9 +283,10 @@ class DGenerator(OutputGenerator):
         self.issueConsts(sf)
         self.issueCmdPtrAliases(sf)
         self.issueVersionEnum(sf)
-        self.issueExtensionsLoader(sf)
-        self.issueCoreLoaders(sf)
-        self.issueLoaderFunc(sf)
+        # self.issueExtensionsLoader(sf)
+        # self.issueCoreLoaders(sf)
+        # self.issueLoaderFunc(sf)
+        self.issueLoader(sf)
 
         with open(self.opts.filename, "w") as outFile:
             sf.writeOut(outFile)
@@ -415,6 +418,10 @@ class DGenerator(OutputGenerator):
     def genEnum(self, enuminfo, name):
         super().genEnum(enuminfo, name)
         value = enuminfo.elem.get("value")
+        alias = noneStr(enuminfo.elem.get("alias"))
+        if len(alias):
+            # do not output values with aliases
+            return
         if "EGL_CAST" in value:
             value = value                               \
                     .replace("EGL_CAST", "EGL_CAST!")   \
@@ -437,6 +444,16 @@ class DGenerator(OutputGenerator):
 
     def genCmd(self, cmdinfo, name):
         super().genCmd(cmdinfo, name)
+
+        alias = cmdinfo.elem.find("alias")
+        if alias != None:
+            alias = alias.get("name")
+            for core in self.cores:
+                for cmd in core.cmds:
+                    if alias == cmd.name:
+                        cmd.aliases.append(name)
+                        return
+
         proto = cmdinfo.elem.find("proto")
         if proto == None: return
 
@@ -462,8 +479,7 @@ class DGenerator(OutputGenerator):
             t = t.replace(" struct ", " ")
             t = mapDType(t)
             params.append(DGenerator.Param(n, t.strip()))
-        cpl = len(self.opts.cmdPrefix)
-        field = name[cpl].lower() + name[cpl+1:]
+        field = name[len(self.opts.cmdPrefix):]
         self.feature.cmds.append(DGenerator.Command(name, returnType, params, "PFN_"+name, field))
 
 
@@ -583,7 +599,7 @@ class DGenerator(OutputGenerator):
                     maxLen = 0
                     for p in cmd.params:
                         maxLen = max(maxLen, len(p.type))
-                    fstLine = "alias {} = {} function (".format(cmd.alias, cmd.type)
+                    fstLine = "alias {} = {} function (".format(cmd.typedef, cmd.type)
                     if len(cmd.params) == 0:
                         sf(fstLine+");")
                         continue
@@ -609,9 +625,85 @@ class DGenerator(OutputGenerator):
         with sf.indentBlock():
             for core in self.cores:
                 num = core.clsName[-2:]
-                sf("%s,", self.base.lower()+num)
+                sf("%s = %s,", self.base.lower()+num, num)
         sf("}")
 
+    def issueCmdMethodCall(self, sf, cmd):
+        paramStr = ", ".join(map((lambda p: "{} {}".format(p.type, p.name)), cmd.params))
+        sf("public %s %s (%s) const {", cmd.type, cmd.field, paramStr)
+        with sf.indentBlock():
+            sf("assert(_%s !is null, \"%s command %s was not loaded\");", cmd.field, self.opts.humanName, cmd.name)
+            paramStr = ", ".join(map((lambda p: p.name), cmd.params))
+            sf("return _%s (%s);", cmd.field, paramStr)
+        sf("}")
+
+
+    def issueLoader(self, sf):
+        sf()
+        sf("/// %s loader base class", self.opts.humanName)
+        sf("final class %s {", self.loaderClass)
+        with sf.indentBlock():
+
+            sf("this(SymbolLoader loader) {")
+            with sf.indentBlock():
+                for core in self.cores:
+                    sf()
+                    sf("// %s", core.name)
+                    for cmd in core.cmds:
+                        aliasStr = ", ".join(map((lambda a: "\""+a+"\""), cmd.aliases))
+                        sf("_%s = cast(%s)loadSymbol(loader, \"%s\", [%s]);", cmd.field, cmd.typedef, cmd.name, aliasStr)
+                for ext in self.extensions:
+                    if not len(ext.cmds): break
+                    sf()
+                    sf("// %s,", ext.name)
+                    for cmd in ext.cmds:
+                        sf("_%s = cast(%s)loadSymbol(loader, \"%s\", []);", cmd.field, cmd.typedef, cmd.name)
+            sf("}")
+
+            sf()
+            sf("private static void* loadSymbol(SymbolLoader loader, in string name, in string[] aliases) {")
+            with sf.indentBlock():
+                sf("void* sym = loader(name);")
+                sf("if (sym) return sym;")
+                sf("foreach (n; aliases) {")
+                with sf.indentBlock():
+                    sf("sym = loader(n);")
+                    sf("if (sym) return sym;")
+                sf("}")
+                sf("return null;")
+            sf("}")
+
+
+            for core in self.cores:
+                sf()
+                for i, cmd in enumerate(core.cmds):
+                    if i == 0:
+                        sf("/// Commands for %s", core.name)
+                    else:
+                        sf("/// ditto")
+                    self.issueCmdMethodCall(sf, cmd)
+            for ext in self.extensions:
+                if not len(ext.cmds): break
+                sf()
+                for i, cmd in enumerate(ext.cmds):
+                    if i == 0:
+                        sf("/// Commands for %s", ext.name)
+                    else:
+                        sf("/// ditto")
+                    self.issueCmdMethodCall(sf, cmd)
+
+            for core in self.cores:
+                sf()
+                sf("// %s", core.name)
+                for cmd in core.cmds:
+                    sf("private %s _%s;", cmd.typedef, cmd.field)
+            for ext in self.extensions:
+                if not len(ext.cmds): break
+                sf()
+                sf("// %s,", ext.name)
+                for cmd in ext.cmds:
+                    sf("private %s _%s;", cmd.typedef, cmd.field)
+        sf("}")
 
     def issueExtensionsLoader(self, sf):
         hasExtensions = len(self.extensions) > 0
@@ -640,7 +732,7 @@ class DGenerator(OutputGenerator):
                             for cmd in ext.cmds:
                                 spacer = " " * (maxLen-len(cmd.name))
                                 sf("%s %s= cast(%s)%senforce(loader(\"%s\"), %s\"Could not load %s. Requested by %s\");",
-                                        cmd.field, spacer, cmd.alias, spacer, cmd.name, spacer, cmd.name, ext.name)
+                                        cmd.field, spacer, cmd.typedef, spacer, cmd.name, spacer, cmd.name, ext.name)
                             sf("_%s = true;", ext.name)
                         sf("}")
                     sf()
@@ -667,14 +759,14 @@ class DGenerator(OutputGenerator):
                 sf("}")
                 maxLen = 0
                 for cmd in ext.cmds:
-                    maxLen = max(maxLen, len(cmd.alias))
+                    maxLen = max(maxLen, len(cmd.typedef))
                 for i, cmd in enumerate(ext.cmds):
-                    spacer = " " * (maxLen - len(cmd.alias))
+                    spacer = " " * (maxLen - len(cmd.typedef))
                     if i == 0:
                         sf("/// Commands for %s", ext.name)
                     else:
                         sf("/// ditto")
-                    sf("public %s %s%s;", cmd.alias, spacer, cmd.field)
+                    sf("public %s %s%s;", cmd.typedef, spacer, cmd.field)
 
             sf()
             if hasExtensions:
@@ -708,7 +800,7 @@ class DGenerator(OutputGenerator):
                     for cmd in core.cmds:
                         spacer = " " * (maxLen-len(cmd.name))
                         sf("%s %s= cast(%s)%senforce(loader(\"%s\"), %s\"Could not load %s. Requested by %s\");",
-                                cmd.field, spacer, cmd.alias, spacer, cmd.name, spacer, cmd.name, core.name)
+                                cmd.field, spacer, cmd.typedef, spacer, cmd.name, spacer, cmd.name, core.name)
                     sf()
                     sf("_%s = %s.%s;", self.versionField, self.versionEnum, self.base.lower()+num)
                 sf("}")
@@ -720,7 +812,7 @@ class DGenerator(OutputGenerator):
                         sf("/// Commands for %s", core.name)
                     else:
                         sf("/// ditto")
-                    sf("public %s %s%s;", cmd.alias, spacer, cmd.field)
+                    sf("public %s %s%s;", cmd.typedef, spacer, cmd.field)
             sf("}")
 
     def issueLoaderFunc(self, sf):

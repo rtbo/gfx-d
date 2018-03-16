@@ -1,6 +1,6 @@
 module gfx.gl3.context;
 
-import gfx.bindings.opengl.gl : GlCmds30;
+import gfx.bindings.opengl.gl : Gl;
 import gfx.core.rc : AtomicRefCounted;
 import gfx.graal.format : Format;
 
@@ -37,7 +37,7 @@ struct GlAttribs
 
 interface GlContext : AtomicRefCounted
 {
-    @property GlCmds30 cmds();
+    @property Gl gl();
 
     @property GlAttribs attribs();
 
@@ -57,38 +57,22 @@ interface GlContext : AtomicRefCounted
     in { assert(current); }
 }
 
-immutable string[] glRequiredExtensions = [];
+immutable string[] glRequiredExtensions = [
+    "GL_ARB_buffer_storage"
+];
 immutable string[] glOptionalExtensions = [];
 
-string[] extensionsToLoad(in string[] availableExts,
-                          in string[] requiredExtensions,
-                          in string[] optionalExtensions)
-{
-    string[] toLoad;
-    foreach (ext; optionalExtensions) {
-        import std.algorithm : canFind;
-        if (availableExts.canFind(ext)) toLoad ~= ext;
-    }
-    return requiredExtensions ~ toLoad;
-}
-
-string[] glExtensionsToLoad(in string[] availableExts) {
-    return extensionsToLoad(
-        availableExts, glRequiredExtensions, glOptionalExtensions
-    );
-}
-
-string[] glAvailableExtensions(GlCmds30 gl)
+string[] glAvailableExtensions(Gl gl)
 {
     import gfx.bindings.opengl.gl : GLint, GL_EXTENSIONS, GL_NUM_EXTENSIONS;
 
     GLint num;
-    gl.getIntegerv(GL_NUM_EXTENSIONS, &num);
+    gl.GetIntegerv(GL_NUM_EXTENSIONS, &num);
     string[] exts;
     foreach (i; 0 .. num)
     {
         import std.string : fromStringz;
-        auto cStr = cast(const(char)*)gl.getStringi(GL_EXTENSIONS, i);
+        auto cStr = cast(const(char)*)gl.GetStringi(GL_EXTENSIONS, i);
         exts ~= fromStringz(cStr).idup;
     }
     return exts;
