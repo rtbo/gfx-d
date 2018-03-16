@@ -8,7 +8,7 @@ class GlInstance : Instance
 {
     import gfx.core.rc : atomicRcCode, Rc;
     import gfx.gl3.context : GlContext;
-    import gfx.graal : ApiProps, CoordSystem;
+    import gfx.graal : ApiProps, Backend, CoordSystem;
 
     mixin(atomicRcCode);
 
@@ -22,6 +22,10 @@ class GlInstance : Instance
 
     override void dispose() {
         _phd.unload();
+    }
+
+    override @property Backend backend() {
+        return Backend.gl3;
     }
 
     override @property ApiProps apiProps() {

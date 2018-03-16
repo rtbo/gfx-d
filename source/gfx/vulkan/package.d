@@ -427,6 +427,10 @@ final class VulkanInstance : VulkanObj!(VkInstance), Instance
         cmds.destroyInstance(vk, null);
     }
 
+    override @property Backend backend() {
+        return Backend.vulkan;
+    }
+
     override @property ApiProps apiProps() {
         return vulkanApiProps;
     }
