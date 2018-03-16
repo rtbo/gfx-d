@@ -3,6 +3,7 @@ module gfx.gl3.resource;
 package:
 
 import gfx.graal.buffer : Buffer;
+import gfx.graal.image : Image;
 import gfx.graal.memory : DeviceMemory;
 
 final class GlDeviceMemory : DeviceMemory
@@ -150,4 +151,77 @@ final class GlBuffer : Buffer
         gl.UnmapBuffer(GL_ARRAY_BUFFER);
         gl.BindBuffer(GL_ARRAY_BUFFER, 0);
     }
+}
+
+final class GlImage : Image
+{
+    import gfx.core.rc : atomicRcCode, Rc;
+    import gfx.graal.format : Format;
+    import gfx.graal.image;
+    import gfx.graal.memory : MemoryRequirements;
+    import gfx.gl3 : GlShare;
+
+    mixin(atomicRcCode);
+
+    private ImageType _type;
+    private ImageDims _dims;
+    private Format _format;
+    private ImageUsage _usage;
+    private ImageTiling _tiling;
+    private uint _samples;
+    private uint _levels;
+    private Rc!GlDeviceMemory _mem;
+
+    this(GlShare share, ImageType type, ImageDims dims, Format format, ImageUsage usage,
+            ImageTiling tiling, uint samples, uint levels)
+    {
+        _type = type;
+        _dims = dims;
+        _format = format;
+        _usage = usage;
+        _tiling = tiling;
+        _samples = samples;
+        _levels = levels;
+    }
+
+    override void dispose() {
+        _mem.unload();
+    }
+
+    override @property ImageType type() {
+        return _type;
+    }
+    override @property Format format() {
+        return _format;
+    }
+    override @property ImageDims dims() {
+        return _dims;
+    }
+    override @property uint levels() {
+        return _levels;
+    }
+
+    ImageView createView(ImageType viewtype, ImageSubresourceRange isr, Swizzle swizzle)
+    {
+        return null;
+    }
+
+    override @property MemoryRequirements memoryRequirements() {
+        import gfx.graal.format : formatDesc, totalBits;
+        import gfx.graal.memory : MemProps;
+
+        const fd = formatDesc(_format);
+
+        MemoryRequirements mr;
+        mr.alignment = 4;
+        mr.size = _dims.width * _dims.height * _dims.depth * _dims.layers * fd.surfaceType.totalBits / 8;
+        mr.memTypeMask = 1;
+        return mr;
+    }
+
+    /// The image keeps a reference of the device memory
+    void bindMemory(DeviceMemory mem, in size_t offset) {
+        _mem = cast(GlDeviceMemory)mem;
+    }
+
 }

@@ -71,7 +71,8 @@ class GlDevice : Device
     Image createImage(ImageType type, ImageDims dims, Format format,
                       ImageUsage usage, ImageTiling tiling, uint samples,
                       uint levels=1) {
-        return null;
+        import gfx.gl3.resource : GlImage;
+        return new GlImage(_share, type, dims, format, usage, tiling, samples, levels);
     }
 
     Sampler createSampler(in SamplerInfo info) {
