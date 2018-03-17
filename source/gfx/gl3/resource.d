@@ -155,13 +155,18 @@ final class GlBuffer : Buffer
 
 final class GlImage : Image
 {
+    import gfx.bindings.opengl.gl : Gl, GLenum, GLuint;
     import gfx.core.rc : atomicRcCode, Rc;
     import gfx.graal.format : Format;
     import gfx.graal.image;
     import gfx.graal.memory : MemoryRequirements;
-    import gfx.gl3 : GlShare;
+    import gfx.gl3 : GlExts, GlShare;
 
     mixin(atomicRcCode);
+
+    private enum GlType {
+        tex, renderBuf
+    }
 
     private ImageType _type;
     private ImageDims _dims;
@@ -170,11 +175,19 @@ final class GlImage : Image
     private ImageTiling _tiling;
     private uint _samples;
     private uint _levels;
+
+    private GlType _glType;
+    private GLuint _handle;
+    private GLenum _glTexTarget;
+    private GLenum _glFormat;
+    private Gl gl;
+    private GlExts exts;
     private Rc!GlDeviceMemory _mem;
 
     this(GlShare share, ImageType type, ImageDims dims, Format format, ImageUsage usage,
             ImageTiling tiling, uint samples, uint levels)
     {
+        import std.exception : enforce;
         _type = type;
         _dims = dims;
         _format = format;
@@ -182,9 +195,35 @@ final class GlImage : Image
         _tiling = tiling;
         _samples = samples;
         _levels = levels;
+
+        gl = share.gl;
+        exts = share.exts;
+
+        const notRB = ~(ImageUsage.colorAttachment | ImageUsage.depthStencilAttachment);
+        if ((usage & notRB) == ImageUsage.none && tiling == ImageTiling.optimal) {
+            _glType = GlType.renderBuf;
+            enforce(_type == ImageType.d2, "Gfx-GL3: ImageUsage indicates the use of a RenderBuffer, which only supports 2D images");
+            gl.GenRenderbuffers(1, &_handle);
+        }
+        else {
+            _glType = GlType.tex;
+            gl.GenTextures(1, &_handle);
+        }
+
+        import gfx.gl3.conv : toGlImgFmt, toGlTexTarget;
+        _glFormat = toGlImgFmt(format);
+        _glTexTarget = toGlTexTarget(type, samples > 1);
     }
 
     override void dispose() {
+        final switch(_glType) {
+        case GlType.tex:
+            gl.DeleteTextures(1, &_handle);
+            break;
+        case GlType.renderBuf:
+            gl.DeleteRenderbuffers(1, &_handle);
+            break;
+        }
         _mem.unload();
     }
 
@@ -219,9 +258,103 @@ final class GlImage : Image
         return mr;
     }
 
-    /// The image keeps a reference of the device memory
-    void bindMemory(DeviceMemory mem, in size_t offset) {
-        _mem = cast(GlDeviceMemory)mem;
+    void bindMemory(DeviceMemory mem, in size_t offset)
+    {
+        import gfx.bindings.opengl.gl : GL_RENDERBUFFER, GL_TRUE, GLsizei;
+
+        _mem = cast(GlDeviceMemory)mem; // ignored
+
+        final switch(_glType) {
+        case GlType.tex:
+            gl.BindTexture(_glTexTarget, _handle);
+            if (exts.textureStorage) {
+                final switch (_type) {
+                case ImageType.d1:
+                    gl.TexStorage1D(_glTexTarget, _levels, _glFormat, _dims.width);
+                    break;
+                case ImageType.d1Array:
+                    gl.TexStorage2D(_glTexTarget, _levels, _glFormat, _dims.width, _dims.layers);
+                    break;
+                case ImageType.d2:
+                    if (_samples <= 1)
+                        gl.TexStorage2D(_glTexTarget, _levels, _glFormat, _dims.width, _dims.height);
+                    else
+                        gl.TexStorage2DMultisample(_glTexTarget, _samples, _glFormat, _dims.width, _dims.height, GL_TRUE);
+                    break;
+                case ImageType.d2Array:
+                    if (_samples <= 1)
+                        gl.TexStorage3D(_glTexTarget, _levels, _glFormat, _dims.width, _dims.height, _dims.layers);
+                    else
+                        gl.TexStorage3DMultisample(_glTexTarget, _samples, _glFormat, _dims.width, _dims.height, _dims.layers, GL_TRUE);
+                    break;
+                case ImageType.d3:
+                    gl.TexStorage3D(_glTexTarget, _levels, _glFormat, _dims.width, _dims.height, _dims.depth);
+                    break;
+                case ImageType.cube:
+                    gl.TexStorage2D(_glTexTarget, _levels, _glFormat, _dims.width, _dims.height);
+                    break;
+                case ImageType.cubeArray:
+                    gl.TexStorage3D(_glTexTarget, _levels, _glFormat, _dims.width, _dims.height, _dims.layers*6);
+                    break;
+                }
+            }
+            else {
+
+                GLsizei width = _dims.width;
+                GLsizei height = _dims.height;
+                GLsizei depth = _dims.depth;
+
+                foreach (l; 0.._levels) {
+
+                    final switch (_type) {
+                    case ImageType.d1:
+                        gl.TexImage1D(_glTexTarget, l, _glFormat, width, 0, 0, 0, null);
+                        break;
+                    case ImageType.d1Array:
+                        gl.TexImage2D(_glTexTarget, l, _glFormat, width, _dims.layers, 0, 0, 0, null);
+                        break;
+                    case ImageType.d2:
+                        if (_samples <= 1)
+                            gl.TexImage2D(_glTexTarget, l, _glFormat, width, height, 0, 0, 0, null);
+                        else
+                            gl.TexImage2DMultisample(_glTexTarget, _samples, _glFormat, width, height, GL_TRUE);
+                        break;
+                    case ImageType.d2Array:
+                        if (_samples <= 1)
+                            gl.TexImage3D(_glTexTarget, l, _glFormat, width, height, _dims.layers, 0, 0, 0, null);
+                        else
+                            gl.TexImage3DMultisample(_glTexTarget, _samples, _glFormat, width, height, _dims.layers, GL_TRUE);
+                        break;
+                    case ImageType.d3:
+                        gl.TexImage3D(_glTexTarget, l, _glFormat, width, height, depth, 0, 0, 0, null);
+                        break;
+                    case ImageType.cube:
+                        gl.TexImage2D(_glTexTarget, l, _glFormat, width, height, 0, 0, 0, null);
+                        break;
+                    case ImageType.cubeArray:
+                        gl.TexImage3D(_glTexTarget, l, _glFormat, width, height, _dims.layers*6, 0, 0, 0, null);
+                        break;
+                    }
+
+                    if (width > 1) width /= 2;
+                    if (height > 1) height /= 2;
+                    if (depth > 1) depth /= 2;
+                }
+            }
+            gl.BindTexture(_glTexTarget, 0);
+            break;
+
+        case GlType.renderBuf:
+            gl.BindRenderbuffer(GL_RENDERBUFFER, _handle);
+            if (_samples > 1) {
+                gl.RenderbufferStorageMultisample(GL_RENDERBUFFER, _samples, _glFormat, _dims.width, _dims.height);
+            }
+            else {
+                gl.RenderbufferStorage(GL_RENDERBUFFER, _glFormat, _dims.width, _dims.height);
+            }
+            gl.BindRenderbuffer(GL_RENDERBUFFER, 0);
+            break;
+        }
     }
 
 }

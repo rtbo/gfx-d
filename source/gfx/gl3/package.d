@@ -46,6 +46,7 @@ import gfx.bindings.opengl.gl : Gl;
 struct GlExts
 {
     bool bufferStorage;
+    bool textureStorage;
 
     private static GlExts fetch (Gl gl) {
         import gfx.gl3.context : glAvailableExtensions;
@@ -54,6 +55,7 @@ struct GlExts
         const exts = glAvailableExtensions(gl);
         GlExts ge;
         ge.bufferStorage = exts.canFind("GL_ARB_buffer_storage");
+        ge.textureStorage = exts.canFind("GL_ARB_texture_storage");
         return ge;
     }
 }
