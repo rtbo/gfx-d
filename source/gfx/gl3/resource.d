@@ -68,7 +68,7 @@ final class GlBuffer : Buffer
     private Gl gl;
     private BufferUsage _usage;
     private size_t _size;
-    private GLuint _handle;
+    private GLuint _name;
     private GLbitfield _accessFlags;
     private Rc!GlDeviceMemory _mem;
 
@@ -78,12 +78,12 @@ final class GlBuffer : Buffer
         exts = share.exts;
         _usage = usage;
         _size = size;
-        gl.GenBuffers(1, &_handle);
+        gl.GenBuffers(1, &_name);
     }
 
     override void dispose() {
-        gl.DeleteBuffers(1, &_handle);
-        _handle = 0;
+        gl.DeleteBuffers(1, &_name);
+        _name = 0;
         _mem.unload();
     }
 
@@ -108,7 +108,7 @@ final class GlBuffer : Buffer
 
         const props = mem.props;
 
-        gl.BindBuffer(GL_ARRAY_BUFFER, _handle);
+        gl.BindBuffer(GL_ARRAY_BUFFER, _name);
 
         if (exts.bufferStorage) {
             GLbitfield flags = 0;
@@ -140,14 +140,14 @@ final class GlBuffer : Buffer
         if (props.hostCoherent) flags |= GL_MAP_COHERENT_BIT;
         else flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
 
-        gl.BindBuffer(GL_ARRAY_BUFFER, _handle);
+        gl.BindBuffer(GL_ARRAY_BUFFER, _name);
         auto ptr = gl.MapBufferRange(GL_ARRAY_BUFFER, cast(GLintptr)offset, cast(GLsizeiptr)size, flags);
         gl.BindBuffer(GL_ARRAY_BUFFER, 0);
         return ptr;
     }
 
     private void unmap() {
-        gl.BindBuffer(GL_ARRAY_BUFFER, _handle);
+        gl.BindBuffer(GL_ARRAY_BUFFER, _name);
         gl.UnmapBuffer(GL_ARRAY_BUFFER);
         gl.BindBuffer(GL_ARRAY_BUFFER, 0);
     }
@@ -177,7 +177,7 @@ final class GlImage : Image
     private uint _levels;
 
     private GlType _glType;
-    private GLuint _handle;
+    private GLuint _name;
     private GLenum _glTexTarget;
     private GLenum _glFormat;
     private Gl gl;
@@ -203,11 +203,11 @@ final class GlImage : Image
         if ((usage & notRB) == ImageUsage.none && tiling == ImageTiling.optimal) {
             _glType = GlType.renderBuf;
             enforce(_type == ImageType.d2, "Gfx-GL3: ImageUsage indicates the use of a RenderBuffer, which only supports 2D images");
-            gl.GenRenderbuffers(1, &_handle);
+            gl.GenRenderbuffers(1, &_name);
         }
         else {
             _glType = GlType.tex;
-            gl.GenTextures(1, &_handle);
+            gl.GenTextures(1, &_name);
         }
 
         import gfx.gl3.conv : toGlImgFmt, toGlTexTarget;
@@ -218,10 +218,10 @@ final class GlImage : Image
     override void dispose() {
         final switch(_glType) {
         case GlType.tex:
-            gl.DeleteTextures(1, &_handle);
+            gl.DeleteTextures(1, &_name);
             break;
         case GlType.renderBuf:
-            gl.DeleteRenderbuffers(1, &_handle);
+            gl.DeleteRenderbuffers(1, &_name);
             break;
         }
         _mem.unload();
@@ -266,7 +266,7 @@ final class GlImage : Image
 
         final switch(_glType) {
         case GlType.tex:
-            gl.BindTexture(_glTexTarget, _handle);
+            gl.BindTexture(_glTexTarget, _name);
             if (exts.textureStorage) {
                 final switch (_type) {
                 case ImageType.d1:
@@ -345,7 +345,7 @@ final class GlImage : Image
             break;
 
         case GlType.renderBuf:
-            gl.BindRenderbuffer(GL_RENDERBUFFER, _handle);
+            gl.BindRenderbuffer(GL_RENDERBUFFER, _name);
             if (_samples > 1) {
                 gl.RenderbufferStorageMultisample(GL_RENDERBUFFER, _samples, _glFormat, _dims.width, _dims.height);
             }
@@ -373,7 +373,7 @@ final class GlSampler : Sampler
     private Gl gl;
     private GlExts exts;
     private SamplerInfo _info;
-    private GLuint _handle;
+    private GLuint _name;
 
     this(GlShare share, in SamplerInfo info)
     {
@@ -382,26 +382,26 @@ final class GlSampler : Sampler
         _info = info;
 
         if (exts.samplerObject) {
-            gl.GenSamplers(1, &_handle);
+            gl.GenSamplers(1, &_name);
 
             setupSampler!(
-                (GLenum pname, GLint param) { gl.SamplerParameteri(_handle, pname, param); },
-                (GLenum pname, GLfloat param) { gl.SamplerParameterf(_handle, pname, param); },
-                (GLenum pname, const(GLint)* param) { gl.SamplerParameteriv(_handle, pname, param); },
-                (GLenum pname, const(GLfloat)* param) { gl.SamplerParameterfv(_handle, pname, param); },
+                (GLenum pname, GLint param) { gl.SamplerParameteri(_name, pname, param); },
+                (GLenum pname, GLfloat param) { gl.SamplerParameterf(_name, pname, param); },
+                (GLenum pname, const(GLint)* param) { gl.SamplerParameteriv(_name, pname, param); },
+                (GLenum pname, const(GLfloat)* param) { gl.SamplerParameterfv(_name, pname, param); },
             )(info);
         }
     }
 
     override void dispose() {
         if (exts.samplerObject) {
-            gl.DeleteSamplers(1, &_handle);
+            gl.DeleteSamplers(1, &_name);
         }
     }
 
     void bind (GLuint target, GLuint unit) {
         if (exts.samplerObject) {
-            gl.BindSampler(unit, _handle);
+            gl.BindSampler(unit, _name);
         }
         else {
             setupSampler!(
