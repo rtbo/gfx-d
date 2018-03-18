@@ -47,6 +47,7 @@ struct GlExts
 {
     bool bufferStorage;
     bool textureStorage;
+    bool samplerObject;
 
     private static GlExts fetch (Gl gl) {
         import gfx.gl3.context : glAvailableExtensions;
@@ -56,6 +57,7 @@ struct GlExts
         GlExts ge;
         ge.bufferStorage = exts.canFind("GL_ARB_buffer_storage");
         ge.textureStorage = exts.canFind("GL_ARB_texture_storage");
+        ge.samplerObject = exts.canFind("GL_ARB_sampler_object");
         return ge;
     }
 }

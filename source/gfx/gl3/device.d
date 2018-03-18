@@ -76,7 +76,8 @@ class GlDevice : Device
     }
 
     Sampler createSampler(in SamplerInfo info) {
-        return null;
+        import gfx.gl3.resource : GlSampler;
+        return new GlSampler(_share, info);
     }
 
     Semaphore createSemaphore() {

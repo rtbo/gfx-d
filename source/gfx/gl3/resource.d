@@ -3,7 +3,7 @@ module gfx.gl3.resource;
 package:
 
 import gfx.graal.buffer : Buffer;
-import gfx.graal.image : Image;
+import gfx.graal.image : Image, Sampler, SamplerInfo;
 import gfx.graal.memory : DeviceMemory;
 
 final class GlDeviceMemory : DeviceMemory
@@ -356,5 +356,141 @@ final class GlImage : Image
             break;
         }
     }
+}
 
+
+final class GlSampler : Sampler
+{
+    import gfx.bindings.opengl.gl : Gl, GLenum, GLint, GLfloat, GLuint;
+    import gfx.core.rc : atomicRcCode;
+    import gfx.graal.image : BorderColor, isInt, SamplerInfo;
+    import gfx.graal.pipeline : CompareOp;
+    import gfx.gl3 : GlExts, GlShare;
+    import gfx.gl3.conv : toGl, toGlMag, toGlMin;
+
+    mixin(atomicRcCode);
+
+    private Gl gl;
+    private GlExts exts;
+    private SamplerInfo _info;
+    private GLuint _handle;
+
+    this(GlShare share, in SamplerInfo info)
+    {
+        gl = share.gl;
+        exts = share.exts;
+        _info = info;
+
+        if (exts.samplerObject) {
+            gl.GenSamplers(1, &_handle);
+
+            setupSampler!(
+                (GLenum pname, GLint param) { gl.SamplerParameteri(_handle, pname, param); },
+                (GLenum pname, GLfloat param) { gl.SamplerParameterf(_handle, pname, param); },
+                (GLenum pname, const(GLint)* param) { gl.SamplerParameteriv(_handle, pname, param); },
+                (GLenum pname, const(GLfloat)* param) { gl.SamplerParameterfv(_handle, pname, param); },
+            )(info);
+        }
+    }
+
+    override void dispose() {
+        if (exts.samplerObject) {
+            gl.DeleteSamplers(1, &_handle);
+        }
+    }
+
+    void bind (GLuint target, GLuint unit) {
+        if (exts.samplerObject) {
+            gl.BindSampler(unit, _handle);
+        }
+        else {
+            setupSampler!(
+                (GLenum pname, GLint param) { gl.TexParameteri(target, pname, param); },
+                (GLenum pname, GLfloat param) { gl.TexParameterf(target, pname, param); },
+                (GLenum pname, const(GLint)* param) { gl.TexParameteriv(target, pname, param); },
+                (GLenum pname, const(GLfloat)* param) { gl.TexParameterfv(target, pname, param); },
+            )(_info);
+        }
+    }
+}
+
+private void setupSampler(alias fi, alias ff, alias fiv, alias ffv)(in SamplerInfo info)
+{
+    import gfx.bindings.opengl.gl : GL_TEXTURE_MAX_ANISOTROPY,
+                                    GL_TEXTURE_MIN_FILTER,
+                                    GL_TEXTURE_MAG_FILTER,
+                                    GL_TEXTURE_WRAP_S,
+                                    GL_TEXTURE_WRAP_T,
+                                    GL_TEXTURE_WRAP_R,
+                                    GL_TEXTURE_LOD_BIAS,
+                                    GL_TEXTURE_MAX_LOD, GL_TEXTURE_MIN_LOD,
+                                    GL_TEXTURE_BORDER_COLOR,
+                                    GL_TEXTURE_COMPARE_MODE,
+                                    GL_TEXTURE_COMPARE_FUNC,
+                                    GL_COMPARE_REF_TO_TEXTURE, GL_NONE;
+    import gfx.gl3.conv : toGl, toGlMin, toGlMag;
+    import gfx.graal.image : BorderColor, isInt;
+    import gfx.graal.pipeline : CompareOp;
+
+    import std.algorithm : each;
+    info.anisotropy.save.each!(m => ff(GL_TEXTURE_MAX_ANISOTROPY, m));
+
+    const min = toGlMin(info.minFilter, info.mipmapFilter);
+    const mag = toGlMag(info.magFilter);
+    fi(GL_TEXTURE_MIN_FILTER, min);
+    fi(GL_TEXTURE_MAG_FILTER, mag);
+
+    fi(GL_TEXTURE_WRAP_S, toGl(info.wrapMode[0]));
+    fi(GL_TEXTURE_WRAP_T, toGl(info.wrapMode[1]));
+    fi(GL_TEXTURE_WRAP_R, toGl(info.wrapMode[2]));
+
+    import std.math : isNaN;
+    if (!info.lodBias.isNaN) {
+        ff(GL_TEXTURE_LOD_BIAS, info.lodBias);
+    }
+    if (!info.lodRange[0].isNaN) {
+        ff(GL_TEXTURE_MIN_LOD, info.lodRange[0]);
+        ff(GL_TEXTURE_MAX_LOD, info.lodRange[1]);
+    }
+
+    import gfx.core.typecons : ifNone, ifSome;
+    info.compare.save.ifSome!((CompareOp op) {
+        fi(GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+        fi(GL_TEXTURE_COMPARE_FUNC, toGl(op));
+    }).ifNone!(() {
+        fi(GL_TEXTURE_COMPARE_MODE, GL_NONE);
+    });
+
+    if (info.borderColor.isInt) {
+        int[4] color;
+        switch (info.borderColor) {
+        case BorderColor.intTransparent:
+            color = [ 0, 0, 0, 0];
+            break;
+        case BorderColor.intBlack:
+            color = [ 0, 0, 0, int.max ];
+            break;
+        case BorderColor.intWhite:
+            color = [ int.max, int.max, int.max, int.max ];
+            break;
+        default: break;
+        }
+        fiv(GL_TEXTURE_BORDER_COLOR, &color[0]);
+    }
+    else {
+        float[4] color;
+        switch (info.borderColor) {
+        case BorderColor.intTransparent:
+            color = [ 0f, 0f, 0f, 0f];
+            break;
+        case BorderColor.intBlack:
+            color = [ 0f, 0f, 0f, 1f ];
+            break;
+        case BorderColor.intWhite:
+            color = [ 1f, 1f, 1f, 1f ];
+            break;
+        default: break;
+        }
+        ffv(GL_TEXTURE_BORDER_COLOR, &color[0]);
+    }
 }
