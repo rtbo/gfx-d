@@ -4,6 +4,7 @@ package:
 
 import gfx.bindings.opengl.gl : Gl, GLenum, GLint, GLuint;
 import gfx.graal.pipeline;
+import gfx.graal.renderpass;
 
 final class GlShaderModule : ShaderModule
 {
@@ -64,6 +65,66 @@ final class GlShaderModule : ShaderModule
         return _name;
     }
 
+}
+
+
+private SubpassDescription clone(const(SubpassDescription) sd) {
+    return SubpassDescription(
+        sd.inputs.dup, sd.colors.dup, sd.depthStencil.save, sd.preserves.dup
+    );
+}
+
+private SubpassDescription[] clone(in SubpassDescription[] descs) {
+    import std.array : uninitializedArray;
+    auto duplicate = uninitializedArray!(SubpassDescription[])(descs.length);
+    foreach (i; 0 .. descs.length) {
+        duplicate[i] = descs[i].clone();
+    }
+    return duplicate;
+}
+
+
+final class GlRenderPass : RenderPass
+{
+    import gfx.core.rc : atomicRcCode;
+
+    mixin(atomicRcCode);
+
+    private AttachmentDescription[] _attachments;
+    private SubpassDescription[]    _subpasses;
+    private SubpassDependency[]     _deps;
+
+    this(   in AttachmentDescription[] attachments,
+            in SubpassDescription[] subpasses,
+            in SubpassDependency[] dependencies) {
+        _attachments = attachments.dup;
+        _subpasses = subpasses.clone();
+        _deps = dependencies.dup;
+    }
+
+    override void dispose() {}
+}
+
+final class GlPipelineLayout : PipelineLayout
+{
+    import gfx.core.rc : atomicRcCode;
+
+    mixin(atomicRcCode);
+
+    private DescriptorSetLayout[] _layouts;
+    private PushConstantRange[] _push;
+
+    this (DescriptorSetLayout[] layouts, PushConstantRange[] push) {
+        import gfx.core.rc : retainArray;
+        _layouts = layouts;
+        retainArray(_layouts);
+        _push = push;
+    }
+
+    override void dispose() {
+        import gfx.core.rc : releaseArray;
+        releaseArray(_layouts);
+    }
 }
 
 private GLint getShaderInt(Gl gl, in GLuint name, in GLenum pname) {

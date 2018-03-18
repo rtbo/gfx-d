@@ -100,7 +100,8 @@ class GlDevice : Device
     RenderPass createRenderPass(in AttachmentDescription[] attachments,
                                 in SubpassDescription[] subpasses,
                                 in SubpassDependency[] dependencies) {
-        return null;
+        import gfx.gl3.pipeline : GlRenderPass;
+        return new GlRenderPass(attachments, subpasses, dependencies);
     }
 
     Framebuffer createFramebuffer(RenderPass rp, ImageView[] attachments,
@@ -121,7 +122,8 @@ class GlDevice : Device
     }
 
     PipelineLayout createPipelineLayout(DescriptorSetLayout[] layouts, PushConstantRange[] ranges) {
-        return null;
+        import gfx.gl3.pipeline : GlPipelineLayout;
+        return new GlPipelineLayout(layouts, ranges);
     }
 
     DescriptorPool createDescriptorPool(in uint maxSets, in DescriptorPoolSize[] sizes) {
