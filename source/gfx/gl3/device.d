@@ -106,7 +106,14 @@ class GlDevice : Device
 
     Framebuffer createFramebuffer(RenderPass rp, ImageView[] attachments,
                                   uint width, uint height, uint layers) {
-        return null;
+        import gfx.gl3.pipeline : GlFramebuffer, GlRenderPass;
+        import gfx.gl3.resource : GlImageView;
+        import std.algorithm : map;
+        import std.array : array;
+
+        return new GlFramebuffer(_share, cast(GlRenderPass)rp,
+            attachments.map!(iv => cast(GlImageView)iv).array,
+            width, height, layers);
     }
 
     ShaderModule createShaderModule(ShaderLanguage language, string code, string entryPoint) {

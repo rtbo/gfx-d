@@ -58,9 +58,13 @@ interface GlContext : AtomicRefCounted
 }
 
 immutable string[] glRequiredExtensions = [
-    "GL_ARB_buffer_storage"
+    "GL_ARB_framebuffer_object"
 ];
-immutable string[] glOptionalExtensions = [];
+immutable string[] glOptionalExtensions = [
+    "GL_ARB_buffer_storage",
+    "GL_ARB_texture_storage",
+    "GL_ARB_sampler_object"
+];
 
 string[] glAvailableExtensions(Gl gl)
 {

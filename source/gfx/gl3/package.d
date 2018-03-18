@@ -49,11 +49,18 @@ struct GlExts
     bool textureStorage;
     bool samplerObject;
 
-    private static GlExts fetch (Gl gl) {
-        import gfx.gl3.context : glAvailableExtensions;
+    private static GlExts fetchAndCheck (Gl gl) {
+        import gfx.gl3.context : glAvailableExtensions, glRequiredExtensions;
         import std.algorithm : canFind;
 
         const exts = glAvailableExtensions(gl);
+
+        foreach (glE; glRequiredExtensions) {
+            import std.exception : enforce;
+            import std.format : format;
+            enforce(exts.canFind(glE), format(glE ~ " is required but was not found"));
+        }
+
         GlExts ge;
         ge.bufferStorage = exts.canFind("GL_ARB_buffer_storage");
         ge.textureStorage = exts.canFind("GL_ARB_texture_storage");
@@ -77,7 +84,7 @@ class GlShare : AtomicRefCounted
     this(GlContext ctx) {
         _ctx = ctx;
         _gl = ctx.gl;
-        _exts = GlExts.fetch(_gl);
+        _exts = GlExts.fetchAndCheck(_gl);
     }
 
     override void dispose() {

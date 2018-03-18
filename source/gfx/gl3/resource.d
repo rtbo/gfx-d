@@ -243,9 +243,9 @@ final class GlImage : Image
         return _levels;
     }
 
-    ImageView createView(ImageType viewtype, ImageSubresourceRange isr, Swizzle swizzle)
+    ImageView createView(ImageType viewType, ImageSubresourceRange isr, Swizzle swizzle)
     {
-        return new GlImageView(this, isr, swizzle);
+        return new GlImageView(this, viewType, isr, swizzle);
     }
 
     override @property MemoryRequirements memoryRequirements() {
@@ -371,25 +371,36 @@ final class GlImage : Image
 
 final class GlImageView : ImageView
 {
-    import gfx.bindings.opengl.gl : Gl;
+    import gfx.bindings.opengl.gl : Gl, GLenum, GLuint;
     import gfx.core.rc : atomicRcCode, Rc;
     import gfx.gl3 : GlExts;
-    import gfx.graal.image : ImageBase, ImageSubresourceRange, Swizzle;
+    import gfx.graal.image : ImageBase, ImageDims, ImageSubresourceRange,
+                             ImageType, Swizzle;
 
     mixin(atomicRcCode);
 
     private Gl gl;
     private GlExts exts;
     private Rc!GlImage img;
+    private ImageDims imgDims;
+    private ImageType type;
     private ImageSubresourceRange isr;
     private Swizzle swzl;
 
-    this(GlImage img, ImageSubresourceRange isr, Swizzle swizzle) {
+    private GlImgType glType;
+    private GLuint name;
+
+    this(GlImage img, ImageType type, ImageSubresourceRange isr, Swizzle swizzle) {
         this.img = img;
         this.gl = img.gl;
         this.exts = img.exts;
+        this.imgDims = img.dims;
+        this.type = type;
         this.isr = isr;
         this.swzl = swizzle;
+
+        glType = img._glType;
+        name = img._name;
     }
 
     override void dispose() {
@@ -404,6 +415,73 @@ final class GlImageView : ImageView
     }
     override @property Swizzle swizzle() {
         return swzl;
+    }
+
+    void attachToFbo(GLenum target, ref uint colorNum) {
+        import gfx.bindings.opengl.gl : GLint,
+                GL_RENDERBUFFER, GL_COLOR_ATTACHMENT0,
+                GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT,
+                GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+                GL_TEXTURE_1D, GL_TEXTURE_2D, GL_TEXTURE_3D;
+        import gfx.graal.image : ImageAspect;
+
+        GLenum glAttachment;
+        final switch (isr.aspect) {
+        case ImageAspect.color:
+            glAttachment = GL_COLOR_ATTACHMENT0 + colorNum++;
+            break;
+        case ImageAspect.depth:
+            glAttachment = GL_DEPTH_ATTACHMENT;
+            break;
+        case ImageAspect.stencil:
+            glAttachment = GL_STENCIL_ATTACHMENT;
+            break;
+        case ImageAspect.depthStencil:
+            glAttachment = GL_DEPTH_STENCIL_ATTACHMENT;
+            break;
+        }
+
+        final switch(glType) {
+        case GlImgType.tex:
+            if (imgDims.layers > 1 && isr.layers == 1) {
+                gl.FramebufferTextureLayer(
+                    target, glAttachment, name, cast(GLint)isr.firstLevel, cast(GLint)isr.firstLayer
+                );
+            }
+            else {
+                final switch (type) {
+                case ImageType.d1:
+                case ImageType.d1Array:
+                    gl.FramebufferTexture1D(
+                        target, glAttachment, GL_TEXTURE_1D, name, cast(GLint)isr.firstLevel
+                    );
+                    break;
+                case ImageType.d2:
+                case ImageType.d2Array:
+                    gl.FramebufferTexture2D(
+                        target, glAttachment, GL_TEXTURE_2D, name, cast(GLint)isr.firstLevel
+                    );
+                    break;
+                case ImageType.d3:
+                    gl.FramebufferTexture3D(
+                        target, glAttachment, GL_TEXTURE_3D, name,
+                        cast(GLint)isr.firstLevel, cast(GLint)isr.firstLayer
+                    );
+                    break;
+                case ImageType.cube:
+                case ImageType.cubeArray:
+                    const layer = GL_TEXTURE_CUBE_MAP_POSITIVE_X+cast(GLenum)isr.firstLayer;
+                    gl.FramebufferTexture2D(
+                        target, glAttachment, layer, name, cast(GLint)isr.firstLevel
+                    );
+                    break;
+                }
+            }
+            break;
+        case GlImgType.renderBuf:
+            gl.FramebufferRenderbuffer(target, glAttachment, GL_RENDERBUFFER, name);
+            break;
+        }
     }
 }
 
