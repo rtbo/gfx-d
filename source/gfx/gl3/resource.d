@@ -3,7 +3,7 @@ module gfx.gl3.resource;
 package:
 
 import gfx.graal.buffer : Buffer;
-import gfx.graal.image : Image, Sampler, SamplerInfo;
+import gfx.graal.image : Image, ImageView, Sampler, SamplerInfo;
 import gfx.graal.memory : DeviceMemory;
 
 final class GlDeviceMemory : DeviceMemory
@@ -153,6 +153,10 @@ final class GlBuffer : Buffer
     }
 }
 
+private enum GlImgType {
+    tex, renderBuf
+}
+
 final class GlImage : Image
 {
     import gfx.bindings.opengl.gl : Gl, GLenum, GLuint;
@@ -164,10 +168,6 @@ final class GlImage : Image
 
     mixin(atomicRcCode);
 
-    private enum GlType {
-        tex, renderBuf
-    }
-
     private ImageType _type;
     private ImageDims _dims;
     private Format _format;
@@ -176,7 +176,7 @@ final class GlImage : Image
     private uint _samples;
     private uint _levels;
 
-    private GlType _glType;
+    private GlImgType _glType;
     private GLuint _name;
     private GLenum _glTexTarget;
     private GLenum _glFormat;
@@ -201,12 +201,15 @@ final class GlImage : Image
 
         const notRB = ~(ImageUsage.colorAttachment | ImageUsage.depthStencilAttachment);
         if ((usage & notRB) == ImageUsage.none && tiling == ImageTiling.optimal) {
-            _glType = GlType.renderBuf;
-            enforce(_type == ImageType.d2, "Gfx-GL3: ImageUsage indicates the use of a RenderBuffer, which only supports 2D images");
+            _glType = GlImgType.renderBuf;
+            enforce(
+                _type == ImageType.d2,
+                "Gfx-GL3: ImageUsage indicates the use of a RenderBuffer, which only supports 2D images"
+            );
             gl.GenRenderbuffers(1, &_name);
         }
         else {
-            _glType = GlType.tex;
+            _glType = GlImgType.tex;
             gl.GenTextures(1, &_name);
         }
 
@@ -217,10 +220,10 @@ final class GlImage : Image
 
     override void dispose() {
         final switch(_glType) {
-        case GlType.tex:
+        case GlImgType.tex:
             gl.DeleteTextures(1, &_name);
             break;
-        case GlType.renderBuf:
+        case GlImgType.renderBuf:
             gl.DeleteRenderbuffers(1, &_name);
             break;
         }
@@ -242,7 +245,7 @@ final class GlImage : Image
 
     ImageView createView(ImageType viewtype, ImageSubresourceRange isr, Swizzle swizzle)
     {
-        return null;
+        return new GlImageView(this, isr, swizzle);
     }
 
     override @property MemoryRequirements memoryRequirements() {
@@ -265,7 +268,7 @@ final class GlImage : Image
         _mem = cast(GlDeviceMemory)mem; // ignored
 
         final switch(_glType) {
-        case GlType.tex:
+        case GlImgType.tex:
             gl.BindTexture(_glTexTarget, _name);
             if (exts.textureStorage) {
                 final switch (_type) {
@@ -279,13 +282,17 @@ final class GlImage : Image
                     if (_samples <= 1)
                         gl.TexStorage2D(_glTexTarget, _levels, _glFormat, _dims.width, _dims.height);
                     else
-                        gl.TexStorage2DMultisample(_glTexTarget, _samples, _glFormat, _dims.width, _dims.height, GL_TRUE);
+                        gl.TexStorage2DMultisample(
+                            _glTexTarget, _samples, _glFormat, _dims.width, _dims.height, GL_TRUE
+                        );
                     break;
                 case ImageType.d2Array:
                     if (_samples <= 1)
                         gl.TexStorage3D(_glTexTarget, _levels, _glFormat, _dims.width, _dims.height, _dims.layers);
                     else
-                        gl.TexStorage3DMultisample(_glTexTarget, _samples, _glFormat, _dims.width, _dims.height, _dims.layers, GL_TRUE);
+                        gl.TexStorage3DMultisample(
+                            _glTexTarget, _samples, _glFormat, _dims.width, _dims.height, _dims.layers, GL_TRUE
+                        );
                     break;
                 case ImageType.d3:
                     gl.TexStorage3D(_glTexTarget, _levels, _glFormat, _dims.width, _dims.height, _dims.depth);
@@ -323,7 +330,9 @@ final class GlImage : Image
                         if (_samples <= 1)
                             gl.TexImage3D(_glTexTarget, l, _glFormat, width, height, _dims.layers, 0, 0, 0, null);
                         else
-                            gl.TexImage3DMultisample(_glTexTarget, _samples, _glFormat, width, height, _dims.layers, GL_TRUE);
+                            gl.TexImage3DMultisample(
+                                _glTexTarget, _samples, _glFormat, width, height, _dims.layers, GL_TRUE
+                            );
                         break;
                     case ImageType.d3:
                         gl.TexImage3D(_glTexTarget, l, _glFormat, width, height, depth, 0, 0, 0, null);
@@ -344,10 +353,12 @@ final class GlImage : Image
             gl.BindTexture(_glTexTarget, 0);
             break;
 
-        case GlType.renderBuf:
+        case GlImgType.renderBuf:
             gl.BindRenderbuffer(GL_RENDERBUFFER, _name);
             if (_samples > 1) {
-                gl.RenderbufferStorageMultisample(GL_RENDERBUFFER, _samples, _glFormat, _dims.width, _dims.height);
+                gl.RenderbufferStorageMultisample(
+                    GL_RENDERBUFFER, _samples, _glFormat, _dims.width, _dims.height
+                );
             }
             else {
                 gl.RenderbufferStorage(GL_RENDERBUFFER, _glFormat, _dims.width, _dims.height);
@@ -355,6 +366,44 @@ final class GlImage : Image
             gl.BindRenderbuffer(GL_RENDERBUFFER, 0);
             break;
         }
+    }
+}
+
+final class GlImageView : ImageView
+{
+    import gfx.bindings.opengl.gl : Gl;
+    import gfx.core.rc : atomicRcCode, Rc;
+    import gfx.gl3 : GlExts;
+    import gfx.graal.image : ImageBase, ImageSubresourceRange, Swizzle;
+
+    mixin(atomicRcCode);
+
+    private Gl gl;
+    private GlExts exts;
+    private Rc!GlImage img;
+    private ImageSubresourceRange isr;
+    private Swizzle swzl;
+
+    this(GlImage img, ImageSubresourceRange isr, Swizzle swizzle) {
+        this.img = img;
+        this.gl = img.gl;
+        this.exts = img.exts;
+        this.isr = isr;
+        this.swzl = swizzle;
+    }
+
+    override void dispose() {
+        img.unload();
+    }
+
+    override @property ImageBase image() {
+        return img.obj;
+    }
+    override @property ImageSubresourceRange subresourceRange() {
+        return isr;
+    }
+    override @property Swizzle swizzle() {
+        return swzl;
     }
 }
 
