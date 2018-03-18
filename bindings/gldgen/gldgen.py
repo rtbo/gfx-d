@@ -419,9 +419,6 @@ class DGenerator(OutputGenerator):
         super().genEnum(enuminfo, name)
         value = enuminfo.elem.get("value")
         alias = noneStr(enuminfo.elem.get("alias"))
-        if len(alias):
-            # do not output values with aliases
-            return
         if "EGL_CAST" in value:
             value = value                               \
                     .replace("EGL_CAST", "EGL_CAST!")   \
