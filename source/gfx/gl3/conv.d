@@ -5,7 +5,8 @@ package:
 import gfx.bindings.opengl.gl;
 import gfx.graal.buffer : BufferUsage;
 import gfx.graal.format : Format;
-import gfx.graal.image : ImageType;
+import gfx.graal.image : Filter, ImageType, WrapMode;
+import gfx.graal.pipeline : CompareOp;
 
 GLenum toGl(in BufferUsage usage) pure {
     switch (usage) {
@@ -61,5 +62,47 @@ GLenum toGlImgFmt(in Format graalFormat) pure {
     default:
         import std.format : format;
         throw new Exception(format("Gfx-GL3: Format.%s is not supported.", graalFormat));
+    }
+}
+
+GLenum toGlMag(in Filter filter) {
+    final switch(filter) {
+    case Filter.nearest: return GL_NEAREST;
+    case Filter.linear: return GL_LINEAR;
+    }
+}
+GLenum toGlMin(in Filter filter, in Filter mipmap) {
+    final switch(filter) {
+    case Filter.nearest:
+        final switch (mipmap) {
+        case Filter.nearest:    return GL_NEAREST_MIPMAP_NEAREST;
+        case Filter.linear:     return GL_NEAREST_MIPMAP_LINEAR;
+        }
+    case Filter.linear:
+        final switch (mipmap) {
+        case Filter.nearest:    return GL_LINEAR_MIPMAP_NEAREST;
+        case Filter.linear:     return GL_LINEAR_MIPMAP_LINEAR;
+        }
+    }
+}
+GLenum toGl(in WrapMode mode) {
+    final switch (mode) {
+    case WrapMode.repeat:       return GL_REPEAT;
+    case WrapMode.mirrorRepeat: return GL_MIRRORED_REPEAT;
+    case WrapMode.clamp:        return GL_CLAMP_TO_EDGE;
+    case WrapMode.border:       return GL_CLAMP_TO_BORDER;
+    }
+}
+
+GLenum toGl(in CompareOp op) {
+    final switch (op) {
+    case CompareOp.never:           return GL_NEVER;
+    case CompareOp.less:            return GL_LESS;
+    case CompareOp.equal:           return GL_EQUAL;
+    case CompareOp.lessOrEqual:     return GL_LEQUAL;
+    case CompareOp.greater:         return GL_GREATER;
+    case CompareOp.notEqual:        return GL_NOTEQUAL;
+    case CompareOp.greaterOrEqual:  return GL_GEQUAL;
+    case CompareOp.always:          return GL_ALWAYS;
     }
 }
