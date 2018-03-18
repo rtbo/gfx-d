@@ -266,12 +266,28 @@ enum WrapMode {
 
 enum BorderColor
 {
-    floatTransparent,
-    intTransparent,
-    floatBlack,
-    intBlack,
-    floatWhite,
-    intWhite,
+    floatTransparent    = 0,
+    intTransparent      = 1,
+    floatBlack          = 2,
+    intBlack            = 3,
+    floatWhite          = 4,
+    intWhite            = 5,
+}
+
+@property bool isFloat(in BorderColor color) pure {
+    return (cast(int)color & 0x01) == 0;
+}
+@property bool isInt(in BorderColor color) pure {
+    return (cast(int)color & 0x01) == 1;
+}
+@property bool isTransparent(in BorderColor color) pure {
+    return (cast(int)color & 0x06) == 0;
+}
+@property bool isBlack(in BorderColor color) pure {
+    return (cast(int)color & 0x06) == 2;
+}
+@property bool isWhite(in BorderColor color) pure {
+    return (cast(int)color & 0x06) == 4;
 }
 
 ///
