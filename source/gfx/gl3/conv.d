@@ -6,7 +6,7 @@ import gfx.bindings.opengl.gl;
 import gfx.graal.buffer : BufferUsage;
 import gfx.graal.format : Format;
 import gfx.graal.image : Filter, ImageType, WrapMode;
-import gfx.graal.pipeline : CompareOp;
+import gfx.graal.pipeline : CompareOp, ShaderStage;
 
 GLenum toGl(in BufferUsage usage) pure {
     switch (usage) {
@@ -104,5 +104,17 @@ GLenum toGl(in CompareOp op) {
     case CompareOp.notEqual:        return GL_NOTEQUAL;
     case CompareOp.greaterOrEqual:  return GL_GEQUAL;
     case CompareOp.always:          return GL_ALWAYS;
+    }
+}
+
+GLenum toGl(in ShaderStage stage) {
+    switch (stage) {
+    case ShaderStage.vertex:                    return GL_VERTEX_SHADER;
+    case ShaderStage.tessellationControl:       return GL_TESS_CONTROL_SHADER;
+    case ShaderStage.tessellationEvaluation:    return GL_TESS_EVALUATION_SHADER;
+    case ShaderStage.geometry:                  return GL_GEOMETRY_SHADER;
+    case ShaderStage.fragment:                  return GL_FRAGMENT_SHADER;
+    case ShaderStage.compute:                   return GL_COMPUTE_SHADER;
+    default: assert(false);
     }
 }

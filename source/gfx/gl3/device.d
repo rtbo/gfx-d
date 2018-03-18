@@ -109,7 +109,11 @@ class GlDevice : Device
     }
 
     ShaderModule createShaderModule(ShaderLanguage language, string code, string entryPoint) {
-        return null;
+        import gfx.gl3.pipeline : GlShaderModule;
+        import std.exception : enforce;
+
+        enforce(entryPoint == "main");
+        return new GlShaderModule(_share, language, code);
     }
 
     DescriptorSetLayout createDescriptorSetLayout(in PipelineLayoutBinding[] bindings) {
