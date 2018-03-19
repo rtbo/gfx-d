@@ -140,6 +140,9 @@ class GlDevice : Device
     void updateDescriptorSets(WriteDescriptorSet[] writeOps, CopyDescritporSet[] copyOps) {}
 
     Pipeline[] createPipelines(PipelineInfo[] infos) {
-        return null;
+        import gfx.gl3.pipeline : GlPipeline;
+        import std.algorithm : map;
+        import std.array : array;
+        return infos.map!(pi => cast(Pipeline)new GlPipeline(_share, pi)).array;
     }
 }

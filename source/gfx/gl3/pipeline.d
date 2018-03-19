@@ -17,6 +17,7 @@ final class GlShaderModule : ShaderModule
     private Gl gl;
     private GLuint _name;
     private string _code;
+    private ShaderStage _stage;
 
     this (GlShare share, in ShaderLanguage sl, in string code) {
         gl = share.gl;
@@ -38,7 +39,11 @@ final class GlShaderModule : ShaderModule
 
     GLuint compile(in ShaderStage stage)
     {
-        assert(_name == 0, "already compiled this shader");
+        if (_name) {
+            import std.exception : enforce;
+            enforce(stage == _stage, "unsupported: try to compile the same shader for different stages");
+            return _name;
+        }
 
         import gfx.bindings.opengl.gl : GLchar, GLint;
         import gfx.gl3.conv : toGl;
@@ -62,6 +67,7 @@ final class GlShaderModule : ShaderModule
             import std.experimental.logger : logf;
             logf("%s shader compile message: %s", stage.to!string, log);
         }
+        _stage = stage;
         return _name;
     }
 
@@ -176,9 +182,7 @@ final class GlFramebuffer : Framebuffer
         foreach(i; 0 .. attachments.length) {
             const desc = rp._attachments[i];
             auto attachment = attachments[i];
-
             uint colorNum = 0;
-
             attachment.attachToFbo(GL_DRAW_FRAMEBUFFER, colorNum);
         }
 
@@ -196,6 +200,59 @@ final class GlFramebuffer : Framebuffer
     }
 }
 
+final class GlPipeline : Pipeline
+{
+    import gfx.bindings.opengl.gl : GLuint;
+    import gfx.core.rc : atomicRcCode;
+    import gfx.gl3 : GlShare;
+
+    mixin(atomicRcCode);
+
+    private Gl gl;
+    private GLuint prog;
+    private PipelineInfo info;
+
+    this(GlShare share, PipelineInfo info) {
+        this.gl = share.gl;
+        this.info = info;
+
+        prog = gl.CreateProgram();
+
+        import std.exception : enforce;
+        enforce(info.shaders.vertex, "Vertex input shader is mandatory");
+
+        void attachShader(ShaderStage stage, ShaderModule mod) {
+            if (!mod) return;
+            auto glMod = cast(GlShaderModule)mod;
+            const name = glMod.compile(stage);
+            gl.AttachShader(prog, name);
+        }
+
+        attachShader(ShaderStage.vertex, info.shaders.vertex);
+        attachShader(ShaderStage.tessellationControl, info.shaders.tessControl);
+        attachShader(ShaderStage.tessellationEvaluation, info.shaders.tessEval);
+        attachShader(ShaderStage.geometry, info.shaders.geometry);
+        attachShader(ShaderStage.fragment, info.shaders.fragment);
+
+        gl.LinkProgram(prog);
+
+        const log = getProgramLog(gl, prog);
+        if (!getProgramLinkStatus(gl, prog)) {
+            import gfx.gl3.error : Gl3ProgramLinkException;
+            throw new Gl3ProgramLinkException(log);
+        }
+
+        if (log.length) {
+            import std.experimental.logger : logf;
+            logf("Gfx-Gl: Program link message: %s", log);
+        }
+    }
+
+    override void dispose() {
+        gl.DeleteProgram(prog);
+        prog = 0;
+    }
+}
 
 private GLint getShaderInt(Gl gl, in GLuint name, in GLenum pname) {
     GLint res;
