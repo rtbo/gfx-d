@@ -3,6 +3,7 @@ module gfx.gl3.device;
 package:
 
 import gfx.graal.device : Device;
+import gfx.graal.sync : Fence, Semaphore;
 
 class GlDevice : Device
 {
@@ -28,7 +29,6 @@ class GlDevice : Device
                                     PipelineLayout, PipelineLayoutBinding,
                                     PushConstantRange, ShaderModule,
                                     ShaderLanguage, WriteDescriptorSet;
-    import gfx.graal.sync :         Fence, Semaphore;
     import std.typecons : Flag;
 
     mixin(atomicRcCode);
@@ -81,11 +81,11 @@ class GlDevice : Device
     }
 
     Semaphore createSemaphore() {
-        return null;
+        return new GlSemaphore;
     }
 
     Fence createFence(Flag!"signaled" signaled) {
-        return null;
+        return new GlFence(signaled);
     }
 
     void resetFences(Fence[] fences) {}
@@ -94,7 +94,8 @@ class GlDevice : Device
     Swapchain createSwapchain(Surface surface, PresentMode pm, uint numImages,
                               Format format, uint[2] size, ImageUsage usage,
                               CompositeAlpha alpha, Swapchain former=null) {
-        return null;
+        import gfx.gl3.swapchain : GlSwapchain;
+        return new GlSwapchain(_share, surface, pm, numImages, format, size, usage, alpha, former);
     }
 
     RenderPass createRenderPass(in AttachmentDescription[] attachments,
@@ -145,4 +146,25 @@ class GlDevice : Device
         import std.array : array;
         return infos.map!(pi => cast(Pipeline)new GlPipeline(_share, pi)).array;
     }
+}
+
+private final class GlSemaphore : Semaphore {
+    import gfx.core.rc : atomicRcCode;
+    mixin(atomicRcCode);
+    this() {}
+    override void dispose() {}
+}
+
+private final class GlFence : Fence {
+    import core.time : Duration;
+    import gfx.core.rc : atomicRcCode;
+    mixin(atomicRcCode);
+    private bool _signaled;
+    this(bool signaled) {
+        _signaled = signaled;
+    }
+    override void dispose() {}
+    override @property bool signaled() { return _signaled; }
+    override void reset() {}
+    override void wait(Duration timeout) {}
 }
