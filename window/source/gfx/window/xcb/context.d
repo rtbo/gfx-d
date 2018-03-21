@@ -20,6 +20,7 @@ class XcbGlContext : GlContext
     private Gl _gl;
     private string[] _glxAvailExts;
     private string[] _glAvailExts;
+    private DummyWindow[size_t] dummies;
     private GLXContext _ctx;
     private bool ARB_create_context;
     private bool MESA_query_renderer;
@@ -32,7 +33,6 @@ class XcbGlContext : GlContext
         import gfx.bindings.opengl : splitExtString;
         import gfx.bindings.opengl.gl : GL_EXTENSIONS;
         import gfx.bindings.opengl.glx : PFN_glXGetProcAddressARB;
-        import gfx.gl3.context : extensionsToLoad, glAvailableExtensions, glExtensionsToLoad;
         import std.algorithm : canFind;
         import std.exception : enforce;
         import std.experimental.logger : trace, tracef;
@@ -74,7 +74,10 @@ class XcbGlContext : GlContext
 
     override void dispose() {
         import gfx.bindings.core : closeSharedLib;
+        import gfx.core.rc : disposeArray;
         import std.experimental.logger : trace;
+
+        disposeArray(dummies);
 
         _glx.DestroyContext(_dpy, _ctx);
         trace("destroyed GL/GLX context");
@@ -174,6 +177,22 @@ class XcbGlContext : GlContext
         scope (exit) XFree(fbConfigs);
 
         return fbConfigs[0];
+    }
+
+    override size_t createDummy() {
+        auto dummy = new DummyWindow(_dpy, _glx, getGlxFBConfig(_attribs));
+        size_t hdl = dummy.win;
+        dummies[hdl] = dummy;
+        return hdl;
+    }
+
+    override void releaseDummy(size_t dummy) {
+        auto d = dummy in dummies;
+        if (d) {
+            auto win = *d;
+            win.dispose();
+            dummies.remove(dummy);
+        }
     }
 
     private static class DummyWindow : Disposable

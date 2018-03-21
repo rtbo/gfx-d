@@ -55,6 +55,9 @@ interface GlContext : AtomicRefCounted
 
     void swapBuffers(size_t nativeHandle)
     in { assert(current); }
+
+    size_t createDummy();
+    void releaseDummy(size_t dummy);
 }
 
 immutable string[] glRequiredExtensions = [
