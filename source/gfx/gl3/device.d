@@ -2,6 +2,7 @@ module gfx.gl3.device;
 
 package:
 
+import gfx.graal.cmd : CommandPool;
 import gfx.graal.device : Device;
 import gfx.graal.sync : Fence, Semaphore;
 
@@ -10,8 +11,8 @@ class GlDevice : Device
     import core.time :              Duration;
     import gfx.core.rc :            atomicRcCode, Rc;
     import gfx.gl3 :                GlPhysicalDevice, GlShare;
+    import gfx.gl3.queue :          GlQueue;
     import gfx.graal.buffer :       Buffer, BufferUsage;
-    import gfx.graal.cmd :          CommandPool;
     import gfx.graal.device :       MappedMemorySet;
     import gfx.graal.format :       Format;
     import gfx.graal.image :        Image, ImageDims, ImageTiling, ImageType,
@@ -35,10 +36,13 @@ class GlDevice : Device
 
     private Rc!GlShare _share;
     private MemoryProperties _memProps;
+    private GlQueue _queue;
+
 
     this (GlPhysicalDevice phd, GlShare share) {
         _share = share;
         _memProps = phd.memoryProperties;
+        _queue = new GlQueue(_share, this);
     }
 
     override void dispose() {
@@ -48,11 +52,11 @@ class GlDevice : Device
     override void waitIdle() {}
 
     override Queue getQueue(uint queueFamilyIndex, uint queueIndex) {
-        return null;
+        return _queue;
     }
 
     CommandPool createCommandPool(uint queueFamilyIndex) {
-        return null;
+        return new GlCommandPool();
     }
 
     DeviceMemory allocateMemory(uint memPropIndex, size_t size) {
@@ -148,6 +152,31 @@ class GlDevice : Device
     }
 }
 
+private final class GlCommandPool : CommandPool
+{
+    import gfx.core.rc : atomicRcCode;
+    import gfx.gl3 : GlShare;
+    import gfx.graal.cmd : CommandBuffer;
+
+    mixin(atomicRcCode);
+
+    this() {}
+    override void dispose() {}
+
+    override void reset() {}
+
+    override CommandBuffer[] allocate(size_t count) {
+        import gfx.gl3.queue : GlCommandBuffer;
+        auto bufs = new CommandBuffer[count];
+        foreach (i; 0 .. count) {
+            bufs[i] = new GlCommandBuffer(this);
+        }
+        return bufs;
+    }
+
+    override void free(CommandBuffer[] buffers) {}
+}
+
 private final class GlSemaphore : Semaphore {
     import gfx.core.rc : atomicRcCode;
     mixin(atomicRcCode);
@@ -168,3 +197,4 @@ private final class GlFence : Fence {
     override void reset() {}
     override void wait(Duration timeout) {}
 }
+

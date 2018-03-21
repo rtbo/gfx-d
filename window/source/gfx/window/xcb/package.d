@@ -358,8 +358,17 @@ class XcbWindow : Window
         xcb_map_window(_dpy._conn, _win);
         xcb_flush(_dpy._conn);
 
-        import gfx.vulkan.wsi : createVulkanXcbSurface;
-        _surface = createVulkanXcbSurface(_instance, _dpy._conn, _win);
+        import gfx.graal : Backend;
+        final switch (_instance.backend) {
+        case Backend.vulkan:
+            import gfx.vulkan.wsi : createVulkanXcbSurface;
+            _surface = createVulkanXcbSurface(_instance, _dpy._conn, _win);
+            break;
+        case Backend.gl3:
+            import gfx.gl3.swapchain : GlSurface;
+            _surface = new GlSurface(_win);
+            break;
+        }
     }
 
     override void close()

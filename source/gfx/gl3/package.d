@@ -77,17 +77,22 @@ class GlShare : AtomicRefCounted
 
     mixin(atomicRcCode);
 
-    private GlExts _exts;
     private Rc!GlContext _ctx;
+    private size_t _dummyWin;
     private Gl _gl;
+    private GlExts _exts;
 
     this(GlContext ctx) {
         _ctx = ctx;
+        _dummyWin = _ctx.createDummy();
+        _ctx.makeCurrent(_dummyWin);
         _gl = ctx.gl;
         _exts = GlExts.fetchAndCheck(_gl);
     }
 
     override void dispose() {
+        _ctx.doneCurrent();
+        _ctx.releaseDummy(_dummyWin);
         _ctx.unload();
     }
 

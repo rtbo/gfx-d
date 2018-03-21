@@ -1,10 +1,26 @@
 module gfx.gl3.swapchain;
 
-package:
+import gfx.graal.presentation : Surface, Swapchain;
 
-import gfx.graal.presentation;
+final class GlSurface : Surface
+{
+    import gfx.core.rc : atomicRcCode;
 
-class GlSwapchain : Swapchain
+    mixin(atomicRcCode);
+
+    private size_t _handle;
+
+    this(size_t handle) {
+        _handle = handle;
+    }
+    override void dispose() {}
+
+    @property size_t handle() {
+        return _handle;
+    }
+}
+
+package final class GlSwapchain : Swapchain
 {
     import core.time : Duration;
     import gfx.core.rc : atomicRcCode, Rc;
@@ -12,6 +28,7 @@ class GlSwapchain : Swapchain
     import gfx.gl3.resource : GlImage;
     import gfx.graal.format : Format;
     import gfx.graal.image : ImageBase, ImageDims, ImageUsage, ImageTiling, ImageType;
+    import gfx.graal.presentation : CompositeAlpha, PresentMode;
     import gfx.graal.sync : Semaphore;
 
     mixin(atomicRcCode);
