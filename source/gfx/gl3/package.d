@@ -173,7 +173,45 @@ class GlPhysicalDevice : PhysicalDevice
     }
 
     override FormatProperties formatProperties(in Format format) {
-        assert(false, "unimplemented");
+        import gfx.graal.format : FormatFeatures;
+
+        const color = FormatFeatures.sampledImage |
+                      FormatFeatures.colorAttachment | FormatFeatures.blit;
+        const depthStencil = FormatFeatures.depthStencilAttachment;
+
+        switch (format) {
+        case Format.r8_uNorm:
+        case Format.rg8_uNorm:
+        case Format.rgba8_uNorm:
+        case Format.r8_sInt:
+        case Format.rg8_sInt:
+        case Format.rgba8_sInt:
+        case Format.r8_uInt:
+        case Format.rg8_uInt:
+        case Format.rgba8_uInt:
+        case Format.r16_uNorm:
+        case Format.rg16_uNorm:
+        case Format.rgba16_uNorm:
+        case Format.r16_sInt:
+        case Format.rg16_sInt:
+        case Format.rgba16_sInt:
+        case Format.r16_uInt:
+        case Format.rg16_uInt:
+        case Format.rgba16_uInt:
+            return FormatProperties(
+                color, color, FormatFeatures.init
+            );
+        case Format.d16_uNorm:
+        case Format.x8d24_uNorm:
+        case Format.d32_sFloat:
+        case Format.d24s8_uNorm:
+        case Format.s8_uInt:
+            return FormatProperties(
+                depthStencil, depthStencil, FormatFeatures.init
+            );
+        default:
+            return FormatProperties.init;
+        }
     }
 
     override bool supportsSurface(uint queueFamilyIndex, Surface surface) {
