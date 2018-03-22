@@ -52,6 +52,9 @@ enum FormatFeatures {
     blitSrc                     = 0x0400,
     blitDst                     = 0x0800,
     sampledImageFilterLinear    = 0x1000,
+
+    framebuffer                 = 0x0380,
+    blit                        = 0x0c00,
 }
 
 
