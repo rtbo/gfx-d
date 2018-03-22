@@ -79,6 +79,9 @@ final class GlBuffer : Buffer
         _usage = usage;
         _size = size;
         gl.GenBuffers(1, &_name);
+
+        import gfx.gl3.error : glCheck;
+        glCheck(gl, "generating buffer");
     }
 
     override void dispose() {
@@ -103,6 +106,7 @@ final class GlBuffer : Buffer
     }
 
     override void bindMemory(DeviceMemory mem, in size_t offset) {
+        import gfx.gl3.error : glCheck;
         _mem = cast(GlDeviceMemory)mem;
         _mem._buffer = this;
 
@@ -113,13 +117,16 @@ final class GlBuffer : Buffer
         if (exts.bufferStorage) {
             GLbitfield flags = 0;
             if (props.hostVisible) flags |= (GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
-            if (props.hostCoherent) flags |= GL_MAP_COHERENT_BIT;
+            // if (props.hostCoherent) flags |= GL_MAP_COHERENT_BIT;
             gl.BufferStorage(GL_ARRAY_BUFFER, cast(GLsizeiptr)_size, null, flags);
+            glCheck(gl, "buffer storage");
         }
         else {
             const glUsage = GL_STATIC_DRAW; //?
             gl.BufferData(GL_ARRAY_BUFFER, cast(GLsizeiptr)_size, null, glUsage);
+            glCheck(gl, "buffer data");
         }
+
 
         gl.BindBuffer(GL_ARRAY_BUFFER, 0);
     }
@@ -133,22 +140,27 @@ final class GlBuffer : Buffer
     }
 
     private void* map(in size_t offset, in size_t size) {
+        import gfx.gl3.error : glCheck;
         const props = _mem.props;
 
-        GLbitfield flags = GL_MAP_INVALIDATE_RANGE_BIT;
+        GLbitfield flags = 0;
         if (props.hostVisible) flags |= (GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
-        if (props.hostCoherent) flags |= GL_MAP_COHERENT_BIT;
-        else flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
+        // if (props.hostCoherent) flags |= GL_MAP_COHERENT_BIT;
+        // else flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
 
         gl.BindBuffer(GL_ARRAY_BUFFER, _name);
         auto ptr = gl.MapBufferRange(GL_ARRAY_BUFFER, cast(GLintptr)offset, cast(GLsizeiptr)size, flags);
+        glCheck(gl, "buffer map");
         gl.BindBuffer(GL_ARRAY_BUFFER, 0);
+
         return ptr;
     }
 
     private void unmap() {
+        import gfx.gl3.error : glCheck;
         gl.BindBuffer(GL_ARRAY_BUFFER, _name);
         gl.UnmapBuffer(GL_ARRAY_BUFFER);
+        glCheck(gl, "buffer unmap");
         gl.BindBuffer(GL_ARRAY_BUFFER, 0);
     }
 }

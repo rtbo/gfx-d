@@ -1,5 +1,6 @@
 module gfx.gl3.error;
 
+import gfx.bindings.opengl.gl : Gl;
 import gfx.graal.pipeline : ShaderStage;
 import gfx.graal.error : GfxException;
 
@@ -73,5 +74,49 @@ class Gl3ProgramLinkException : Exception {
         super(format("Shading program link error"), errorMsg);
 
         this.errorMsg = errorMsg;
+    }
+}
+
+void glCheck(Gl gl, in string operation) {
+    import gfx.bindings.opengl.gl : GL_NO_ERROR, GL_INVALID_ENUM,
+                                    GL_INVALID_VALUE, GL_INVALID_OPERATION,
+                                    GL_STACK_OVERFLOW, GL_STACK_UNDERFLOW,
+                                    GL_OUT_OF_MEMORY,
+                                    GL_INVALID_FRAMEBUFFER_OPERATION,
+                                    GL_CONTEXT_LOST;
+    import std.experimental.logger : errorf;
+    const code = gl.GetError();
+    if (code != GL_NO_ERROR) {
+        string glErr;
+        switch (code) {
+        case GL_INVALID_ENUM:
+            glErr = "GL_INVALID_ENUM";
+            break;
+        case GL_INVALID_VALUE:
+            glErr = "GL_INVALID_VALUE";
+            break;
+        case GL_INVALID_OPERATION:
+            glErr = "GL_INVALID_OPERATION";
+            break;
+        case GL_STACK_OVERFLOW:
+            glErr = "GL_STACK_OVERFLOW";
+            break;
+        case GL_STACK_UNDERFLOW:
+            glErr = "GL_STACK_UNDERFLOW";
+            break;
+        case GL_OUT_OF_MEMORY:
+            glErr = "GL_OUT_OF_MEMORY";
+            break;
+        case GL_INVALID_FRAMEBUFFER_OPERATION:
+            glErr = "GL_INVALID_FRAMEBUFFER_OPERATION";
+            break;
+        case GL_CONTEXT_LOST:
+            glErr = "GL_CONTEXT_LOST";
+            break;
+        default:
+            glErr = "(unknown error)";
+            break;
+        }
+        errorf("OpenGL error %s during %s", glErr, operation);
     }
 }
