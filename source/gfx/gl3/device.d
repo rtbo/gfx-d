@@ -130,7 +130,8 @@ class GlDevice : Device
     }
 
     DescriptorSetLayout createDescriptorSetLayout(in PipelineLayoutBinding[] bindings) {
-        return null;
+        import gfx.gl3.pipeline : GlDescriptorSetLayout;
+        return new GlDescriptorSetLayout(bindings);
     }
 
     PipelineLayout createPipelineLayout(DescriptorSetLayout[] layouts, PushConstantRange[] ranges) {
@@ -139,7 +140,8 @@ class GlDevice : Device
     }
 
     DescriptorPool createDescriptorPool(in uint maxSets, in DescriptorPoolSize[] sizes) {
-        return null;
+        import gfx.gl3.pipeline : GlDescriptorPool;
+        return new GlDescriptorPool(maxSets, sizes);
     }
 
     void updateDescriptorSets(WriteDescriptorSet[] writeOps, CopyDescritporSet[] copyOps) {}

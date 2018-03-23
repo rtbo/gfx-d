@@ -254,6 +254,53 @@ final class GlPipeline : Pipeline
     }
 }
 
+final class GlDescriptorSetLayout : DescriptorSetLayout
+{
+    import gfx.core.rc : atomicRcCode;
+    mixin(atomicRcCode);
+    const(PipelineLayoutBinding[]) bindings;
+    this(in PipelineLayoutBinding[] bindings) {
+        this.bindings = bindings;
+    }
+    override void dispose() {}
+}
+
+final class GlDescriptorPool : DescriptorPool
+{
+    import gfx.core.rc : atomicRcCode;
+    mixin(atomicRcCode);
+
+    private uint maxSets;
+    private const(DescriptorPoolSize[]) sizes;
+
+    this(in uint maxSets, in DescriptorPoolSize[] bindings) {
+        this.maxSets = maxSets;
+        this.sizes = sizes;
+    }
+    override void dispose() {}
+
+    override DescriptorSet[] allocate(DescriptorSetLayout[] layouts) {
+        import std.algorithm : map;
+        import std.array : array;
+        return layouts.map!(l => cast(DescriptorSet)new GlDescriptorSet(this, l)).array;
+    }
+
+    override void reset() {}
+}
+
+final class GlDescriptorSet : DescriptorSet
+{
+    private GlDescriptorPool _pool;
+    private DescriptorSetLayout layout;
+    this(GlDescriptorPool pool, DescriptorSetLayout layout) {
+        _pool = pool;
+        this.layout = layout;
+    }
+    override @property DescriptorPool pool() {
+        return _pool;
+    }
+}
+
 private GLint getShaderInt(Gl gl, in GLuint name, in GLenum pname) {
     GLint res;
     gl.GetShaderiv(name, pname, &res);
