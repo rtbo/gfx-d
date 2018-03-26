@@ -15,8 +15,8 @@ struct GlAttribs
     enum profile = GlProfile.core;
     enum doublebuffer = true;
 
-    enum uint majorVersion = 3;
-    enum uint minorVersion = 0;
+    uint majorVersion = 3;
+    uint minorVersion = 1;
 
     uint samples = 1;
 
@@ -30,10 +30,17 @@ struct GlAttribs
     private Format _colorFormat = Format.rgba8_uNorm;
     private Format _depthStencilFormat = Format.d24s8_uNorm;
 
-    @property int decimalVersion() const pure {
+    @property uint decimalVersion() const pure {
         return majorVersion * 10 + minorVersion;
     }
 }
+
+immutable uint[] glVersions = [
+    46, 45, 44, 43, 42, 41, 40,
+    33, 32, 31, // 30
+    // 21, 20,
+    // 15, 14, 13, 12, 11, 10,
+];
 
 interface GlContext : AtomicRefCounted
 {
