@@ -1,15 +1,16 @@
 module gfx.window.xcb.context;
 
 import gfx.bindings.core : SharedLib;
-import gfx.gl3.context : GlContext, GlAttribs;
+import gfx.gl3.context : GlAttribs, GlContext, glVersions;
+import X11.Xlib : XDisplay = Display, XErrorEvent;
 
+/// GlX backed OpenGL context
 class XcbGlContext : GlContext
 {
     import gfx.bindings.core : SharedSym;
     import gfx.bindings.opengl.gl : Gl;
     import gfx.bindings.opengl.glx : Glx, GLXContext, GLXFBConfig;
     import gfx.core.rc : atomicRcCode, Disposable;
-    import X11.Xlib : XDisplay = Display;
 
     mixin(atomicRcCode);
 
@@ -21,12 +22,15 @@ class XcbGlContext : GlContext
     private string[] _glxAvailExts;
     private string[] _glAvailExts;
     private DummyWindow[size_t] dummies;
+    private size_t hiddenDummy;
     private GLXContext _ctx;
     private bool ARB_create_context;
     private bool MESA_query_renderer;
     private bool MESA_swap_control;
     private bool EXT_swap_control;
 
+    /// Contruct an OpenGL context for the given display and screen.
+    /// It internally creates a dummy window
     this (XDisplay* dpy, in int mainScreenNum, in GlAttribs attribs)
     {
         import gfx.bindings.core : openSharedLib, loadSharedSym, SharedLib;
@@ -36,7 +40,7 @@ class XcbGlContext : GlContext
         import std.algorithm : canFind;
         import std.exception : enforce;
         import std.experimental.logger : trace, tracef;
-        import X11.Xlib : XSync;
+        import X11.Xlib : XSetErrorHandler, XSync;
 
         _dpy = dpy;
         _mainScreenNum = mainScreenNum;
@@ -59,14 +63,35 @@ class XcbGlContext : GlContext
 
         enforce( ARB_create_context && ( MESA_swap_control || EXT_swap_control ));
 
-        auto fbc = getGlxFBConfig(_attribs);
-        const ctxAttribs = getCtxAttribs(_attribs);
-        tracef("creating OpenGL %s.%s context", _attribs.majorVersion, _attribs.minorVersion);
-        _ctx = enforce(
-            _glx.CreateContextAttribsARB(_dpy, fbc, null, 1, &ctxAttribs[0])
-        );
-        XSync(_dpy, 0);
+        auto fbc = getGlxFBConfig(attribs);
+        hiddenDummy = XcbGlContext.createDummy();
+        GlAttribs attrs = attribs;
 
+        auto oldHandler = XSetErrorHandler(&createCtxErrorHandler);
+
+        foreach (const glVer; glVersions) {
+            attrs.majorVersion = glVer / 10;
+            attrs.minorVersion = glVer % 10;
+            if (attrs.decimalVersion < attribs.decimalVersion) break;
+
+            const ctxAttribs = getCtxAttribs(attrs);
+            tracef("attempting to create OpenGL %s.%s context", attrs.majorVersion, attrs.minorVersion);
+
+            createContextErrorFlag = false;
+            _ctx = _glx.CreateContextAttribsARB(_dpy, fbc, null, 1, &ctxAttribs[0]);
+
+            if (_ctx && !createContextErrorFlag) break;
+        }
+
+        XSetErrorHandler(oldHandler);
+
+        enforce(_ctx);
+        XSync(_dpy, 0);
+        _attribs = attrs;
+
+        tracef("created OpenGL %s.%s context", attrs.majorVersion, attrs.minorVersion);
+
+        XcbGlContext.makeCurrent(hiddenDummy);
         _gl = new Gl(&loadSymbol);
 
         trace("done loading GL/GLX");
@@ -180,6 +205,11 @@ class XcbGlContext : GlContext
     }
 
     override size_t createDummy() {
+        if (hiddenDummy) {
+            const d = hiddenDummy;
+            hiddenDummy = 0;
+            return d;
+        }
         auto dummy = new DummyWindow(_dpy, _glx, getGlxFBConfig(_attribs));
         size_t hdl = dummy.win;
         dummies[hdl] = dummy;
@@ -252,6 +282,14 @@ private SharedLib loadGlLib()
 
     import std.conv : to;
     throw new Exception("could not load any of these libraries: " ~ glLibNames.to!string);
+}
+
+private bool createContextErrorFlag;
+
+extern(C) private int createCtxErrorHandler(XDisplay *dpy, XErrorEvent *error)
+{
+   createContextErrorFlag = true;
+   return 0;
 }
 
 private int[] getGlxAttribs(in GlAttribs attribs) pure
