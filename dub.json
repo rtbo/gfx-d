@@ -18,7 +18,8 @@
         "examples/depth"
     ],
     "dependencies": {
-        "gfx:bindings": "*"
+        "gfx:bindings": "*",
+        "spirv_cross": { "path": "3rdparty/spirv_cross-d" }
     },
 
     "-ddoxFilterArgs": ["--min-protection=Protected"]
