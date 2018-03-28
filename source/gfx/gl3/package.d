@@ -158,7 +158,7 @@ class GlPhysicalDevice : PhysicalDevice
 
     override @property DeviceLimits limits() {
         import gfx.graal.pipeline : ShaderLanguage;
-        return DeviceLimits(ShaderLanguage.glsl);
+        return DeviceLimits(ShaderLanguage.spirV);
     }
 
     override @property MemoryProperties memoryProperties() {

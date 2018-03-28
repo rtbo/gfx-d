@@ -20,11 +20,15 @@ final class GlShaderModule : ShaderModule
     private ShaderStage _stage;
 
     this (GlShare share, in ShaderLanguage sl, in string code) {
+        import spirv_cross : SpvCompilerGlsl;
         gl = share.gl;
-        _code = code;
-
-        import std.exception : enforce;
-        enforce(sl == ShaderLanguage.glsl);
+        auto cl = new SpvCompilerGlsl(cast(immutable(uint)[])code);
+        scope(exit) cl.dispose();
+        auto opts = cl.options;
+        opts.ver = share.info.glslVer;
+        opts.enable_420pack = false;
+        cl.options = opts;
+        _code = cl.compile();
     }
 
     override void dispose() {
