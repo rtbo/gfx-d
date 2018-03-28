@@ -56,7 +56,7 @@ final class GlBuffer : Buffer
 {
     import gfx.bindings.opengl.gl;
     import gfx.core.rc : atomicRcCode, Rc;
-    import gfx.gl3 : GlExts, GlShare;
+    import gfx.gl3 : GlInfo, GlShare;
     import gfx.gl3.context : GlContext;
     import gfx.graal.buffer : BufferUsage, BufferView;
     import gfx.graal.format : Format;
@@ -64,7 +64,7 @@ final class GlBuffer : Buffer
 
     mixin(atomicRcCode);
 
-    private GlExts exts;
+    private GlInfo info;
     private Gl gl;
     private BufferUsage _usage;
     private size_t _size;
@@ -75,7 +75,7 @@ final class GlBuffer : Buffer
     this(GlShare share, in BufferUsage usage, in size_t size) {
         import gfx.gl3.conv : toGl;
         gl = share.gl;
-        exts = share.exts;
+        info = share.info;
         _usage = usage;
         _size = size;
         gl.GenBuffers(1, &_name);
@@ -114,7 +114,7 @@ final class GlBuffer : Buffer
 
         gl.BindBuffer(GL_ARRAY_BUFFER, _name);
 
-        if (exts.bufferStorage) {
+        if (info.bufferStorage) {
             GLbitfield flags = 0;
             if (props.hostVisible) flags |= (GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
             // if (props.hostCoherent) flags |= GL_MAP_COHERENT_BIT;
@@ -176,7 +176,7 @@ final class GlImage : Image
     import gfx.graal.format : Format;
     import gfx.graal.image;
     import gfx.graal.memory : MemoryRequirements;
-    import gfx.gl3 : GlExts, GlShare;
+    import gfx.gl3 : GlInfo, GlShare;
 
     mixin(atomicRcCode);
 
@@ -193,7 +193,7 @@ final class GlImage : Image
     private GLenum _glTexTarget;
     private GLenum _glFormat;
     private Gl gl;
-    private GlExts exts;
+    private GlInfo info;
     private Rc!GlDeviceMemory _mem;
 
     this(GlShare share, ImageType type, ImageDims dims, Format format, ImageUsage usage,
@@ -209,7 +209,7 @@ final class GlImage : Image
         _levels = levels;
 
         gl = share.gl;
-        exts = share.exts;
+        info = share.info;
 
         const notRB = ~(ImageUsage.colorAttachment | ImageUsage.depthStencilAttachment);
         if ((usage & notRB) == ImageUsage.none && tiling == ImageTiling.optimal) {
@@ -282,7 +282,7 @@ final class GlImage : Image
         final switch(_glType) {
         case GlImgType.tex:
             gl.BindTexture(_glTexTarget, _name);
-            if (exts.textureStorage) {
+            if (info.textureStorage) {
                 final switch (_type) {
                 case ImageType.d1:
                     gl.TexStorage1D(_glTexTarget, _levels, _glFormat, _dims.width);
@@ -385,14 +385,14 @@ final class GlImageView : ImageView
 {
     import gfx.bindings.opengl.gl : Gl, GLenum, GLuint;
     import gfx.core.rc : atomicRcCode, Rc;
-    import gfx.gl3 : GlExts;
+    import gfx.gl3 : GlInfo;
     import gfx.graal.image : ImageBase, ImageDims, ImageSubresourceRange,
                              ImageType, Swizzle;
 
     mixin(atomicRcCode);
 
     private Gl gl;
-    private GlExts exts;
+    private GlInfo info;
     private Rc!GlImage img;
     private ImageDims imgDims;
     private ImageType type;
@@ -405,7 +405,7 @@ final class GlImageView : ImageView
     this(GlImage img, ImageType type, ImageSubresourceRange isr, Swizzle swizzle) {
         this.img = img;
         this.gl = img.gl;
-        this.exts = img.exts;
+        this.info = img.info;
         this.imgDims = img.dims;
         this.type = type;
         this.isr = isr;
@@ -504,23 +504,23 @@ final class GlSampler : Sampler
     import gfx.core.rc : atomicRcCode;
     import gfx.graal.image : BorderColor, isInt, SamplerInfo;
     import gfx.graal.pipeline : CompareOp;
-    import gfx.gl3 : GlExts, GlShare;
+    import gfx.gl3 : GlInfo, GlShare;
     import gfx.gl3.conv : toGl, toGlMag, toGlMin;
 
     mixin(atomicRcCode);
 
     private Gl gl;
-    private GlExts exts;
+    private GlInfo glInfo;
     private SamplerInfo _info;
     private GLuint _name;
 
     this(GlShare share, in SamplerInfo info)
     {
         gl = share.gl;
-        exts = share.exts;
+        glInfo = share.info;
         _info = info;
 
-        if (exts.samplerObject) {
+        if (glInfo.samplerObject) {
             gl.GenSamplers(1, &_name);
 
             setupSampler!(
@@ -533,13 +533,13 @@ final class GlSampler : Sampler
     }
 
     override void dispose() {
-        if (exts.samplerObject) {
+        if (glInfo.samplerObject) {
             gl.DeleteSamplers(1, &_name);
         }
     }
 
     void bind (GLuint target, GLuint unit) {
-        if (exts.samplerObject) {
+        if (glInfo.samplerObject) {
             gl.BindSampler(unit, _name);
         }
         else {

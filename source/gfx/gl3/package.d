@@ -43,15 +43,19 @@ package:
 
 import gfx.bindings.opengl.gl : Gl;
 
-struct GlExts
+struct GlInfo
 {
+    ushort glVer;
+    ushort glslVer;
     bool bufferStorage;
     bool textureStorage;
     bool samplerObject;
 
-    private static GlExts fetchAndCheck (Gl gl) {
-        import gfx.gl3.context : glAvailableExtensions, glRequiredExtensions;
+    private static GlInfo fetchAndCheck (Gl gl, uint glVer) {
+        import gfx.bindings.opengl.gl : GL_VERSION, GL_SHADING_LANGUAGE_VERSION;
+        import gfx.gl3.context : glAvailableExtensions, glRequiredExtensions, glslVersion;
         import std.algorithm : canFind;
+        import std.string : fromStringz;
 
         const exts = glAvailableExtensions(gl);
 
@@ -61,11 +65,13 @@ struct GlExts
             enforce(exts.canFind(glE), format(glE ~ " is required but was not found"));
         }
 
-        GlExts ge;
-        ge.bufferStorage = exts.canFind("GL_ARB_buffer_storage");
-        ge.textureStorage = exts.canFind("GL_ARB_texture_storage");
-        ge.samplerObject = exts.canFind("GL_ARB_sampler_object");
-        return ge;
+        GlInfo gi;
+        gi.glVer = cast(ushort)glVer;
+        gi.glslVer = cast(ushort)glslVersion(glVer);
+        gi.bufferStorage = exts.canFind("GL_ARB_buffer_storage");
+        gi.textureStorage = exts.canFind("GL_ARB_texture_storage");
+        gi.samplerObject = exts.canFind("GL_ARB_sampler_object");
+        return gi;
     }
 }
 
@@ -80,14 +86,14 @@ class GlShare : AtomicRefCounted
     private Rc!GlContext _ctx;
     private size_t _dummyWin;
     private Gl _gl;
-    private GlExts _exts;
+    private GlInfo _info;
 
     this(GlContext ctx) {
         _ctx = ctx;
         _dummyWin = _ctx.createDummy();
         _ctx.makeCurrent(_dummyWin);
         _gl = ctx.gl;
-        _exts = GlExts.fetchAndCheck(_gl);
+        _info = GlInfo.fetchAndCheck(_gl, ctx.attribs.decimalVersion);
     }
 
     override void dispose() {
@@ -102,8 +108,8 @@ class GlShare : AtomicRefCounted
     @property inout(Gl) gl() inout {
         return _gl;
     }
-    @property GlExts exts() const {
-        return _exts;
+    @property GlInfo info() const {
+        return _info;
     }
 }
 
