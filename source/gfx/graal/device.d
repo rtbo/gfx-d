@@ -33,7 +33,6 @@ struct DeviceFeatures {
 }
 
 struct DeviceLimits {
-    ShaderLanguage supportedShaderLanguages;
 }
 
 enum DeviceType {
@@ -159,7 +158,7 @@ interface Device : AtomicRefCounted
     Framebuffer createFramebuffer(RenderPass rp, ImageView[] attachments,
                                   uint width, uint height, uint layers);
 
-    ShaderModule createShaderModule(ShaderLanguage language, string code, string entryPoint);
+    ShaderModule createShaderModule(string code, string entryPoint);
 
     DescriptorSetLayout createDescriptorSetLayout(in PipelineLayoutBinding[] bindings);
 

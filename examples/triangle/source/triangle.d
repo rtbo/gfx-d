@@ -103,10 +103,10 @@ class TriangleExample : Example
     void preparePipeline()
     {
         auto vtxShader = device.createShaderModule(
-            ShaderLanguage.spirV, import("shader.vert.spv"), "main"
+            import("shader.vert.spv"), "main"
         ).rc;
         auto fragShader = device.createShaderModule(
-            ShaderLanguage.spirV, import("shader.frag.spv"), "main"
+            import("shader.frag.spv"), "main"
         ).rc;
 
         PipelineInfo info;

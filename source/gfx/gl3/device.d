@@ -29,7 +29,7 @@ class GlDevice : Device
                                     DescriptorPoolSize, Pipeline, PipelineInfo,
                                     PipelineLayout, PipelineLayoutBinding,
                                     PushConstantRange, ShaderModule,
-                                    ShaderLanguage, WriteDescriptorSet;
+                                    WriteDescriptorSet;
     import std.typecons : Flag;
 
     mixin(atomicRcCode);
@@ -122,12 +122,12 @@ class GlDevice : Device
             width, height, layers);
     }
 
-    ShaderModule createShaderModule(ShaderLanguage language, string code, string entryPoint) {
+    ShaderModule createShaderModule(string code, string entryPoint) {
         import gfx.gl3.pipeline : GlShaderModule;
         import std.exception : enforce;
 
         enforce(entryPoint == "main");
-        return new GlShaderModule(_share, language, code);
+        return new GlShaderModule(_share, code);
     }
 
     DescriptorSetLayout createDescriptorSetLayout(in PipelineLayoutBinding[] bindings) {

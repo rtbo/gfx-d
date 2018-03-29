@@ -236,22 +236,8 @@ class CrateExample : Example
         Rc!ShaderModule vtxShader;
         Rc!ShaderModule fragShader;
 
-        if (physicalDevice.limits.supportedShaderLanguages & ShaderLanguage.spirV) {
-            vtxShader = device.createShaderModule(
-                ShaderLanguage.spirV, import("shader.vert.spv"), "main"
-            );
-            fragShader = device.createShaderModule(
-                ShaderLanguage.spirV, import("shader.frag.spv"), "main"
-            );
-        }
-        else {
-            vtxShader = device.createShaderModule(
-                ShaderLanguage.glsl, import("shader.vert"), "main"
-            );
-            fragShader = device.createShaderModule(
-                ShaderLanguage.glsl, import("shader.frag"), "main"
-            );
-        }
+        vtxShader = device.createShaderModule(import("shader.vert.spv"), "main");
+        fragShader = device.createShaderModule(import("shader.frag.spv"), "main");
 
         const layoutBindings = [
             PipelineLayoutBinding(0, DescriptorType.uniformBufferDynamic, 1, ShaderStage.vertex),

@@ -63,11 +63,6 @@ struct PipelineInfo {
     uint subpassIndex;
 }
 
-enum ShaderLanguage {
-    spirV       = 0x01,
-    glsl        = 0x02, // TODO: glsl versions
-}
-
 enum ShaderStage {
     vertex                  = 0x01,
     tessellationControl     = 0x02,

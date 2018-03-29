@@ -19,7 +19,7 @@ final class GlShaderModule : ShaderModule
     private string _code;
     private ShaderStage _stage;
 
-    this (GlShare share, in ShaderLanguage sl, in string code) {
+    this (GlShare share, in string code) {
         import spirv_cross : SpvCompilerGlsl;
         gl = share.gl;
         auto cl = new SpvCompilerGlsl(cast(immutable(uint)[])code);

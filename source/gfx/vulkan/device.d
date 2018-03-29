@@ -450,9 +450,8 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         return new VulkanFramebuffer(vkFb, this, attachments);
     }
 
-    override ShaderModule createShaderModule(ShaderLanguage sl, string code, string entryPoint)
+    override ShaderModule createShaderModule(string code, string entryPoint)
     {
-        enforce(sl == ShaderLanguage.spirV, "Vulkan only understands SPIR-V");
         enforce(code.length % 4 == 0, "SPIR-V code size must be a multiple of 4");
         VkShaderModuleCreateInfo smci;
         smci.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
