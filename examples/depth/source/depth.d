@@ -360,13 +360,8 @@ int main() {
         example.prepare();
         scope(exit) example.dispose();
 
-        bool exitFlag;
         example.window.onMouseOn = (uint, uint) {
-            exitFlag = true;
-        };
-        example.window.onClose = () {
-            exitFlag = true;
-            return true;
+            example.window.closeFlag = true;
         };
         import std.datetime.stopwatch : StopWatch;
 
@@ -386,7 +381,7 @@ int main() {
 
         CrateExample.Matrices[3] matrices;
 
-        while (!exitFlag) {
+        while (!example.window.closeFlag) {
 
             foreach (m; 0 .. 3) {
                 const posAngle = cast(float)(m * 2f * PI / 3f);

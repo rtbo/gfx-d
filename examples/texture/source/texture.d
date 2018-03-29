@@ -334,9 +334,8 @@ int main() {
         example.prepare();
         scope(exit) example.dispose();
 
-        bool exitFlag;
         example.window.onMouseOn = (uint, uint) {
-            exitFlag = true;
+            example.window.closeFlag = true;
         };
 
         import std.datetime.stopwatch : StopWatch;
@@ -355,7 +354,7 @@ int main() {
         const proj = mat4.perspective(640, 480, 45, 1, 10);
         const viewProj = proj*view;
 
-        while (!exitFlag) {
+        while (!example.window.closeFlag) {
             const model = mat4.rotation(angle, vec3(0, 0, 1));
             const mvp = viewProj*model;
             const normals = model.inverse().transposed();

@@ -247,9 +247,8 @@ int main() {
         example.prepare();
         scope(exit) example.dispose();
 
-        bool exitFlag;
         example.window.onMouseOn = (uint, uint) {
-            exitFlag = true;
+            example.window.closeFlag = true;
         };
 
         import std.datetime.stopwatch : StopWatch;
@@ -261,8 +260,7 @@ int main() {
 
         enum reportFreq = 100;
 
-        while (!exitFlag) {
-            example.display.pollAndDispatch();
+        while (!example.window.closeFlag) {
             example.render();
             ++ frameCount;
             if ((frameCount % reportFreq) == 0) {
@@ -270,6 +268,7 @@ int main() {
                 writeln("FPS: ", 1000_000.0 * reportFreq / (us - lastUs));
                 lastUs = us;
             }
+            example.display.pollAndDispatch();
         }
 
         return 0;

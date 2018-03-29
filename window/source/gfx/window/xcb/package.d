@@ -258,9 +258,11 @@ class XcbDisplay : Display
             auto ev = cast(xcb_client_message_event_t*)e;
             if (ev.data.data32[0] == atom(Atom.WM_DELETE_WINDOW)) {
                 auto win = xcbWindow(ev.window);
-                if (!win._onCloseHandler ||
-                    (win._onCloseHandler && win._onCloseHandler())) {
-                    win.close();
+                if (win._onCloseHandler) {
+                    win._closeFlag = win._onCloseHandler();
+                }
+                else {
+                    win._closeFlag = true;
                 }
             }
             break;
@@ -292,6 +294,7 @@ class XcbWindow : Window
     private KeyHandler _onKeyOnHandler;
     private KeyHandler _onKeyOffHandler;
     private CloseHandler _onCloseHandler;
+    private bool _closeFlag;
 
     this(XcbDisplay dpy, Instance instance)
     {
@@ -320,6 +323,14 @@ class XcbWindow : Window
 
     override @property Surface surface() {
         return _surface;
+    }
+
+    override @property bool closeFlag() const {
+        return _closeFlag;
+    }
+
+    override @property void closeFlag(in bool flag) {
+        _closeFlag = flag;
     }
 
     override void show(uint width, uint height)

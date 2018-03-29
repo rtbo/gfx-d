@@ -24,6 +24,8 @@ interface Window
     void close();
 
     @property Surface surface();
+    @property bool closeFlag() const;
+    @property void closeFlag(in bool flag);
 
     @property void onMouseMove(MouseHandler handler);
     @property void onMouseOn(MouseHandler handler);

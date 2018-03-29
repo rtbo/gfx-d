@@ -200,9 +200,8 @@ int main() {
         example.prepare();
         scope(exit) example.dispose();
 
-        bool exitFlag;
         example.window.onMouseOn = (uint, uint) {
-            exitFlag = true;
+            example.window.closeFlag = true;
         };
 
         import std.datetime.stopwatch : StopWatch;
@@ -214,7 +213,7 @@ int main() {
 
         enum reportFreq = 100;
 
-        while (!exitFlag) {
+        while (!example.window.closeFlag) {
             example.display.pollAndDispatch();
             example.render();
             ++ frameCount;

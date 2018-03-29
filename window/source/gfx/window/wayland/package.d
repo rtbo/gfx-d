@@ -296,6 +296,15 @@ private abstract class WaylandWindowBase : Window
         return gfxSurface;
     }
 
+    override @property bool closeFlag() const {
+        return _closeFlag;
+    }
+
+    override @property void closeFlag(in bool flag) {
+        _closeFlag = flag;
+    }
+
+
     private void pointerButton(WlPointer.ButtonState state) {
         switch (state) {
         case WlPointer.ButtonState.pressed:
@@ -350,6 +359,7 @@ private abstract class WaylandWindowBase : Window
     private CloseHandler onCloseHandler;
     private WlFixed curX;
     private WlFixed curY;
+    private bool _closeFlag;
 }
 
 private class WaylandWindow : WaylandWindowBase
