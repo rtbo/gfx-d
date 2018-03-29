@@ -193,6 +193,10 @@ final class GlFramebuffer : Framebuffer
         gl.BindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     }
 
+    @property GLuint name() const {
+        return _name;
+    }
+
     override void dispose()
     {
         import gfx.core.rc : releaseArray;

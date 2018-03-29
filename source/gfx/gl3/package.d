@@ -37,6 +37,10 @@ class GlInstance : Instance
     override PhysicalDevice[] devices() {
         return [ _phd.obj ];
     }
+
+    @property GlContext ctx() {
+        return _ctx;
+    }
 }
 
 package:
@@ -110,6 +114,9 @@ class GlShare : AtomicRefCounted
     }
     @property GlInfo info() const {
         return _info;
+    }
+    package @property size_t dummyWin() const {
+        return _dummyWin;
     }
 }
 

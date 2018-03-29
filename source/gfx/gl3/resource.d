@@ -2,6 +2,7 @@ module gfx.gl3.resource;
 
 package:
 
+import gfx.bindings.opengl.gl : Gl, GLenum, GLuint;
 import gfx.graal.buffer : Buffer;
 import gfx.graal.image : Image, ImageView, Sampler, SamplerInfo;
 import gfx.graal.memory : DeviceMemory;
@@ -64,7 +65,7 @@ final class GlBuffer : Buffer
 
     mixin(atomicRcCode);
 
-    private GlInfo info;
+    private GlInfo glInfo;
     private Gl gl;
     private BufferUsage _usage;
     private size_t _size;
@@ -75,7 +76,7 @@ final class GlBuffer : Buffer
     this(GlShare share, in BufferUsage usage, in size_t size) {
         import gfx.gl3.conv : toGl;
         gl = share.gl;
-        info = share.info;
+        glInfo = share.info;
         _usage = usage;
         _size = size;
         gl.GenBuffers(1, &_name);
@@ -114,7 +115,7 @@ final class GlBuffer : Buffer
 
         gl.BindBuffer(GL_ARRAY_BUFFER, _name);
 
-        if (info.bufferStorage) {
+        if (glInfo.bufferStorage) {
             GLbitfield flags = 0;
             if (props.hostVisible) flags |= (GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
             // if (props.hostCoherent) flags |= GL_MAP_COHERENT_BIT;
@@ -165,7 +166,7 @@ final class GlBuffer : Buffer
     }
 }
 
-private enum GlImgType {
+enum GlImgType {
     tex, renderBuf
 }
 
@@ -173,7 +174,7 @@ final class GlImage : Image
 {
     import gfx.bindings.opengl.gl : Gl, GLenum, GLuint;
     import gfx.core.rc : atomicRcCode, Rc;
-    import gfx.graal.format : Format;
+    import gfx.graal.format : Format, NumFormat;
     import gfx.graal.image;
     import gfx.graal.memory : MemoryRequirements;
     import gfx.gl3 : GlInfo, GlShare;
@@ -183,6 +184,7 @@ final class GlImage : Image
     private ImageType _type;
     private ImageDims _dims;
     private Format _format;
+    private NumFormat _numFormat;
     private ImageUsage _usage;
     private ImageTiling _tiling;
     private uint _samples;
@@ -193,23 +195,25 @@ final class GlImage : Image
     private GLenum _glTexTarget;
     private GLenum _glFormat;
     private Gl gl;
-    private GlInfo info;
+    private GlInfo glInfo;
     private Rc!GlDeviceMemory _mem;
 
     this(GlShare share, ImageType type, ImageDims dims, Format format, ImageUsage usage,
             ImageTiling tiling, uint samples, uint levels)
     {
+        import gfx.graal.format : formatDesc;
         import std.exception : enforce;
         _type = type;
         _dims = dims;
         _format = format;
+        _numFormat = formatDesc(format).numFormat;
         _usage = usage;
         _tiling = tiling;
         _samples = samples;
         _levels = levels;
 
         gl = share.gl;
-        info = share.info;
+        glInfo = share.info;
 
         const notRB = ~(ImageUsage.colorAttachment | ImageUsage.depthStencilAttachment);
         if ((usage & notRB) == ImageUsage.none && tiling == ImageTiling.optimal) {
@@ -228,6 +232,18 @@ final class GlImage : Image
         import gfx.gl3.conv : toGlImgFmt, toGlTexTarget;
         _glFormat = toGlImgFmt(format);
         _glTexTarget = toGlTexTarget(type, samples > 1);
+    }
+
+    GLuint name() {
+        return _name;
+    }
+
+    GlImgType glType() {
+        return _glType;
+    }
+
+    NumFormat numFormat() {
+        return _numFormat;
     }
 
     override void dispose() {
@@ -255,7 +271,7 @@ final class GlImage : Image
         return _levels;
     }
 
-    ImageView createView(ImageType viewType, ImageSubresourceRange isr, Swizzle swizzle)
+    override ImageView createView(ImageType viewType, ImageSubresourceRange isr, Swizzle swizzle)
     {
         return new GlImageView(this, viewType, isr, swizzle);
     }
@@ -282,7 +298,7 @@ final class GlImage : Image
         final switch(_glType) {
         case GlImgType.tex:
             gl.BindTexture(_glTexTarget, _name);
-            if (info.textureStorage) {
+            if (glInfo.textureStorage) {
                 final switch (_type) {
                 case ImageType.d1:
                     gl.TexStorage1D(_glTexTarget, _levels, _glFormat, _dims.width);
@@ -378,12 +394,14 @@ final class GlImage : Image
             gl.BindRenderbuffer(GL_RENDERBUFFER, 0);
             break;
         }
+
+        import gfx.gl3.error : glCheck;
+        glCheck(gl, "bind image memory");
     }
 }
 
 final class GlImageView : ImageView
 {
-    import gfx.bindings.opengl.gl : Gl, GLenum, GLuint;
     import gfx.core.rc : atomicRcCode, Rc;
     import gfx.gl3 : GlInfo;
     import gfx.graal.image : ImageBase, ImageDims, ImageSubresourceRange,
@@ -392,7 +410,7 @@ final class GlImageView : ImageView
     mixin(atomicRcCode);
 
     private Gl gl;
-    private GlInfo info;
+    private GlInfo glInfo;
     private Rc!GlImage img;
     private ImageDims imgDims;
     private ImageType type;
@@ -405,7 +423,7 @@ final class GlImageView : ImageView
     this(GlImage img, ImageType type, ImageSubresourceRange isr, Swizzle swizzle) {
         this.img = img;
         this.gl = img.gl;
-        this.info = img.info;
+        this.glInfo = img.glInfo;
         this.imgDims = img.dims;
         this.type = type;
         this.isr = isr;
@@ -498,6 +516,7 @@ final class GlImageView : ImageView
 }
 
 
+
 final class GlSampler : Sampler
 {
     import gfx.bindings.opengl.gl : Gl, GLenum, GLint, GLfloat, GLuint;
@@ -553,7 +572,7 @@ final class GlSampler : Sampler
     }
 }
 
-private void setupSampler(alias fi, alias ff, alias fiv, alias ffv)(in SamplerInfo info)
+private void setupSampler(alias fi, alias ff, alias fiv, alias ffv)(in SamplerInfo glInfo)
 {
     import gfx.bindings.opengl.gl : GL_TEXTURE_MAX_ANISOTROPY,
                                     GL_TEXTURE_MIN_FILTER,
@@ -572,37 +591,37 @@ private void setupSampler(alias fi, alias ff, alias fiv, alias ffv)(in SamplerIn
     import gfx.graal.pipeline : CompareOp;
 
     import std.algorithm : each;
-    info.anisotropy.save.each!(m => ff(GL_TEXTURE_MAX_ANISOTROPY, m));
+    glInfo.anisotropy.save.each!(m => ff(GL_TEXTURE_MAX_ANISOTROPY, m));
 
-    const min = toGlMin(info.minFilter, info.mipmapFilter);
-    const mag = toGlMag(info.magFilter);
+    const min = toGlMin(glInfo.minFilter, glInfo.mipmapFilter);
+    const mag = toGlMag(glInfo.magFilter);
     fi(GL_TEXTURE_MIN_FILTER, min);
     fi(GL_TEXTURE_MAG_FILTER, mag);
 
-    fi(GL_TEXTURE_WRAP_S, toGl(info.wrapMode[0]));
-    fi(GL_TEXTURE_WRAP_T, toGl(info.wrapMode[1]));
-    fi(GL_TEXTURE_WRAP_R, toGl(info.wrapMode[2]));
+    fi(GL_TEXTURE_WRAP_S, toGl(glInfo.wrapMode[0]));
+    fi(GL_TEXTURE_WRAP_T, toGl(glInfo.wrapMode[1]));
+    fi(GL_TEXTURE_WRAP_R, toGl(glInfo.wrapMode[2]));
 
     import std.math : isNaN;
-    if (!info.lodBias.isNaN) {
-        ff(GL_TEXTURE_LOD_BIAS, info.lodBias);
+    if (!glInfo.lodBias.isNaN) {
+        ff(GL_TEXTURE_LOD_BIAS, glInfo.lodBias);
     }
-    if (!info.lodRange[0].isNaN) {
-        ff(GL_TEXTURE_MIN_LOD, info.lodRange[0]);
-        ff(GL_TEXTURE_MAX_LOD, info.lodRange[1]);
+    if (!glInfo.lodRange[0].isNaN) {
+        ff(GL_TEXTURE_MIN_LOD, glInfo.lodRange[0]);
+        ff(GL_TEXTURE_MAX_LOD, glInfo.lodRange[1]);
     }
 
     import gfx.core.typecons : ifNone, ifSome;
-    info.compare.save.ifSome!((CompareOp op) {
+    glInfo.compare.save.ifSome!((CompareOp op) {
         fi(GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
         fi(GL_TEXTURE_COMPARE_FUNC, toGl(op));
     }).ifNone!(() {
         fi(GL_TEXTURE_COMPARE_MODE, GL_NONE);
     });
 
-    if (info.borderColor.isInt) {
+    if (glInfo.borderColor.isInt) {
         int[4] color;
-        switch (info.borderColor) {
+        switch (glInfo.borderColor) {
         case BorderColor.intTransparent:
             color = [ 0, 0, 0, 0];
             break;
@@ -618,7 +637,7 @@ private void setupSampler(alias fi, alias ff, alias fiv, alias ffv)(in SamplerIn
     }
     else {
         float[4] color;
-        switch (info.borderColor) {
+        switch (glInfo.borderColor) {
         case BorderColor.intTransparent:
             color = [ 0f, 0f, 0f, 0f];
             break;

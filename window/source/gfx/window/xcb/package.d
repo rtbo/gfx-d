@@ -156,9 +156,11 @@ class XcbDisplay : Display
         //if (_instance) return;
 
         import gfx.core.rc : makeRc;
+        import gfx.gl3 : GlInstance;
         import gfx.gl3.context : GlAttribs;
         import gfx.window.xcb.context : XcbGlContext;
         auto ctx = makeRc!XcbGlContext(_dpy, _mainScreenNum, GlAttribs.init);
+        _instance = new GlInstance(ctx);
     }
 
     override @property Instance instance() {
@@ -310,7 +312,6 @@ class XcbWindow : Window
 
     override void show(uint width, uint height)
     {
-        const screenNum = _dpy.mainScreenNum;
         const screen = _dpy.mainScreen;
 
         const cmap = xcb_generate_id(_dpy._conn);
@@ -365,8 +366,12 @@ class XcbWindow : Window
             _surface = createVulkanXcbSurface(_instance, _dpy._conn, _win);
             break;
         case Backend.gl3:
+            import gfx.gl3 : GlInstance;
             import gfx.gl3.swapchain : GlSurface;
             _surface = new GlSurface(_win);
+            auto glInst = cast(GlInstance)_instance;
+            auto ctx = glInst.ctx;
+            ctx.makeCurrent(_win);
             break;
         }
     }

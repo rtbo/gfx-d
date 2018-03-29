@@ -56,7 +56,8 @@ class GlDevice : Device
     }
 
     CommandPool createCommandPool(uint queueFamilyIndex) {
-        return new GlCommandPool();
+        import gfx.gl3.queue : GlCommandPool;
+        return new GlCommandPool(_queue);
     }
 
     DeviceMemory allocateMemory(uint memPropIndex, size_t size) {
@@ -99,7 +100,7 @@ class GlDevice : Device
                               Format format, uint[2] size, ImageUsage usage,
                               CompositeAlpha alpha, Swapchain former=null) {
         import gfx.gl3.swapchain : GlSwapchain;
-        return new GlSwapchain(_share, surface, pm, numImages, format, size, usage, alpha, former);
+        return new GlSwapchain(_share, this, surface, pm, numImages, format, size, usage, alpha, former);
     }
 
     RenderPass createRenderPass(in AttachmentDescription[] attachments,
@@ -152,31 +153,6 @@ class GlDevice : Device
         import std.array : array;
         return infos.map!(pi => cast(Pipeline)new GlPipeline(_share, pi)).array;
     }
-}
-
-private final class GlCommandPool : CommandPool
-{
-    import gfx.core.rc : atomicRcCode;
-    import gfx.gl3 : GlShare;
-    import gfx.graal.cmd : CommandBuffer;
-
-    mixin(atomicRcCode);
-
-    this() {}
-    override void dispose() {}
-
-    override void reset() {}
-
-    override CommandBuffer[] allocate(size_t count) {
-        import gfx.gl3.queue : GlCommandBuffer;
-        auto bufs = new CommandBuffer[count];
-        foreach (i; 0 .. count) {
-            bufs[i] = new GlCommandBuffer(this);
-        }
-        return bufs;
-    }
-
-    override void free(CommandBuffer[] buffers) {}
 }
 
 private final class GlSemaphore : Semaphore {

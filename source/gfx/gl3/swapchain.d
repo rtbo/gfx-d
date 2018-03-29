@@ -25,6 +25,7 @@ package final class GlSwapchain : Swapchain
     import core.time : Duration;
     import gfx.core.rc : atomicRcCode, Rc;
     import gfx.gl3 : GlShare;
+    import gfx.gl3.device : GlDevice;
     import gfx.gl3.resource : GlImage;
     import gfx.graal.format : Format;
     import gfx.graal.image : ImageBase, ImageDims, ImageUsage, ImageTiling, ImageType;
@@ -34,28 +35,38 @@ package final class GlSwapchain : Swapchain
     mixin(atomicRcCode);
 
     Rc!GlShare _share;
+    GlSurface _surface;
     GlImage[] _imgs;
     ImageBase[] _imgsB; // same objects, but already cast to interface (points to different addresses)
+    uint[2] _size;
     Format _format;
     uint _nextImg;
 
 
-    this (GlShare share, Surface surface, PresentMode pm, uint numImages,
+    this (GlShare share, GlDevice device, Surface surface, PresentMode pm, uint numImages,
           Format format, uint[2] size, ImageUsage usage, CompositeAlpha alpha,
           Swapchain former=null)
     {
         _share = share;
+        _surface = cast(GlSurface)surface;
         _format = format;
+        _size = size;
 
         _imgs = new GlImage[numImages];
         _imgsB = new ImageBase[numImages];
+        auto mem = device.allocateMemory(0, 1); // dummy memory
+        mem.retain();
         foreach (i; 0 .. numImages) {
-            _imgs[i] = new GlImage(
+            auto img = new GlImage(
                 _share, ImageType.d2, ImageDims.d2(size[0], size[1]), format,
                 usage, ImageTiling.optimal, 0, 1
             );
-            _imgsB[i] = cast(ImageBase)_imgs[i];
+            img.bindMemory(mem, 0);
+
+            _imgs[i] = img;
+            _imgsB[i] = cast(ImageBase)img;
         }
+        mem.release();
 
         import gfx.core.rc : retainArray;
         retainArray(_imgs);
@@ -80,5 +91,13 @@ package final class GlSwapchain : Swapchain
         const ni = _nextImg++;
         if (_nextImg >= _imgs.length) _nextImg = 0;
         return ni;
+    }
+
+    @property GlSurface surface() {
+        return _surface;
+    }
+
+    @property uint[2] size() {
+        return _size;
     }
 }
