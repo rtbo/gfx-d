@@ -181,7 +181,7 @@ final class GlQueue : Queue
     }
 
     override void present(Semaphore[] waitSems, PresentRequest[] prs) {
-        import gfx.gl3.resource : GlImage;
+        import gfx.gl3.resource : GlImage, GlImgType;
         import gfx.gl3.swapchain : GlSurface, GlSwapchain;
         auto gl = share.gl;
 
@@ -199,9 +199,14 @@ final class GlQueue : Queue
             import gfx.gl3.error : glCheck;
 
             gl.BindFramebuffer(GL_READ_FRAMEBUFFER, readFbo);
-            gl.FramebufferRenderbuffer(GL_READ_FRAMEBUFFER,
-                                       GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
-                                       img.name);
+            final switch (img.glType) {
+            case GlImgType.renderBuf:
+                gl.FramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, img.name);
+                break;
+            case GlImgType.tex:
+                gl.FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, img.name, 0);
+                break;
+            }
 
             gl.BindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
             gl.BlitFramebuffer(0, 0, size[0], size[1], 0, 0, size[0], size[1],
