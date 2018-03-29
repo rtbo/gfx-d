@@ -105,8 +105,9 @@ class CrateExample : Example
     void prepareBuffers() {
 
         import gfx.genmesh.cube : genCube;
-        import gfx.genmesh.algorithm : indexCollectMesh, quad, triangulate,
+        import gfx.genmesh.algorithm : indexCollectMesh, triangulate,
                 vertices, WindingOrder;
+        import gfx.genmesh.poly : quad;
         import std.algorithm : map;
 
         auto crate = genCube()
