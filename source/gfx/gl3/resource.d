@@ -58,7 +58,6 @@ final class GlBuffer : Buffer
     import gfx.bindings.opengl.gl;
     import gfx.core.rc : atomicRcCode, Rc;
     import gfx.gl3 : GlInfo, GlShare;
-    import gfx.gl3.context : GlContext;
     import gfx.graal.buffer : BufferUsage, BufferView;
     import gfx.graal.format : Format;
     import gfx.graal.memory : DeviceMemory, MemoryRequirements;

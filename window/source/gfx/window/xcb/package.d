@@ -144,16 +144,16 @@ class XcbDisplay : Display
     {
         import std.experimental.logger : info;
         assert(!_instance);
-        try {
-            import gfx.vulkan : createVulkanInstance, vulkanInit;
-            vulkanInit();
-            _instance = createVulkanInstance();
-            info("Creating a Vulkan instance");
-        }
-        catch (Exception ex) {
-            info("Vulkan is not available, falling back to OpenGL");
-        }
-        //if (_instance) return;
+        // try {
+        //     import gfx.vulkan : createVulkanInstance, vulkanInit;
+        //     vulkanInit();
+        //     _instance = createVulkanInstance();
+        //     info("Creating a Vulkan instance");
+        // }
+        // catch (Exception ex) {
+        //     info("Vulkan is not available, falling back to OpenGL");
+        // }
+        // if (_instance) return;
 
         import gfx.core.rc : makeRc;
         import gfx.gl3 : GlInstance;
@@ -223,14 +223,14 @@ class XcbDisplay : Display
         case XCB_KEY_PRESS:
             auto ev = cast(xcb_key_press_event_t*)e;
             auto xcbWin = xcbWindow(ev.event);
-            if (xcbWin && xcbWin._keyOnHandler)
-                xcbWin._keyOnHandler(ev.detail);
+            if (xcbWin && xcbWin._onKeyOnHandler)
+                xcbWin._onKeyOnHandler(ev.detail);
             break;
         case XCB_KEY_RELEASE:
             auto ev = cast(xcb_key_press_event_t*)e;
             auto xcbWin = xcbWindow(ev.event);
-            if (xcbWin && xcbWin._keyOffHandler)
-                xcbWin._keyOffHandler(ev.detail);
+            if (xcbWin && xcbWin._onKeyOffHandler)
+                xcbWin._onKeyOffHandler(ev.detail);
             break;
         case XCB_BUTTON_PRESS:
             auto ev = cast(xcb_button_press_event_t*)e;
@@ -255,6 +255,14 @@ class XcbDisplay : Display
         case XCB_PROPERTY_NOTIFY:
             break;
         case XCB_CLIENT_MESSAGE:
+            auto ev = cast(xcb_client_message_event_t*)e;
+            if (ev.data.data32[0] == atom(Atom.WM_DELETE_WINDOW)) {
+                auto win = xcbWindow(ev.window);
+                if (!win._onCloseHandler ||
+                    (win._onCloseHandler && win._onCloseHandler())) {
+                    win.close();
+                }
+            }
             break;
         default:
             break;
@@ -281,8 +289,9 @@ class XcbWindow : Window
     private MouseHandler _moveHandler;
     private MouseHandler _onHandler;
     private MouseHandler _offHandler;
-    private KeyHandler _keyOnHandler;
-    private KeyHandler _keyOffHandler;
+    private KeyHandler _onKeyOnHandler;
+    private KeyHandler _onKeyOffHandler;
+    private CloseHandler _onCloseHandler;
 
     this(XcbDisplay dpy, Instance instance)
     {
@@ -290,20 +299,23 @@ class XcbWindow : Window
         _instance = instance;
     }
 
-    override @property void mouseMove(MouseHandler handler) {
+    override @property void onMouseMove(MouseHandler handler) {
         _moveHandler = handler;
     }
-    override @property void mouseOn(MouseHandler handler) {
+    override @property void onMouseOn(MouseHandler handler) {
         _onHandler = handler;
     }
-    override @property void mouseOff(MouseHandler handler) {
+    override @property void onMouseOff(MouseHandler handler) {
         _offHandler = handler;
     }
-    override @property void keyOn(KeyHandler handler) {
-        _keyOnHandler = handler;
+    override @property void onKeyOn(KeyHandler handler) {
+        _onKeyOnHandler = handler;
     }
-    override @property void keyOff(KeyHandler handler) {
-        _keyOffHandler = handler;
+    override @property void onKeyOff(KeyHandler handler) {
+        _onKeyOffHandler = handler;
+    }
+    override @property void onClose(CloseHandler handler) {
+        _onCloseHandler = handler;
     }
 
     override @property Surface surface() {
@@ -378,9 +390,12 @@ class XcbWindow : Window
 
     override void close()
     {
-        xcb_unmap_window(_dpy._conn, _win);
-        xcb_destroy_window(_dpy._conn, _win);
-        xcb_flush(_dpy._conn);
+        if (_win != 0) {
+            xcb_unmap_window(_dpy._conn, _win);
+            xcb_destroy_window(_dpy._conn, _win);
+            xcb_flush(_dpy._conn);
+            _win = 0;
+        }
         _dpy.unregisterWindow(this);
     }
 

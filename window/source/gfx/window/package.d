@@ -6,6 +6,7 @@ import gfx.graal : Instance;
 
 alias MouseHandler = void delegate(uint x, uint y);
 alias KeyHandler = void delegate(uint key);
+alias CloseHandler = bool delegate();
 
 interface Display : AtomicRefCounted
 {
@@ -24,11 +25,12 @@ interface Window
 
     @property Surface surface();
 
-    @property void mouseMove(MouseHandler handler);
-    @property void mouseOn(MouseHandler handler);
-    @property void mouseOff(MouseHandler handler);
-    @property void keyOn(KeyHandler handler);
-    @property void keyOff(KeyHandler handler);
+    @property void onMouseMove(MouseHandler handler);
+    @property void onMouseOn(MouseHandler handler);
+    @property void onMouseOff(MouseHandler handler);
+    @property void onKeyOn(KeyHandler handler);
+    @property void onKeyOff(KeyHandler handler);
+    @property void onClose(CloseHandler handler);
 }
 
 Display createDisplay()

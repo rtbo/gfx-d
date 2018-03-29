@@ -162,7 +162,9 @@ final class GlQueue : Queue
     override @property Device device() {
         return _device;
     }
+
     override void waitIdle() {}
+
     override void submit(Submission[] submissions, Fence fence) {
         auto gl = share.gl;
         foreach (ref s; submissions) {
@@ -177,6 +179,7 @@ final class GlQueue : Queue
             }
         }
     }
+
     override void present(Semaphore[] waitSems, PresentRequest[] prs) {
         import gfx.gl3.resource : GlImage;
         import gfx.gl3.swapchain : GlSurface, GlSwapchain;
@@ -207,8 +210,6 @@ final class GlQueue : Queue
 
             share.ctx.swapBuffers(surf.handle);
         }
-        //if (prs.length > 1)
-            //share.ctx.makeCurrent(share.dummyWin);
     }
 }
 

@@ -371,10 +371,13 @@ int main() {
         scope(exit) example.dispose();
 
         bool exitFlag;
-        example.window.mouseOn = (uint, uint) {
+        example.window.onMouseOn = (uint, uint) {
             exitFlag = true;
         };
-
+        example.window.onClose = () {
+            exitFlag = true;
+            return true;
+        };
         import std.datetime.stopwatch : StopWatch;
 
         ulong frameCount;
@@ -412,7 +415,6 @@ int main() {
 
             angle += puls;
 
-            example.display.pollAndDispatch();
             example.render();
             ++ frameCount;
             if ((frameCount % reportFreq) == 0) {
@@ -420,6 +422,7 @@ int main() {
                 writeln("FPS: ", 1000_000.0 * reportFreq / (us - lastUs));
                 lastUs = us;
             }
+            example.display.pollAndDispatch();
         }
 
         return 0;

@@ -334,7 +334,7 @@ int main() {
         scope(exit) example.dispose();
 
         bool exitFlag;
-        example.window.mouseOn = (uint, uint) {
+        example.window.onMouseOn = (uint, uint) {
             exitFlag = true;
         };
 

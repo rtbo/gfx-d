@@ -12,7 +12,7 @@ class GlInstance : Instance
 
     mixin(atomicRcCode);
 
-    private GlContext _ctx;
+    private Rc!GlContext _ctx;
     private Rc!PhysicalDevice _phd;
 
     this(GlContext ctx) {
@@ -22,6 +22,7 @@ class GlInstance : Instance
 
     override void dispose() {
         _phd.unload();
+        _ctx.unload();
     }
 
     override @property Backend backend() {
@@ -39,7 +40,7 @@ class GlInstance : Instance
     }
 
     @property GlContext ctx() {
-        return _ctx;
+        return _ctx.obj;
     }
 }
 

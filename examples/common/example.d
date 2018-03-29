@@ -62,10 +62,10 @@ class Example : Disposable
         device.unload();
         physicalDevice.unload();
         if (window) {
-            window.close();
+            //window.close();
         }
-        display.unload();
         instance.unload();
+        display.unload();
     }
 
     void prepare()

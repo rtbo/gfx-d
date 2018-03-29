@@ -273,20 +273,23 @@ private abstract class WaylandWindowBase : Window
 
     abstract protected void closeShell();
 
-    override @property void mouseMove(MouseHandler handler) {
+    override @property void onMouseMove(MouseHandler handler) {
         moveHandler = handler;
     }
-    override @property void mouseOn(MouseHandler handler) {
+    override @property void onMouseOn(MouseHandler handler) {
         onHandler = handler;
     }
-    override @property void mouseOff(MouseHandler handler) {
+    override @property void onMouseOff(MouseHandler handler) {
         offHandler = handler;
     }
-    override @property void keyOn(KeyHandler handler) {
-        keyOnHandler = handler;
+    override @property void onKeyOn(KeyHandler handler) {
+        onKeyOnHandler = handler;
     }
-    override @property void keyOff(KeyHandler handler) {
-        keyOffHandler = handler;
+    override @property void onKeyOff(KeyHandler handler) {
+        onKeyOffHandler = handler;
+    }
+    override @property void onClose(CloseHandler handler) {
+        onCloseHandler = handler;
     }
 
     override @property Surface surface() {
@@ -323,10 +326,10 @@ private abstract class WaylandWindowBase : Window
     private void key(uint key, WlKeyboard.KeyState state) {
         switch (state) {
         case WlKeyboard.KeyState.pressed:
-            if (keyOnHandler) keyOnHandler(key);
+            if (onKeyOnHandler) onKeyOnHandler(key);
             break;
         case WlKeyboard.KeyState.released:
-            if (keyOffHandler) keyOffHandler(key);
+            if (onKeyOffHandler) onKeyOffHandler(key);
             break;
         default:
             break;
@@ -342,8 +345,9 @@ private abstract class WaylandWindowBase : Window
     private MouseHandler moveHandler;
     private MouseHandler onHandler;
     private MouseHandler offHandler;
-    private KeyHandler keyOnHandler;
-    private KeyHandler keyOffHandler;
+    private KeyHandler onKeyOnHandler;
+    private KeyHandler onKeyOffHandler;
+    private CloseHandler onCloseHandler;
     private WlFixed curX;
     private WlFixed curY;
 }
