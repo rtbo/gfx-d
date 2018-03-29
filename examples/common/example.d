@@ -123,7 +123,7 @@ class Example : Disposable
     void prepareSwapchain(Swapchain former=null) {
         const surfCaps = physicalDevice.surfaceCaps(window.surface);
         enforce(surfCaps.usage & ImageUsage.transferDst, "TransferDst not supported by surface");
-        const usage = ImageUsage.transferDst | ImageUsage.colorAttachment;
+        const usage = ImageUsage.colorAttachment;
         const numImages = max(2, surfCaps.minImages);
         enforce(surfCaps.maxImages == 0 || surfCaps.maxImages >= numImages);
         const f = chooseFormat(physicalDevice, window.surface);
