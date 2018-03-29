@@ -236,8 +236,12 @@ class CrateExample : Example
         Rc!ShaderModule vtxShader;
         Rc!ShaderModule fragShader;
 
-        vtxShader = device.createShaderModule(import("shader.vert.spv"), "main");
-        fragShader = device.createShaderModule(import("shader.frag.spv"), "main");
+        vtxShader = device.createShaderModule(
+            cast(immutable(uint)[])import("shader.vert.spv"), "main"
+        );
+        fragShader = device.createShaderModule(
+            cast(immutable(uint)[])import("shader.frag.spv"), "main"
+        );
 
         const layoutBindings = [
             PipelineLayoutBinding(0, DescriptorType.uniformBufferDynamic, 1, ShaderStage.vertex),

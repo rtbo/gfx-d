@@ -122,7 +122,7 @@ class GlDevice : Device
             width, height, layers);
     }
 
-    ShaderModule createShaderModule(string code, string entryPoint) {
+    ShaderModule createShaderModule(const(uint)[] code, string entryPoint) {
         import gfx.gl3.pipeline : GlShaderModule;
         import std.exception : enforce;
 

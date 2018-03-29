@@ -158,7 +158,7 @@ interface Device : AtomicRefCounted
     Framebuffer createFramebuffer(RenderPass rp, ImageView[] attachments,
                                   uint width, uint height, uint layers);
 
-    ShaderModule createShaderModule(string code, string entryPoint);
+    ShaderModule createShaderModule(const(uint)[] spirV, string entryPoint);
 
     DescriptorSetLayout createDescriptorSetLayout(in PipelineLayoutBinding[] bindings);
 

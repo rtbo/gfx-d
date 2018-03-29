@@ -19,10 +19,10 @@ final class GlShaderModule : ShaderModule
     private string _code;
     private ShaderStage _stage;
 
-    this (GlShare share, in string code) {
+    this (GlShare share, in const(uint)[] code) {
         import spirv_cross : SpvCompilerGlsl;
         gl = share.gl;
-        auto cl = new SpvCompilerGlsl(cast(immutable(uint)[])code);
+        auto cl = new SpvCompilerGlsl(code);
         scope(exit) cl.dispose();
         auto opts = cl.options;
         opts.ver = share.info.glslVer;

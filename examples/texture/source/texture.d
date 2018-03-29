@@ -195,10 +195,10 @@ class CrateExample : Example
     void preparePipeline()
     {
         auto vtxShader = device.createShaderModule(
-            import("shader.vert.spv"), "main"
+            cast(immutable(uint)[])import("shader.vert.spv"), "main"
         ).rc;
         auto fragShader = device.createShaderModule(
-            import("shader.frag.spv"), "main"
+            cast(immutable(uint)[])import("shader.frag.spv"), "main"
         ).rc;
 
         const layoutBindings = [

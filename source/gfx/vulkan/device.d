@@ -450,13 +450,13 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         return new VulkanFramebuffer(vkFb, this, attachments);
     }
 
-    override ShaderModule createShaderModule(string code, string entryPoint)
+    override ShaderModule createShaderModule(const(uint)[] code, string entryPoint)
     {
         enforce(code.length % 4 == 0, "SPIR-V code size must be a multiple of 4");
         VkShaderModuleCreateInfo smci;
         smci.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         smci.codeSize = cast(uint)code.length;
-        smci.pCode = cast(const(uint)*)code.ptr;
+        smci.pCode = code.ptr;
 
         VkShaderModule vkSm;
         vulkanEnforce(
