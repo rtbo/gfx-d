@@ -237,7 +237,7 @@ class GlPhysicalDevice : PhysicalDevice
         return SurfaceCaps(
             2, 4, [4, 4], [16384, 16384], 1,
             ImageUsage.colorAttachment | ImageUsage.sampled | ImageUsage.transfer,
-            CompositeAlpha.opaque | CompositeAlpha.inherit
+            CompositeAlpha.inherit
         );
     }
 

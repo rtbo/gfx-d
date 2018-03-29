@@ -127,8 +127,22 @@ class Example : Disposable
         const numImages = max(2, surfCaps.minImages);
         enforce(surfCaps.maxImages == 0 || surfCaps.maxImages >= numImages);
         const f = chooseFormat(physicalDevice, window.surface);
-        hasAlpha = (surfCaps.supportedAlpha & CompositeAlpha.preMultiplied) == CompositeAlpha.preMultiplied;
-        const ca = hasAlpha ? CompositeAlpha.preMultiplied : CompositeAlpha.opaque;
+
+        CompositeAlpha ca;
+        if (surfCaps.supportedAlpha & CompositeAlpha.preMultiplied) {
+            ca = CompositeAlpha.preMultiplied;
+        }
+        else if (surfCaps.supportedAlpha & CompositeAlpha.inherit) {
+            ca = CompositeAlpha.inherit;
+        }
+        else if (surfCaps.supportedAlpha & CompositeAlpha.postMultiplied) {
+            ca = CompositeAlpha.postMultiplied;
+        }
+        else {
+            ca = CompositeAlpha.opaque;
+        }
+        hasAlpha = ca != CompositeAlpha.opaque;
+
         surfaceSize = [ 640, 480 ];
         foreach (i; 0..2) {
             surfaceSize[i] = clamp(surfaceSize[i], surfCaps.minSize[i], surfCaps.maxSize[i]);
