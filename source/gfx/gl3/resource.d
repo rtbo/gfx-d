@@ -90,6 +90,10 @@ final class GlBuffer : Buffer
         _mem.unload();
     }
 
+    @property GLuint name() const {
+        return _name;
+    }
+
     override @property size_t size() {
         return _size;
     }

@@ -55,6 +55,9 @@ struct GlInfo
     bool bufferStorage;
     bool textureStorage;
     bool samplerObject;
+    bool drawElementsBaseVertex;
+    bool drawElementsInstanced;
+    bool baseInstance;
 
     private static GlInfo fetchAndCheck (Gl gl, uint glVer) {
         import gfx.bindings.opengl.gl : GL_VERSION, GL_SHADING_LANGUAGE_VERSION;
@@ -70,12 +73,23 @@ struct GlInfo
             enforce(exts.canFind(glE), format(glE ~ " is required but was not found"));
         }
 
+        bool checkVersion(uint ver) {
+            return glVer >= ver;
+        }
+
+        bool checkFeature(uint ver, in string ext) {
+            return glVer >= ver || exts.canFind(ext);
+        }
+
         GlInfo gi;
         gi.glVer = cast(ushort)glVer;
         gi.glslVer = cast(ushort)glslVersion(glVer);
         gi.bufferStorage = exts.canFind("GL_ARB_buffer_storage");
         gi.textureStorage = exts.canFind("GL_ARB_texture_storage");
         gi.samplerObject = exts.canFind("GL_ARB_sampler_object");
+        gi.drawElementsBaseVertex = checkFeature(32, "ARB_draw_elements_base_vertex");
+        gi.drawElementsInstanced = checkVersion(31);
+        gi.baseInstance = checkFeature(42, "ARB_base_instance");
         return gi;
     }
 }

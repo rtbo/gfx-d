@@ -46,6 +46,7 @@ class GlDevice : Device
     }
 
     override void dispose() {
+        _queue.dispose();
         _share.unload();
     }
 

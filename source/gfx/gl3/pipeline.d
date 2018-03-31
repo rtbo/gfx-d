@@ -217,8 +217,8 @@ final class GlPipeline : Pipeline
     mixin(atomicRcCode);
 
     private Gl gl;
-    private GLuint prog;
-    private PipelineInfo info;
+    package GLuint prog;
+    package PipelineInfo info;
 
     this(GlShare share, PipelineInfo info) {
         this.gl = share.gl;

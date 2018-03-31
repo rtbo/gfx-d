@@ -3,10 +3,10 @@ module gfx.gl3.conv;
 package:
 
 import gfx.bindings.opengl.gl;
-import gfx.graal.buffer : BufferUsage;
+import gfx.graal.buffer : BufferUsage, IndexType;
 import gfx.graal.format : Format;
 import gfx.graal.image : Filter, ImageType, WrapMode;
-import gfx.graal.pipeline : CompareOp, ShaderStage;
+import gfx.graal.pipeline : CompareOp, Primitive, ShaderStage;
 
 GLenum toGl(in BufferUsage usage) pure {
     switch (usage) {
@@ -65,13 +65,13 @@ GLenum toGlImgFmt(in Format graalFormat) pure {
     }
 }
 
-GLenum toGlMag(in Filter filter) {
+GLenum toGlMag(in Filter filter) pure {
     final switch(filter) {
     case Filter.nearest: return GL_NEAREST;
     case Filter.linear: return GL_LINEAR;
     }
 }
-GLenum toGlMin(in Filter filter, in Filter mipmap) {
+GLenum toGlMin(in Filter filter, in Filter mipmap) pure {
     final switch(filter) {
     case Filter.nearest:
         final switch (mipmap) {
@@ -85,7 +85,7 @@ GLenum toGlMin(in Filter filter, in Filter mipmap) {
         }
     }
 }
-GLenum toGl(in WrapMode mode) {
+GLenum toGl(in WrapMode mode) pure {
     final switch (mode) {
     case WrapMode.repeat:       return GL_REPEAT;
     case WrapMode.mirrorRepeat: return GL_MIRRORED_REPEAT;
@@ -94,7 +94,7 @@ GLenum toGl(in WrapMode mode) {
     }
 }
 
-GLenum toGl(in CompareOp op) {
+GLenum toGl(in CompareOp op) pure {
     final switch (op) {
     case CompareOp.never:           return GL_NEVER;
     case CompareOp.less:            return GL_LESS;
@@ -107,7 +107,7 @@ GLenum toGl(in CompareOp op) {
     }
 }
 
-GLenum toGl(in ShaderStage stage) {
+GLenum toGl(in ShaderStage stage) pure {
     switch (stage) {
     case ShaderStage.vertex:                    return GL_VERTEX_SHADER;
     case ShaderStage.tessellationControl:       return GL_TESS_CONTROL_SHADER;
@@ -117,4 +117,90 @@ GLenum toGl(in ShaderStage stage) {
     case ShaderStage.compute:                   return GL_COMPUTE_SHADER;
     default: assert(false);
     }
+}
+
+GLenum toGl(in IndexType type) pure {
+    final switch (type) {
+    case IndexType.u16: return GL_UNSIGNED_SHORT;
+    case IndexType.u32: return GL_UNSIGNED_INT;
+    }
+}
+
+GLenum toGl(in Primitive primitive) pure {
+    final switch (primitive) {
+    case Primitive.pointList:               return GL_POINTS;
+    case Primitive.lineList:                return GL_LINES;
+    case Primitive.lineStrip:               return GL_LINE_STRIP;
+    case Primitive.triangleList:            return GL_TRIANGLES;
+    case Primitive.triangleStrip:           return GL_TRIANGLE_STRIP;
+    case Primitive.triangleFan:             return GL_TRIANGLE_FAN;
+    case Primitive.lineListAdjacency:       return GL_LINES_ADJACENCY;
+    case Primitive.lineStripAdjacency:      return GL_LINE_STRIP_ADJACENCY;
+    case Primitive.triangleListAdjacency:   return GL_TRIANGLES_ADJACENCY;
+    case Primitive.triangleStripAdjacency:  return GL_TRIANGLE_STRIP_ADJACENCY;
+    case Primitive.patchList:               return GL_PATCHES;
+    }
+}
+
+bool vertexFormatSupported(in Format f) pure {
+    import std.algorithm : canFind;
+    return supportedVertexFormats.canFind(f);
+}
+
+/// Specifies the function to define the VAO vertex attribs
+enum VAOAttribFun {
+    /// glVertexAttribPointer
+    f,
+    /// glVertexAttribIPointer
+    i,
+    /// glVertexAttribLPointer
+    d
+}
+
+struct GlVertexFormat {
+    VAOAttribFun fun;
+    GLint size;
+    GLenum type;
+    GLboolean normalized;
+}
+
+GlVertexFormat glVertexFormat(in Format f)
+in {
+    assert(vertexFormatSupported(f));
+}
+body {
+    return glVertexFormats[cast(size_t)f];
+}
+
+private:
+
+// TODO: support more formats (unorms, integer...)
+
+immutable(GlVertexFormat[]) glVertexFormats;
+
+immutable(Format[]) supportedVertexFormats = [
+    Format.r32_sFloat,
+    Format.rg32_sFloat,
+    Format.rgb32_sFloat,
+    Format.rgba32_sFloat,
+];
+
+shared static this() {
+    import gfx.graal.format : formatDesc, numComponents;
+    import std.algorithm : map, maxElement;
+    import std.exception : assumeUnique;
+
+    const len = 1 + supportedVertexFormats
+            .map!(f => cast(int)f)
+            .maxElement;
+    auto vertexFormats = new GlVertexFormat[len];
+    foreach (f; supportedVertexFormats) {
+        const fd = formatDesc(f);
+        const size = numComponents(fd.surfaceType);
+        vertexFormats[cast(int)f] = GlVertexFormat(
+            VAOAttribFun.f, size, GL_FLOAT, GL_FALSE
+        );
+    }
+
+    glVertexFormats = assumeUnique(vertexFormats);
 }
