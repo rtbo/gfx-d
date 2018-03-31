@@ -195,7 +195,8 @@ final class GlCommandBuffer : CommandBuffer
                                   ImageSubresourceRange[] ranges)
     {
         import gfx.gl3.resource : GlImage;
-        _cmds ~= new ClearColorCmd(_fbo, cast(GlImage)image, clearValues, false);
+        _cmds ~= new SetupFramebufferCmd(_fbo, cast(GlImage)image);
+        _cmds ~= new ClearColorCmd(clearValues);
     }
 
     override void clearDepthStencilImage(ImageBase image, ImageLayout layout,
@@ -222,9 +223,10 @@ final class GlCommandBuffer : CommandBuffer
     {
         import gfx.gl3.pipeline : GlFramebuffer;
         const glFb = cast(GlFramebuffer)fb;
+        _cmds ~= new BindFramebufferCmd(glFb.name);
         foreach (cv; clearValues) {
             if (cv.type == ClearValues.Type.color) {
-                _cmds ~= new ClearColorCmd(glFb.name, null, cv.values.color, true);
+                _cmds ~= new ClearColorCmd(cv.values.color);
             }
         }
     }
@@ -381,36 +383,51 @@ abstract class GlCommand {
     abstract void execute(GlQueue queue, Gl gl);
 }
 
-final class ClearColorCmd : GlCommand {
+final class BindFramebufferCmd : GlCommand
+{
+    GLuint fbo;
+    this(GLuint fbo) { this.fbo = fbo; }
+    override void execute(GlQueue queue, Gl gl) {
+        gl.BindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+    }
+}
+
+final class SetupFramebufferCmd : GlCommand
+{
     import gfx.gl3.resource : GlImage, GlImgType;
 
     GLuint fbo;
     GlImage img;
-    ClearColorValues values;
-    bool fboReady;
 
-    this (GLuint fbo, GlImage img, ClearColorValues values, bool fboReady=false) {
-        // img may be null if fboReady is true
+    this(GLuint fbo, GlImage img) {
         this.fbo = fbo;
         this.img = img;
-        this.values = values;
-        this.fboReady = fboReady;
     }
+
     override void execute(GlQueue queue, Gl gl) {
         gl.BindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
-        if (!fboReady) {
-            final switch (img.glType) {
-            case GlImgType.renderBuf:
-                gl.FramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, img.name);
-                break;
-            case GlImgType.tex:
-                gl.FramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, img.name, 0);
-                break;
-            }
+        final switch (img.glType) {
+        case GlImgType.renderBuf:
+            gl.FramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, img.name);
+            break;
+        case GlImgType.tex:
+            gl.FramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, img.name, 0);
+            break;
         }
         const GLenum drawBuf = GL_COLOR_ATTACHMENT0;
         gl.DrawBuffers(1, &drawBuf);
+    }
+}
 
+final class ClearColorCmd : GlCommand {
+
+    ClearColorValues values;
+
+    this (ClearColorValues values) {
+        this.values = values;
+    }
+
+    override void execute(GlQueue queue, Gl gl) {
         final switch (values.type) {
         case ClearColorValues.Type.f32:
             gl.ClearBufferfv(GL_COLOR, 0, &values.values.f32[0]);
