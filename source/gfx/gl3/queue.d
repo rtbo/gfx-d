@@ -322,6 +322,7 @@ final class GlCommandBuffer : CommandBuffer
         }
         if (someDirty(Dirty.pipeline)) {
             _cmds ~= new BindProgramCmd(_boundPipeline.prog);
+            bindOutputs();
             clean(Dirty.vertexBindings);
         }
     }
@@ -354,6 +355,22 @@ final class GlCommandBuffer : CommandBuffer
 
             auto buf = cast(GlBuffer)vb.buffer;
             _cmds ~= new BindVertexBufCmd(buf.name, cast(GLsizei)bindingInfo.stride, attribs);
+        }
+    }
+
+    void bindOutputs() {
+        const blendInfo = _boundPipeline.info.blendInfo;
+        if (blendInfo.logicOp.isSome) {
+            // enable logicOp
+            // TODO
+            import std.experimental.logger : warning;
+            warning("Gl logicOp not implemented");
+        }
+        else {
+            // disable logicOp
+        }
+        foreach (slot, attachment; blendInfo.attachments) {
+            _cmds ~= new BindBlendSlotCmd(cast(GLuint)slot, attachment);
         }
     }
 }
@@ -482,6 +499,39 @@ final class BindIndexBufCmd : GlCommand
     }
 }
 
+final class BindBlendSlotCmd : GlCommand
+{
+    import gfx.graal.pipeline : ColorBlendAttachment, ColorMask;
+
+    GLuint slot;
+    ColorBlendAttachment blendInfo;
+
+    this(GLuint slot, ColorBlendAttachment blendInfo) {
+        this.slot = slot;
+        this.blendInfo = blendInfo;
+    }
+
+    override void execute(GlQueue queue, Gl gl) {
+        if (blendInfo.enabled) {
+            // TODO
+            import std.experimental.logger : warning;
+            warning("Gl blending not implemented");
+        }
+        else {
+            gl.Disablei(GL_BLEND, slot);
+        }
+        import std.typecons : BitFlags, Yes;
+        BitFlags!(ColorMask, Yes.unsafe) cm = blendInfo.colorMask;
+        gl.ColorMaski(
+            slot,
+            (cm & ColorMask.r) ? GL_TRUE : GL_FALSE,
+            (cm & ColorMask.g) ? GL_TRUE : GL_FALSE,
+            (cm & ColorMask.b) ? GL_TRUE : GL_FALSE,
+            (cm & ColorMask.a) ? GL_TRUE : GL_FALSE
+        );
+    }
+}
+
 final class DrawIndexedCmd : GlCommand
 {
     GLenum primitive;
@@ -518,21 +568,21 @@ final class DrawIndexedCmd : GlCommand
             return;
         }
 
-        if (instanceCount == 0 && baseVertex == 0) {
+        if (instanceCount <= 1 && baseVertex == 0) {
             gl.DrawElements(primitive, count, type, offset);
         }
-        else if (instanceCount == 0 && baseVertex != 0) {
+        else if (instanceCount <= 1 && baseVertex != 0) {
             gl.DrawElementsBaseVertex(primitive, count, type, offset, baseVertex);
         }
-        else if (instanceCount != 0 && baseInstance == 0 && baseVertex == 0) {
+        else if (instanceCount > 1 && baseInstance == 0 && baseVertex == 0) {
             gl.DrawElementsInstanced(primitive, count, type, offset, instanceCount);
         }
-        else if (instanceCount != 0 && baseInstance == 0 && baseVertex != 0) {
+        else if (instanceCount > 1 && baseInstance == 0 && baseVertex != 0) {
             gl.DrawElementsInstancedBaseVertex(
                 primitive, count, type, offset, instanceCount, baseVertex
             );
         }
-        else if (instanceCount != 0 && baseInstance != 0 && baseVertex == 0) {
+        else if (instanceCount > 1 && baseInstance != 0 && baseVertex == 0) {
             gl.DrawElementsInstancedBaseInstance(
                 primitive, count, type, offset, instanceCount, baseInstance
             );
