@@ -137,7 +137,9 @@ final class GlCommandBuffer : CommandBuffer
     import gfx.gl3.pipeline : GlPipeline;
     import gfx.graal.buffer : Buffer, IndexType;
     import gfx.graal.image : ImageBase, ImageLayout, ImageSubresourceRange;
-    import gfx.graal.pipeline : DescriptorSet, Pipeline, PipelineLayout, ShaderStage;
+    import gfx.graal.pipeline : ColorBlendInfo, DescriptorSet, Pipeline,
+                                PipelineLayout, ShaderStage, VertexInputBinding,
+                                VertexInputAttrib, ViewportConfig;
     import gfx.graal.renderpass : Framebuffer, RenderPass;
     import std.experimental.logger;
     import std.typecons : Flag;
@@ -158,9 +160,15 @@ final class GlCommandBuffer : CommandBuffer
     private Dirty _dirty;
     private size_t _indexOffset;
     private GLenum _indexType;
-    private GlPipeline _boundPipeline;
     private VertexBinding[] _vertexBindings;
+
+    // pipeline cache
     private GLenum _primitive;
+    private VertexInputBinding[] _inputBindings;
+    private VertexInputAttrib[] _inputAttribs;
+    private GLuint _prog;
+    private ViewportConfig[] _viewports;
+
 
     this (CommandPool pool, GLuint fbo) {
         _pool = pool;
@@ -174,7 +182,6 @@ final class GlCommandBuffer : CommandBuffer
     override void reset() {
         _cmds.length = 0;
         _dirty = Dirty.none;
-        _boundPipeline = null;
         _vertexBindings.length = 0;
     }
 
@@ -238,14 +245,25 @@ final class GlCommandBuffer : CommandBuffer
 
     override void endRenderPass()
     {
-        warningf("unimplemented GL command");
+        //warningf("unimplemented GL command");
     }
 
     override void bindPipeline(Pipeline pipeline)
     {
-        _boundPipeline = cast(GlPipeline)pipeline;
+        auto glPipeline = cast(GlPipeline)pipeline;
+        if (_prog != glPipeline.prog) {
+            _prog = glPipeline.prog;
+            _cmds ~= new BindProgramCmd(_prog);
+        }
+        bindOutputs(glPipeline.info.blendInfo);
+        if (_viewports != glPipeline.info.viewports) {
+            _viewports = glPipeline.info.viewports;
+            _cmds ~= new SetViewportsCmd(_viewports);
+        }
+        _primitive = toGl(glPipeline.info.assembly.primitive);
+        _inputBindings = glPipeline.info.inputBindings;
+        _inputAttribs = glPipeline.info.inputAttribs;
         dirty(Dirty.pipeline);
-        _primitive = toGl(_boundPipeline.info.assembly.primitive);
     }
 
     override void bindVertexBuffers(uint firstBinding, VertexBinding[] bindings)
@@ -271,7 +289,36 @@ final class GlCommandBuffer : CommandBuffer
                                      DescriptorSet[] sets,
                                      in size_t[] dynamicOffsets)
     {
-        warningf("unimplemented GL command");
+        import gfx.gl3.pipeline : GlDescriptorSet;
+        import gfx.graal.pipeline : DescriptorType;
+
+        size_t dynInd = 0;
+
+        foreach (si, ds; sets) {
+            auto glSet = cast(GlDescriptorSet)ds;
+
+            foreach(bi, b; glSet.bindings) {
+
+                foreach (di, d; b.descriptors) {
+
+                    switch (b.layout.descriptorType) {
+                    case DescriptorType.uniformBuffer:
+                        _cmds ~= new BindUniformBufferCmd(
+                            b.layout.binding, d.bufferRange, 0
+                        );
+                        break;
+                    case DescriptorType.uniformBufferDynamic:
+                        _cmds ~= new BindUniformBufferCmd(
+                            b.layout.binding, d.bufferRange, dynamicOffsets[dynInd++]
+                        );
+                        break;
+                    default:
+                        warningf("unhandled descriptor set");
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     override void pushConstants(PipelineLayout layout, ShaderStage stages,
@@ -322,16 +369,10 @@ final class GlCommandBuffer : CommandBuffer
             bindAttribs();
             clean(Dirty.vertexBindings);
         }
-        if (someDirty(Dirty.pipeline)) {
-            _cmds ~= new BindProgramCmd(_boundPipeline.prog);
-            bindOutputs();
-            clean(Dirty.vertexBindings);
-        }
     }
 
     private void bindAttribs() {
-        assert(_boundPipeline);
-        assert(_vertexBindings.length == _boundPipeline.info.inputBindings.length);
+        assert(_vertexBindings.length == _inputBindings.length);
         assert(someDirty(Dirty.vertexBindings));
 
         import gfx.gl3.conv : glVertexFormat, vertexFormatSupported;
@@ -339,14 +380,12 @@ final class GlCommandBuffer : CommandBuffer
         import gfx.graal.format : formatDesc;
         import std.algorithm : filter;
 
-        const info = _boundPipeline.info;
-
         foreach (bi, vb; _vertexBindings) {
-            const bindingInfo = info.inputBindings[bi];
+            const bindingInfo = _inputBindings[bi];
 
             GlVertexAttrib[] attribs;
 
-            foreach (ai; info.inputAttribs.filter!(ia => ia.binding == bi)) {
+            foreach (ai; _inputAttribs.filter!(ia => ia.binding == bi)) {
                 const f = ai.format;
                 assert(vertexFormatSupported(f));
 
@@ -360,12 +399,10 @@ final class GlCommandBuffer : CommandBuffer
         }
     }
 
-    void bindOutputs() {
-        const blendInfo = _boundPipeline.info.blendInfo;
+    void bindOutputs(ColorBlendInfo blendInfo) {
         if (blendInfo.logicOp.isSome) {
             // enable logicOp
             // TODO
-            import std.experimental.logger : warning;
             warning("Gl logicOp not implemented");
         }
         else {
@@ -419,6 +456,52 @@ final class SetupFramebufferCmd : GlCommand
     }
 }
 
+final class SetViewportsCmd : GlCommand {
+    import gfx.graal.pipeline : ViewportConfig;
+    ViewportConfig[] viewports;
+    this (ViewportConfig[] viewports) {
+        this.viewports = viewports;
+    }
+
+    override void execute(GlQueue queue, Gl gl) {
+        if (viewports.length > 1 && !queue.share.info.viewportArray) {
+            import std.experimental.logger : error;
+            error("ARB_viewport_array not supported");
+            viewports = viewports[0..1];
+        }
+
+        if (viewports.length > 1) {
+            foreach (i, vc; viewports) {
+                const vp = vc.viewport;
+                gl.ViewportIndexedf(cast(GLuint)i, vp.x, vp.y, vp.width, vp.height);
+                gl.DepthRangeIndexed(cast(GLuint)i, vp.minDepth, vp.maxDepth);
+
+                const sc = vc.scissors;
+                gl.ScissorIndexed(
+                    cast(GLuint)i,
+                    cast(GLint)sc.x, cast(GLint)sc.y,
+                    cast(GLsizei)sc.width, cast(GLsizei)sc.height
+                );
+            }
+        }
+        else if (viewports.length == 1) {
+            const vp = viewports[0].viewport;
+            gl.Viewport(
+                cast(GLint)vp.x, cast(GLint)vp.y,
+                cast(GLsizei)vp.width, cast(GLsizei)vp.height
+            );
+            gl.DepthRangef(vp.minDepth, vp.maxDepth);
+
+            const sc = viewports[0].scissors;
+            gl.Scissor(
+                cast(GLint)sc.x, cast(GLint)sc.y,
+                cast(GLsizei)sc.width, cast(GLsizei)sc.height
+            );
+        }
+    }
+
+}
+
 final class ClearColorCmd : GlCommand {
 
     ClearColorValues values;
@@ -448,6 +531,7 @@ final class BindProgramCmd : GlCommand
     this(GLuint prog) { this.prog = prog; }
     override void execute(GlQueue queue, Gl gl) {
         gl.UseProgram(prog);
+        gl.Disable(GL_CULL_FACE);
     }
 }
 
@@ -513,6 +597,32 @@ final class BindIndexBufCmd : GlCommand
     override void execute(GlQueue queue, Gl gl)
     {
         gl.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf);
+    }
+}
+
+final class BindUniformBufferCmd : GlCommand
+{
+    import gfx.gl3.resource : GlBuffer;
+    import gfx.graal.pipeline : BufferRange;
+
+    GLuint binding;
+    BufferRange bufferRange;
+    size_t dynamicOffset;
+
+    this (GLuint binding, BufferRange br, in size_t dynOffset) {
+        this.binding = binding;
+        this.bufferRange = br;
+        this.dynamicOffset = dynOffset;
+    }
+
+    override void execute(GlQueue queue, Gl gl) {
+        auto glBuf = cast(GlBuffer)bufferRange.buffer;
+
+        gl.BindBufferRange(
+            GL_UNIFORM_BUFFER, binding, glBuf.name,
+            cast(GLintptr)(bufferRange.offset+dynamicOffset),
+            cast(GLintptr)bufferRange.range
+        );
     }
 }
 
@@ -609,5 +719,7 @@ final class DrawIndexedCmd : GlCommand
                 primitive, count, type, offset, instanceCount, baseVertex, baseInstance
             );
         }
+        import gfx.gl3.error : glCheck;
+        glCheck(gl, "draw indexed");
     }
 }
