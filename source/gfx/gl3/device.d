@@ -146,7 +146,13 @@ class GlDevice : Device
         return new GlDescriptorPool(maxSets, sizes);
     }
 
-    void updateDescriptorSets(WriteDescriptorSet[] writeOps, CopyDescritporSet[] copyOps) {}
+    void updateDescriptorSets(WriteDescriptorSet[] writeOps, CopyDescritporSet[] copyOps) {
+        import gfx.gl3.pipeline : GlDescriptorSet;
+        foreach (wo; writeOps) {
+            auto glSet = cast(GlDescriptorSet)wo.dstSet;
+            glSet.write(wo.dstBinding, wo.dstArrayElem, wo.writes);
+        }
+    }
 
     Pipeline[] createPipelines(PipelineInfo[] infos) {
         import gfx.gl3.pipeline : GlPipeline;

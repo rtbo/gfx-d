@@ -296,17 +296,100 @@ final class GlDescriptorPool : DescriptorPool
     override void reset() {}
 }
 
+union GlDescriptor {
+    import gfx.graal.image : Sampler;
+    import gfx.graal.buffer : BufferView;
+
+    Sampler                 sampler;
+    CombinedImageSampler    combinedImageSampler;
+    ImageViewLayout         imageViewLayout;
+    BufferRange             bufferRange;
+    BufferView              bufferView;
+}
+
+struct GlDescriptorSetBinding
+{
+    PipelineLayoutBinding layout;
+    GlDescriptor[] descriptors;
+
+    @property uint index() const { return layout.binding; }
+}
+
 final class GlDescriptorSet : DescriptorSet
 {
     private GlDescriptorPool _pool;
-    private DescriptorSetLayout layout;
+
+    GlDescriptorSetBinding[] bindings;
+
     this(GlDescriptorPool pool, DescriptorSetLayout layout) {
         _pool = pool;
-        this.layout = layout;
+        const layoutBindings = (cast(GlDescriptorSetLayout)layout).bindings;
+        bindings = new GlDescriptorSetBinding[layoutBindings.length];
+        foreach (i, ref b; bindings) {
+            b.layout = layoutBindings[i];
+            b.descriptors = new GlDescriptor[b.layout.descriptorCount];
+        }
     }
     override @property DescriptorPool pool() {
         return _pool;
     }
+
+    void write(uint dstBinding, uint dstArrayElem, DescriptorWrites writes)
+    {
+        assert(writes.type == bindings[dstBinding].layout.descriptorType);
+        assign(
+            bindings[dstBinding].descriptors[
+                dstArrayElem .. dstArrayElem+writes.count
+            ],
+            writes
+        );
+    }
+
+    private void assign(GlDescriptor[] descs, DescriptorWrites writes) {
+        import gfx.core.util : unsafeCast;
+        import gfx.graal.image : Sampler;
+        import gfx.graal.buffer : BufferView;
+
+        final switch (writes.type) {
+        case DescriptorType.sampler:
+            auto w = unsafeCast!(SamplerDescWrites)(writes);
+            foreach (i, ref d; descs) {
+                d.sampler = w.descs[i];
+            }
+            break;
+        case DescriptorType.combinedImageSampler:
+            auto w = unsafeCast!(CombinedImageSamplerDescWrites)(writes);
+            foreach (i, ref d; descs) {
+                d.combinedImageSampler = w.descs[i];
+            }
+            break;
+        case DescriptorType.sampledImage:
+        case DescriptorType.storageImage:
+        case DescriptorType.inputAttachment:
+            auto w = unsafeCast!(TDescWritesBase!ImageViewLayout)(writes);
+            foreach (i, ref d; descs) {
+                d.imageViewLayout = w.descs[i];
+            }
+            break;
+        case DescriptorType.uniformBuffer:
+        case DescriptorType.storageBuffer:
+        case DescriptorType.uniformBufferDynamic:
+        case DescriptorType.storageBufferDynamic:
+            auto w = unsafeCast!(TDescWritesBase!(BufferRange))(writes);
+            foreach (i, ref d; descs) {
+                d.bufferRange = w.descs[i];
+            }
+            break;
+        case DescriptorType.uniformTexelBuffer:
+        case DescriptorType.storageTexelBuffer:
+            auto w = unsafeCast!(TDescWritesBase!(BufferView))(writes);
+            foreach (i, ref d; descs) {
+                d.bufferView = w.descs[i];
+            }
+            break;
+        }
+    }
+
 }
 
 private GLint getShaderInt(Gl gl, in GLuint name, in GLenum pname) {
