@@ -27,6 +27,7 @@ final class GlShaderModule : ShaderModule
         auto opts = cl.options;
         opts.ver = share.info.glslVer;
         opts.enable_420pack = false;
+        opts.vertex_invert_y = true;
         cl.options = opts;
         _code = cl.compile();
     }
