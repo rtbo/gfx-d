@@ -42,6 +42,7 @@ enum Atom
 class XcbDisplay : Display
 {
     import gfx.core.rc : atomicRcCode, Rc;
+    import gfx.graal : Backend;
     import X11.Xlib : XDisplay = Display;
 
     mixin(atomicRcCode);
@@ -57,7 +58,7 @@ class XcbDisplay : Display
     private Window[] _windows;
     private XcbWindow[] _xcbWindows;
 
-    this()
+    this(in Backend[] loadOrder)
     {
         import std.exception : enforce;
         import std.experimental.logger : trace;
@@ -75,7 +76,7 @@ class XcbDisplay : Display
 
         initializeAtoms();
         initializeScreens();
-        initializeInstance();
+        initializeInstance(loadOrder);
     }
 
     override void dispose()
@@ -140,27 +141,47 @@ class XcbDisplay : Display
         }
     }
 
-    private void initializeInstance()
+    private void initializeInstance(in Backend[] loadOrder)
     {
-        import std.experimental.logger : info;
+        import std.experimental.logger : info, trace, warningf;
         assert(!_instance);
-        try {
-            import gfx.vulkan : createVulkanInstance, vulkanInit;
-            vulkanInit();
-            _instance = createVulkanInstance();
-            info("Creating a Vulkan instance");
-        }
-        catch (Exception ex) {
-            info("Vulkan is not available, falling back to OpenGL");
-        }
-        if (_instance) return;
 
-        import gfx.core.rc : makeRc;
-        import gfx.gl3 : GlInstance;
-        import gfx.gl3.context : GlAttribs;
-        import gfx.window.xcb.context : XcbGlContext;
-        auto ctx = makeRc!XcbGlContext(_dpy, _mainScreenNum, GlAttribs.init);
-        _instance = new GlInstance(ctx);
+        foreach (b; loadOrder) {
+            final switch (b) {
+            case Backend.vulkan:
+                try {
+                    trace("Attempting to instantiate Vulkan");
+                    import gfx.vulkan : createVulkanInstance, vulkanInit;
+                    vulkanInit();
+                    _instance = createVulkanInstance();
+                    info("Creating a Vulkan instance");
+                }
+                catch (Exception ex) {
+                    warningf("Vulkan is not available. %s", ex.msg);
+                }
+                break;
+            case Backend.gl3:
+                try {
+                    trace("Attempting to instantiate OpenGL");
+                    import gfx.core.rc : makeRc;
+                    import gfx.gl3 : GlInstance;
+                    import gfx.gl3.context : GlAttribs;
+                    import gfx.window.xcb.context : XcbGlContext;
+                    auto ctx = makeRc!XcbGlContext(_dpy, _mainScreenNum, GlAttribs.init);
+                    trace("Creating an OpenGL instance");
+                    _instance = new GlInstance(ctx);
+                }
+                catch (Exception ex) {
+                    warningf("OpenGL is not available. %s", ex.msg);
+                }
+                break;
+            }
+            if (_instance) break;
+        }
+
+        if (!_instance) {
+            throw new Exception("Could not instantiate a backend");
+        }
     }
 
     override @property Instance instance() {

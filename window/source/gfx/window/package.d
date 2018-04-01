@@ -2,7 +2,7 @@
 module gfx.window;
 
 import gfx.core.rc : AtomicRefCounted;
-import gfx.graal : Instance;
+import gfx.graal : Backend, Instance;
 
 alias MouseHandler = void delegate(uint x, uint y);
 alias KeyHandler = void delegate(uint key);
@@ -35,7 +35,19 @@ interface Window
     @property void onClose(CloseHandler handler);
 }
 
-Display createDisplay()
+/// The backend load order is the order into which backend load attempts
+/// will be performed.
+/// This array provides a default value for createDisplay parameter
+immutable Backend[] defaultBackendLoadOrder = [
+    Backend.vulkan,
+    Backend.gl3,
+];
+
+
+/// Create a display for the running platform.
+/// The display will load a backend instance during startup.
+/// It will try the backends in the provided loadOrder
+Display createDisplay(in Backend[] loadOrder=defaultBackendLoadOrder)
 {
     version(linux) {
         enum useWayland = false;
@@ -45,7 +57,7 @@ Display createDisplay()
         }
         else {
             import gfx.window.xcb : XcbDisplay;
-            return new XcbDisplay;
+            return new XcbDisplay(loadOrder);
         }
     }
     else {
