@@ -215,7 +215,9 @@ final class GlCommandBuffer : CommandBuffer
                                          in ClearDepthStencilValues clearValues,
                                          ImageSubresourceRange[] ranges)
     {
-        warningf("unimplemented GL command");
+        import gfx.gl3.resource : GlImage;
+        _cmds ~= new SetupFramebufferCmd(_fbo, cast(GlImage)image);
+        _cmds ~= new ClearDepthStencilCmd(clearValues, true, true);
     }
 
     override void copyBuffer(Trans!Buffer buffers, CopyRegion[] regions)
@@ -239,6 +241,9 @@ final class GlCommandBuffer : CommandBuffer
         foreach (cv; clearValues) {
             if (cv.type == ClearValues.Type.color) {
                 _cmds ~= new ClearColorCmd(cv.values.color);
+            }
+            if (cv.type == ClearValues.Type.depthStencil) {
+                _cmds ~= new ClearDepthStencilCmd(cv.values.depthStencil, true, true);
             }
         }
     }
@@ -542,6 +547,29 @@ final class ClearColorCmd : GlCommand {
         case ClearColorValues.Type.u32:
             gl.ClearBufferuiv(GL_COLOR, 0, &values.values.u32[0]);
             break;
+        }
+    }
+}
+
+final class ClearDepthStencilCmd : GlCommand {
+
+    ClearDepthStencilValues values;
+    bool depth;
+    bool stencil;
+
+    this (ClearDepthStencilValues values, bool depth, bool stencil) {
+        this.values = values;
+        this.depth = depth;
+        this.stencil = stencil;
+    }
+
+    override void execute(GlQueue queue, Gl gl) {
+        if (depth) {
+            gl.ClearBufferfv(GL_DEPTH, 0, &values.depth);
+        }
+        if (stencil) {
+            const val = cast(GLint)values.stencil;
+            gl.ClearBufferiv(GL_STENCIL, 0, &val);
         }
     }
 }
