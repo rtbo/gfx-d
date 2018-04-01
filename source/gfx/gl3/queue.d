@@ -138,8 +138,9 @@ final class GlCommandBuffer : CommandBuffer
     import gfx.graal.buffer : Buffer, IndexType;
     import gfx.graal.image : ImageBase, ImageLayout, ImageSubresourceRange;
     import gfx.graal.pipeline : ColorBlendInfo, DescriptorSet, Pipeline,
-                                PipelineLayout, ShaderStage, VertexInputBinding,
-                                VertexInputAttrib, ViewportConfig;
+                                PipelineLayout, Rasterizer, ShaderStage,
+                                VertexInputBinding, VertexInputAttrib,
+                                ViewportConfig;
     import gfx.graal.renderpass : Framebuffer, RenderPass;
     import std.experimental.logger;
     import std.typecons : Flag;
@@ -164,6 +165,7 @@ final class GlCommandBuffer : CommandBuffer
 
     // pipeline cache
     private GLenum _primitive;
+    private Rasterizer _rasterizer;
     private VertexInputBinding[] _inputBindings;
     private VertexInputAttrib[] _inputAttribs;
     private GLuint _prog;
@@ -251,19 +253,26 @@ final class GlCommandBuffer : CommandBuffer
     override void bindPipeline(Pipeline pipeline)
     {
         auto glPipeline = cast(GlPipeline)pipeline;
-        if (_prog != glPipeline.prog) {
-            _prog = glPipeline.prog;
-            _cmds ~= new BindProgramCmd(_prog);
-        }
-        bindOutputs(glPipeline.info.blendInfo);
+
         if (_viewports != glPipeline.info.viewports) {
             _viewports = glPipeline.info.viewports;
             _cmds ~= new SetViewportsCmd(_viewports);
         }
+        if (_prog != glPipeline.prog) {
+            _prog = glPipeline.prog;
+            _cmds ~= new BindProgramCmd(_prog);
+        }
+        if (_rasterizer != glPipeline.info.rasterizer) {
+            _rasterizer = glPipeline.info.rasterizer;
+            _cmds ~= new SetRasterizerCmd(_rasterizer);
+        }
+        bindOutputs(glPipeline.info.blendInfo);
+
         _primitive = toGl(glPipeline.info.assembly.primitive);
         _inputBindings = glPipeline.info.inputBindings;
         _inputAttribs = glPipeline.info.inputAttribs;
-        dirty(Dirty.pipeline);
+
+        dirty(Dirty.vertexBindings | Dirty.pipeline);
     }
 
     override void bindVertexBuffers(uint firstBinding, VertexBinding[] bindings)
@@ -416,6 +425,7 @@ final class GlCommandBuffer : CommandBuffer
             _cmds ~= new BindBlendSlotCmd(cast(GLuint)slot, attachment);
         }
     }
+
 }
 
 private:
@@ -535,7 +545,76 @@ final class BindProgramCmd : GlCommand
     this(GLuint prog) { this.prog = prog; }
     override void execute(GlQueue queue, Gl gl) {
         gl.UseProgram(prog);
-        gl.Disable(GL_CULL_FACE);
+    }
+}
+
+final class SetRasterizerCmd : GlCommand
+{
+    import gfx.graal.pipeline : Rasterizer;
+    Rasterizer rasterizer;
+    this(Rasterizer rasterizer) { this.rasterizer = rasterizer; }
+
+    override void execute(GlQueue queue, Gl gl) {
+        import gfx.gl3.conv : toGl;
+        import gfx.graal.pipeline : Cull, PolygonMode;
+
+        void polygonBias(GLenum polygonMode, GLenum depthBias)
+        {
+            gl.PolygonMode(GL_FRONT_AND_BACK, polygonMode);
+            if (rasterizer.depthBias.isSome) {
+                const db = rasterizer.depthBias.get;
+                gl.Enable(depthBias);
+                if (queue.share.info.polygonOffsetClamp) {
+                    gl.PolygonOffsetClamp(db.slopeFactor, db.constantFactor, db.clamp);
+                }
+                else {
+                    gl.PolygonOffset(db.slopeFactor, db.constantFactor);
+                }
+            }
+            else {
+                gl.Disable(depthBias);
+            }
+        }
+
+        final switch (rasterizer.mode) {
+        case PolygonMode.point:
+            polygonBias(GL_POINT, GL_POLYGON_OFFSET_POINT);
+            break;
+        case PolygonMode.line:
+            polygonBias(GL_LINE, GL_POLYGON_OFFSET_LINE);
+            gl.LineWidth(rasterizer.lineWidth);
+            break;
+        case PolygonMode.fill:
+            polygonBias(GL_FILL, GL_POLYGON_OFFSET_FILL);
+            break;
+        }
+
+        if (rasterizer.cull == Cull.none) {
+            gl.Disable(GL_CULL_FACE);
+        }
+        else {
+            gl.Enable(GL_CULL_FACE);
+            switch (rasterizer.cull) {
+            case Cull.back:
+                gl.CullFace(GL_BACK);
+                break;
+            case Cull.front:
+                gl.CullFace(GL_FRONT);
+                break;
+            case Cull.frontAndBack:
+                gl.CullFace(GL_FRONT_AND_BACK);
+                break;
+            default: break;
+            }
+            gl.FrontFace(toGl(rasterizer.front));
+        }
+
+        if (rasterizer.depthClamp) {
+            gl.Enable(GL_DEPTH_CLAMP);
+        }
+        else {
+            gl.Disable(GL_DEPTH_CLAMP);
+        }
     }
 }
 

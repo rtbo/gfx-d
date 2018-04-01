@@ -6,7 +6,8 @@ import gfx.bindings.opengl.gl;
 import gfx.graal.buffer : BufferUsage, IndexType;
 import gfx.graal.format : Format;
 import gfx.graal.image : Filter, ImageType, WrapMode;
-import gfx.graal.pipeline : CompareOp, Primitive, ShaderStage;
+import gfx.graal.pipeline : CompareOp, FrontFace, PolygonMode, Primitive,
+                            ShaderStage;
 
 GLenum toGl(in BufferUsage usage) pure {
     switch (usage) {
@@ -139,6 +140,21 @@ GLenum toGl(in Primitive primitive) pure {
     case Primitive.triangleListAdjacency:   return GL_TRIANGLES_ADJACENCY;
     case Primitive.triangleStripAdjacency:  return GL_TRIANGLE_STRIP_ADJACENCY;
     case Primitive.patchList:               return GL_PATCHES;
+    }
+}
+
+GLenum toGl(in FrontFace ff) pure {
+    final switch (ff) {
+    case FrontFace.ccw: return GL_CCW;
+    case FrontFace.cw:  return GL_CW;
+    }
+}
+
+GLenum toGl(in PolygonMode pm) pure {
+    final switch (pm) {
+    case PolygonMode.point: return GL_POINT;
+    case PolygonMode.line:  return GL_LINE;
+    case PolygonMode.fill:  return GL_FILL;
     }
 }
 

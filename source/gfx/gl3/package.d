@@ -58,6 +58,7 @@ struct GlInfo
     bool drawElementsBaseVertex;
     bool baseInstance;
     bool viewportArray;
+    bool polygonOffsetClamp;
 
     private static GlInfo fetchAndCheck (Gl gl, uint glVer) {
         import gfx.bindings.opengl.gl : GL_VERSION, GL_SHADING_LANGUAGE_VERSION;
@@ -90,6 +91,7 @@ struct GlInfo
         gi.drawElementsBaseVertex = checkFeature(32, "ARB_draw_elements_base_vertex");
         gi.baseInstance = checkFeature(42, "ARB_base_instance");
         gi.viewportArray = checkFeature(41, "ARB_viewport_array");
+        gi.polygonOffsetClamp = exts.canFind("GL_EXT_polygon_offset_clamp");
         return gi;
     }
 }
