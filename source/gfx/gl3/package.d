@@ -85,13 +85,13 @@ struct GlInfo
         GlInfo gi;
         gi.glVer = cast(ushort)glVer;
         gi.glslVer = cast(ushort)glslVersion(glVer);
-        gi.bufferStorage = exts.canFind("GL_ARB_buffer_storage");
-        gi.textureStorage = exts.canFind("GL_ARB_texture_storage");
-        gi.samplerObject = exts.canFind("GL_ARB_sampler_object");
-        gi.drawElementsBaseVertex = checkFeature(32, "ARB_draw_elements_base_vertex");
-        gi.baseInstance = checkFeature(42, "ARB_base_instance");
-        gi.viewportArray = checkFeature(41, "ARB_viewport_array");
-        gi.polygonOffsetClamp = exts.canFind("GL_EXT_polygon_offset_clamp");
+        gi.bufferStorage            = checkFeature(44, "GL_ARB_buffer_storage");
+        gi.textureStorage           = checkFeature(42, "GL_ARB_texture_storage");
+        gi.samplerObject            = checkFeature(33, "GL_ARB_sampler_objects");
+        gi.drawElementsBaseVertex   = checkFeature(32, "ARB_draw_elements_base_vertex");
+        gi.baseInstance             = checkFeature(42, "ARB_base_instance");
+        gi.viewportArray            = checkFeature(41, "ARB_viewport_array");
+        gi.polygonOffsetClamp       = exts.canFind("GL_EXT_polygon_offset_clamp");
         return gi;
     }
 }
