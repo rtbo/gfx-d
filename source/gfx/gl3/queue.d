@@ -585,6 +585,7 @@ final class BindVertexBufCmd : GlCommand
                 );
                 break;
             }
+            gl.EnableVertexAttribArray(at.index);
         }
         gl.BindBuffer(GL_ARRAY_BUFFER, 0);
     }
