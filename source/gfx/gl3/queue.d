@@ -9,17 +9,19 @@ import gfx.graal.queue;
 
 final class GlQueue : Queue, Disposable
 {
-    import gfx.gl3 : GlShare;
+    import gfx.gl3 : GlInfo, GlShare;
     import gfx.graal.device : Device;
     import gfx.graal.sync : Fence, Semaphore;
 
     private GlShare share;
+    private GlInfo info;
     private Device _device;
     private GLuint readFbo;
     private GLuint vao;
 
     this(GlShare share, Device device) {
         this.share = share;
+        this.info = share.info;
         _device = device;
         auto gl = share.gl;
         gl.GenFramebuffers(1, &readFbo);
@@ -137,10 +139,10 @@ final class GlCommandBuffer : CommandBuffer
     import gfx.gl3.pipeline : GlPipeline;
     import gfx.graal.buffer : Buffer, IndexType;
     import gfx.graal.image : ImageBase, ImageLayout, ImageSubresourceRange;
-    import gfx.graal.pipeline : ColorBlendInfo, DescriptorSet, Pipeline,
-                                PipelineLayout, Rasterizer, ShaderStage,
-                                VertexInputBinding, VertexInputAttrib,
-                                ViewportConfig;
+    import gfx.graal.pipeline : ColorBlendInfo, DepthInfo, DescriptorSet,
+                                Pipeline, PipelineLayout, Rasterizer,
+                                ShaderStage, VertexInputBinding,
+                                VertexInputAttrib, ViewportConfig;
     import gfx.graal.renderpass : Framebuffer, RenderPass;
     import std.experimental.logger;
     import std.typecons : Flag;
@@ -170,6 +172,7 @@ final class GlCommandBuffer : CommandBuffer
     private VertexInputAttrib[] _inputAttribs;
     private GLuint _prog;
     private ViewportConfig[] _viewports;
+    private DepthInfo _depthInfo;
 
 
     this (CommandPool pool, GLuint fbo) {
@@ -265,6 +268,10 @@ final class GlCommandBuffer : CommandBuffer
         if (_rasterizer != glPipeline.info.rasterizer) {
             _rasterizer = glPipeline.info.rasterizer;
             _cmds ~= new SetRasterizerCmd(_rasterizer);
+        }
+        if (_depthInfo != glPipeline.info.depthInfo) {
+            _depthInfo = glPipeline.info.depthInfo;
+            _cmds ~= new SetDepthInfoCmd(_depthInfo);
         }
         bindOutputs(glPipeline.info.blendInfo);
 
@@ -478,7 +485,7 @@ final class SetViewportsCmd : GlCommand {
     }
 
     override void execute(GlQueue queue, Gl gl) {
-        if (viewports.length > 1 && !queue.share.info.viewportArray) {
+        if (viewports.length > 1 && !queue.info.viewportArray) {
             import std.experimental.logger : error;
             error("ARB_viewport_array not supported");
             viewports = viewports[0..1];
@@ -564,7 +571,7 @@ final class SetRasterizerCmd : GlCommand
             if (rasterizer.depthBias.isSome) {
                 const db = rasterizer.depthBias.get;
                 gl.Enable(depthBias);
-                if (queue.share.info.polygonOffsetClamp) {
+                if (queue.info.polygonOffsetClamp) {
                     gl.PolygonOffsetClamp(db.slopeFactor, db.constantFactor, db.clamp);
                 }
                 else {
@@ -614,6 +621,31 @@ final class SetRasterizerCmd : GlCommand
         }
         else {
             gl.Disable(GL_DEPTH_CLAMP);
+        }
+    }
+}
+
+final class SetDepthInfoCmd : GlCommand
+{
+    import gfx.graal.pipeline : DepthInfo;
+
+    DepthInfo info;
+    this (DepthInfo info) { this.info = info; }
+
+    override void execute(GlQueue queue, Gl gl) {
+        import gfx.gl3.conv : toGl;
+
+        if (info.enabled) {
+            gl.Enable(GL_DEPTH_TEST);
+            gl.DepthFunc(toGl(info.compareOp));
+            gl.DepthMask(cast(GLboolean)info.write);
+            if (info.boundsTest) {
+                import std.experimental.logger : warningf;
+                warningf("no support for depth bounds test");
+            }
+        }
+        else {
+            gl.Disable(GL_DEPTH_TEST);
         }
     }
 }
@@ -762,7 +794,7 @@ final class DrawCmd : GlCommand
     }
 
     override void execute(GlQueue queue, Gl gl) {
-        if (baseInstance != 0 && !queue.share.info.baseInstance) {
+        if (baseInstance != 0 && !queue.info.baseInstance) {
             import std.experimental.logger : errorf;
             errorf("No support for ARB_base_instance");
             return;
@@ -810,11 +842,11 @@ final class DrawIndexedCmd : GlCommand
 
         const offset = cast(const(void*))indexBufOffset;
 
-        if (baseVertex != 0 && !queue.share.info.drawElementsBaseVertex) {
+        if (baseVertex != 0 && !queue.info.drawElementsBaseVertex) {
             errorf("No support for ARB_draw_elements_base_vertex");
             return;
         }
-        if (baseInstance != 0 && !queue.share.info.baseInstance) {
+        if (baseInstance != 0 && !queue.info.baseInstance) {
             errorf("No support for ARB_base_instance");
             return;
         }
