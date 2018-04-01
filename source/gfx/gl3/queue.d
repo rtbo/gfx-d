@@ -330,7 +330,11 @@ final class GlCommandBuffer : CommandBuffer
     override void draw(uint vertexCount, uint instanceCount, uint firstVertex,
                        uint firstInstance)
     {
-        warningf("unimplemented GL command");
+        ensureBindings();
+        _cmds ~= new DrawCmd(
+            _primitive, cast(GLint)firstVertex, cast(GLsizei)vertexCount,
+            cast(GLsizei)instanceCount, cast(GLuint)firstInstance
+        );
     }
 
     override void drawIndexed(uint indexCount, uint instanceCount,
@@ -656,6 +660,46 @@ final class BindBlendSlotCmd : GlCommand
             (cm & ColorMask.b) ? GL_TRUE : GL_FALSE,
             (cm & ColorMask.a) ? GL_TRUE : GL_FALSE
         );
+    }
+}
+
+final class DrawCmd : GlCommand
+{
+    GLenum primitive;
+    GLint first;
+    GLsizei count;
+    GLsizei instanceCount;
+    GLuint baseInstance;
+
+    this (GLenum primitive, GLint first, GLsizei count, GLsizei instanceCount,
+            GLuint baseInstance)
+    {
+        this.primitive = primitive;
+        this.first = first;
+        this.count = count;
+        this.instanceCount = instanceCount;
+        this.baseInstance = baseInstance;
+    }
+
+    override void execute(GlQueue queue, Gl gl) {
+        if (baseInstance != 0 && !queue.share.info.baseInstance) {
+            import std.experimental.logger : errorf;
+            errorf("No support for ARB_base_instance");
+            return;
+        }
+        if (instanceCount <= 1) {
+            gl.DrawArrays(primitive, first, count);
+        }
+        else if (instanceCount > 1 && baseInstance == 0) {
+            gl.DrawArraysInstanced(primitive, first, count, instanceCount);
+        }
+        else if (instanceCount > 1 && baseInstance != 0) {
+            gl.DrawArraysInstancedBaseInstance(
+                primitive, first, count, instanceCount, baseInstance
+            );
+        }
+        import gfx.gl3.error : glCheck;
+        glCheck(gl, "draw");
     }
 }
 
