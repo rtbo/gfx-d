@@ -144,16 +144,16 @@ class XcbDisplay : Display
     {
         import std.experimental.logger : info;
         assert(!_instance);
-        // try {
-        //     import gfx.vulkan : createVulkanInstance, vulkanInit;
-        //     vulkanInit();
-        //     _instance = createVulkanInstance();
-        //     info("Creating a Vulkan instance");
-        // }
-        // catch (Exception ex) {
-        //     info("Vulkan is not available, falling back to OpenGL");
-        // }
-        // if (_instance) return;
+        try {
+            import gfx.vulkan : createVulkanInstance, vulkanInit;
+            vulkanInit();
+            _instance = createVulkanInstance();
+            info("Creating a Vulkan instance");
+        }
+        catch (Exception ex) {
+            info("Vulkan is not available, falling back to OpenGL");
+        }
+        if (_instance) return;
 
         import gfx.core.rc : makeRc;
         import gfx.gl3 : GlInstance;
