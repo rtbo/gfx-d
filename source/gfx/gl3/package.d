@@ -54,6 +54,7 @@ struct GlInfo
     ushort glslVer;
     bool bufferStorage;
     bool textureStorage;
+    bool textureStorageMS;
     bool samplerObject;
     bool drawElementsBaseVertex;
     bool baseInstance;
@@ -87,6 +88,7 @@ struct GlInfo
         gi.glslVer = cast(ushort)glslVersion(glVer);
         gi.bufferStorage            = checkFeature(44, "GL_ARB_buffer_storage");
         gi.textureStorage           = checkFeature(42, "GL_ARB_texture_storage");
+        gi.textureStorageMS         = checkFeature(43, "GL_ARB_texture_storage_multisample");
         gi.samplerObject            = checkFeature(33, "GL_ARB_sampler_objects");
         gi.drawElementsBaseVertex   = checkFeature(32, "ARB_draw_elements_base_vertex");
         gi.baseInstance             = checkFeature(42, "ARB_base_instance");

@@ -301,7 +301,7 @@ final class GlImage : Image
         final switch(_glType) {
         case GlImgType.tex:
             gl.BindTexture(_glTexTarget, _name);
-            if (glInfo.textureStorage) {
+            if (glInfo.textureStorage || (_samples > 1 && glInfo.textureStorageMS)) {
                 final switch (_type) {
                 case ImageType.d1:
                     gl.TexStorage1D(_glTexTarget, _levels, _glFormat, _dims.width);
