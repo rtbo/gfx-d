@@ -15,6 +15,15 @@
                 "xlib-d": "~>0.1.1",
                 "xcb-d": "~>2.1.0"
             }
+        },
+        {
+            "name": "windows",
+            "platforms": ["windows"],
+            "buildTypes": {
+                "debug": {
+                    "buildOptions": []
+                }
+            }
         }
     ]
 }

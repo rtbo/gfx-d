@@ -14,7 +14,7 @@
         "gfx" : { "path": "../../"  },
 		"gfx:window" : { "path": "../../window" }
 	},
-	"preGenerateCommands": [
+	"preGenerateCommands-linux": [
 		"bash $PACKAGE_DIR/../gen_example_spirv.sh $PACKAGE_DIR"
 	]
 }

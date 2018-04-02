@@ -21,6 +21,10 @@
             "preGenerateCommands": [
                 "sh $PACKAGE_DIR/resources/gen_wld_protocol.sh $PACKAGE_DIR"
             ]
+        },
+        {
+            "name": "windows",
+            "platforms": ["windows"]
         }
     ]
 }
