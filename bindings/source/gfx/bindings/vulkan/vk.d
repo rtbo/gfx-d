@@ -4411,373 +4411,1177 @@ extern(C) nothrow @nogc {
 // Global commands
 
 final class VkGlobalCmds {
-    PFN_vkCreateInstance                       createInstance;
-    PFN_vkGetInstanceProcAddr                  getInstanceProcAddr;
-    PFN_vkEnumerateInstanceExtensionProperties enumerateInstanceExtensionProperties;
-    PFN_vkEnumerateInstanceLayerProperties     enumerateInstanceLayerProperties;
 
     this (PFN_vkGetInstanceProcAddr loader) {
-        getInstanceProcAddr = loader;
-        createInstance                       = cast(PFN_vkCreateInstance)                      loader(null, "vkCreateInstance");
-        enumerateInstanceExtensionProperties = cast(PFN_vkEnumerateInstanceExtensionProperties)loader(null, "vkEnumerateInstanceExtensionProperties");
-        enumerateInstanceLayerProperties     = cast(PFN_vkEnumerateInstanceLayerProperties)    loader(null, "vkEnumerateInstanceLayerProperties");
+        _GetInstanceProcAddr = loader;
+        _CreateInstance                       = cast(PFN_vkCreateInstance)                      loader(null, "vkCreateInstance");
+        _EnumerateInstanceExtensionProperties = cast(PFN_vkEnumerateInstanceExtensionProperties)loader(null, "vkEnumerateInstanceExtensionProperties");
+        _EnumerateInstanceLayerProperties     = cast(PFN_vkEnumerateInstanceLayerProperties)    loader(null, "vkEnumerateInstanceLayerProperties");
     }
+
+    VkResult CreateInstance (const(VkInstanceCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkInstance* pInstance) {
+        assert(_CreateInstance !is null, "vkCreateInstance was not loaded.");
+        return _CreateInstance(pCreateInfo, pAllocator, pInstance);
+    }
+
+    PFN_vkVoidFunction GetInstanceProcAddr (VkInstance instance, const(char)* pName) {
+        assert(_GetInstanceProcAddr !is null, "vkGetInstanceProcAddr was not loaded.");
+        return _GetInstanceProcAddr(instance, pName);
+    }
+
+    VkResult EnumerateInstanceExtensionProperties (const(char)* pLayerName, uint32_t* pPropertyCount, VkExtensionProperties* pProperties) {
+        assert(_EnumerateInstanceExtensionProperties !is null, "vkEnumerateInstanceExtensionProperties was not loaded.");
+        return _EnumerateInstanceExtensionProperties(pLayerName, pPropertyCount, pProperties);
+    }
+
+    VkResult EnumerateInstanceLayerProperties (uint32_t* pPropertyCount, VkLayerProperties* pProperties) {
+        assert(_EnumerateInstanceLayerProperties !is null, "vkEnumerateInstanceLayerProperties was not loaded.");
+        return _EnumerateInstanceLayerProperties(pPropertyCount, pProperties);
+    }
+
+    private PFN_vkCreateInstance                       _CreateInstance;
+    private PFN_vkGetInstanceProcAddr                  _GetInstanceProcAddr;
+    private PFN_vkEnumerateInstanceExtensionProperties _EnumerateInstanceExtensionProperties;
+    private PFN_vkEnumerateInstanceLayerProperties     _EnumerateInstanceLayerProperties;
 }
 
 // Instance commands
 
 final class VkInstanceCmds {
-    // VK_VERSION_1_0
-    PFN_vkDestroyInstance                                destroyInstance;
-    PFN_vkEnumeratePhysicalDevices                       enumeratePhysicalDevices;
-    PFN_vkGetPhysicalDeviceFeatures                      getPhysicalDeviceFeatures;
-    PFN_vkGetPhysicalDeviceFormatProperties              getPhysicalDeviceFormatProperties;
-    PFN_vkGetPhysicalDeviceImageFormatProperties         getPhysicalDeviceImageFormatProperties;
-    PFN_vkGetPhysicalDeviceProperties                    getPhysicalDeviceProperties;
-    PFN_vkGetPhysicalDeviceQueueFamilyProperties         getPhysicalDeviceQueueFamilyProperties;
-    PFN_vkGetPhysicalDeviceMemoryProperties              getPhysicalDeviceMemoryProperties;
-    PFN_vkGetDeviceProcAddr                              getDeviceProcAddr;
-    PFN_vkCreateDevice                                   createDevice;
-    PFN_vkEnumerateDeviceExtensionProperties             enumerateDeviceExtensionProperties;
-    PFN_vkEnumerateDeviceLayerProperties                 enumerateDeviceLayerProperties;
-    PFN_vkGetPhysicalDeviceSparseImageFormatProperties   getPhysicalDeviceSparseImageFormatProperties;
-
-    // VK_KHR_surface
-    PFN_vkDestroySurfaceKHR                              destroySurfaceKHR;
-    PFN_vkGetPhysicalDeviceSurfaceSupportKHR             getPhysicalDeviceSurfaceSupportKHR;
-    PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR        getPhysicalDeviceSurfaceCapabilitiesKHR;
-    PFN_vkGetPhysicalDeviceSurfaceFormatsKHR             getPhysicalDeviceSurfaceFormatsKHR;
-    PFN_vkGetPhysicalDeviceSurfacePresentModesKHR        getPhysicalDeviceSurfacePresentModesKHR;
-
-    // VK_KHR_display
-    PFN_vkGetPhysicalDeviceDisplayPropertiesKHR          getPhysicalDeviceDisplayPropertiesKHR;
-    PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR     getPhysicalDeviceDisplayPlanePropertiesKHR;
-    PFN_vkGetDisplayPlaneSupportedDisplaysKHR            getDisplayPlaneSupportedDisplaysKHR;
-    PFN_vkGetDisplayModePropertiesKHR                    getDisplayModePropertiesKHR;
-    PFN_vkCreateDisplayModeKHR                           createDisplayModeKHR;
-    PFN_vkGetDisplayPlaneCapabilitiesKHR                 getDisplayPlaneCapabilitiesKHR;
-    PFN_vkCreateDisplayPlaneSurfaceKHR                   createDisplayPlaneSurfaceKHR;
-
-    // VK_KHR_xcb_surface
-    version(linux) {
-        PFN_vkCreateXcbSurfaceKHR                            createXcbSurfaceKHR;
-        PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR     getPhysicalDeviceXcbPresentationSupportKHR;
-    }
-
-    // VK_KHR_wayland_surface
-    version(linux) {
-        PFN_vkCreateWaylandSurfaceKHR                        createWaylandSurfaceKHR;
-        PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR getPhysicalDeviceWaylandPresentationSupportKHR;
-    }
 
     this (VkInstance instance, VkGlobalCmds globalCmds) {
-        auto loader = globalCmds.getInstanceProcAddr;
+        auto loader = globalCmds._GetInstanceProcAddr;
         // VK_VERSION_1_0
-        destroyInstance                                = cast(PFN_vkDestroyInstance)                               loader(instance, "vkDestroyInstance");
-        enumeratePhysicalDevices                       = cast(PFN_vkEnumeratePhysicalDevices)                      loader(instance, "vkEnumeratePhysicalDevices");
-        getPhysicalDeviceFeatures                      = cast(PFN_vkGetPhysicalDeviceFeatures)                     loader(instance, "vkGetPhysicalDeviceFeatures");
-        getPhysicalDeviceFormatProperties              = cast(PFN_vkGetPhysicalDeviceFormatProperties)             loader(instance, "vkGetPhysicalDeviceFormatProperties");
-        getPhysicalDeviceImageFormatProperties         = cast(PFN_vkGetPhysicalDeviceImageFormatProperties)        loader(instance, "vkGetPhysicalDeviceImageFormatProperties");
-        getPhysicalDeviceProperties                    = cast(PFN_vkGetPhysicalDeviceProperties)                   loader(instance, "vkGetPhysicalDeviceProperties");
-        getPhysicalDeviceQueueFamilyProperties         = cast(PFN_vkGetPhysicalDeviceQueueFamilyProperties)        loader(instance, "vkGetPhysicalDeviceQueueFamilyProperties");
-        getPhysicalDeviceMemoryProperties              = cast(PFN_vkGetPhysicalDeviceMemoryProperties)             loader(instance, "vkGetPhysicalDeviceMemoryProperties");
-        getDeviceProcAddr                              = cast(PFN_vkGetDeviceProcAddr)                             loader(instance, "vkGetDeviceProcAddr");
-        createDevice                                   = cast(PFN_vkCreateDevice)                                  loader(instance, "vkCreateDevice");
-        enumerateDeviceExtensionProperties             = cast(PFN_vkEnumerateDeviceExtensionProperties)            loader(instance, "vkEnumerateDeviceExtensionProperties");
-        enumerateDeviceLayerProperties                 = cast(PFN_vkEnumerateDeviceLayerProperties)                loader(instance, "vkEnumerateDeviceLayerProperties");
-        getPhysicalDeviceSparseImageFormatProperties   = cast(PFN_vkGetPhysicalDeviceSparseImageFormatProperties)  loader(instance, "vkGetPhysicalDeviceSparseImageFormatProperties");
+        _DestroyInstance                                = cast(PFN_vkDestroyInstance)                               loader(instance, "vkDestroyInstance");
+        _EnumeratePhysicalDevices                       = cast(PFN_vkEnumeratePhysicalDevices)                      loader(instance, "vkEnumeratePhysicalDevices");
+        _GetPhysicalDeviceFeatures                      = cast(PFN_vkGetPhysicalDeviceFeatures)                     loader(instance, "vkGetPhysicalDeviceFeatures");
+        _GetPhysicalDeviceFormatProperties              = cast(PFN_vkGetPhysicalDeviceFormatProperties)             loader(instance, "vkGetPhysicalDeviceFormatProperties");
+        _GetPhysicalDeviceImageFormatProperties         = cast(PFN_vkGetPhysicalDeviceImageFormatProperties)        loader(instance, "vkGetPhysicalDeviceImageFormatProperties");
+        _GetPhysicalDeviceProperties                    = cast(PFN_vkGetPhysicalDeviceProperties)                   loader(instance, "vkGetPhysicalDeviceProperties");
+        _GetPhysicalDeviceQueueFamilyProperties         = cast(PFN_vkGetPhysicalDeviceQueueFamilyProperties)        loader(instance, "vkGetPhysicalDeviceQueueFamilyProperties");
+        _GetPhysicalDeviceMemoryProperties              = cast(PFN_vkGetPhysicalDeviceMemoryProperties)             loader(instance, "vkGetPhysicalDeviceMemoryProperties");
+        _GetDeviceProcAddr                              = cast(PFN_vkGetDeviceProcAddr)                             loader(instance, "vkGetDeviceProcAddr");
+        _CreateDevice                                   = cast(PFN_vkCreateDevice)                                  loader(instance, "vkCreateDevice");
+        _EnumerateDeviceExtensionProperties             = cast(PFN_vkEnumerateDeviceExtensionProperties)            loader(instance, "vkEnumerateDeviceExtensionProperties");
+        _EnumerateDeviceLayerProperties                 = cast(PFN_vkEnumerateDeviceLayerProperties)                loader(instance, "vkEnumerateDeviceLayerProperties");
+        _GetPhysicalDeviceSparseImageFormatProperties   = cast(PFN_vkGetPhysicalDeviceSparseImageFormatProperties)  loader(instance, "vkGetPhysicalDeviceSparseImageFormatProperties");
 
         // VK_KHR_surface
-        destroySurfaceKHR                              = cast(PFN_vkDestroySurfaceKHR)                             loader(instance, "vkDestroySurfaceKHR");
-        getPhysicalDeviceSurfaceSupportKHR             = cast(PFN_vkGetPhysicalDeviceSurfaceSupportKHR)            loader(instance, "vkGetPhysicalDeviceSurfaceSupportKHR");
-        getPhysicalDeviceSurfaceCapabilitiesKHR        = cast(PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR)       loader(instance, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR");
-        getPhysicalDeviceSurfaceFormatsKHR             = cast(PFN_vkGetPhysicalDeviceSurfaceFormatsKHR)            loader(instance, "vkGetPhysicalDeviceSurfaceFormatsKHR");
-        getPhysicalDeviceSurfacePresentModesKHR        = cast(PFN_vkGetPhysicalDeviceSurfacePresentModesKHR)       loader(instance, "vkGetPhysicalDeviceSurfacePresentModesKHR");
+        _DestroySurfaceKHR                              = cast(PFN_vkDestroySurfaceKHR)                             loader(instance, "vkDestroySurfaceKHR");
+        _GetPhysicalDeviceSurfaceSupportKHR             = cast(PFN_vkGetPhysicalDeviceSurfaceSupportKHR)            loader(instance, "vkGetPhysicalDeviceSurfaceSupportKHR");
+        _GetPhysicalDeviceSurfaceCapabilitiesKHR        = cast(PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR)       loader(instance, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR");
+        _GetPhysicalDeviceSurfaceFormatsKHR             = cast(PFN_vkGetPhysicalDeviceSurfaceFormatsKHR)            loader(instance, "vkGetPhysicalDeviceSurfaceFormatsKHR");
+        _GetPhysicalDeviceSurfacePresentModesKHR        = cast(PFN_vkGetPhysicalDeviceSurfacePresentModesKHR)       loader(instance, "vkGetPhysicalDeviceSurfacePresentModesKHR");
 
         // VK_KHR_display
-        getPhysicalDeviceDisplayPropertiesKHR          = cast(PFN_vkGetPhysicalDeviceDisplayPropertiesKHR)         loader(instance, "vkGetPhysicalDeviceDisplayPropertiesKHR");
-        getPhysicalDeviceDisplayPlanePropertiesKHR     = cast(PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR)    loader(instance, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR");
-        getDisplayPlaneSupportedDisplaysKHR            = cast(PFN_vkGetDisplayPlaneSupportedDisplaysKHR)           loader(instance, "vkGetDisplayPlaneSupportedDisplaysKHR");
-        getDisplayModePropertiesKHR                    = cast(PFN_vkGetDisplayModePropertiesKHR)                   loader(instance, "vkGetDisplayModePropertiesKHR");
-        createDisplayModeKHR                           = cast(PFN_vkCreateDisplayModeKHR)                          loader(instance, "vkCreateDisplayModeKHR");
-        getDisplayPlaneCapabilitiesKHR                 = cast(PFN_vkGetDisplayPlaneCapabilitiesKHR)                loader(instance, "vkGetDisplayPlaneCapabilitiesKHR");
-        createDisplayPlaneSurfaceKHR                   = cast(PFN_vkCreateDisplayPlaneSurfaceKHR)                  loader(instance, "vkCreateDisplayPlaneSurfaceKHR");
+        _GetPhysicalDeviceDisplayPropertiesKHR          = cast(PFN_vkGetPhysicalDeviceDisplayPropertiesKHR)         loader(instance, "vkGetPhysicalDeviceDisplayPropertiesKHR");
+        _GetPhysicalDeviceDisplayPlanePropertiesKHR     = cast(PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR)    loader(instance, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR");
+        _GetDisplayPlaneSupportedDisplaysKHR            = cast(PFN_vkGetDisplayPlaneSupportedDisplaysKHR)           loader(instance, "vkGetDisplayPlaneSupportedDisplaysKHR");
+        _GetDisplayModePropertiesKHR                    = cast(PFN_vkGetDisplayModePropertiesKHR)                   loader(instance, "vkGetDisplayModePropertiesKHR");
+        _CreateDisplayModeKHR                           = cast(PFN_vkCreateDisplayModeKHR)                          loader(instance, "vkCreateDisplayModeKHR");
+        _GetDisplayPlaneCapabilitiesKHR                 = cast(PFN_vkGetDisplayPlaneCapabilitiesKHR)                loader(instance, "vkGetDisplayPlaneCapabilitiesKHR");
+        _CreateDisplayPlaneSurfaceKHR                   = cast(PFN_vkCreateDisplayPlaneSurfaceKHR)                  loader(instance, "vkCreateDisplayPlaneSurfaceKHR");
 
         // VK_KHR_xcb_surface
         version(linux) {
-            createXcbSurfaceKHR                            = cast(PFN_vkCreateXcbSurfaceKHR)                           loader(instance, "vkCreateXcbSurfaceKHR");
-            getPhysicalDeviceXcbPresentationSupportKHR     = cast(PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR)    loader(instance, "vkGetPhysicalDeviceXcbPresentationSupportKHR");
+            _CreateXcbSurfaceKHR                            = cast(PFN_vkCreateXcbSurfaceKHR)                           loader(instance, "vkCreateXcbSurfaceKHR");
+            _GetPhysicalDeviceXcbPresentationSupportKHR     = cast(PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR)    loader(instance, "vkGetPhysicalDeviceXcbPresentationSupportKHR");
         }
 
         // VK_KHR_wayland_surface
         version(linux) {
-            createWaylandSurfaceKHR                        = cast(PFN_vkCreateWaylandSurfaceKHR)                       loader(instance, "vkCreateWaylandSurfaceKHR");
-            getPhysicalDeviceWaylandPresentationSupportKHR = cast(PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR)loader(instance, "vkGetPhysicalDeviceWaylandPresentationSupportKHR");
+            _CreateWaylandSurfaceKHR                        = cast(PFN_vkCreateWaylandSurfaceKHR)                       loader(instance, "vkCreateWaylandSurfaceKHR");
+            _GetPhysicalDeviceWaylandPresentationSupportKHR = cast(PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR)loader(instance, "vkGetPhysicalDeviceWaylandPresentationSupportKHR");
         }
+    }
+
+    /// Commands for VK_VERSION_1_0
+    void DestroyInstance (VkInstance instance, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyInstance !is null, "vkDestroyInstance was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyInstance(instance, pAllocator);
+    }
+    /// ditto
+    VkResult EnumeratePhysicalDevices (VkInstance instance, uint32_t* pPhysicalDeviceCount, VkPhysicalDevice* pPhysicalDevices) {
+        assert(_EnumeratePhysicalDevices !is null, "vkEnumeratePhysicalDevices was not loaded. Requested by VK_VERSION_1_0");
+        return _EnumeratePhysicalDevices(instance, pPhysicalDeviceCount, pPhysicalDevices);
+    }
+    /// ditto
+    void GetPhysicalDeviceFeatures (VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures* pFeatures) {
+        assert(_GetPhysicalDeviceFeatures !is null, "vkGetPhysicalDeviceFeatures was not loaded. Requested by VK_VERSION_1_0");
+        return _GetPhysicalDeviceFeatures(physicalDevice, pFeatures);
+    }
+    /// ditto
+    void GetPhysicalDeviceFormatProperties (VkPhysicalDevice physicalDevice, VkFormat format, VkFormatProperties* pFormatProperties) {
+        assert(_GetPhysicalDeviceFormatProperties !is null, "vkGetPhysicalDeviceFormatProperties was not loaded. Requested by VK_VERSION_1_0");
+        return _GetPhysicalDeviceFormatProperties(physicalDevice, format, pFormatProperties);
+    }
+    /// ditto
+    VkResult GetPhysicalDeviceImageFormatProperties (VkPhysicalDevice physicalDevice, VkFormat format, VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags, VkImageFormatProperties* pImageFormatProperties) {
+        assert(_GetPhysicalDeviceImageFormatProperties !is null, "vkGetPhysicalDeviceImageFormatProperties was not loaded. Requested by VK_VERSION_1_0");
+        return _GetPhysicalDeviceImageFormatProperties(physicalDevice, format, type, tiling, usage, flags, pImageFormatProperties);
+    }
+    /// ditto
+    void GetPhysicalDeviceProperties (VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties* pProperties) {
+        assert(_GetPhysicalDeviceProperties !is null, "vkGetPhysicalDeviceProperties was not loaded. Requested by VK_VERSION_1_0");
+        return _GetPhysicalDeviceProperties(physicalDevice, pProperties);
+    }
+    /// ditto
+    void GetPhysicalDeviceQueueFamilyProperties (VkPhysicalDevice physicalDevice, uint32_t* pQueueFamilyPropertyCount, VkQueueFamilyProperties* pQueueFamilyProperties) {
+        assert(_GetPhysicalDeviceQueueFamilyProperties !is null, "vkGetPhysicalDeviceQueueFamilyProperties was not loaded. Requested by VK_VERSION_1_0");
+        return _GetPhysicalDeviceQueueFamilyProperties(physicalDevice, pQueueFamilyPropertyCount, pQueueFamilyProperties);
+    }
+    /// ditto
+    void GetPhysicalDeviceMemoryProperties (VkPhysicalDevice physicalDevice, VkPhysicalDeviceMemoryProperties* pMemoryProperties) {
+        assert(_GetPhysicalDeviceMemoryProperties !is null, "vkGetPhysicalDeviceMemoryProperties was not loaded. Requested by VK_VERSION_1_0");
+        return _GetPhysicalDeviceMemoryProperties(physicalDevice, pMemoryProperties);
+    }
+    /// ditto
+    PFN_vkVoidFunction GetDeviceProcAddr (VkDevice device, const(char)* pName) {
+        assert(_GetDeviceProcAddr !is null, "vkGetDeviceProcAddr was not loaded. Requested by VK_VERSION_1_0");
+        return _GetDeviceProcAddr(device, pName);
+    }
+    /// ditto
+    VkResult CreateDevice (VkPhysicalDevice physicalDevice, const(VkDeviceCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkDevice* pDevice) {
+        assert(_CreateDevice !is null, "vkCreateDevice was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
+    }
+    /// ditto
+    VkResult EnumerateDeviceExtensionProperties (VkPhysicalDevice physicalDevice, const(char)* pLayerName, uint32_t* pPropertyCount, VkExtensionProperties* pProperties) {
+        assert(_EnumerateDeviceExtensionProperties !is null, "vkEnumerateDeviceExtensionProperties was not loaded. Requested by VK_VERSION_1_0");
+        return _EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
+    }
+    /// ditto
+    VkResult EnumerateDeviceLayerProperties (VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkLayerProperties* pProperties) {
+        assert(_EnumerateDeviceLayerProperties !is null, "vkEnumerateDeviceLayerProperties was not loaded. Requested by VK_VERSION_1_0");
+        return _EnumerateDeviceLayerProperties(physicalDevice, pPropertyCount, pProperties);
+    }
+    /// ditto
+    void GetPhysicalDeviceSparseImageFormatProperties (VkPhysicalDevice physicalDevice, VkFormat format, VkImageType type, VkSampleCountFlagBits samples, VkImageUsageFlags usage, VkImageTiling tiling, uint32_t* pPropertyCount, VkSparseImageFormatProperties* pProperties) {
+        assert(_GetPhysicalDeviceSparseImageFormatProperties !is null, "vkGetPhysicalDeviceSparseImageFormatProperties was not loaded. Requested by VK_VERSION_1_0");
+        return _GetPhysicalDeviceSparseImageFormatProperties(physicalDevice, format, type, samples, usage, tiling, pPropertyCount, pProperties);
+    }
+
+    /// Commands for VK_KHR_surface
+    void DestroySurfaceKHR (VkInstance instance, VkSurfaceKHR surface, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroySurfaceKHR !is null, "vkDestroySurfaceKHR was not loaded. Requested by VK_KHR_surface");
+        return _DestroySurfaceKHR(instance, surface, pAllocator);
+    }
+    /// ditto
+    VkResult GetPhysicalDeviceSurfaceSupportKHR (VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface, VkBool32* pSupported) {
+        assert(_GetPhysicalDeviceSurfaceSupportKHR !is null, "vkGetPhysicalDeviceSurfaceSupportKHR was not loaded. Requested by VK_KHR_surface");
+        return _GetPhysicalDeviceSurfaceSupportKHR(physicalDevice, queueFamilyIndex, surface, pSupported);
+    }
+    /// ditto
+    VkResult GetPhysicalDeviceSurfaceCapabilitiesKHR (VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR* pSurfaceCapabilities) {
+        assert(_GetPhysicalDeviceSurfaceCapabilitiesKHR !is null, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR was not loaded. Requested by VK_KHR_surface");
+        return _GetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, pSurfaceCapabilities);
+    }
+    /// ditto
+    VkResult GetPhysicalDeviceSurfaceFormatsKHR (VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t* pSurfaceFormatCount, VkSurfaceFormatKHR* pSurfaceFormats) {
+        assert(_GetPhysicalDeviceSurfaceFormatsKHR !is null, "vkGetPhysicalDeviceSurfaceFormatsKHR was not loaded. Requested by VK_KHR_surface");
+        return _GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, pSurfaceFormatCount, pSurfaceFormats);
+    }
+    /// ditto
+    VkResult GetPhysicalDeviceSurfacePresentModesKHR (VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t* pPresentModeCount, VkPresentModeKHR* pPresentModes) {
+        assert(_GetPhysicalDeviceSurfacePresentModesKHR !is null, "vkGetPhysicalDeviceSurfacePresentModesKHR was not loaded. Requested by VK_KHR_surface");
+        return _GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, pPresentModeCount, pPresentModes);
+    }
+
+    /// Commands for VK_KHR_display
+    VkResult GetPhysicalDeviceDisplayPropertiesKHR (VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkDisplayPropertiesKHR* pProperties) {
+        assert(_GetPhysicalDeviceDisplayPropertiesKHR !is null, "vkGetPhysicalDeviceDisplayPropertiesKHR was not loaded. Requested by VK_KHR_display");
+        return _GetPhysicalDeviceDisplayPropertiesKHR(physicalDevice, pPropertyCount, pProperties);
+    }
+    /// ditto
+    VkResult GetPhysicalDeviceDisplayPlanePropertiesKHR (VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkDisplayPlanePropertiesKHR* pProperties) {
+        assert(_GetPhysicalDeviceDisplayPlanePropertiesKHR !is null, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR was not loaded. Requested by VK_KHR_display");
+        return _GetPhysicalDeviceDisplayPlanePropertiesKHR(physicalDevice, pPropertyCount, pProperties);
+    }
+    /// ditto
+    VkResult GetDisplayPlaneSupportedDisplaysKHR (VkPhysicalDevice physicalDevice, uint32_t planeIndex, uint32_t* pDisplayCount, VkDisplayKHR* pDisplays) {
+        assert(_GetDisplayPlaneSupportedDisplaysKHR !is null, "vkGetDisplayPlaneSupportedDisplaysKHR was not loaded. Requested by VK_KHR_display");
+        return _GetDisplayPlaneSupportedDisplaysKHR(physicalDevice, planeIndex, pDisplayCount, pDisplays);
+    }
+    /// ditto
+    VkResult GetDisplayModePropertiesKHR (VkPhysicalDevice physicalDevice, VkDisplayKHR display, uint32_t* pPropertyCount, VkDisplayModePropertiesKHR* pProperties) {
+        assert(_GetDisplayModePropertiesKHR !is null, "vkGetDisplayModePropertiesKHR was not loaded. Requested by VK_KHR_display");
+        return _GetDisplayModePropertiesKHR(physicalDevice, display, pPropertyCount, pProperties);
+    }
+    /// ditto
+    VkResult CreateDisplayModeKHR (VkPhysicalDevice physicalDevice, VkDisplayKHR display, const(VkDisplayModeCreateInfoKHR)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkDisplayModeKHR* pMode) {
+        assert(_CreateDisplayModeKHR !is null, "vkCreateDisplayModeKHR was not loaded. Requested by VK_KHR_display");
+        return _CreateDisplayModeKHR(physicalDevice, display, pCreateInfo, pAllocator, pMode);
+    }
+    /// ditto
+    VkResult GetDisplayPlaneCapabilitiesKHR (VkPhysicalDevice physicalDevice, VkDisplayModeKHR mode, uint32_t planeIndex, VkDisplayPlaneCapabilitiesKHR* pCapabilities) {
+        assert(_GetDisplayPlaneCapabilitiesKHR !is null, "vkGetDisplayPlaneCapabilitiesKHR was not loaded. Requested by VK_KHR_display");
+        return _GetDisplayPlaneCapabilitiesKHR(physicalDevice, mode, planeIndex, pCapabilities);
+    }
+    /// ditto
+    VkResult CreateDisplayPlaneSurfaceKHR (VkInstance instance, const(VkDisplaySurfaceCreateInfoKHR)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkSurfaceKHR* pSurface) {
+        assert(_CreateDisplayPlaneSurfaceKHR !is null, "vkCreateDisplayPlaneSurfaceKHR was not loaded. Requested by VK_KHR_display");
+        return _CreateDisplayPlaneSurfaceKHR(instance, pCreateInfo, pAllocator, pSurface);
+    }
+
+    version(linux) {
+        /// Commands for VK_KHR_xcb_surface
+        VkResult CreateXcbSurfaceKHR (VkInstance instance, const(VkXcbSurfaceCreateInfoKHR)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkSurfaceKHR* pSurface) {
+            assert(_CreateXcbSurfaceKHR !is null, "vkCreateXcbSurfaceKHR was not loaded. Requested by VK_KHR_xcb_surface");
+            return _CreateXcbSurfaceKHR(instance, pCreateInfo, pAllocator, pSurface);
+        }
+        /// ditto
+        VkBool32 GetPhysicalDeviceXcbPresentationSupportKHR (VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, xcb_connection_t* connection, xcb_visualid_t visual_id) {
+            assert(_GetPhysicalDeviceXcbPresentationSupportKHR !is null, "vkGetPhysicalDeviceXcbPresentationSupportKHR was not loaded. Requested by VK_KHR_xcb_surface");
+            return _GetPhysicalDeviceXcbPresentationSupportKHR(physicalDevice, queueFamilyIndex, connection, visual_id);
+        }
+    }
+
+    version(linux) {
+        /// Commands for VK_KHR_wayland_surface
+        VkResult CreateWaylandSurfaceKHR (VkInstance instance, const(VkWaylandSurfaceCreateInfoKHR)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkSurfaceKHR* pSurface) {
+            assert(_CreateWaylandSurfaceKHR !is null, "vkCreateWaylandSurfaceKHR was not loaded. Requested by VK_KHR_wayland_surface");
+            return _CreateWaylandSurfaceKHR(instance, pCreateInfo, pAllocator, pSurface);
+        }
+        /// ditto
+        VkBool32 GetPhysicalDeviceWaylandPresentationSupportKHR (VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, wl_display* display) {
+            assert(_GetPhysicalDeviceWaylandPresentationSupportKHR !is null, "vkGetPhysicalDeviceWaylandPresentationSupportKHR was not loaded. Requested by VK_KHR_wayland_surface");
+            return _GetPhysicalDeviceWaylandPresentationSupportKHR(physicalDevice, queueFamilyIndex, display);
+        }
+    }
+
+    // fields for VK_VERSION_1_0
+    private PFN_vkDestroyInstance                                _DestroyInstance;
+    private PFN_vkEnumeratePhysicalDevices                       _EnumeratePhysicalDevices;
+    private PFN_vkGetPhysicalDeviceFeatures                      _GetPhysicalDeviceFeatures;
+    private PFN_vkGetPhysicalDeviceFormatProperties              _GetPhysicalDeviceFormatProperties;
+    private PFN_vkGetPhysicalDeviceImageFormatProperties         _GetPhysicalDeviceImageFormatProperties;
+    private PFN_vkGetPhysicalDeviceProperties                    _GetPhysicalDeviceProperties;
+    private PFN_vkGetPhysicalDeviceQueueFamilyProperties         _GetPhysicalDeviceQueueFamilyProperties;
+    private PFN_vkGetPhysicalDeviceMemoryProperties              _GetPhysicalDeviceMemoryProperties;
+    private PFN_vkGetDeviceProcAddr                              _GetDeviceProcAddr;
+    private PFN_vkCreateDevice                                   _CreateDevice;
+    private PFN_vkEnumerateDeviceExtensionProperties             _EnumerateDeviceExtensionProperties;
+    private PFN_vkEnumerateDeviceLayerProperties                 _EnumerateDeviceLayerProperties;
+    private PFN_vkGetPhysicalDeviceSparseImageFormatProperties   _GetPhysicalDeviceSparseImageFormatProperties;
+
+    // fields for VK_KHR_surface
+    private PFN_vkDestroySurfaceKHR                              _DestroySurfaceKHR;
+    private PFN_vkGetPhysicalDeviceSurfaceSupportKHR             _GetPhysicalDeviceSurfaceSupportKHR;
+    private PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR        _GetPhysicalDeviceSurfaceCapabilitiesKHR;
+    private PFN_vkGetPhysicalDeviceSurfaceFormatsKHR             _GetPhysicalDeviceSurfaceFormatsKHR;
+    private PFN_vkGetPhysicalDeviceSurfacePresentModesKHR        _GetPhysicalDeviceSurfacePresentModesKHR;
+
+    // fields for VK_KHR_display
+    private PFN_vkGetPhysicalDeviceDisplayPropertiesKHR          _GetPhysicalDeviceDisplayPropertiesKHR;
+    private PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR     _GetPhysicalDeviceDisplayPlanePropertiesKHR;
+    private PFN_vkGetDisplayPlaneSupportedDisplaysKHR            _GetDisplayPlaneSupportedDisplaysKHR;
+    private PFN_vkGetDisplayModePropertiesKHR                    _GetDisplayModePropertiesKHR;
+    private PFN_vkCreateDisplayModeKHR                           _CreateDisplayModeKHR;
+    private PFN_vkGetDisplayPlaneCapabilitiesKHR                 _GetDisplayPlaneCapabilitiesKHR;
+    private PFN_vkCreateDisplayPlaneSurfaceKHR                   _CreateDisplayPlaneSurfaceKHR;
+
+    // fields for VK_KHR_xcb_surface
+    version(linux) {
+        private PFN_vkCreateXcbSurfaceKHR                            _CreateXcbSurfaceKHR;
+        private PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR     _GetPhysicalDeviceXcbPresentationSupportKHR;
+    }
+
+    // fields for VK_KHR_wayland_surface
+    version(linux) {
+        private PFN_vkCreateWaylandSurfaceKHR                        _CreateWaylandSurfaceKHR;
+        private PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR _GetPhysicalDeviceWaylandPresentationSupportKHR;
     }
 }
 
 // Device commands
 
 final class VkDeviceCmds {
-    // VK_VERSION_1_0
-    PFN_vkDestroyDevice                    destroyDevice;
-    PFN_vkGetDeviceQueue                   getDeviceQueue;
-    PFN_vkQueueSubmit                      queueSubmit;
-    PFN_vkQueueWaitIdle                    queueWaitIdle;
-    PFN_vkDeviceWaitIdle                   deviceWaitIdle;
-    PFN_vkAllocateMemory                   allocateMemory;
-    PFN_vkFreeMemory                       freeMemory;
-    PFN_vkMapMemory                        mapMemory;
-    PFN_vkUnmapMemory                      unmapMemory;
-    PFN_vkFlushMappedMemoryRanges          flushMappedMemoryRanges;
-    PFN_vkInvalidateMappedMemoryRanges     invalidateMappedMemoryRanges;
-    PFN_vkGetDeviceMemoryCommitment        getDeviceMemoryCommitment;
-    PFN_vkBindBufferMemory                 bindBufferMemory;
-    PFN_vkBindImageMemory                  bindImageMemory;
-    PFN_vkGetBufferMemoryRequirements      getBufferMemoryRequirements;
-    PFN_vkGetImageMemoryRequirements       getImageMemoryRequirements;
-    PFN_vkGetImageSparseMemoryRequirements getImageSparseMemoryRequirements;
-    PFN_vkQueueBindSparse                  queueBindSparse;
-    PFN_vkCreateFence                      createFence;
-    PFN_vkDestroyFence                     destroyFence;
-    PFN_vkResetFences                      resetFences;
-    PFN_vkGetFenceStatus                   getFenceStatus;
-    PFN_vkWaitForFences                    waitForFences;
-    PFN_vkCreateSemaphore                  createSemaphore;
-    PFN_vkDestroySemaphore                 destroySemaphore;
-    PFN_vkCreateEvent                      createEvent;
-    PFN_vkDestroyEvent                     destroyEvent;
-    PFN_vkGetEventStatus                   getEventStatus;
-    PFN_vkSetEvent                         setEvent;
-    PFN_vkResetEvent                       resetEvent;
-    PFN_vkCreateQueryPool                  createQueryPool;
-    PFN_vkDestroyQueryPool                 destroyQueryPool;
-    PFN_vkGetQueryPoolResults              getQueryPoolResults;
-    PFN_vkCreateBuffer                     createBuffer;
-    PFN_vkDestroyBuffer                    destroyBuffer;
-    PFN_vkCreateBufferView                 createBufferView;
-    PFN_vkDestroyBufferView                destroyBufferView;
-    PFN_vkCreateImage                      createImage;
-    PFN_vkDestroyImage                     destroyImage;
-    PFN_vkGetImageSubresourceLayout        getImageSubresourceLayout;
-    PFN_vkCreateImageView                  createImageView;
-    PFN_vkDestroyImageView                 destroyImageView;
-    PFN_vkCreateShaderModule               createShaderModule;
-    PFN_vkDestroyShaderModule              destroyShaderModule;
-    PFN_vkCreatePipelineCache              createPipelineCache;
-    PFN_vkDestroyPipelineCache             destroyPipelineCache;
-    PFN_vkGetPipelineCacheData             getPipelineCacheData;
-    PFN_vkMergePipelineCaches              mergePipelineCaches;
-    PFN_vkCreateGraphicsPipelines          createGraphicsPipelines;
-    PFN_vkCreateComputePipelines           createComputePipelines;
-    PFN_vkDestroyPipeline                  destroyPipeline;
-    PFN_vkCreatePipelineLayout             createPipelineLayout;
-    PFN_vkDestroyPipelineLayout            destroyPipelineLayout;
-    PFN_vkCreateSampler                    createSampler;
-    PFN_vkDestroySampler                   destroySampler;
-    PFN_vkCreateDescriptorSetLayout        createDescriptorSetLayout;
-    PFN_vkDestroyDescriptorSetLayout       destroyDescriptorSetLayout;
-    PFN_vkCreateDescriptorPool             createDescriptorPool;
-    PFN_vkDestroyDescriptorPool            destroyDescriptorPool;
-    PFN_vkResetDescriptorPool              resetDescriptorPool;
-    PFN_vkAllocateDescriptorSets           allocateDescriptorSets;
-    PFN_vkFreeDescriptorSets               freeDescriptorSets;
-    PFN_vkUpdateDescriptorSets             updateDescriptorSets;
-    PFN_vkCreateFramebuffer                createFramebuffer;
-    PFN_vkDestroyFramebuffer               destroyFramebuffer;
-    PFN_vkCreateRenderPass                 createRenderPass;
-    PFN_vkDestroyRenderPass                destroyRenderPass;
-    PFN_vkGetRenderAreaGranularity         getRenderAreaGranularity;
-    PFN_vkCreateCommandPool                createCommandPool;
-    PFN_vkDestroyCommandPool               destroyCommandPool;
-    PFN_vkResetCommandPool                 resetCommandPool;
-    PFN_vkAllocateCommandBuffers           allocateCommandBuffers;
-    PFN_vkFreeCommandBuffers               freeCommandBuffers;
-    PFN_vkBeginCommandBuffer               beginCommandBuffer;
-    PFN_vkEndCommandBuffer                 endCommandBuffer;
-    PFN_vkResetCommandBuffer               resetCommandBuffer;
-    PFN_vkCmdBindPipeline                  cmdBindPipeline;
-    PFN_vkCmdSetViewport                   cmdSetViewport;
-    PFN_vkCmdSetScissor                    cmdSetScissor;
-    PFN_vkCmdSetLineWidth                  cmdSetLineWidth;
-    PFN_vkCmdSetDepthBias                  cmdSetDepthBias;
-    PFN_vkCmdSetBlendConstants             cmdSetBlendConstants;
-    PFN_vkCmdSetDepthBounds                cmdSetDepthBounds;
-    PFN_vkCmdSetStencilCompareMask         cmdSetStencilCompareMask;
-    PFN_vkCmdSetStencilWriteMask           cmdSetStencilWriteMask;
-    PFN_vkCmdSetStencilReference           cmdSetStencilReference;
-    PFN_vkCmdBindDescriptorSets            cmdBindDescriptorSets;
-    PFN_vkCmdBindIndexBuffer               cmdBindIndexBuffer;
-    PFN_vkCmdBindVertexBuffers             cmdBindVertexBuffers;
-    PFN_vkCmdDraw                          cmdDraw;
-    PFN_vkCmdDrawIndexed                   cmdDrawIndexed;
-    PFN_vkCmdDrawIndirect                  cmdDrawIndirect;
-    PFN_vkCmdDrawIndexedIndirect           cmdDrawIndexedIndirect;
-    PFN_vkCmdDispatch                      cmdDispatch;
-    PFN_vkCmdDispatchIndirect              cmdDispatchIndirect;
-    PFN_vkCmdCopyBuffer                    cmdCopyBuffer;
-    PFN_vkCmdCopyImage                     cmdCopyImage;
-    PFN_vkCmdBlitImage                     cmdBlitImage;
-    PFN_vkCmdCopyBufferToImage             cmdCopyBufferToImage;
-    PFN_vkCmdCopyImageToBuffer             cmdCopyImageToBuffer;
-    PFN_vkCmdUpdateBuffer                  cmdUpdateBuffer;
-    PFN_vkCmdFillBuffer                    cmdFillBuffer;
-    PFN_vkCmdClearColorImage               cmdClearColorImage;
-    PFN_vkCmdClearDepthStencilImage        cmdClearDepthStencilImage;
-    PFN_vkCmdClearAttachments              cmdClearAttachments;
-    PFN_vkCmdResolveImage                  cmdResolveImage;
-    PFN_vkCmdSetEvent                      cmdSetEvent;
-    PFN_vkCmdResetEvent                    cmdResetEvent;
-    PFN_vkCmdWaitEvents                    cmdWaitEvents;
-    PFN_vkCmdPipelineBarrier               cmdPipelineBarrier;
-    PFN_vkCmdBeginQuery                    cmdBeginQuery;
-    PFN_vkCmdEndQuery                      cmdEndQuery;
-    PFN_vkCmdResetQueryPool                cmdResetQueryPool;
-    PFN_vkCmdWriteTimestamp                cmdWriteTimestamp;
-    PFN_vkCmdCopyQueryPoolResults          cmdCopyQueryPoolResults;
-    PFN_vkCmdPushConstants                 cmdPushConstants;
-    PFN_vkCmdBeginRenderPass               cmdBeginRenderPass;
-    PFN_vkCmdNextSubpass                   cmdNextSubpass;
-    PFN_vkCmdEndRenderPass                 cmdEndRenderPass;
-    PFN_vkCmdExecuteCommands               cmdExecuteCommands;
-
-    // VK_KHR_swapchain
-    PFN_vkCreateSwapchainKHR               createSwapchainKHR;
-    PFN_vkDestroySwapchainKHR              destroySwapchainKHR;
-    PFN_vkGetSwapchainImagesKHR            getSwapchainImagesKHR;
-    PFN_vkAcquireNextImageKHR              acquireNextImageKHR;
-    PFN_vkQueuePresentKHR                  queuePresentKHR;
 
     this (VkDevice device, VkInstanceCmds instanceCmds) {
-        auto loader = instanceCmds.getDeviceProcAddr;
+        auto loader = instanceCmds._GetDeviceProcAddr;
         // VK_VERSION_1_0
-        destroyDevice                    = cast(PFN_vkDestroyDevice)                   loader(device, "vkDestroyDevice");
-        getDeviceQueue                   = cast(PFN_vkGetDeviceQueue)                  loader(device, "vkGetDeviceQueue");
-        queueSubmit                      = cast(PFN_vkQueueSubmit)                     loader(device, "vkQueueSubmit");
-        queueWaitIdle                    = cast(PFN_vkQueueWaitIdle)                   loader(device, "vkQueueWaitIdle");
-        deviceWaitIdle                   = cast(PFN_vkDeviceWaitIdle)                  loader(device, "vkDeviceWaitIdle");
-        allocateMemory                   = cast(PFN_vkAllocateMemory)                  loader(device, "vkAllocateMemory");
-        freeMemory                       = cast(PFN_vkFreeMemory)                      loader(device, "vkFreeMemory");
-        mapMemory                        = cast(PFN_vkMapMemory)                       loader(device, "vkMapMemory");
-        unmapMemory                      = cast(PFN_vkUnmapMemory)                     loader(device, "vkUnmapMemory");
-        flushMappedMemoryRanges          = cast(PFN_vkFlushMappedMemoryRanges)         loader(device, "vkFlushMappedMemoryRanges");
-        invalidateMappedMemoryRanges     = cast(PFN_vkInvalidateMappedMemoryRanges)    loader(device, "vkInvalidateMappedMemoryRanges");
-        getDeviceMemoryCommitment        = cast(PFN_vkGetDeviceMemoryCommitment)       loader(device, "vkGetDeviceMemoryCommitment");
-        bindBufferMemory                 = cast(PFN_vkBindBufferMemory)                loader(device, "vkBindBufferMemory");
-        bindImageMemory                  = cast(PFN_vkBindImageMemory)                 loader(device, "vkBindImageMemory");
-        getBufferMemoryRequirements      = cast(PFN_vkGetBufferMemoryRequirements)     loader(device, "vkGetBufferMemoryRequirements");
-        getImageMemoryRequirements       = cast(PFN_vkGetImageMemoryRequirements)      loader(device, "vkGetImageMemoryRequirements");
-        getImageSparseMemoryRequirements = cast(PFN_vkGetImageSparseMemoryRequirements)loader(device, "vkGetImageSparseMemoryRequirements");
-        queueBindSparse                  = cast(PFN_vkQueueBindSparse)                 loader(device, "vkQueueBindSparse");
-        createFence                      = cast(PFN_vkCreateFence)                     loader(device, "vkCreateFence");
-        destroyFence                     = cast(PFN_vkDestroyFence)                    loader(device, "vkDestroyFence");
-        resetFences                      = cast(PFN_vkResetFences)                     loader(device, "vkResetFences");
-        getFenceStatus                   = cast(PFN_vkGetFenceStatus)                  loader(device, "vkGetFenceStatus");
-        waitForFences                    = cast(PFN_vkWaitForFences)                   loader(device, "vkWaitForFences");
-        createSemaphore                  = cast(PFN_vkCreateSemaphore)                 loader(device, "vkCreateSemaphore");
-        destroySemaphore                 = cast(PFN_vkDestroySemaphore)                loader(device, "vkDestroySemaphore");
-        createEvent                      = cast(PFN_vkCreateEvent)                     loader(device, "vkCreateEvent");
-        destroyEvent                     = cast(PFN_vkDestroyEvent)                    loader(device, "vkDestroyEvent");
-        getEventStatus                   = cast(PFN_vkGetEventStatus)                  loader(device, "vkGetEventStatus");
-        setEvent                         = cast(PFN_vkSetEvent)                        loader(device, "vkSetEvent");
-        resetEvent                       = cast(PFN_vkResetEvent)                      loader(device, "vkResetEvent");
-        createQueryPool                  = cast(PFN_vkCreateQueryPool)                 loader(device, "vkCreateQueryPool");
-        destroyQueryPool                 = cast(PFN_vkDestroyQueryPool)                loader(device, "vkDestroyQueryPool");
-        getQueryPoolResults              = cast(PFN_vkGetQueryPoolResults)             loader(device, "vkGetQueryPoolResults");
-        createBuffer                     = cast(PFN_vkCreateBuffer)                    loader(device, "vkCreateBuffer");
-        destroyBuffer                    = cast(PFN_vkDestroyBuffer)                   loader(device, "vkDestroyBuffer");
-        createBufferView                 = cast(PFN_vkCreateBufferView)                loader(device, "vkCreateBufferView");
-        destroyBufferView                = cast(PFN_vkDestroyBufferView)               loader(device, "vkDestroyBufferView");
-        createImage                      = cast(PFN_vkCreateImage)                     loader(device, "vkCreateImage");
-        destroyImage                     = cast(PFN_vkDestroyImage)                    loader(device, "vkDestroyImage");
-        getImageSubresourceLayout        = cast(PFN_vkGetImageSubresourceLayout)       loader(device, "vkGetImageSubresourceLayout");
-        createImageView                  = cast(PFN_vkCreateImageView)                 loader(device, "vkCreateImageView");
-        destroyImageView                 = cast(PFN_vkDestroyImageView)                loader(device, "vkDestroyImageView");
-        createShaderModule               = cast(PFN_vkCreateShaderModule)              loader(device, "vkCreateShaderModule");
-        destroyShaderModule              = cast(PFN_vkDestroyShaderModule)             loader(device, "vkDestroyShaderModule");
-        createPipelineCache              = cast(PFN_vkCreatePipelineCache)             loader(device, "vkCreatePipelineCache");
-        destroyPipelineCache             = cast(PFN_vkDestroyPipelineCache)            loader(device, "vkDestroyPipelineCache");
-        getPipelineCacheData             = cast(PFN_vkGetPipelineCacheData)            loader(device, "vkGetPipelineCacheData");
-        mergePipelineCaches              = cast(PFN_vkMergePipelineCaches)             loader(device, "vkMergePipelineCaches");
-        createGraphicsPipelines          = cast(PFN_vkCreateGraphicsPipelines)         loader(device, "vkCreateGraphicsPipelines");
-        createComputePipelines           = cast(PFN_vkCreateComputePipelines)          loader(device, "vkCreateComputePipelines");
-        destroyPipeline                  = cast(PFN_vkDestroyPipeline)                 loader(device, "vkDestroyPipeline");
-        createPipelineLayout             = cast(PFN_vkCreatePipelineLayout)            loader(device, "vkCreatePipelineLayout");
-        destroyPipelineLayout            = cast(PFN_vkDestroyPipelineLayout)           loader(device, "vkDestroyPipelineLayout");
-        createSampler                    = cast(PFN_vkCreateSampler)                   loader(device, "vkCreateSampler");
-        destroySampler                   = cast(PFN_vkDestroySampler)                  loader(device, "vkDestroySampler");
-        createDescriptorSetLayout        = cast(PFN_vkCreateDescriptorSetLayout)       loader(device, "vkCreateDescriptorSetLayout");
-        destroyDescriptorSetLayout       = cast(PFN_vkDestroyDescriptorSetLayout)      loader(device, "vkDestroyDescriptorSetLayout");
-        createDescriptorPool             = cast(PFN_vkCreateDescriptorPool)            loader(device, "vkCreateDescriptorPool");
-        destroyDescriptorPool            = cast(PFN_vkDestroyDescriptorPool)           loader(device, "vkDestroyDescriptorPool");
-        resetDescriptorPool              = cast(PFN_vkResetDescriptorPool)             loader(device, "vkResetDescriptorPool");
-        allocateDescriptorSets           = cast(PFN_vkAllocateDescriptorSets)          loader(device, "vkAllocateDescriptorSets");
-        freeDescriptorSets               = cast(PFN_vkFreeDescriptorSets)              loader(device, "vkFreeDescriptorSets");
-        updateDescriptorSets             = cast(PFN_vkUpdateDescriptorSets)            loader(device, "vkUpdateDescriptorSets");
-        createFramebuffer                = cast(PFN_vkCreateFramebuffer)               loader(device, "vkCreateFramebuffer");
-        destroyFramebuffer               = cast(PFN_vkDestroyFramebuffer)              loader(device, "vkDestroyFramebuffer");
-        createRenderPass                 = cast(PFN_vkCreateRenderPass)                loader(device, "vkCreateRenderPass");
-        destroyRenderPass                = cast(PFN_vkDestroyRenderPass)               loader(device, "vkDestroyRenderPass");
-        getRenderAreaGranularity         = cast(PFN_vkGetRenderAreaGranularity)        loader(device, "vkGetRenderAreaGranularity");
-        createCommandPool                = cast(PFN_vkCreateCommandPool)               loader(device, "vkCreateCommandPool");
-        destroyCommandPool               = cast(PFN_vkDestroyCommandPool)              loader(device, "vkDestroyCommandPool");
-        resetCommandPool                 = cast(PFN_vkResetCommandPool)                loader(device, "vkResetCommandPool");
-        allocateCommandBuffers           = cast(PFN_vkAllocateCommandBuffers)          loader(device, "vkAllocateCommandBuffers");
-        freeCommandBuffers               = cast(PFN_vkFreeCommandBuffers)              loader(device, "vkFreeCommandBuffers");
-        beginCommandBuffer               = cast(PFN_vkBeginCommandBuffer)              loader(device, "vkBeginCommandBuffer");
-        endCommandBuffer                 = cast(PFN_vkEndCommandBuffer)                loader(device, "vkEndCommandBuffer");
-        resetCommandBuffer               = cast(PFN_vkResetCommandBuffer)              loader(device, "vkResetCommandBuffer");
-        cmdBindPipeline                  = cast(PFN_vkCmdBindPipeline)                 loader(device, "vkCmdBindPipeline");
-        cmdSetViewport                   = cast(PFN_vkCmdSetViewport)                  loader(device, "vkCmdSetViewport");
-        cmdSetScissor                    = cast(PFN_vkCmdSetScissor)                   loader(device, "vkCmdSetScissor");
-        cmdSetLineWidth                  = cast(PFN_vkCmdSetLineWidth)                 loader(device, "vkCmdSetLineWidth");
-        cmdSetDepthBias                  = cast(PFN_vkCmdSetDepthBias)                 loader(device, "vkCmdSetDepthBias");
-        cmdSetBlendConstants             = cast(PFN_vkCmdSetBlendConstants)            loader(device, "vkCmdSetBlendConstants");
-        cmdSetDepthBounds                = cast(PFN_vkCmdSetDepthBounds)               loader(device, "vkCmdSetDepthBounds");
-        cmdSetStencilCompareMask         = cast(PFN_vkCmdSetStencilCompareMask)        loader(device, "vkCmdSetStencilCompareMask");
-        cmdSetStencilWriteMask           = cast(PFN_vkCmdSetStencilWriteMask)          loader(device, "vkCmdSetStencilWriteMask");
-        cmdSetStencilReference           = cast(PFN_vkCmdSetStencilReference)          loader(device, "vkCmdSetStencilReference");
-        cmdBindDescriptorSets            = cast(PFN_vkCmdBindDescriptorSets)           loader(device, "vkCmdBindDescriptorSets");
-        cmdBindIndexBuffer               = cast(PFN_vkCmdBindIndexBuffer)              loader(device, "vkCmdBindIndexBuffer");
-        cmdBindVertexBuffers             = cast(PFN_vkCmdBindVertexBuffers)            loader(device, "vkCmdBindVertexBuffers");
-        cmdDraw                          = cast(PFN_vkCmdDraw)                         loader(device, "vkCmdDraw");
-        cmdDrawIndexed                   = cast(PFN_vkCmdDrawIndexed)                  loader(device, "vkCmdDrawIndexed");
-        cmdDrawIndirect                  = cast(PFN_vkCmdDrawIndirect)                 loader(device, "vkCmdDrawIndirect");
-        cmdDrawIndexedIndirect           = cast(PFN_vkCmdDrawIndexedIndirect)          loader(device, "vkCmdDrawIndexedIndirect");
-        cmdDispatch                      = cast(PFN_vkCmdDispatch)                     loader(device, "vkCmdDispatch");
-        cmdDispatchIndirect              = cast(PFN_vkCmdDispatchIndirect)             loader(device, "vkCmdDispatchIndirect");
-        cmdCopyBuffer                    = cast(PFN_vkCmdCopyBuffer)                   loader(device, "vkCmdCopyBuffer");
-        cmdCopyImage                     = cast(PFN_vkCmdCopyImage)                    loader(device, "vkCmdCopyImage");
-        cmdBlitImage                     = cast(PFN_vkCmdBlitImage)                    loader(device, "vkCmdBlitImage");
-        cmdCopyBufferToImage             = cast(PFN_vkCmdCopyBufferToImage)            loader(device, "vkCmdCopyBufferToImage");
-        cmdCopyImageToBuffer             = cast(PFN_vkCmdCopyImageToBuffer)            loader(device, "vkCmdCopyImageToBuffer");
-        cmdUpdateBuffer                  = cast(PFN_vkCmdUpdateBuffer)                 loader(device, "vkCmdUpdateBuffer");
-        cmdFillBuffer                    = cast(PFN_vkCmdFillBuffer)                   loader(device, "vkCmdFillBuffer");
-        cmdClearColorImage               = cast(PFN_vkCmdClearColorImage)              loader(device, "vkCmdClearColorImage");
-        cmdClearDepthStencilImage        = cast(PFN_vkCmdClearDepthStencilImage)       loader(device, "vkCmdClearDepthStencilImage");
-        cmdClearAttachments              = cast(PFN_vkCmdClearAttachments)             loader(device, "vkCmdClearAttachments");
-        cmdResolveImage                  = cast(PFN_vkCmdResolveImage)                 loader(device, "vkCmdResolveImage");
-        cmdSetEvent                      = cast(PFN_vkCmdSetEvent)                     loader(device, "vkCmdSetEvent");
-        cmdResetEvent                    = cast(PFN_vkCmdResetEvent)                   loader(device, "vkCmdResetEvent");
-        cmdWaitEvents                    = cast(PFN_vkCmdWaitEvents)                   loader(device, "vkCmdWaitEvents");
-        cmdPipelineBarrier               = cast(PFN_vkCmdPipelineBarrier)              loader(device, "vkCmdPipelineBarrier");
-        cmdBeginQuery                    = cast(PFN_vkCmdBeginQuery)                   loader(device, "vkCmdBeginQuery");
-        cmdEndQuery                      = cast(PFN_vkCmdEndQuery)                     loader(device, "vkCmdEndQuery");
-        cmdResetQueryPool                = cast(PFN_vkCmdResetQueryPool)               loader(device, "vkCmdResetQueryPool");
-        cmdWriteTimestamp                = cast(PFN_vkCmdWriteTimestamp)               loader(device, "vkCmdWriteTimestamp");
-        cmdCopyQueryPoolResults          = cast(PFN_vkCmdCopyQueryPoolResults)         loader(device, "vkCmdCopyQueryPoolResults");
-        cmdPushConstants                 = cast(PFN_vkCmdPushConstants)                loader(device, "vkCmdPushConstants");
-        cmdBeginRenderPass               = cast(PFN_vkCmdBeginRenderPass)              loader(device, "vkCmdBeginRenderPass");
-        cmdNextSubpass                   = cast(PFN_vkCmdNextSubpass)                  loader(device, "vkCmdNextSubpass");
-        cmdEndRenderPass                 = cast(PFN_vkCmdEndRenderPass)                loader(device, "vkCmdEndRenderPass");
-        cmdExecuteCommands               = cast(PFN_vkCmdExecuteCommands)              loader(device, "vkCmdExecuteCommands");
+        _DestroyDevice                    = cast(PFN_vkDestroyDevice)                   loader(device, "vkDestroyDevice");
+        _GetDeviceQueue                   = cast(PFN_vkGetDeviceQueue)                  loader(device, "vkGetDeviceQueue");
+        _QueueSubmit                      = cast(PFN_vkQueueSubmit)                     loader(device, "vkQueueSubmit");
+        _QueueWaitIdle                    = cast(PFN_vkQueueWaitIdle)                   loader(device, "vkQueueWaitIdle");
+        _DeviceWaitIdle                   = cast(PFN_vkDeviceWaitIdle)                  loader(device, "vkDeviceWaitIdle");
+        _AllocateMemory                   = cast(PFN_vkAllocateMemory)                  loader(device, "vkAllocateMemory");
+        _FreeMemory                       = cast(PFN_vkFreeMemory)                      loader(device, "vkFreeMemory");
+        _MapMemory                        = cast(PFN_vkMapMemory)                       loader(device, "vkMapMemory");
+        _UnmapMemory                      = cast(PFN_vkUnmapMemory)                     loader(device, "vkUnmapMemory");
+        _FlushMappedMemoryRanges          = cast(PFN_vkFlushMappedMemoryRanges)         loader(device, "vkFlushMappedMemoryRanges");
+        _InvalidateMappedMemoryRanges     = cast(PFN_vkInvalidateMappedMemoryRanges)    loader(device, "vkInvalidateMappedMemoryRanges");
+        _GetDeviceMemoryCommitment        = cast(PFN_vkGetDeviceMemoryCommitment)       loader(device, "vkGetDeviceMemoryCommitment");
+        _BindBufferMemory                 = cast(PFN_vkBindBufferMemory)                loader(device, "vkBindBufferMemory");
+        _BindImageMemory                  = cast(PFN_vkBindImageMemory)                 loader(device, "vkBindImageMemory");
+        _GetBufferMemoryRequirements      = cast(PFN_vkGetBufferMemoryRequirements)     loader(device, "vkGetBufferMemoryRequirements");
+        _GetImageMemoryRequirements       = cast(PFN_vkGetImageMemoryRequirements)      loader(device, "vkGetImageMemoryRequirements");
+        _GetImageSparseMemoryRequirements = cast(PFN_vkGetImageSparseMemoryRequirements)loader(device, "vkGetImageSparseMemoryRequirements");
+        _QueueBindSparse                  = cast(PFN_vkQueueBindSparse)                 loader(device, "vkQueueBindSparse");
+        _CreateFence                      = cast(PFN_vkCreateFence)                     loader(device, "vkCreateFence");
+        _DestroyFence                     = cast(PFN_vkDestroyFence)                    loader(device, "vkDestroyFence");
+        _ResetFences                      = cast(PFN_vkResetFences)                     loader(device, "vkResetFences");
+        _GetFenceStatus                   = cast(PFN_vkGetFenceStatus)                  loader(device, "vkGetFenceStatus");
+        _WaitForFences                    = cast(PFN_vkWaitForFences)                   loader(device, "vkWaitForFences");
+        _CreateSemaphore                  = cast(PFN_vkCreateSemaphore)                 loader(device, "vkCreateSemaphore");
+        _DestroySemaphore                 = cast(PFN_vkDestroySemaphore)                loader(device, "vkDestroySemaphore");
+        _CreateEvent                      = cast(PFN_vkCreateEvent)                     loader(device, "vkCreateEvent");
+        _DestroyEvent                     = cast(PFN_vkDestroyEvent)                    loader(device, "vkDestroyEvent");
+        _GetEventStatus                   = cast(PFN_vkGetEventStatus)                  loader(device, "vkGetEventStatus");
+        _SetEvent                         = cast(PFN_vkSetEvent)                        loader(device, "vkSetEvent");
+        _ResetEvent                       = cast(PFN_vkResetEvent)                      loader(device, "vkResetEvent");
+        _CreateQueryPool                  = cast(PFN_vkCreateQueryPool)                 loader(device, "vkCreateQueryPool");
+        _DestroyQueryPool                 = cast(PFN_vkDestroyQueryPool)                loader(device, "vkDestroyQueryPool");
+        _GetQueryPoolResults              = cast(PFN_vkGetQueryPoolResults)             loader(device, "vkGetQueryPoolResults");
+        _CreateBuffer                     = cast(PFN_vkCreateBuffer)                    loader(device, "vkCreateBuffer");
+        _DestroyBuffer                    = cast(PFN_vkDestroyBuffer)                   loader(device, "vkDestroyBuffer");
+        _CreateBufferView                 = cast(PFN_vkCreateBufferView)                loader(device, "vkCreateBufferView");
+        _DestroyBufferView                = cast(PFN_vkDestroyBufferView)               loader(device, "vkDestroyBufferView");
+        _CreateImage                      = cast(PFN_vkCreateImage)                     loader(device, "vkCreateImage");
+        _DestroyImage                     = cast(PFN_vkDestroyImage)                    loader(device, "vkDestroyImage");
+        _GetImageSubresourceLayout        = cast(PFN_vkGetImageSubresourceLayout)       loader(device, "vkGetImageSubresourceLayout");
+        _CreateImageView                  = cast(PFN_vkCreateImageView)                 loader(device, "vkCreateImageView");
+        _DestroyImageView                 = cast(PFN_vkDestroyImageView)                loader(device, "vkDestroyImageView");
+        _CreateShaderModule               = cast(PFN_vkCreateShaderModule)              loader(device, "vkCreateShaderModule");
+        _DestroyShaderModule              = cast(PFN_vkDestroyShaderModule)             loader(device, "vkDestroyShaderModule");
+        _CreatePipelineCache              = cast(PFN_vkCreatePipelineCache)             loader(device, "vkCreatePipelineCache");
+        _DestroyPipelineCache             = cast(PFN_vkDestroyPipelineCache)            loader(device, "vkDestroyPipelineCache");
+        _GetPipelineCacheData             = cast(PFN_vkGetPipelineCacheData)            loader(device, "vkGetPipelineCacheData");
+        _MergePipelineCaches              = cast(PFN_vkMergePipelineCaches)             loader(device, "vkMergePipelineCaches");
+        _CreateGraphicsPipelines          = cast(PFN_vkCreateGraphicsPipelines)         loader(device, "vkCreateGraphicsPipelines");
+        _CreateComputePipelines           = cast(PFN_vkCreateComputePipelines)          loader(device, "vkCreateComputePipelines");
+        _DestroyPipeline                  = cast(PFN_vkDestroyPipeline)                 loader(device, "vkDestroyPipeline");
+        _CreatePipelineLayout             = cast(PFN_vkCreatePipelineLayout)            loader(device, "vkCreatePipelineLayout");
+        _DestroyPipelineLayout            = cast(PFN_vkDestroyPipelineLayout)           loader(device, "vkDestroyPipelineLayout");
+        _CreateSampler                    = cast(PFN_vkCreateSampler)                   loader(device, "vkCreateSampler");
+        _DestroySampler                   = cast(PFN_vkDestroySampler)                  loader(device, "vkDestroySampler");
+        _CreateDescriptorSetLayout        = cast(PFN_vkCreateDescriptorSetLayout)       loader(device, "vkCreateDescriptorSetLayout");
+        _DestroyDescriptorSetLayout       = cast(PFN_vkDestroyDescriptorSetLayout)      loader(device, "vkDestroyDescriptorSetLayout");
+        _CreateDescriptorPool             = cast(PFN_vkCreateDescriptorPool)            loader(device, "vkCreateDescriptorPool");
+        _DestroyDescriptorPool            = cast(PFN_vkDestroyDescriptorPool)           loader(device, "vkDestroyDescriptorPool");
+        _ResetDescriptorPool              = cast(PFN_vkResetDescriptorPool)             loader(device, "vkResetDescriptorPool");
+        _AllocateDescriptorSets           = cast(PFN_vkAllocateDescriptorSets)          loader(device, "vkAllocateDescriptorSets");
+        _FreeDescriptorSets               = cast(PFN_vkFreeDescriptorSets)              loader(device, "vkFreeDescriptorSets");
+        _UpdateDescriptorSets             = cast(PFN_vkUpdateDescriptorSets)            loader(device, "vkUpdateDescriptorSets");
+        _CreateFramebuffer                = cast(PFN_vkCreateFramebuffer)               loader(device, "vkCreateFramebuffer");
+        _DestroyFramebuffer               = cast(PFN_vkDestroyFramebuffer)              loader(device, "vkDestroyFramebuffer");
+        _CreateRenderPass                 = cast(PFN_vkCreateRenderPass)                loader(device, "vkCreateRenderPass");
+        _DestroyRenderPass                = cast(PFN_vkDestroyRenderPass)               loader(device, "vkDestroyRenderPass");
+        _GetRenderAreaGranularity         = cast(PFN_vkGetRenderAreaGranularity)        loader(device, "vkGetRenderAreaGranularity");
+        _CreateCommandPool                = cast(PFN_vkCreateCommandPool)               loader(device, "vkCreateCommandPool");
+        _DestroyCommandPool               = cast(PFN_vkDestroyCommandPool)              loader(device, "vkDestroyCommandPool");
+        _ResetCommandPool                 = cast(PFN_vkResetCommandPool)                loader(device, "vkResetCommandPool");
+        _AllocateCommandBuffers           = cast(PFN_vkAllocateCommandBuffers)          loader(device, "vkAllocateCommandBuffers");
+        _FreeCommandBuffers               = cast(PFN_vkFreeCommandBuffers)              loader(device, "vkFreeCommandBuffers");
+        _BeginCommandBuffer               = cast(PFN_vkBeginCommandBuffer)              loader(device, "vkBeginCommandBuffer");
+        _EndCommandBuffer                 = cast(PFN_vkEndCommandBuffer)                loader(device, "vkEndCommandBuffer");
+        _ResetCommandBuffer               = cast(PFN_vkResetCommandBuffer)              loader(device, "vkResetCommandBuffer");
+        _CmdBindPipeline                  = cast(PFN_vkCmdBindPipeline)                 loader(device, "vkCmdBindPipeline");
+        _CmdSetViewport                   = cast(PFN_vkCmdSetViewport)                  loader(device, "vkCmdSetViewport");
+        _CmdSetScissor                    = cast(PFN_vkCmdSetScissor)                   loader(device, "vkCmdSetScissor");
+        _CmdSetLineWidth                  = cast(PFN_vkCmdSetLineWidth)                 loader(device, "vkCmdSetLineWidth");
+        _CmdSetDepthBias                  = cast(PFN_vkCmdSetDepthBias)                 loader(device, "vkCmdSetDepthBias");
+        _CmdSetBlendConstants             = cast(PFN_vkCmdSetBlendConstants)            loader(device, "vkCmdSetBlendConstants");
+        _CmdSetDepthBounds                = cast(PFN_vkCmdSetDepthBounds)               loader(device, "vkCmdSetDepthBounds");
+        _CmdSetStencilCompareMask         = cast(PFN_vkCmdSetStencilCompareMask)        loader(device, "vkCmdSetStencilCompareMask");
+        _CmdSetStencilWriteMask           = cast(PFN_vkCmdSetStencilWriteMask)          loader(device, "vkCmdSetStencilWriteMask");
+        _CmdSetStencilReference           = cast(PFN_vkCmdSetStencilReference)          loader(device, "vkCmdSetStencilReference");
+        _CmdBindDescriptorSets            = cast(PFN_vkCmdBindDescriptorSets)           loader(device, "vkCmdBindDescriptorSets");
+        _CmdBindIndexBuffer               = cast(PFN_vkCmdBindIndexBuffer)              loader(device, "vkCmdBindIndexBuffer");
+        _CmdBindVertexBuffers             = cast(PFN_vkCmdBindVertexBuffers)            loader(device, "vkCmdBindVertexBuffers");
+        _CmdDraw                          = cast(PFN_vkCmdDraw)                         loader(device, "vkCmdDraw");
+        _CmdDrawIndexed                   = cast(PFN_vkCmdDrawIndexed)                  loader(device, "vkCmdDrawIndexed");
+        _CmdDrawIndirect                  = cast(PFN_vkCmdDrawIndirect)                 loader(device, "vkCmdDrawIndirect");
+        _CmdDrawIndexedIndirect           = cast(PFN_vkCmdDrawIndexedIndirect)          loader(device, "vkCmdDrawIndexedIndirect");
+        _CmdDispatch                      = cast(PFN_vkCmdDispatch)                     loader(device, "vkCmdDispatch");
+        _CmdDispatchIndirect              = cast(PFN_vkCmdDispatchIndirect)             loader(device, "vkCmdDispatchIndirect");
+        _CmdCopyBuffer                    = cast(PFN_vkCmdCopyBuffer)                   loader(device, "vkCmdCopyBuffer");
+        _CmdCopyImage                     = cast(PFN_vkCmdCopyImage)                    loader(device, "vkCmdCopyImage");
+        _CmdBlitImage                     = cast(PFN_vkCmdBlitImage)                    loader(device, "vkCmdBlitImage");
+        _CmdCopyBufferToImage             = cast(PFN_vkCmdCopyBufferToImage)            loader(device, "vkCmdCopyBufferToImage");
+        _CmdCopyImageToBuffer             = cast(PFN_vkCmdCopyImageToBuffer)            loader(device, "vkCmdCopyImageToBuffer");
+        _CmdUpdateBuffer                  = cast(PFN_vkCmdUpdateBuffer)                 loader(device, "vkCmdUpdateBuffer");
+        _CmdFillBuffer                    = cast(PFN_vkCmdFillBuffer)                   loader(device, "vkCmdFillBuffer");
+        _CmdClearColorImage               = cast(PFN_vkCmdClearColorImage)              loader(device, "vkCmdClearColorImage");
+        _CmdClearDepthStencilImage        = cast(PFN_vkCmdClearDepthStencilImage)       loader(device, "vkCmdClearDepthStencilImage");
+        _CmdClearAttachments              = cast(PFN_vkCmdClearAttachments)             loader(device, "vkCmdClearAttachments");
+        _CmdResolveImage                  = cast(PFN_vkCmdResolveImage)                 loader(device, "vkCmdResolveImage");
+        _CmdSetEvent                      = cast(PFN_vkCmdSetEvent)                     loader(device, "vkCmdSetEvent");
+        _CmdResetEvent                    = cast(PFN_vkCmdResetEvent)                   loader(device, "vkCmdResetEvent");
+        _CmdWaitEvents                    = cast(PFN_vkCmdWaitEvents)                   loader(device, "vkCmdWaitEvents");
+        _CmdPipelineBarrier               = cast(PFN_vkCmdPipelineBarrier)              loader(device, "vkCmdPipelineBarrier");
+        _CmdBeginQuery                    = cast(PFN_vkCmdBeginQuery)                   loader(device, "vkCmdBeginQuery");
+        _CmdEndQuery                      = cast(PFN_vkCmdEndQuery)                     loader(device, "vkCmdEndQuery");
+        _CmdResetQueryPool                = cast(PFN_vkCmdResetQueryPool)               loader(device, "vkCmdResetQueryPool");
+        _CmdWriteTimestamp                = cast(PFN_vkCmdWriteTimestamp)               loader(device, "vkCmdWriteTimestamp");
+        _CmdCopyQueryPoolResults          = cast(PFN_vkCmdCopyQueryPoolResults)         loader(device, "vkCmdCopyQueryPoolResults");
+        _CmdPushConstants                 = cast(PFN_vkCmdPushConstants)                loader(device, "vkCmdPushConstants");
+        _CmdBeginRenderPass               = cast(PFN_vkCmdBeginRenderPass)              loader(device, "vkCmdBeginRenderPass");
+        _CmdNextSubpass                   = cast(PFN_vkCmdNextSubpass)                  loader(device, "vkCmdNextSubpass");
+        _CmdEndRenderPass                 = cast(PFN_vkCmdEndRenderPass)                loader(device, "vkCmdEndRenderPass");
+        _CmdExecuteCommands               = cast(PFN_vkCmdExecuteCommands)              loader(device, "vkCmdExecuteCommands");
 
         // VK_KHR_swapchain
-        createSwapchainKHR               = cast(PFN_vkCreateSwapchainKHR)              loader(device, "vkCreateSwapchainKHR");
-        destroySwapchainKHR              = cast(PFN_vkDestroySwapchainKHR)             loader(device, "vkDestroySwapchainKHR");
-        getSwapchainImagesKHR            = cast(PFN_vkGetSwapchainImagesKHR)           loader(device, "vkGetSwapchainImagesKHR");
-        acquireNextImageKHR              = cast(PFN_vkAcquireNextImageKHR)             loader(device, "vkAcquireNextImageKHR");
-        queuePresentKHR                  = cast(PFN_vkQueuePresentKHR)                 loader(device, "vkQueuePresentKHR");
+        _CreateSwapchainKHR               = cast(PFN_vkCreateSwapchainKHR)              loader(device, "vkCreateSwapchainKHR");
+        _DestroySwapchainKHR              = cast(PFN_vkDestroySwapchainKHR)             loader(device, "vkDestroySwapchainKHR");
+        _GetSwapchainImagesKHR            = cast(PFN_vkGetSwapchainImagesKHR)           loader(device, "vkGetSwapchainImagesKHR");
+        _AcquireNextImageKHR              = cast(PFN_vkAcquireNextImageKHR)             loader(device, "vkAcquireNextImageKHR");
+        _QueuePresentKHR                  = cast(PFN_vkQueuePresentKHR)                 loader(device, "vkQueuePresentKHR");
     }
+
+    /// Commands for VK_VERSION_1_0
+    void DestroyDevice (VkDevice device, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyDevice !is null, "vkDestroyDevice was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyDevice(device, pAllocator);
+    }
+    /// ditto
+    void GetDeviceQueue (VkDevice device, uint32_t queueFamilyIndex, uint32_t queueIndex, VkQueue* pQueue) {
+        assert(_GetDeviceQueue !is null, "vkGetDeviceQueue was not loaded. Requested by VK_VERSION_1_0");
+        return _GetDeviceQueue(device, queueFamilyIndex, queueIndex, pQueue);
+    }
+    /// ditto
+    VkResult QueueSubmit (VkQueue queue, uint32_t submitCount, const(VkSubmitInfo)* pSubmits, VkFence fence) {
+        assert(_QueueSubmit !is null, "vkQueueSubmit was not loaded. Requested by VK_VERSION_1_0");
+        return _QueueSubmit(queue, submitCount, pSubmits, fence);
+    }
+    /// ditto
+    VkResult QueueWaitIdle (VkQueue queue) {
+        assert(_QueueWaitIdle !is null, "vkQueueWaitIdle was not loaded. Requested by VK_VERSION_1_0");
+        return _QueueWaitIdle(queue);
+    }
+    /// ditto
+    VkResult DeviceWaitIdle (VkDevice device) {
+        assert(_DeviceWaitIdle !is null, "vkDeviceWaitIdle was not loaded. Requested by VK_VERSION_1_0");
+        return _DeviceWaitIdle(device);
+    }
+    /// ditto
+    VkResult AllocateMemory (VkDevice device, const(VkMemoryAllocateInfo)* pAllocateInfo, const(VkAllocationCallbacks)* pAllocator, VkDeviceMemory* pMemory) {
+        assert(_AllocateMemory !is null, "vkAllocateMemory was not loaded. Requested by VK_VERSION_1_0");
+        return _AllocateMemory(device, pAllocateInfo, pAllocator, pMemory);
+    }
+    /// ditto
+    void FreeMemory (VkDevice device, VkDeviceMemory memory, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_FreeMemory !is null, "vkFreeMemory was not loaded. Requested by VK_VERSION_1_0");
+        return _FreeMemory(device, memory, pAllocator);
+    }
+    /// ditto
+    VkResult MapMemory (VkDevice device, VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size, VkMemoryMapFlags flags, void** ppData) {
+        assert(_MapMemory !is null, "vkMapMemory was not loaded. Requested by VK_VERSION_1_0");
+        return _MapMemory(device, memory, offset, size, flags, ppData);
+    }
+    /// ditto
+    void UnmapMemory (VkDevice device, VkDeviceMemory memory) {
+        assert(_UnmapMemory !is null, "vkUnmapMemory was not loaded. Requested by VK_VERSION_1_0");
+        return _UnmapMemory(device, memory);
+    }
+    /// ditto
+    VkResult FlushMappedMemoryRanges (VkDevice device, uint32_t memoryRangeCount, const(VkMappedMemoryRange)* pMemoryRanges) {
+        assert(_FlushMappedMemoryRanges !is null, "vkFlushMappedMemoryRanges was not loaded. Requested by VK_VERSION_1_0");
+        return _FlushMappedMemoryRanges(device, memoryRangeCount, pMemoryRanges);
+    }
+    /// ditto
+    VkResult InvalidateMappedMemoryRanges (VkDevice device, uint32_t memoryRangeCount, const(VkMappedMemoryRange)* pMemoryRanges) {
+        assert(_InvalidateMappedMemoryRanges !is null, "vkInvalidateMappedMemoryRanges was not loaded. Requested by VK_VERSION_1_0");
+        return _InvalidateMappedMemoryRanges(device, memoryRangeCount, pMemoryRanges);
+    }
+    /// ditto
+    void GetDeviceMemoryCommitment (VkDevice device, VkDeviceMemory memory, VkDeviceSize* pCommittedMemoryInBytes) {
+        assert(_GetDeviceMemoryCommitment !is null, "vkGetDeviceMemoryCommitment was not loaded. Requested by VK_VERSION_1_0");
+        return _GetDeviceMemoryCommitment(device, memory, pCommittedMemoryInBytes);
+    }
+    /// ditto
+    VkResult BindBufferMemory (VkDevice device, VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize memoryOffset) {
+        assert(_BindBufferMemory !is null, "vkBindBufferMemory was not loaded. Requested by VK_VERSION_1_0");
+        return _BindBufferMemory(device, buffer, memory, memoryOffset);
+    }
+    /// ditto
+    VkResult BindImageMemory (VkDevice device, VkImage image, VkDeviceMemory memory, VkDeviceSize memoryOffset) {
+        assert(_BindImageMemory !is null, "vkBindImageMemory was not loaded. Requested by VK_VERSION_1_0");
+        return _BindImageMemory(device, image, memory, memoryOffset);
+    }
+    /// ditto
+    void GetBufferMemoryRequirements (VkDevice device, VkBuffer buffer, VkMemoryRequirements* pMemoryRequirements) {
+        assert(_GetBufferMemoryRequirements !is null, "vkGetBufferMemoryRequirements was not loaded. Requested by VK_VERSION_1_0");
+        return _GetBufferMemoryRequirements(device, buffer, pMemoryRequirements);
+    }
+    /// ditto
+    void GetImageMemoryRequirements (VkDevice device, VkImage image, VkMemoryRequirements* pMemoryRequirements) {
+        assert(_GetImageMemoryRequirements !is null, "vkGetImageMemoryRequirements was not loaded. Requested by VK_VERSION_1_0");
+        return _GetImageMemoryRequirements(device, image, pMemoryRequirements);
+    }
+    /// ditto
+    void GetImageSparseMemoryRequirements (VkDevice device, VkImage image, uint32_t* pSparseMemoryRequirementCount, VkSparseImageMemoryRequirements* pSparseMemoryRequirements) {
+        assert(_GetImageSparseMemoryRequirements !is null, "vkGetImageSparseMemoryRequirements was not loaded. Requested by VK_VERSION_1_0");
+        return _GetImageSparseMemoryRequirements(device, image, pSparseMemoryRequirementCount, pSparseMemoryRequirements);
+    }
+    /// ditto
+    VkResult QueueBindSparse (VkQueue queue, uint32_t bindInfoCount, const(VkBindSparseInfo)* pBindInfo, VkFence fence) {
+        assert(_QueueBindSparse !is null, "vkQueueBindSparse was not loaded. Requested by VK_VERSION_1_0");
+        return _QueueBindSparse(queue, bindInfoCount, pBindInfo, fence);
+    }
+    /// ditto
+    VkResult CreateFence (VkDevice device, const(VkFenceCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkFence* pFence) {
+        assert(_CreateFence !is null, "vkCreateFence was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateFence(device, pCreateInfo, pAllocator, pFence);
+    }
+    /// ditto
+    void DestroyFence (VkDevice device, VkFence fence, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyFence !is null, "vkDestroyFence was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyFence(device, fence, pAllocator);
+    }
+    /// ditto
+    VkResult ResetFences (VkDevice device, uint32_t fenceCount, const(VkFence)* pFences) {
+        assert(_ResetFences !is null, "vkResetFences was not loaded. Requested by VK_VERSION_1_0");
+        return _ResetFences(device, fenceCount, pFences);
+    }
+    /// ditto
+    VkResult GetFenceStatus (VkDevice device, VkFence fence) {
+        assert(_GetFenceStatus !is null, "vkGetFenceStatus was not loaded. Requested by VK_VERSION_1_0");
+        return _GetFenceStatus(device, fence);
+    }
+    /// ditto
+    VkResult WaitForFences (VkDevice device, uint32_t fenceCount, const(VkFence)* pFences, VkBool32 waitAll, uint64_t timeout) {
+        assert(_WaitForFences !is null, "vkWaitForFences was not loaded. Requested by VK_VERSION_1_0");
+        return _WaitForFences(device, fenceCount, pFences, waitAll, timeout);
+    }
+    /// ditto
+    VkResult CreateSemaphore (VkDevice device, const(VkSemaphoreCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkSemaphore* pSemaphore) {
+        assert(_CreateSemaphore !is null, "vkCreateSemaphore was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateSemaphore(device, pCreateInfo, pAllocator, pSemaphore);
+    }
+    /// ditto
+    void DestroySemaphore (VkDevice device, VkSemaphore semaphore, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroySemaphore !is null, "vkDestroySemaphore was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroySemaphore(device, semaphore, pAllocator);
+    }
+    /// ditto
+    VkResult CreateEvent (VkDevice device, const(VkEventCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkEvent* pEvent) {
+        assert(_CreateEvent !is null, "vkCreateEvent was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateEvent(device, pCreateInfo, pAllocator, pEvent);
+    }
+    /// ditto
+    void DestroyEvent (VkDevice device, VkEvent event, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyEvent !is null, "vkDestroyEvent was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyEvent(device, event, pAllocator);
+    }
+    /// ditto
+    VkResult GetEventStatus (VkDevice device, VkEvent event) {
+        assert(_GetEventStatus !is null, "vkGetEventStatus was not loaded. Requested by VK_VERSION_1_0");
+        return _GetEventStatus(device, event);
+    }
+    /// ditto
+    VkResult SetEvent (VkDevice device, VkEvent event) {
+        assert(_SetEvent !is null, "vkSetEvent was not loaded. Requested by VK_VERSION_1_0");
+        return _SetEvent(device, event);
+    }
+    /// ditto
+    VkResult ResetEvent (VkDevice device, VkEvent event) {
+        assert(_ResetEvent !is null, "vkResetEvent was not loaded. Requested by VK_VERSION_1_0");
+        return _ResetEvent(device, event);
+    }
+    /// ditto
+    VkResult CreateQueryPool (VkDevice device, const(VkQueryPoolCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkQueryPool* pQueryPool) {
+        assert(_CreateQueryPool !is null, "vkCreateQueryPool was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateQueryPool(device, pCreateInfo, pAllocator, pQueryPool);
+    }
+    /// ditto
+    void DestroyQueryPool (VkDevice device, VkQueryPool queryPool, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyQueryPool !is null, "vkDestroyQueryPool was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyQueryPool(device, queryPool, pAllocator);
+    }
+    /// ditto
+    VkResult GetQueryPoolResults (VkDevice device, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount, size_t dataSize, void* pData, VkDeviceSize stride, VkQueryResultFlags flags) {
+        assert(_GetQueryPoolResults !is null, "vkGetQueryPoolResults was not loaded. Requested by VK_VERSION_1_0");
+        return _GetQueryPoolResults(device, queryPool, firstQuery, queryCount, dataSize, pData, stride, flags);
+    }
+    /// ditto
+    VkResult CreateBuffer (VkDevice device, const(VkBufferCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkBuffer* pBuffer) {
+        assert(_CreateBuffer !is null, "vkCreateBuffer was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateBuffer(device, pCreateInfo, pAllocator, pBuffer);
+    }
+    /// ditto
+    void DestroyBuffer (VkDevice device, VkBuffer buffer, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyBuffer !is null, "vkDestroyBuffer was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyBuffer(device, buffer, pAllocator);
+    }
+    /// ditto
+    VkResult CreateBufferView (VkDevice device, const(VkBufferViewCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkBufferView* pView) {
+        assert(_CreateBufferView !is null, "vkCreateBufferView was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateBufferView(device, pCreateInfo, pAllocator, pView);
+    }
+    /// ditto
+    void DestroyBufferView (VkDevice device, VkBufferView bufferView, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyBufferView !is null, "vkDestroyBufferView was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyBufferView(device, bufferView, pAllocator);
+    }
+    /// ditto
+    VkResult CreateImage (VkDevice device, const(VkImageCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkImage* pImage) {
+        assert(_CreateImage !is null, "vkCreateImage was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateImage(device, pCreateInfo, pAllocator, pImage);
+    }
+    /// ditto
+    void DestroyImage (VkDevice device, VkImage image, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyImage !is null, "vkDestroyImage was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyImage(device, image, pAllocator);
+    }
+    /// ditto
+    void GetImageSubresourceLayout (VkDevice device, VkImage image, const(VkImageSubresource)* pSubresource, VkSubresourceLayout* pLayout) {
+        assert(_GetImageSubresourceLayout !is null, "vkGetImageSubresourceLayout was not loaded. Requested by VK_VERSION_1_0");
+        return _GetImageSubresourceLayout(device, image, pSubresource, pLayout);
+    }
+    /// ditto
+    VkResult CreateImageView (VkDevice device, const(VkImageViewCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkImageView* pView) {
+        assert(_CreateImageView !is null, "vkCreateImageView was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateImageView(device, pCreateInfo, pAllocator, pView);
+    }
+    /// ditto
+    void DestroyImageView (VkDevice device, VkImageView imageView, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyImageView !is null, "vkDestroyImageView was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyImageView(device, imageView, pAllocator);
+    }
+    /// ditto
+    VkResult CreateShaderModule (VkDevice device, const(VkShaderModuleCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkShaderModule* pShaderModule) {
+        assert(_CreateShaderModule !is null, "vkCreateShaderModule was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateShaderModule(device, pCreateInfo, pAllocator, pShaderModule);
+    }
+    /// ditto
+    void DestroyShaderModule (VkDevice device, VkShaderModule shaderModule, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyShaderModule !is null, "vkDestroyShaderModule was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyShaderModule(device, shaderModule, pAllocator);
+    }
+    /// ditto
+    VkResult CreatePipelineCache (VkDevice device, const(VkPipelineCacheCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkPipelineCache* pPipelineCache) {
+        assert(_CreatePipelineCache !is null, "vkCreatePipelineCache was not loaded. Requested by VK_VERSION_1_0");
+        return _CreatePipelineCache(device, pCreateInfo, pAllocator, pPipelineCache);
+    }
+    /// ditto
+    void DestroyPipelineCache (VkDevice device, VkPipelineCache pipelineCache, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyPipelineCache !is null, "vkDestroyPipelineCache was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyPipelineCache(device, pipelineCache, pAllocator);
+    }
+    /// ditto
+    VkResult GetPipelineCacheData (VkDevice device, VkPipelineCache pipelineCache, size_t* pDataSize, void* pData) {
+        assert(_GetPipelineCacheData !is null, "vkGetPipelineCacheData was not loaded. Requested by VK_VERSION_1_0");
+        return _GetPipelineCacheData(device, pipelineCache, pDataSize, pData);
+    }
+    /// ditto
+    VkResult MergePipelineCaches (VkDevice device, VkPipelineCache dstCache, uint32_t srcCacheCount, const(VkPipelineCache)* pSrcCaches) {
+        assert(_MergePipelineCaches !is null, "vkMergePipelineCaches was not loaded. Requested by VK_VERSION_1_0");
+        return _MergePipelineCaches(device, dstCache, srcCacheCount, pSrcCaches);
+    }
+    /// ditto
+    VkResult CreateGraphicsPipelines (VkDevice device, VkPipelineCache pipelineCache, uint32_t createInfoCount, const(VkGraphicsPipelineCreateInfo)* pCreateInfos, const(VkAllocationCallbacks)* pAllocator, VkPipeline* pPipelines) {
+        assert(_CreateGraphicsPipelines !is null, "vkCreateGraphicsPipelines was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateGraphicsPipelines(device, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines);
+    }
+    /// ditto
+    VkResult CreateComputePipelines (VkDevice device, VkPipelineCache pipelineCache, uint32_t createInfoCount, const(VkComputePipelineCreateInfo)* pCreateInfos, const(VkAllocationCallbacks)* pAllocator, VkPipeline* pPipelines) {
+        assert(_CreateComputePipelines !is null, "vkCreateComputePipelines was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateComputePipelines(device, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines);
+    }
+    /// ditto
+    void DestroyPipeline (VkDevice device, VkPipeline pipeline, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyPipeline !is null, "vkDestroyPipeline was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyPipeline(device, pipeline, pAllocator);
+    }
+    /// ditto
+    VkResult CreatePipelineLayout (VkDevice device, const(VkPipelineLayoutCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkPipelineLayout* pPipelineLayout) {
+        assert(_CreatePipelineLayout !is null, "vkCreatePipelineLayout was not loaded. Requested by VK_VERSION_1_0");
+        return _CreatePipelineLayout(device, pCreateInfo, pAllocator, pPipelineLayout);
+    }
+    /// ditto
+    void DestroyPipelineLayout (VkDevice device, VkPipelineLayout pipelineLayout, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyPipelineLayout !is null, "vkDestroyPipelineLayout was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyPipelineLayout(device, pipelineLayout, pAllocator);
+    }
+    /// ditto
+    VkResult CreateSampler (VkDevice device, const(VkSamplerCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkSampler* pSampler) {
+        assert(_CreateSampler !is null, "vkCreateSampler was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateSampler(device, pCreateInfo, pAllocator, pSampler);
+    }
+    /// ditto
+    void DestroySampler (VkDevice device, VkSampler sampler, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroySampler !is null, "vkDestroySampler was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroySampler(device, sampler, pAllocator);
+    }
+    /// ditto
+    VkResult CreateDescriptorSetLayout (VkDevice device, const(VkDescriptorSetLayoutCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkDescriptorSetLayout* pSetLayout) {
+        assert(_CreateDescriptorSetLayout !is null, "vkCreateDescriptorSetLayout was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateDescriptorSetLayout(device, pCreateInfo, pAllocator, pSetLayout);
+    }
+    /// ditto
+    void DestroyDescriptorSetLayout (VkDevice device, VkDescriptorSetLayout descriptorSetLayout, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyDescriptorSetLayout !is null, "vkDestroyDescriptorSetLayout was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyDescriptorSetLayout(device, descriptorSetLayout, pAllocator);
+    }
+    /// ditto
+    VkResult CreateDescriptorPool (VkDevice device, const(VkDescriptorPoolCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkDescriptorPool* pDescriptorPool) {
+        assert(_CreateDescriptorPool !is null, "vkCreateDescriptorPool was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateDescriptorPool(device, pCreateInfo, pAllocator, pDescriptorPool);
+    }
+    /// ditto
+    void DestroyDescriptorPool (VkDevice device, VkDescriptorPool descriptorPool, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyDescriptorPool !is null, "vkDestroyDescriptorPool was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyDescriptorPool(device, descriptorPool, pAllocator);
+    }
+    /// ditto
+    VkResult ResetDescriptorPool (VkDevice device, VkDescriptorPool descriptorPool, VkDescriptorPoolResetFlags flags) {
+        assert(_ResetDescriptorPool !is null, "vkResetDescriptorPool was not loaded. Requested by VK_VERSION_1_0");
+        return _ResetDescriptorPool(device, descriptorPool, flags);
+    }
+    /// ditto
+    VkResult AllocateDescriptorSets (VkDevice device, const(VkDescriptorSetAllocateInfo)* pAllocateInfo, VkDescriptorSet* pDescriptorSets) {
+        assert(_AllocateDescriptorSets !is null, "vkAllocateDescriptorSets was not loaded. Requested by VK_VERSION_1_0");
+        return _AllocateDescriptorSets(device, pAllocateInfo, pDescriptorSets);
+    }
+    /// ditto
+    VkResult FreeDescriptorSets (VkDevice device, VkDescriptorPool descriptorPool, uint32_t descriptorSetCount, const(VkDescriptorSet)* pDescriptorSets) {
+        assert(_FreeDescriptorSets !is null, "vkFreeDescriptorSets was not loaded. Requested by VK_VERSION_1_0");
+        return _FreeDescriptorSets(device, descriptorPool, descriptorSetCount, pDescriptorSets);
+    }
+    /// ditto
+    void UpdateDescriptorSets (VkDevice device, uint32_t descriptorWriteCount, const(VkWriteDescriptorSet)* pDescriptorWrites, uint32_t descriptorCopyCount, const(VkCopyDescriptorSet)* pDescriptorCopies) {
+        assert(_UpdateDescriptorSets !is null, "vkUpdateDescriptorSets was not loaded. Requested by VK_VERSION_1_0");
+        return _UpdateDescriptorSets(device, descriptorWriteCount, pDescriptorWrites, descriptorCopyCount, pDescriptorCopies);
+    }
+    /// ditto
+    VkResult CreateFramebuffer (VkDevice device, const(VkFramebufferCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkFramebuffer* pFramebuffer) {
+        assert(_CreateFramebuffer !is null, "vkCreateFramebuffer was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateFramebuffer(device, pCreateInfo, pAllocator, pFramebuffer);
+    }
+    /// ditto
+    void DestroyFramebuffer (VkDevice device, VkFramebuffer framebuffer, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyFramebuffer !is null, "vkDestroyFramebuffer was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyFramebuffer(device, framebuffer, pAllocator);
+    }
+    /// ditto
+    VkResult CreateRenderPass (VkDevice device, const(VkRenderPassCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkRenderPass* pRenderPass) {
+        assert(_CreateRenderPass !is null, "vkCreateRenderPass was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateRenderPass(device, pCreateInfo, pAllocator, pRenderPass);
+    }
+    /// ditto
+    void DestroyRenderPass (VkDevice device, VkRenderPass renderPass, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyRenderPass !is null, "vkDestroyRenderPass was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyRenderPass(device, renderPass, pAllocator);
+    }
+    /// ditto
+    void GetRenderAreaGranularity (VkDevice device, VkRenderPass renderPass, VkExtent2D* pGranularity) {
+        assert(_GetRenderAreaGranularity !is null, "vkGetRenderAreaGranularity was not loaded. Requested by VK_VERSION_1_0");
+        return _GetRenderAreaGranularity(device, renderPass, pGranularity);
+    }
+    /// ditto
+    VkResult CreateCommandPool (VkDevice device, const(VkCommandPoolCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkCommandPool* pCommandPool) {
+        assert(_CreateCommandPool !is null, "vkCreateCommandPool was not loaded. Requested by VK_VERSION_1_0");
+        return _CreateCommandPool(device, pCreateInfo, pAllocator, pCommandPool);
+    }
+    /// ditto
+    void DestroyCommandPool (VkDevice device, VkCommandPool commandPool, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyCommandPool !is null, "vkDestroyCommandPool was not loaded. Requested by VK_VERSION_1_0");
+        return _DestroyCommandPool(device, commandPool, pAllocator);
+    }
+    /// ditto
+    VkResult ResetCommandPool (VkDevice device, VkCommandPool commandPool, VkCommandPoolResetFlags flags) {
+        assert(_ResetCommandPool !is null, "vkResetCommandPool was not loaded. Requested by VK_VERSION_1_0");
+        return _ResetCommandPool(device, commandPool, flags);
+    }
+    /// ditto
+    VkResult AllocateCommandBuffers (VkDevice device, const(VkCommandBufferAllocateInfo)* pAllocateInfo, VkCommandBuffer* pCommandBuffers) {
+        assert(_AllocateCommandBuffers !is null, "vkAllocateCommandBuffers was not loaded. Requested by VK_VERSION_1_0");
+        return _AllocateCommandBuffers(device, pAllocateInfo, pCommandBuffers);
+    }
+    /// ditto
+    void FreeCommandBuffers (VkDevice device, VkCommandPool commandPool, uint32_t commandBufferCount, const(VkCommandBuffer)* pCommandBuffers) {
+        assert(_FreeCommandBuffers !is null, "vkFreeCommandBuffers was not loaded. Requested by VK_VERSION_1_0");
+        return _FreeCommandBuffers(device, commandPool, commandBufferCount, pCommandBuffers);
+    }
+    /// ditto
+    VkResult BeginCommandBuffer (VkCommandBuffer commandBuffer, const(VkCommandBufferBeginInfo)* pBeginInfo) {
+        assert(_BeginCommandBuffer !is null, "vkBeginCommandBuffer was not loaded. Requested by VK_VERSION_1_0");
+        return _BeginCommandBuffer(commandBuffer, pBeginInfo);
+    }
+    /// ditto
+    VkResult EndCommandBuffer (VkCommandBuffer commandBuffer) {
+        assert(_EndCommandBuffer !is null, "vkEndCommandBuffer was not loaded. Requested by VK_VERSION_1_0");
+        return _EndCommandBuffer(commandBuffer);
+    }
+    /// ditto
+    VkResult ResetCommandBuffer (VkCommandBuffer commandBuffer, VkCommandBufferResetFlags flags) {
+        assert(_ResetCommandBuffer !is null, "vkResetCommandBuffer was not loaded. Requested by VK_VERSION_1_0");
+        return _ResetCommandBuffer(commandBuffer, flags);
+    }
+    /// ditto
+    void CmdBindPipeline (VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint, VkPipeline pipeline) {
+        assert(_CmdBindPipeline !is null, "vkCmdBindPipeline was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdBindPipeline(commandBuffer, pipelineBindPoint, pipeline);
+    }
+    /// ditto
+    void CmdSetViewport (VkCommandBuffer commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const(VkViewport)* pViewports) {
+        assert(_CmdSetViewport !is null, "vkCmdSetViewport was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdSetViewport(commandBuffer, firstViewport, viewportCount, pViewports);
+    }
+    /// ditto
+    void CmdSetScissor (VkCommandBuffer commandBuffer, uint32_t firstScissor, uint32_t scissorCount, const(VkRect2D)* pScissors) {
+        assert(_CmdSetScissor !is null, "vkCmdSetScissor was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdSetScissor(commandBuffer, firstScissor, scissorCount, pScissors);
+    }
+    /// ditto
+    void CmdSetLineWidth (VkCommandBuffer commandBuffer, float lineWidth) {
+        assert(_CmdSetLineWidth !is null, "vkCmdSetLineWidth was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdSetLineWidth(commandBuffer, lineWidth);
+    }
+    /// ditto
+    void CmdSetDepthBias (VkCommandBuffer commandBuffer, float depthBiasConstantFactor, float depthBiasClamp, float depthBiasSlopeFactor) {
+        assert(_CmdSetDepthBias !is null, "vkCmdSetDepthBias was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdSetDepthBias(commandBuffer, depthBiasConstantFactor, depthBiasClamp, depthBiasSlopeFactor);
+    }
+    /// ditto
+    void CmdSetBlendConstants (VkCommandBuffer commandBuffer, const float[4] blendConstants) {
+        assert(_CmdSetBlendConstants !is null, "vkCmdSetBlendConstants was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdSetBlendConstants(commandBuffer, blendConstants);
+    }
+    /// ditto
+    void CmdSetDepthBounds (VkCommandBuffer commandBuffer, float minDepthBounds, float maxDepthBounds) {
+        assert(_CmdSetDepthBounds !is null, "vkCmdSetDepthBounds was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdSetDepthBounds(commandBuffer, minDepthBounds, maxDepthBounds);
+    }
+    /// ditto
+    void CmdSetStencilCompareMask (VkCommandBuffer commandBuffer, VkStencilFaceFlags faceMask, uint32_t compareMask) {
+        assert(_CmdSetStencilCompareMask !is null, "vkCmdSetStencilCompareMask was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdSetStencilCompareMask(commandBuffer, faceMask, compareMask);
+    }
+    /// ditto
+    void CmdSetStencilWriteMask (VkCommandBuffer commandBuffer, VkStencilFaceFlags faceMask, uint32_t writeMask) {
+        assert(_CmdSetStencilWriteMask !is null, "vkCmdSetStencilWriteMask was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdSetStencilWriteMask(commandBuffer, faceMask, writeMask);
+    }
+    /// ditto
+    void CmdSetStencilReference (VkCommandBuffer commandBuffer, VkStencilFaceFlags faceMask, uint32_t reference) {
+        assert(_CmdSetStencilReference !is null, "vkCmdSetStencilReference was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdSetStencilReference(commandBuffer, faceMask, reference);
+    }
+    /// ditto
+    void CmdBindDescriptorSets (VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout layout, uint32_t firstSet, uint32_t descriptorSetCount, const(VkDescriptorSet)* pDescriptorSets, uint32_t dynamicOffsetCount, const(uint32_t)* pDynamicOffsets) {
+        assert(_CmdBindDescriptorSets !is null, "vkCmdBindDescriptorSets was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdBindDescriptorSets(commandBuffer, pipelineBindPoint, layout, firstSet, descriptorSetCount, pDescriptorSets, dynamicOffsetCount, pDynamicOffsets);
+    }
+    /// ditto
+    void CmdBindIndexBuffer (VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkIndexType indexType) {
+        assert(_CmdBindIndexBuffer !is null, "vkCmdBindIndexBuffer was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdBindIndexBuffer(commandBuffer, buffer, offset, indexType);
+    }
+    /// ditto
+    void CmdBindVertexBuffers (VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const(VkBuffer)* pBuffers, const(VkDeviceSize)* pOffsets) {
+        assert(_CmdBindVertexBuffers !is null, "vkCmdBindVertexBuffers was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdBindVertexBuffers(commandBuffer, firstBinding, bindingCount, pBuffers, pOffsets);
+    }
+    /// ditto
+    void CmdDraw (VkCommandBuffer commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) {
+        assert(_CmdDraw !is null, "vkCmdDraw was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdDraw(commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance);
+    }
+    /// ditto
+    void CmdDrawIndexed (VkCommandBuffer commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) {
+        assert(_CmdDrawIndexed !is null, "vkCmdDrawIndexed was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdDrawIndexed(commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+    }
+    /// ditto
+    void CmdDrawIndirect (VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride) {
+        assert(_CmdDrawIndirect !is null, "vkCmdDrawIndirect was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdDrawIndirect(commandBuffer, buffer, offset, drawCount, stride);
+    }
+    /// ditto
+    void CmdDrawIndexedIndirect (VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride) {
+        assert(_CmdDrawIndexedIndirect !is null, "vkCmdDrawIndexedIndirect was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdDrawIndexedIndirect(commandBuffer, buffer, offset, drawCount, stride);
+    }
+    /// ditto
+    void CmdDispatch (VkCommandBuffer commandBuffer, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) {
+        assert(_CmdDispatch !is null, "vkCmdDispatch was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdDispatch(commandBuffer, groupCountX, groupCountY, groupCountZ);
+    }
+    /// ditto
+    void CmdDispatchIndirect (VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset) {
+        assert(_CmdDispatchIndirect !is null, "vkCmdDispatchIndirect was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdDispatchIndirect(commandBuffer, buffer, offset);
+    }
+    /// ditto
+    void CmdCopyBuffer (VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkBuffer dstBuffer, uint32_t regionCount, const(VkBufferCopy)* pRegions) {
+        assert(_CmdCopyBuffer !is null, "vkCmdCopyBuffer was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, regionCount, pRegions);
+    }
+    /// ditto
+    void CmdCopyImage (VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const(VkImageCopy)* pRegions) {
+        assert(_CmdCopyImage !is null, "vkCmdCopyImage was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdCopyImage(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions);
+    }
+    /// ditto
+    void CmdBlitImage (VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const(VkImageBlit)* pRegions, VkFilter filter) {
+        assert(_CmdBlitImage !is null, "vkCmdBlitImage was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdBlitImage(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions, filter);
+    }
+    /// ditto
+    void CmdCopyBufferToImage (VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const(VkBufferImageCopy)* pRegions) {
+        assert(_CmdCopyBufferToImage !is null, "vkCmdCopyBufferToImage was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdCopyBufferToImage(commandBuffer, srcBuffer, dstImage, dstImageLayout, regionCount, pRegions);
+    }
+    /// ditto
+    void CmdCopyImageToBuffer (VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout, VkBuffer dstBuffer, uint32_t regionCount, const(VkBufferImageCopy)* pRegions) {
+        assert(_CmdCopyImageToBuffer !is null, "vkCmdCopyImageToBuffer was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdCopyImageToBuffer(commandBuffer, srcImage, srcImageLayout, dstBuffer, regionCount, pRegions);
+    }
+    /// ditto
+    void CmdUpdateBuffer (VkCommandBuffer commandBuffer, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize dataSize, const(void)* pData) {
+        assert(_CmdUpdateBuffer !is null, "vkCmdUpdateBuffer was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdUpdateBuffer(commandBuffer, dstBuffer, dstOffset, dataSize, pData);
+    }
+    /// ditto
+    void CmdFillBuffer (VkCommandBuffer commandBuffer, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize size, uint32_t data) {
+        assert(_CmdFillBuffer !is null, "vkCmdFillBuffer was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdFillBuffer(commandBuffer, dstBuffer, dstOffset, size, data);
+    }
+    /// ditto
+    void CmdClearColorImage (VkCommandBuffer commandBuffer, VkImage image, VkImageLayout imageLayout, const(VkClearColorValue)* pColor, uint32_t rangeCount, const(VkImageSubresourceRange)* pRanges) {
+        assert(_CmdClearColorImage !is null, "vkCmdClearColorImage was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdClearColorImage(commandBuffer, image, imageLayout, pColor, rangeCount, pRanges);
+    }
+    /// ditto
+    void CmdClearDepthStencilImage (VkCommandBuffer commandBuffer, VkImage image, VkImageLayout imageLayout, const(VkClearDepthStencilValue)* pDepthStencil, uint32_t rangeCount, const(VkImageSubresourceRange)* pRanges) {
+        assert(_CmdClearDepthStencilImage !is null, "vkCmdClearDepthStencilImage was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdClearDepthStencilImage(commandBuffer, image, imageLayout, pDepthStencil, rangeCount, pRanges);
+    }
+    /// ditto
+    void CmdClearAttachments (VkCommandBuffer commandBuffer, uint32_t attachmentCount, const(VkClearAttachment)* pAttachments, uint32_t rectCount, const(VkClearRect)* pRects) {
+        assert(_CmdClearAttachments !is null, "vkCmdClearAttachments was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdClearAttachments(commandBuffer, attachmentCount, pAttachments, rectCount, pRects);
+    }
+    /// ditto
+    void CmdResolveImage (VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const(VkImageResolve)* pRegions) {
+        assert(_CmdResolveImage !is null, "vkCmdResolveImage was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdResolveImage(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions);
+    }
+    /// ditto
+    void CmdSetEvent (VkCommandBuffer commandBuffer, VkEvent event, VkPipelineStageFlags stageMask) {
+        assert(_CmdSetEvent !is null, "vkCmdSetEvent was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdSetEvent(commandBuffer, event, stageMask);
+    }
+    /// ditto
+    void CmdResetEvent (VkCommandBuffer commandBuffer, VkEvent event, VkPipelineStageFlags stageMask) {
+        assert(_CmdResetEvent !is null, "vkCmdResetEvent was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdResetEvent(commandBuffer, event, stageMask);
+    }
+    /// ditto
+    void CmdWaitEvents (VkCommandBuffer commandBuffer, uint32_t eventCount, const(VkEvent)* pEvents, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, uint32_t memoryBarrierCount, const(VkMemoryBarrier)* pMemoryBarriers, uint32_t bufferMemoryBarrierCount, const(VkBufferMemoryBarrier)* pBufferMemoryBarriers, uint32_t imageMemoryBarrierCount, const(VkImageMemoryBarrier)* pImageMemoryBarriers) {
+        assert(_CmdWaitEvents !is null, "vkCmdWaitEvents was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdWaitEvents(commandBuffer, eventCount, pEvents, srcStageMask, dstStageMask, memoryBarrierCount, pMemoryBarriers, bufferMemoryBarrierCount, pBufferMemoryBarriers, imageMemoryBarrierCount, pImageMemoryBarriers);
+    }
+    /// ditto
+    void CmdPipelineBarrier (VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags, uint32_t memoryBarrierCount, const(VkMemoryBarrier)* pMemoryBarriers, uint32_t bufferMemoryBarrierCount, const(VkBufferMemoryBarrier)* pBufferMemoryBarriers, uint32_t imageMemoryBarrierCount, const(VkImageMemoryBarrier)* pImageMemoryBarriers) {
+        assert(_CmdPipelineBarrier !is null, "vkCmdPipelineBarrier was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdPipelineBarrier(commandBuffer, srcStageMask, dstStageMask, dependencyFlags, memoryBarrierCount, pMemoryBarriers, bufferMemoryBarrierCount, pBufferMemoryBarriers, imageMemoryBarrierCount, pImageMemoryBarriers);
+    }
+    /// ditto
+    void CmdBeginQuery (VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t query, VkQueryControlFlags flags) {
+        assert(_CmdBeginQuery !is null, "vkCmdBeginQuery was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdBeginQuery(commandBuffer, queryPool, query, flags);
+    }
+    /// ditto
+    void CmdEndQuery (VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t query) {
+        assert(_CmdEndQuery !is null, "vkCmdEndQuery was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdEndQuery(commandBuffer, queryPool, query);
+    }
+    /// ditto
+    void CmdResetQueryPool (VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount) {
+        assert(_CmdResetQueryPool !is null, "vkCmdResetQueryPool was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdResetQueryPool(commandBuffer, queryPool, firstQuery, queryCount);
+    }
+    /// ditto
+    void CmdWriteTimestamp (VkCommandBuffer commandBuffer, VkPipelineStageFlagBits pipelineStage, VkQueryPool queryPool, uint32_t query) {
+        assert(_CmdWriteTimestamp !is null, "vkCmdWriteTimestamp was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdWriteTimestamp(commandBuffer, pipelineStage, queryPool, query);
+    }
+    /// ditto
+    void CmdCopyQueryPoolResults (VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize stride, VkQueryResultFlags flags) {
+        assert(_CmdCopyQueryPoolResults !is null, "vkCmdCopyQueryPoolResults was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdCopyQueryPoolResults(commandBuffer, queryPool, firstQuery, queryCount, dstBuffer, dstOffset, stride, flags);
+    }
+    /// ditto
+    void CmdPushConstants (VkCommandBuffer commandBuffer, VkPipelineLayout layout, VkShaderStageFlags stageFlags, uint32_t offset, uint32_t size, const(void)* pValues) {
+        assert(_CmdPushConstants !is null, "vkCmdPushConstants was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdPushConstants(commandBuffer, layout, stageFlags, offset, size, pValues);
+    }
+    /// ditto
+    void CmdBeginRenderPass (VkCommandBuffer commandBuffer, const(VkRenderPassBeginInfo)* pRenderPassBegin, VkSubpassContents contents) {
+        assert(_CmdBeginRenderPass !is null, "vkCmdBeginRenderPass was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdBeginRenderPass(commandBuffer, pRenderPassBegin, contents);
+    }
+    /// ditto
+    void CmdNextSubpass (VkCommandBuffer commandBuffer, VkSubpassContents contents) {
+        assert(_CmdNextSubpass !is null, "vkCmdNextSubpass was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdNextSubpass(commandBuffer, contents);
+    }
+    /// ditto
+    void CmdEndRenderPass (VkCommandBuffer commandBuffer) {
+        assert(_CmdEndRenderPass !is null, "vkCmdEndRenderPass was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdEndRenderPass(commandBuffer);
+    }
+    /// ditto
+    void CmdExecuteCommands (VkCommandBuffer commandBuffer, uint32_t commandBufferCount, const(VkCommandBuffer)* pCommandBuffers) {
+        assert(_CmdExecuteCommands !is null, "vkCmdExecuteCommands was not loaded. Requested by VK_VERSION_1_0");
+        return _CmdExecuteCommands(commandBuffer, commandBufferCount, pCommandBuffers);
+    }
+
+    /// Commands for VK_KHR_swapchain
+    VkResult CreateSwapchainKHR (VkDevice device, const(VkSwapchainCreateInfoKHR)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkSwapchainKHR* pSwapchain) {
+        assert(_CreateSwapchainKHR !is null, "vkCreateSwapchainKHR was not loaded. Requested by VK_KHR_swapchain");
+        return _CreateSwapchainKHR(device, pCreateInfo, pAllocator, pSwapchain);
+    }
+    /// ditto
+    void DestroySwapchainKHR (VkDevice device, VkSwapchainKHR swapchain, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroySwapchainKHR !is null, "vkDestroySwapchainKHR was not loaded. Requested by VK_KHR_swapchain");
+        return _DestroySwapchainKHR(device, swapchain, pAllocator);
+    }
+    /// ditto
+    VkResult GetSwapchainImagesKHR (VkDevice device, VkSwapchainKHR swapchain, uint32_t* pSwapchainImageCount, VkImage* pSwapchainImages) {
+        assert(_GetSwapchainImagesKHR !is null, "vkGetSwapchainImagesKHR was not loaded. Requested by VK_KHR_swapchain");
+        return _GetSwapchainImagesKHR(device, swapchain, pSwapchainImageCount, pSwapchainImages);
+    }
+    /// ditto
+    VkResult AcquireNextImageKHR (VkDevice device, VkSwapchainKHR swapchain, uint64_t timeout, VkSemaphore semaphore, VkFence fence, uint32_t* pImageIndex) {
+        assert(_AcquireNextImageKHR !is null, "vkAcquireNextImageKHR was not loaded. Requested by VK_KHR_swapchain");
+        return _AcquireNextImageKHR(device, swapchain, timeout, semaphore, fence, pImageIndex);
+    }
+    /// ditto
+    VkResult QueuePresentKHR (VkQueue queue, const(VkPresentInfoKHR)* pPresentInfo) {
+        assert(_QueuePresentKHR !is null, "vkQueuePresentKHR was not loaded. Requested by VK_KHR_swapchain");
+        return _QueuePresentKHR(queue, pPresentInfo);
+    }
+
+    // fields for VK_VERSION_1_0
+    private PFN_vkDestroyDevice                    _DestroyDevice;
+    private PFN_vkGetDeviceQueue                   _GetDeviceQueue;
+    private PFN_vkQueueSubmit                      _QueueSubmit;
+    private PFN_vkQueueWaitIdle                    _QueueWaitIdle;
+    private PFN_vkDeviceWaitIdle                   _DeviceWaitIdle;
+    private PFN_vkAllocateMemory                   _AllocateMemory;
+    private PFN_vkFreeMemory                       _FreeMemory;
+    private PFN_vkMapMemory                        _MapMemory;
+    private PFN_vkUnmapMemory                      _UnmapMemory;
+    private PFN_vkFlushMappedMemoryRanges          _FlushMappedMemoryRanges;
+    private PFN_vkInvalidateMappedMemoryRanges     _InvalidateMappedMemoryRanges;
+    private PFN_vkGetDeviceMemoryCommitment        _GetDeviceMemoryCommitment;
+    private PFN_vkBindBufferMemory                 _BindBufferMemory;
+    private PFN_vkBindImageMemory                  _BindImageMemory;
+    private PFN_vkGetBufferMemoryRequirements      _GetBufferMemoryRequirements;
+    private PFN_vkGetImageMemoryRequirements       _GetImageMemoryRequirements;
+    private PFN_vkGetImageSparseMemoryRequirements _GetImageSparseMemoryRequirements;
+    private PFN_vkQueueBindSparse                  _QueueBindSparse;
+    private PFN_vkCreateFence                      _CreateFence;
+    private PFN_vkDestroyFence                     _DestroyFence;
+    private PFN_vkResetFences                      _ResetFences;
+    private PFN_vkGetFenceStatus                   _GetFenceStatus;
+    private PFN_vkWaitForFences                    _WaitForFences;
+    private PFN_vkCreateSemaphore                  _CreateSemaphore;
+    private PFN_vkDestroySemaphore                 _DestroySemaphore;
+    private PFN_vkCreateEvent                      _CreateEvent;
+    private PFN_vkDestroyEvent                     _DestroyEvent;
+    private PFN_vkGetEventStatus                   _GetEventStatus;
+    private PFN_vkSetEvent                         _SetEvent;
+    private PFN_vkResetEvent                       _ResetEvent;
+    private PFN_vkCreateQueryPool                  _CreateQueryPool;
+    private PFN_vkDestroyQueryPool                 _DestroyQueryPool;
+    private PFN_vkGetQueryPoolResults              _GetQueryPoolResults;
+    private PFN_vkCreateBuffer                     _CreateBuffer;
+    private PFN_vkDestroyBuffer                    _DestroyBuffer;
+    private PFN_vkCreateBufferView                 _CreateBufferView;
+    private PFN_vkDestroyBufferView                _DestroyBufferView;
+    private PFN_vkCreateImage                      _CreateImage;
+    private PFN_vkDestroyImage                     _DestroyImage;
+    private PFN_vkGetImageSubresourceLayout        _GetImageSubresourceLayout;
+    private PFN_vkCreateImageView                  _CreateImageView;
+    private PFN_vkDestroyImageView                 _DestroyImageView;
+    private PFN_vkCreateShaderModule               _CreateShaderModule;
+    private PFN_vkDestroyShaderModule              _DestroyShaderModule;
+    private PFN_vkCreatePipelineCache              _CreatePipelineCache;
+    private PFN_vkDestroyPipelineCache             _DestroyPipelineCache;
+    private PFN_vkGetPipelineCacheData             _GetPipelineCacheData;
+    private PFN_vkMergePipelineCaches              _MergePipelineCaches;
+    private PFN_vkCreateGraphicsPipelines          _CreateGraphicsPipelines;
+    private PFN_vkCreateComputePipelines           _CreateComputePipelines;
+    private PFN_vkDestroyPipeline                  _DestroyPipeline;
+    private PFN_vkCreatePipelineLayout             _CreatePipelineLayout;
+    private PFN_vkDestroyPipelineLayout            _DestroyPipelineLayout;
+    private PFN_vkCreateSampler                    _CreateSampler;
+    private PFN_vkDestroySampler                   _DestroySampler;
+    private PFN_vkCreateDescriptorSetLayout        _CreateDescriptorSetLayout;
+    private PFN_vkDestroyDescriptorSetLayout       _DestroyDescriptorSetLayout;
+    private PFN_vkCreateDescriptorPool             _CreateDescriptorPool;
+    private PFN_vkDestroyDescriptorPool            _DestroyDescriptorPool;
+    private PFN_vkResetDescriptorPool              _ResetDescriptorPool;
+    private PFN_vkAllocateDescriptorSets           _AllocateDescriptorSets;
+    private PFN_vkFreeDescriptorSets               _FreeDescriptorSets;
+    private PFN_vkUpdateDescriptorSets             _UpdateDescriptorSets;
+    private PFN_vkCreateFramebuffer                _CreateFramebuffer;
+    private PFN_vkDestroyFramebuffer               _DestroyFramebuffer;
+    private PFN_vkCreateRenderPass                 _CreateRenderPass;
+    private PFN_vkDestroyRenderPass                _DestroyRenderPass;
+    private PFN_vkGetRenderAreaGranularity         _GetRenderAreaGranularity;
+    private PFN_vkCreateCommandPool                _CreateCommandPool;
+    private PFN_vkDestroyCommandPool               _DestroyCommandPool;
+    private PFN_vkResetCommandPool                 _ResetCommandPool;
+    private PFN_vkAllocateCommandBuffers           _AllocateCommandBuffers;
+    private PFN_vkFreeCommandBuffers               _FreeCommandBuffers;
+    private PFN_vkBeginCommandBuffer               _BeginCommandBuffer;
+    private PFN_vkEndCommandBuffer                 _EndCommandBuffer;
+    private PFN_vkResetCommandBuffer               _ResetCommandBuffer;
+    private PFN_vkCmdBindPipeline                  _CmdBindPipeline;
+    private PFN_vkCmdSetViewport                   _CmdSetViewport;
+    private PFN_vkCmdSetScissor                    _CmdSetScissor;
+    private PFN_vkCmdSetLineWidth                  _CmdSetLineWidth;
+    private PFN_vkCmdSetDepthBias                  _CmdSetDepthBias;
+    private PFN_vkCmdSetBlendConstants             _CmdSetBlendConstants;
+    private PFN_vkCmdSetDepthBounds                _CmdSetDepthBounds;
+    private PFN_vkCmdSetStencilCompareMask         _CmdSetStencilCompareMask;
+    private PFN_vkCmdSetStencilWriteMask           _CmdSetStencilWriteMask;
+    private PFN_vkCmdSetStencilReference           _CmdSetStencilReference;
+    private PFN_vkCmdBindDescriptorSets            _CmdBindDescriptorSets;
+    private PFN_vkCmdBindIndexBuffer               _CmdBindIndexBuffer;
+    private PFN_vkCmdBindVertexBuffers             _CmdBindVertexBuffers;
+    private PFN_vkCmdDraw                          _CmdDraw;
+    private PFN_vkCmdDrawIndexed                   _CmdDrawIndexed;
+    private PFN_vkCmdDrawIndirect                  _CmdDrawIndirect;
+    private PFN_vkCmdDrawIndexedIndirect           _CmdDrawIndexedIndirect;
+    private PFN_vkCmdDispatch                      _CmdDispatch;
+    private PFN_vkCmdDispatchIndirect              _CmdDispatchIndirect;
+    private PFN_vkCmdCopyBuffer                    _CmdCopyBuffer;
+    private PFN_vkCmdCopyImage                     _CmdCopyImage;
+    private PFN_vkCmdBlitImage                     _CmdBlitImage;
+    private PFN_vkCmdCopyBufferToImage             _CmdCopyBufferToImage;
+    private PFN_vkCmdCopyImageToBuffer             _CmdCopyImageToBuffer;
+    private PFN_vkCmdUpdateBuffer                  _CmdUpdateBuffer;
+    private PFN_vkCmdFillBuffer                    _CmdFillBuffer;
+    private PFN_vkCmdClearColorImage               _CmdClearColorImage;
+    private PFN_vkCmdClearDepthStencilImage        _CmdClearDepthStencilImage;
+    private PFN_vkCmdClearAttachments              _CmdClearAttachments;
+    private PFN_vkCmdResolveImage                  _CmdResolveImage;
+    private PFN_vkCmdSetEvent                      _CmdSetEvent;
+    private PFN_vkCmdResetEvent                    _CmdResetEvent;
+    private PFN_vkCmdWaitEvents                    _CmdWaitEvents;
+    private PFN_vkCmdPipelineBarrier               _CmdPipelineBarrier;
+    private PFN_vkCmdBeginQuery                    _CmdBeginQuery;
+    private PFN_vkCmdEndQuery                      _CmdEndQuery;
+    private PFN_vkCmdResetQueryPool                _CmdResetQueryPool;
+    private PFN_vkCmdWriteTimestamp                _CmdWriteTimestamp;
+    private PFN_vkCmdCopyQueryPoolResults          _CmdCopyQueryPoolResults;
+    private PFN_vkCmdPushConstants                 _CmdPushConstants;
+    private PFN_vkCmdBeginRenderPass               _CmdBeginRenderPass;
+    private PFN_vkCmdNextSubpass                   _CmdNextSubpass;
+    private PFN_vkCmdEndRenderPass                 _CmdEndRenderPass;
+    private PFN_vkCmdExecuteCommands               _CmdExecuteCommands;
+
+    // fields for VK_KHR_swapchain
+    private PFN_vkCreateSwapchainKHR               _CreateSwapchainKHR;
+    private PFN_vkDestroySwapchainKHR              _DestroySwapchainKHR;
+    private PFN_vkGetSwapchainImagesKHR            _GetSwapchainImagesKHR;
+    private PFN_vkAcquireNextImageKHR              _AcquireNextImageKHR;
+    private PFN_vkQueuePresentKHR                  _QueuePresentKHR;
 }

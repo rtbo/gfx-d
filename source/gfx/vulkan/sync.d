@@ -10,7 +10,7 @@ import gfx.core.rc;
 import gfx.graal.sync;
 import gfx.vulkan.device;
 
-class VulkanSemaphore : VulkanDevObj!(VkSemaphore, "destroySemaphore"), Semaphore
+class VulkanSemaphore : VulkanDevObj!(VkSemaphore, "DestroySemaphore"), Semaphore
 {
     mixin(atomicRcCode);
 
@@ -19,7 +19,7 @@ class VulkanSemaphore : VulkanDevObj!(VkSemaphore, "destroySemaphore"), Semaphor
     }
 }
 
-class VulkanFence : VulkanDevObj!(VkFence, "destroyFence"), Fence
+class VulkanFence : VulkanDevObj!(VkFence, "DestroyFence"), Fence
 {
     mixin(atomicRcCode);
 
@@ -28,14 +28,14 @@ class VulkanFence : VulkanDevObj!(VkFence, "destroyFence"), Fence
     }
 
     override @property bool signaled() {
-        return vk.getFenceStatus(vkDev, vkObj) == VK_SUCCESS;
+        return vk.GetFenceStatus(vkDev, vkObj) == VK_SUCCESS;
     }
 
     override void reset()
     {
         auto vkF = vkObj;
         vulkanEnforce(
-            vk.resetFences(vkDev, 1, &vkF),
+            vk.ResetFences(vkDev, 1, &vkF),
             "Could not reset Vulkan fence"
         );
     }
@@ -47,7 +47,7 @@ class VulkanFence : VulkanDevObj!(VkFence, "destroyFence"), Fence
         auto vkF = vkObj;
 
         vulkanEnforce(
-            vk.waitForFences(vkDev, 1, &vkF, VK_TRUE, vkTimeout),
+            vk.WaitForFences(vkDev, 1, &vkF, VK_TRUE, vkTimeout),
             "Could not wait for Vulkan fence"
         );
     }

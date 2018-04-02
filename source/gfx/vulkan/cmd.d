@@ -18,7 +18,7 @@ import gfx.vulkan.renderpass;
 
 import std.typecons : Flag;
 
-class VulkanCommandPool : VulkanDevObj!(VkCommandPool, "destroyCommandPool"), CommandPool
+class VulkanCommandPool : VulkanDevObj!(VkCommandPool, "DestroyCommandPool"), CommandPool
 {
     mixin(atomicRcCode);
 
@@ -27,7 +27,7 @@ class VulkanCommandPool : VulkanDevObj!(VkCommandPool, "destroyCommandPool"), Co
     }
 
     override void reset() {
-        vulkanEnforce(vk.resetCommandPool(vkDev, vkObj, 0), "Could not reset command buffer");
+        vulkanEnforce(vk.ResetCommandPool(vkDev, vkObj, 0), "Could not reset command buffer");
     }
 
     override CommandBuffer[] allocate(size_t count) {
@@ -39,7 +39,7 @@ class VulkanCommandPool : VulkanDevObj!(VkCommandPool, "destroyCommandPool"), Co
 
         auto vkBufs = new VkCommandBuffer[count];
         vulkanEnforce(
-            vk.allocateCommandBuffers(vkDev, &cbai, &vkBufs[0]),
+            vk.AllocateCommandBuffers(vkDev, &cbai, &vkBufs[0]),
             "Could not allocate command buffers"
         );
 
@@ -58,7 +58,7 @@ class VulkanCommandPool : VulkanDevObj!(VkCommandPool, "destroyCommandPool"), Co
         auto vkBufs = bufs.map!(
             b => enforce(cast(VulkanCommandBuffer)b, "Did not pass a Vulkan command buffer").vkObj
         ).array;
-        vk.freeCommandBuffers(vkDev, vkObj, cast(uint)bufs.length, &vkBufs[0]);
+        vk.FreeCommandBuffers(vkDev, vkObj, cast(uint)bufs.length, &vkBufs[0]);
     }
 }
 
@@ -84,7 +84,7 @@ final class VulkanCommandBuffer : CommandBuffer
 
     override void reset() {
         vulkanEnforce(
-            vk.resetCommandBuffer(vkObj, 0), "Could not reset vulkan command buffer"
+            vk.ResetCommandBuffer(vkObj, 0), "Could not reset vulkan command buffer"
         );
     }
 
@@ -95,13 +95,13 @@ final class VulkanCommandBuffer : CommandBuffer
             VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT :
             VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         vulkanEnforce(
-            vk.beginCommandBuffer(vkObj, &cbbi), "Could not begin vulkan command buffer"
+            vk.BeginCommandBuffer(vkObj, &cbbi), "Could not begin vulkan command buffer"
         );
     }
 
     override void end() {
         vulkanEnforce(
-            vk.endCommandBuffer(vkObj), "Could not end vulkan command buffer"
+            vk.EndCommandBuffer(vkObj), "Could not end vulkan command buffer"
         );
     }
 
@@ -139,7 +139,7 @@ final class VulkanCommandBuffer : CommandBuffer
             return vkImgMb;
         }).array;
 
-        vk.cmdPipelineBarrier( vkObj,
+        vk.CmdPipelineBarrier( vkObj,
             pipelineStageToVk(stageTrans.from), pipelineStageToVk(stageTrans.to),
             0, 0, null,
             cast(uint)vkBufMbs.length, vkBufMbs.ptr,
@@ -158,7 +158,7 @@ final class VulkanCommandBuffer : CommandBuffer
         auto vkClear = cast(const(VkClearColorValue)*) cast(const(void)*) &clearValues.values;
         auto vkRanges = ranges.map!(r => r.toVk()).array;
 
-        vk.cmdClearColorImage(vkObj, vkImg, vkLayout, vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
+        vk.CmdClearColorImage(vkObj, vkImg, vkLayout, vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
     }
 
     override void clearDepthStencilImage(ImageBase image, ImageLayout layout,
@@ -173,7 +173,7 @@ final class VulkanCommandBuffer : CommandBuffer
         auto vkClear = VkClearDepthStencilValue(clearValues.depth, clearValues.stencil);
         auto vkRanges = ranges.map!(r => r.toVk()).array;
 
-        vk.cmdClearDepthStencilImage(vkObj, vkImg, vkLayout, &vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
+        vk.CmdClearDepthStencilImage(vkObj, vkImg, vkLayout, &vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
     }
 
     override void copyBuffer(Trans!Buffer buffers, CopyRegion[] regions)
@@ -185,7 +185,7 @@ final class VulkanCommandBuffer : CommandBuffer
             r => VkBufferCopy(r.offset.from, r.offset.to, r.size)
         ).array;
 
-        vk.cmdCopyBuffer(vkObj,
+        vk.CmdCopyBuffer(vkObj,
             enforce(cast(VulkanBuffer)buffers.from).vkObj,
             enforce(cast(VulkanBuffer)buffers.to).vkObj,
             cast(uint)vkRegions.length, vkRegions.ptr
@@ -203,7 +203,7 @@ final class VulkanCommandBuffer : CommandBuffer
             bic => transmute!VkBufferImageCopy(bic)
         ).array;
 
-        vk.cmdCopyBufferToImage(
+        vk.CmdCopyBufferToImage(
             vkObj,
             enforce(cast(VulkanBuffer)srcBuffer).vkObj,
             enforce(cast(VulkanImageBase)dstImage).vkObj,
@@ -256,20 +256,20 @@ final class VulkanCommandBuffer : CommandBuffer
         bi.clearValueCount = cast(uint)vkCvs.length;
         bi.pClearValues = vkCvs.ptr;
 
-        vk.cmdBeginRenderPass(vkObj, &bi, VK_SUBPASS_CONTENTS_INLINE);
+        vk.CmdBeginRenderPass(vkObj, &bi, VK_SUBPASS_CONTENTS_INLINE);
     }
 
     override void nextSubpass() {
-        vk.cmdNextSubpass(vkObj, VK_SUBPASS_CONTENTS_INLINE);
+        vk.CmdNextSubpass(vkObj, VK_SUBPASS_CONTENTS_INLINE);
     }
 
     override void endRenderPass() {
-        vk.cmdEndRenderPass(vkObj);
+        vk.CmdEndRenderPass(vkObj);
     }
 
     override void bindPipeline(Pipeline pipeline)
     {
-        vk.cmdBindPipeline(vkObj, VK_PIPELINE_BIND_POINT_GRAPHICS, enforce(
+        vk.CmdBindPipeline(vkObj, VK_PIPELINE_BIND_POINT_GRAPHICS, enforce(
             cast(VulkanPipeline)pipeline, "did not pass a valid Vulkan pipeline"
         ).vkObj);
     }
@@ -283,12 +283,12 @@ final class VulkanCommandBuffer : CommandBuffer
         auto vkOffsets = bindings
                 .map!(b => cast(VkDeviceSize)b.offset)
                 .array;
-        vk.cmdBindVertexBuffers(vkObj, firstBinding, cast(uint)bindings.length, vkBufs.ptr, vkOffsets.ptr);
+        vk.CmdBindVertexBuffers(vkObj, firstBinding, cast(uint)bindings.length, vkBufs.ptr, vkOffsets.ptr);
     }
 
     override void bindIndexBuffer(Buffer indexBuf, size_t offset, IndexType type) {
         auto vkBuf = enforce(cast(VulkanBuffer)indexBuf).vkObj;
-        vk.cmdBindIndexBuffer(vkObj, vkBuf, offset, type.toVk());
+        vk.CmdBindIndexBuffer(vkObj, vkBuf, offset, type.toVk());
     }
 
     override void bindDescriptorSets(PipelineBindPoint bindPoint, PipelineLayout layout,
@@ -306,7 +306,7 @@ final class VulkanCommandBuffer : CommandBuffer
             const vkOffsets = dynamicOffsets.map!(o => cast(uint)o).array;
         }
 
-        vk.cmdBindDescriptorSets( vkObj, bindPoint.toVk(),
+        vk.CmdBindDescriptorSets( vkObj, bindPoint.toVk(),
             enforce(cast(VulkanPipelineLayout)layout).vkObj,
             firstSet, cast(uint)vkSets.length, vkSets.ptr,
             cast(uint)vkOffsets.length, vkOffsets.ptr);
@@ -316,17 +316,17 @@ final class VulkanCommandBuffer : CommandBuffer
                                 size_t offset, size_t size, const(void)* data)
     {
         auto vkPl = enforce(cast(VulkanPipelineLayout)layout).vkObj;
-        vk.cmdPushConstants(vkObj, vkPl, shaderStageToVk(stages), cast(uint)offset, cast(uint)size, data);
+        vk.CmdPushConstants(vkObj, vkPl, shaderStageToVk(stages), cast(uint)offset, cast(uint)size, data);
     }
 
     override void draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance)
     {
-        vk.cmdDraw(vkObj, vertexCount, instanceCount, firstVertex, firstInstance);
+        vk.CmdDraw(vkObj, vertexCount, instanceCount, firstVertex, firstInstance);
     }
 
     override void drawIndexed(uint indexCount, uint instanceCount, uint firstVertex, int vertexOffset, uint firstInstance)
     {
-        vk.cmdDrawIndexed(vkObj, indexCount, instanceCount, firstVertex, vertexOffset, firstInstance);
+        vk.CmdDrawIndexed(vkObj, indexCount, instanceCount, firstVertex, vertexOffset, firstInstance);
     }
 
     private VkCommandBuffer _vkObj;

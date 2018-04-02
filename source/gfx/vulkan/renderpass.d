@@ -10,7 +10,7 @@ import gfx.graal.image;
 import gfx.graal.renderpass;
 import gfx.vulkan.device;
 
-class VulkanRenderPass : VulkanDevObj!(VkRenderPass, "destroyRenderPass"), RenderPass
+class VulkanRenderPass : VulkanDevObj!(VkRenderPass, "DestroyRenderPass"), RenderPass
 {
     mixin(atomicRcCode);
 
@@ -19,7 +19,7 @@ class VulkanRenderPass : VulkanDevObj!(VkRenderPass, "destroyRenderPass"), Rende
     }
 }
 
-class VulkanFramebuffer : VulkanDevObj!(VkFramebuffer, "destroyFramebuffer"), Framebuffer
+class VulkanFramebuffer : VulkanDevObj!(VkFramebuffer, "DestroyFramebuffer"), Framebuffer
 {
     mixin(atomicRcCode);
 

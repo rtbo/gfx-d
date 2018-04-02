@@ -9,7 +9,7 @@ import gfx.graal.pipeline;
 import gfx.vulkan;
 import gfx.vulkan.device;
 
-class VulkanShaderModule : VulkanDevObj!(VkShaderModule, "destroyShaderModule"), ShaderModule
+class VulkanShaderModule : VulkanDevObj!(VkShaderModule, "DestroyShaderModule"), ShaderModule
 {
     mixin(atomicRcCode);
     this(VkShaderModule vkObj, VulkanDevice dev, string entryPoint)
@@ -25,7 +25,7 @@ class VulkanShaderModule : VulkanDevObj!(VkShaderModule, "destroyShaderModule"),
     private string _entryPoint;
 }
 
-class VulkanPipelineLayout : VulkanDevObj!(VkPipelineLayout, "destroyPipelineLayout"), PipelineLayout
+class VulkanPipelineLayout : VulkanDevObj!(VkPipelineLayout, "DestroyPipelineLayout"), PipelineLayout
 {
     mixin(atomicRcCode);
     this(VkPipelineLayout vkObj, VulkanDevice dev)
@@ -34,7 +34,7 @@ class VulkanPipelineLayout : VulkanDevObj!(VkPipelineLayout, "destroyPipelineLay
     }
 }
 
-class VulkanPipeline : VulkanDevObj!(VkPipeline, "destroyPipeline"), Pipeline
+class VulkanPipeline : VulkanDevObj!(VkPipeline, "DestroyPipeline"), Pipeline
 {
     mixin(atomicRcCode);
     this(VkPipeline vkObj, VulkanDevice dev, PipelineLayout pl)
@@ -51,7 +51,7 @@ class VulkanPipeline : VulkanDevObj!(VkPipeline, "destroyPipeline"), Pipeline
     private Rc!PipelineLayout pl;
 }
 
-class VulkanDescriptorSetLayout : VulkanDevObj!(VkDescriptorSetLayout, "destroyDescriptorSetLayout"), DescriptorSetLayout
+class VulkanDescriptorSetLayout : VulkanDevObj!(VkDescriptorSetLayout, "DestroyDescriptorSetLayout"), DescriptorSetLayout
 {
     mixin(atomicRcCode);
     this(VkDescriptorSetLayout vkObj, VulkanDevice dev)
@@ -60,7 +60,7 @@ class VulkanDescriptorSetLayout : VulkanDevObj!(VkDescriptorSetLayout, "destroyD
     }
 }
 
-class VulkanDescriptorPool : VulkanDevObj!(VkDescriptorPool, "destroyDescriptorPool"), DescriptorPool
+class VulkanDescriptorPool : VulkanDevObj!(VkDescriptorPool, "DestroyDescriptorPool"), DescriptorPool
 {
     mixin(atomicRcCode);
     this(VkDescriptorPool vkObj, VulkanDevice dev)
@@ -85,7 +85,7 @@ class VulkanDescriptorPool : VulkanDevObj!(VkDescriptorPool, "destroyDescriptorP
 
         auto vkSets = new VkDescriptorSet[vkLayouts.length];
         vulkanEnforce(
-            vk.allocateDescriptorSets(vkDev, &ai, &vkSets[0]),
+            vk.AllocateDescriptorSets(vkDev, &ai, &vkSets[0]),
             "Could not allocate Vulkan descriptor sets"
         );
 
@@ -100,7 +100,7 @@ class VulkanDescriptorPool : VulkanDevObj!(VkDescriptorPool, "destroyDescriptorP
 
     override void reset() {
         vulkanEnforce(
-            vk.resetDescriptorPool(vkDev, vkObj, 0),
+            vk.ResetDescriptorPool(vkDev, vkObj, 0),
             "Could not reset Descriptor pool"
         );
         _allocatedSets = [];

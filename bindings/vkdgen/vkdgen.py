@@ -656,23 +656,37 @@ class DGenerator(OutputGenerator):
         self.sf()
         self.sf("final class VkGlobalCmds {")
         with self.sf.indent_block():
-            for cmd in self.globalCmds:
-                spacer = " " * (maxLen - len(cmd.name))
-                # vkCmdName => cmdName
-                membName = cmd.name[2].lower() + cmd.name[3:]
-                self.sf("PFN_%s%s %s;", cmd.name, spacer, membName)
             self.sf()
             self.sf("this (PFN_vkGetInstanceProcAddr loader) {")
             with self.sf.indent_block():
-                self.sf("getInstanceProcAddr = loader;")
+                self.sf("_GetInstanceProcAddr = loader;")
                 for cmd in [cmd for cmd in self.globalCmds if cmd.name != "vkGetInstanceProcAddr"]:
                     spacer = " " * (maxLen - len(cmd.name))
-                    membName = cmd.name[2].lower() + cmd.name[3:]
+                    membName = cmd.name[2:]
                     self.sf(
-                        "%s%s = cast(PFN_%s)%sloader(null, \"%s\");",
+                        "_%s%s = cast(PFN_%s)%sloader(null, \"%s\");",
                         membName, spacer, cmd.name, spacer, cmd.name
                     )
             self.sf("}")
+            for cmd in self.globalCmds:
+                spacer = " " * (maxLen - len(cmd.name))
+                # vkCmdName => CmdName
+                membName = cmd.name[2:]
+                paramStr = ", ".join(map((lambda p: "{} {}".format(p.typeStr, p.name)), cmd.params))
+                argStr = ", ".join(map((lambda p: p.name), cmd.params))
+                self.sf()
+                self.sf("%s %s (%s) {", cmd.returnType, membName, paramStr)
+                with self.sf.indent_block():
+                    self.sf("assert(_%s !is null, \"%s was not loaded.\");", membName, cmd.name)
+                    self.sf("return _%s(%s);", membName, argStr)
+                self.sf("}")
+
+            self.sf()
+            for cmd in self.globalCmds:
+                spacer = " " * (maxLen - len(cmd.name))
+                # vkCmdName => CmdName
+                membName = cmd.name[2:]
+                self.sf("private PFN_%s%s _%s;", cmd.name, spacer, membName)
         self.sf("}")
 
 
@@ -689,20 +703,10 @@ class DGenerator(OutputGenerator):
         self.sf("final class VkInstanceCmds {")
         with self.sf.indent_block():
             feats = [f for f in self.features if len(f.instanceCmds) > 0]
-            for f in feats:
-                self.sf("// %s", f.name)
-                f.beginGuard(self.sf)
-                for cmd in f.instanceCmds:
-                    spacer = " " * (maxLen - len(cmd.name))
-                    # vkCmdName => cmdName
-                    membName = cmd.name[2].lower() + cmd.name[3:]
-                    self.sf("PFN_%s%s %s;", cmd.name, spacer, membName)
-                f.endGuard(self.sf)
-                self.sf()
-
+            self.sf()
             self.sf("this (VkInstance instance, VkGlobalCmds globalCmds) {")
             with self.sf.indent_block():
-                self.sf("auto loader = globalCmds.getInstanceProcAddr;")
+                self.sf("auto loader = globalCmds._GetInstanceProcAddr;")
                 for i, f in enumerate(feats):
                     if i != 0:
                         self.sf()
@@ -710,14 +714,41 @@ class DGenerator(OutputGenerator):
                     f.beginGuard(self.sf)
                     for cmd in f.instanceCmds:
                         spacer = " " * (maxLen - len(cmd.name))
-                        membName = cmd.name[2].lower() + cmd.name[3:]
+                        membName = cmd.name[2:]
                         self.sf(
-                            "%s%s = cast(PFN_%s)%sloader(instance, \"%s\");",
+                            "_%s%s = cast(PFN_%s)%sloader(instance, \"%s\");",
                             membName, spacer, cmd.name, spacer, cmd.name
                         )
                     f.endGuard(self.sf)
-
             self.sf("}")
+
+            for f in feats:
+                self.sf()
+                f.beginGuard(self.sf)
+                for i, cmd in enumerate(f.instanceCmds):
+                    spacer = " " * (maxLen - len(cmd.name))
+                    membName = cmd.name[2:]     # vkCmdName => CmdName
+                    paramStr = ", ".join(map((lambda p: "{} {}".format(p.typeStr, p.name)), cmd.params))
+                    argStr = ", ".join(map((lambda p: p.name), cmd.params))
+                    if i == 0:  self.sf("/// Commands for %s", f.name)
+                    else:       self.sf("/// ditto")
+                    self.sf("%s %s (%s) {", cmd.returnType, membName, paramStr)
+                    with self.sf.indent_block():
+                        self.sf("assert(_%s !is null, \"%s was not loaded. Requested by %s\");", membName, cmd.name, f.name)
+                        self.sf("return _%s(%s);", membName, argStr)
+                    self.sf("}")
+                f.endGuard(self.sf)
+
+            for f in feats:
+                self.sf()
+                self.sf("// fields for %s", f.name)
+                f.beginGuard(self.sf)
+                for cmd in f.instanceCmds:
+                    spacer = " " * (maxLen - len(cmd.name))
+                    # vkCmdName => CmdName
+                    membName = cmd.name[2:]
+                    self.sf("private PFN_%s%s _%s;", cmd.name, spacer, membName)
+                f.endGuard(self.sf)
         self.sf("}")
 
 
@@ -734,20 +765,10 @@ class DGenerator(OutputGenerator):
         self.sf("final class VkDeviceCmds {")
         with self.sf.indent_block():
             feats = [f for f in self.features if len(f.deviceCmds) > 0]
-            for f in feats:
-                self.sf("// %s", f.name)
-                f.beginGuard(self.sf)
-                for cmd in f.deviceCmds:
-                    spacer = " " * (maxLen - len(cmd.name))
-                    # vkCmdName => cmdName
-                    membName = cmd.name[2].lower() + cmd.name[3:]
-                    self.sf("PFN_%s%s %s;", cmd.name, spacer, membName)
-                f.endGuard(self.sf)
-                self.sf()
-
+            self.sf()
             self.sf("this (VkDevice device, VkInstanceCmds instanceCmds) {")
             with self.sf.indent_block():
-                self.sf("auto loader = instanceCmds.getDeviceProcAddr;")
+                self.sf("auto loader = instanceCmds._GetDeviceProcAddr;")
                 for i, f in enumerate(feats):
                     if i != 0:
                         self.sf()
@@ -755,14 +776,41 @@ class DGenerator(OutputGenerator):
                     f.beginGuard(self.sf)
                     for cmd in f.deviceCmds:
                         spacer = " " * (maxLen - len(cmd.name))
-                        membName = cmd.name[2].lower() + cmd.name[3:]
+                        membName = cmd.name[2:]
                         self.sf(
-                            "%s%s = cast(PFN_%s)%sloader(device, \"%s\");",
+                            "_%s%s = cast(PFN_%s)%sloader(device, \"%s\");",
                             membName, spacer, cmd.name, spacer, cmd.name
                         )
                     f.endGuard(self.sf)
-
             self.sf("}")
+
+            for f in feats:
+                self.sf()
+                f.beginGuard(self.sf)
+                for i, cmd in enumerate(f.deviceCmds):
+                    spacer = " " * (maxLen - len(cmd.name))
+                    membName = cmd.name[2:]     # vkCmdName => CmdName
+                    paramStr = ", ".join(map((lambda p: "{} {}".format(p.typeStr, p.name)), cmd.params))
+                    argStr = ", ".join(map((lambda p: p.name), cmd.params))
+                    if i == 0:  self.sf("/// Commands for %s", f.name)
+                    else:       self.sf("/// ditto")
+                    self.sf("%s %s (%s) {", cmd.returnType, membName, paramStr)
+                    with self.sf.indent_block():
+                        self.sf("assert(_%s !is null, \"%s was not loaded. Requested by %s\");", membName, cmd.name, f.name)
+                        self.sf("return _%s(%s);", membName, argStr)
+                    self.sf("}")
+                f.endGuard(self.sf)
+
+            for f in feats:
+                self.sf()
+                self.sf("// fields for %s", f.name)
+                f.beginGuard(self.sf)
+                for cmd in f.deviceCmds:
+                    spacer = " " * (maxLen - len(cmd.name))
+                    # vkCmdName => CmdName
+                    membName = cmd.name[2:]
+                    self.sf("private PFN_%s%s _%s;", cmd.name, spacer, membName)
+                f.endGuard(self.sf)
         self.sf("}")
 
 

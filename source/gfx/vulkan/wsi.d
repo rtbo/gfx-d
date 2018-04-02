@@ -56,7 +56,7 @@ version(linux) {
 
         VkSurfaceKHR vkSurf;
         vulkanEnforce(
-            inst.vk.createWaylandSurfaceKHR(inst.vkObj, &sci, null, &vkSurf),
+            inst.vk.CreateWaylandSurfaceKHR(inst.vkObj, &sci, null, &vkSurf),
             "Could not create Vulkan Wayland Surface"
         );
 
@@ -77,7 +77,7 @@ version(linux) {
 
         VkSurfaceKHR vkSurf;
         vulkanEnforce(
-            inst.vk.createXcbSurfaceKHR(inst.vkObj, &sci, null, &vkSurf),
+            inst.vk.CreateXcbSurfaceKHR(inst.vkObj, &sci, null, &vkSurf),
             "Could not create Vulkan Xcb Surface"
         );
 
@@ -107,12 +107,12 @@ class VulkanSurface : VulkanInstObj!(VkSurfaceKHR), Surface
     }
 
     override void dispose() {
-        inst.vk.destroySurfaceKHR(vkInst, vkObj, null);
+        inst.vk.DestroySurfaceKHR(vkInst, vkObj, null);
         super.dispose();
     }
 }
 
-class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "destroySwapchainKHR"), Swapchain
+class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "DestroySwapchainKHR"), Swapchain
 {
     mixin(atomicRcCode);
 
@@ -134,12 +134,12 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "destroySwapchainKHR"), Sw
         if (!_images.length) {
             uint count;
             vulkanEnforce(
-                vk.getSwapchainImagesKHR(vkDev, vkObj, &count, null),
+                vk.GetSwapchainImagesKHR(vkDev, vkObj, &count, null),
                 "Could not get vulkan swap chain images"
             );
             auto vkImgs = new VkImage[count];
             vulkanEnforce(
-                vk.getSwapchainImagesKHR(vkDev, vkObj, &count, &vkImgs[0]),
+                vk.GetSwapchainImagesKHR(vkDev, vkObj, &count, &vkImgs[0]),
                 "Could not get vulkan swap chain images"
             );
 
@@ -171,7 +171,7 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "destroySwapchainKHR"), Sw
         }
 
         uint img;
-        const res = vk.acquireNextImageKHR(vkDev, vkObj, vkTimeout, sem.vkObj, VK_NULL_ND_HANDLE, &img);
+        const res = vk.AcquireNextImageKHR(vkDev, vkObj, vkTimeout, sem.vkObj, VK_NULL_ND_HANDLE, &img);
 
         if (res == VK_SUBOPTIMAL_KHR) {
             suboptimal = true;

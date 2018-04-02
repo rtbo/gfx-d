@@ -34,7 +34,7 @@ final class VulkanQueue : Queue
     }
 
     void waitIdle() {
-        vk.queueWaitIdle(_vkObj);
+        vk.QueueWaitIdle(_vkObj);
     }
 
     void submit(Submission[] submissions, Fence fence)
@@ -88,7 +88,7 @@ final class VulkanQueue : Queue
         }
 
         vulkanEnforce(
-            vk.queueSubmit(vkObj, cast(uint)vkSubmitInfos.length, vkSubmitInfos.ptr, vkFence),
+            vk.QueueSubmit(vkObj, cast(uint)vkSubmitInfos.length, vkSubmitInfos.ptr, vkFence),
             "Could not submit vulkan queue"
         );
     }
@@ -122,7 +122,7 @@ final class VulkanQueue : Queue
         qpi.pImageIndices = &vkImgs[0];
 
         vulkanEnforce(
-            vk.queuePresentKHR(vkObj, &qpi), "Could not present vulkan swapchain"
+            vk.QueuePresentKHR(vkObj, &qpi), "Could not present vulkan swapchain"
         );
     }
 

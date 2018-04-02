@@ -81,7 +81,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
     }
 
     override void dispose() {
-        vk.destroyDevice(vkObj, null);
+        vk.DestroyDevice(vkObj, null);
         _pd.release();
         _pd = null;
     }
@@ -96,14 +96,14 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
     override void waitIdle() {
         vulkanEnforce(
-            vk.deviceWaitIdle(vkObj),
+            vk.DeviceWaitIdle(vkObj),
             "Problem waiting for device"
         );
     }
 
     override Queue getQueue(uint queueFamilyIndex, uint queueIndex) {
         VkQueue vkQ;
-        vk.getDeviceQueue(vkObj, queueFamilyIndex, queueIndex, &vkQ);
+        vk.GetDeviceQueue(vkObj, queueFamilyIndex, queueIndex, &vkQ);
 
         foreach (q; _queues) {
             if (q.vkObj is vkQ) {
@@ -124,7 +124,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkCommandPool vkPool;
         vulkanEnforce(
-            vk.createCommandPool(vkObj, &cci, null, &vkPool),
+            vk.CreateCommandPool(vkObj, &cci, null, &vkPool),
             "Could not create vulkan command pool"
         );
 
@@ -139,7 +139,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         mai.memoryTypeIndex = memTypeIndex;
 
         VkDeviceMemory vkMem;
-        vulkanEnforce(vk.allocateMemory(vkObj, &mai, null, &vkMem), "Could not allocate device memory");
+        vulkanEnforce(vk.AllocateMemory(vkObj, &mai, null, &vkMem), "Could not allocate device memory");
 
         const props = pd.memoryProperties.types[memTypeIndex].props;
 
@@ -159,7 +159,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
             return mmr;
         }).array;
 
-        vk.flushMappedMemoryRanges(vkObj, cast(uint)mmrs.length, mmrs.ptr);
+        vk.FlushMappedMemoryRanges(vkObj, cast(uint)mmrs.length, mmrs.ptr);
     }
 
     override void invalidateMappedMemory(MappedMemorySet set) {
@@ -174,7 +174,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
             return mmr;
         }).array;
 
-        vk.invalidateMappedMemoryRanges(vkObj, cast(uint)mmrs.length, mmrs.ptr);
+        vk.InvalidateMappedMemoryRanges(vkObj, cast(uint)mmrs.length, mmrs.ptr);
     }
 
     override Buffer createBuffer(BufferUsage usage, size_t size)
@@ -185,7 +185,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         bci.usage = bufferUsageToVk(usage);
 
         VkBuffer vkBuf;
-        vulkanEnforce(vk.createBuffer(vkObj, &bci, null, &vkBuf), "Could not create a Vulkan buffer");
+        vulkanEnforce(vk.CreateBuffer(vkObj, &bci, null, &vkBuf), "Could not create a Vulkan buffer");
 
         return new VulkanBuffer(vkBuf, this, usage, size);
     }
@@ -208,7 +208,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         ici.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
         VkImage vkImg;
-        vulkanEnforce(vk.createImage(vkObj, &ici, null, &vkImg), "Could not create a Vulkan image");
+        vulkanEnforce(vk.CreateImage(vkObj, &ici, null, &vkImg), "Could not create a Vulkan image");
 
         return new VulkanImage(vkImg, this, type, dims, format);
     }
@@ -244,7 +244,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkSampler vkS;
         vulkanEnforce(
-            vk.createSampler(vkObj, &sci, null, &vkS),
+            vk.CreateSampler(vkObj, &sci, null, &vkS),
             "Could not create Vulkan sampler"
         );
 
@@ -257,7 +257,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         sci.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
         VkSemaphore vkSem;
-        vulkanEnforce(vk.createSemaphore(vkObj, &sci, null, &vkSem), "Could not create a Vulkan semaphore");
+        vulkanEnforce(vk.CreateSemaphore(vkObj, &sci, null, &vkSem), "Could not create a Vulkan semaphore");
 
         return new VulkanSemaphore(vkSem, this);
     }
@@ -270,7 +270,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
             fci.flags = VK_FENCE_CREATE_SIGNALED_BIT;
         }
         VkFence vkF;
-        vulkanEnforce(vk.createFence(vkObj, &fci, null, &vkF), "Could not create a Vulkan fence");
+        vulkanEnforce(vk.CreateFence(vkObj, &fci, null, &vkF), "Could not create a Vulkan fence");
 
         return new VulkanFence(vkF, this);
     }
@@ -284,7 +284,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         ).array;
 
         vulkanEnforce(
-            vk.resetFences(vkObj, cast(uint)vkFs.length, &vkFs[0]),
+            vk.ResetFences(vkObj, cast(uint)vkFs.length, &vkFs[0]),
             "Could not reset vulkan fences"
         );
     }
@@ -303,7 +303,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         const vkTimeout = nsecs < 0 ? ulong.max : cast(ulong)nsecs;
 
         vulkanEnforce(
-            vk.waitForFences(vkObj, cast(uint)vkFs.length, &vkFs[0], vkWaitAll, vkTimeout),
+            vk.WaitForFences(vkObj, cast(uint)vkFs.length, &vkFs[0], vkWaitAll, vkTimeout),
             "could not wait for vulkan fences"
         );
     }
@@ -339,7 +339,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkSwapchainKHR vkSc;
         vulkanEnforce(
-            vk.createSwapchainKHR(vkObj, &sci, null, &vkSc),
+            vk.CreateSwapchainKHR(vkObj, &sci, null, &vkSc),
             "Could not create a Vulkan Swap chain"
         );
 
@@ -413,7 +413,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkRenderPass vkRp;
         vulkanEnforce(
-            vk.createRenderPass(vkObj, &rpci, null, &vkRp),
+            vk.CreateRenderPass(vkObj, &rpci, null, &vkRp),
             "Could not create a Vulkan render pass"
         );
 
@@ -443,7 +443,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkFramebuffer vkFb;
         vulkanEnforce(
-            vk.createFramebuffer(vkObj, &fci, null, &vkFb),
+            vk.CreateFramebuffer(vkObj, &fci, null, &vkFb),
             "Could not create a Vulkan Framebuffer"
         );
 
@@ -459,7 +459,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkShaderModule vkSm;
         vulkanEnforce(
-            vk.createShaderModule(vkObj, &smci, null, &vkSm),
+            vk.CreateShaderModule(vkObj, &smci, null, &vkSm),
             "Could not create Vulkan shader module"
         );
 
@@ -482,7 +482,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkDescriptorSetLayout vkL;
         vulkanEnforce(
-            vk.createDescriptorSetLayout(vkObj, &ci, null, &vkL),
+            vk.CreateDescriptorSetLayout(vkObj, &ci, null, &vkL),
             "Could not create Vulkan descriptor set layout"
         );
 
@@ -511,7 +511,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkPipelineLayout vkPl;
         vulkanEnforce(
-            vk.createPipelineLayout(vkObj, &ci, null, &vkPl),
+            vk.CreatePipelineLayout(vkObj, &ci, null, &vkPl),
             "Could not create Vulkan pipeline layout"
         );
         return new VulkanPipelineLayout(vkPl, this);
@@ -534,7 +534,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkDescriptorPool vkP;
         vulkanEnforce(
-            vk.createDescriptorPool(vkObj, &ci, null, &vkP),
+            vk.CreateDescriptorPool(vkObj, &ci, null, &vkP),
             "Could not create Vulkan Descriptor Pool"
         );
 
@@ -631,7 +631,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
             return vkCds;
         }).array;
 
-        vk.updateDescriptorSets(vkObj,
+        vk.UpdateDescriptorSets(vkObj,
             cast(uint)vkWrites.length, vkWrites.ptr,
             cast(uint)vkCopies.length, vkCopies.ptr
         );
@@ -814,7 +814,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         auto vkPls = new VkPipeline[infos.length];
         vulkanEnforce(
-            vk.createGraphicsPipelines(vkObj, VK_NULL_ND_HANDLE, cast(uint)pcis.length, pcis.ptr, null, vkPls.ptr),
+            vk.CreateGraphicsPipelines(vkObj, VK_NULL_ND_HANDLE, cast(uint)pcis.length, pcis.ptr, null, vkPls.ptr),
             "Could not create Vulkan graphics pipeline"
         );
 

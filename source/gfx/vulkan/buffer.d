@@ -11,7 +11,7 @@ import gfx.vulkan.device;
 import gfx.vulkan.error;
 import gfx.vulkan.memory;
 
-class VulkanBuffer : VulkanDevObj!(VkBuffer, "destroyBuffer"), Buffer
+class VulkanBuffer : VulkanDevObj!(VkBuffer, "DestroyBuffer"), Buffer
 {
     mixin(atomicRcCode);
 
@@ -23,7 +23,7 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, "destroyBuffer"), Buffer
     }
 
     override void dispose() {
-        vk.destroyBuffer(vkDev, vkObj, null);
+        vk.DestroyBuffer(vkDev, vkObj, null);
         if (_vdm) _vdm.release();
         dev.release();
     }
@@ -38,7 +38,7 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, "destroyBuffer"), Buffer
 
     override @property MemoryRequirements memoryRequirements() {
         VkMemoryRequirements vkMr;
-        vk.getBufferMemoryRequirements(vkDev, vkObj, &vkMr);
+        vk.GetBufferMemoryRequirements(vkDev, vkObj, &vkMr);
         return vkMr.toGfx();
     }
 
@@ -47,7 +47,7 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, "destroyBuffer"), Buffer
         assert(!_vdm, "Bind the same buffer twice");
         _vdm = enforce(cast(VulkanDeviceMemory)mem, "Did not pass a Vulkan memory");
         vulkanEnforce(
-            vk.bindBufferMemory(vkDev, vkObj, _vdm.vkObj, offset),
+            vk.BindBufferMemory(vkDev, vkObj, _vdm.vkObj, offset),
             "Could not bind image memory"
         );
         _vdm.retain();
@@ -67,7 +67,7 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, "destroyBuffer"), Buffer
 
         VkBufferView vkBv;
         vulkanEnforce(
-            vk.createBufferView(vkDev, &bvci, null, &vkBv),
+            vk.CreateBufferView(vkDev, &bvci, null, &vkBv),
             "Could not create Vulkan buffer view"
         );
 
@@ -80,7 +80,7 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, "destroyBuffer"), Buffer
 }
 
 
-class VulkanBufferView : VulkanDevObj!(VkBufferView, "destroyBufferView"), BufferView
+class VulkanBufferView : VulkanDevObj!(VkBufferView, "DestroyBufferView"), BufferView
 {
     mixin(atomicRcCode);
 

@@ -9,7 +9,7 @@ import gfx.core.rc;
 import gfx.graal.memory;
 import gfx.vulkan.device;
 
-class VulkanDeviceMemory : VulkanDevObj!(VkDeviceMemory, "freeMemory"), DeviceMemory
+class VulkanDeviceMemory : VulkanDevObj!(VkDeviceMemory, "FreeMemory"), DeviceMemory
 {
     mixin(atomicRcCode);
 
@@ -36,14 +36,14 @@ class VulkanDeviceMemory : VulkanDevObj!(VkDeviceMemory, "freeMemory"), DeviceMe
     void* map(in size_t offset, in size_t size) {
         void *data;
         vulkanEnforce(
-            vk.mapMemory(vkDev, vkObj, offset, size, 0, &data),
+            vk.MapMemory(vkDev, vkObj, offset, size, 0, &data),
             "Could not map device memory"
         );
         return data;
     }
 
     void unmap() {
-        vk.unmapMemory(vkDev, vkObj);
+        vk.UnmapMemory(vkDev, vkObj);
     }
 
     private MemProps _props;
