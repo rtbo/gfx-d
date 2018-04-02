@@ -240,16 +240,17 @@ __gshared VulkanExtensionProperties[] _instanceExtensions;
 
 VulkanLayerProperties[] loadInstanceLayers()
 {
+    auto vk = _globCmds;
     uint count;
     vulkanEnforce(
-        _globCmds.enumerateInstanceLayerProperties(&count, null),
+        vk.enumerateInstanceLayerProperties(&count, null),
         "Could not retrieve Vulkan instance layers"
     );
     if (!count) return[];
 
     auto vkLayers = new VkLayerProperties[count];
     vulkanEnforce(
-        _globCmds.enumerateInstanceLayerProperties(&count, &vkLayers[0]),
+        vk.enumerateInstanceLayerProperties(&count, &vkLayers[0]),
         "Could not retrieve Vulkan instance layers"
     );
 
@@ -277,16 +278,17 @@ VulkanExtensionProperties[] loadInstanceExtensions(in string layerName=null)
     if (layerName.length) {
         layer = toStringz(layerName);
     }
+    auto vk = _globCmds;
     uint count;
     vulkanEnforce(
-        _globCmds.enumerateInstanceExtensionProperties(layer, &count, null),
+        vk.enumerateInstanceExtensionProperties(layer, &count, null),
         "Could not retrieve Vulkan instance extensions"
     );
     if (!count) return[];
 
     auto vkExts = new VkExtensionProperties[count];
     vulkanEnforce(
-        _globCmds.enumerateInstanceExtensionProperties(layer, &count, &vkExts[0]),
+        vk.enumerateInstanceExtensionProperties(layer, &count, &vkExts[0]),
         "Could not retrieve Vulkan instance extensions"
     );
 
@@ -306,16 +308,17 @@ VulkanExtensionProperties[] loadInstanceExtensions(in string layerName=null)
 
 VulkanLayerProperties[] loadDeviceLayers(VulkanPhysicalDevice pd)
 {
+    auto vk = pd.vk;
     uint count;
     vulkanEnforce(
-        pd.cmds.enumerateDeviceLayerProperties(pd.vk, &count, null),
+        vk.enumerateDeviceLayerProperties(pd.vkObj, &count, null),
         "Could not retrieve Vulkan device layers"
     );
     if (!count) return[];
 
     auto vkLayers = new VkLayerProperties[count];
     vulkanEnforce(
-        pd.cmds.enumerateDeviceLayerProperties(pd.vk, &count, &vkLayers[0]),
+        vk.enumerateDeviceLayerProperties(pd.vkObj, &count, &vkLayers[0]),
         "Could not retrieve Vulkan device layers"
     );
 
@@ -344,16 +347,17 @@ VulkanExtensionProperties[] loadDeviceExtensions(VulkanPhysicalDevice pd, in str
         layer = toStringz(layerName);
     }
 
+    auto vk = pd.vk;
     uint count;
     vulkanEnforce(
-        pd.cmds.enumerateDeviceExtensionProperties(pd.vk, layer, &count, null),
+        vk.enumerateDeviceExtensionProperties(pd.vkObj, layer, &count, null),
         "Could not retrieve Vulkan device extensions"
     );
     if (!count) return[];
 
     auto vkExts = new VkExtensionProperties[count];
     vulkanEnforce(
-        pd.cmds.enumerateDeviceExtensionProperties(pd.vk, layer, &count, &vkExts[0]),
+        vk.enumerateDeviceExtensionProperties(pd.vkObj, layer, &count, &vkExts[0]),
         "Could not retrieve Vulkan device extensions"
     );
 
@@ -373,22 +377,22 @@ VulkanExtensionProperties[] loadDeviceExtensions(VulkanPhysicalDevice pd, in str
 
 class VulkanObj(VkType)
 {
-    this (VkType vk) {
-        _vk = vk;
+    this (VkType vkObj) {
+        _vkObj = vkObj;
     }
 
-    final @property VkType vk() {
-        return _vk;
+    final @property VkType vkObj() {
+        return _vkObj;
     }
 
-    private VkType _vk;
+    private VkType _vkObj;
 }
 
 class VulkanInstObj(VkType) : Disposable
 {
-    this (VkType vk, VulkanInstance inst)
+    this (VkType vkObj, VulkanInstance inst)
     {
-        _vk = vk;
+        _vkObj = vkObj;
         _inst = inst;
         _inst.retain();
     }
@@ -398,8 +402,8 @@ class VulkanInstObj(VkType) : Disposable
         _inst = null;
     }
 
-    final @property VkType vk() {
-        return _vk;
+    final @property VkType vkObj() {
+        return _vkObj;
     }
 
     final @property VulkanInstance inst() {
@@ -407,10 +411,10 @@ class VulkanInstObj(VkType) : Disposable
     }
 
     final @property VkInstance vkInst() {
-        return _inst.vk;
+        return _inst.vkObj;
     }
 
-    private VkType _vk;
+    private VkType _vkObj;
     private VulkanInstance _inst;
 }
 
@@ -418,13 +422,13 @@ final class VulkanInstance : VulkanObj!(VkInstance), Instance
 {
     mixin(atomicRcCode);
 
-    this(VkInstance vk) {
-        super(vk);
-        _cmds = new VkInstanceCmds(vk, _globCmds);
+    this(VkInstance vkObj) {
+        super(vkObj);
+        _vk = new VkInstanceCmds(vkObj, _globCmds);
     }
 
     override void dispose() {
-        cmds.destroyInstance(vk, null);
+        vk.destroyInstance(vkObj, null);
     }
 
     override @property Backend backend() {
@@ -435,18 +439,18 @@ final class VulkanInstance : VulkanObj!(VkInstance), Instance
         return vulkanApiProps;
     }
 
-    @property VkInstanceCmds cmds() {
-        return _cmds;
+    @property VkInstanceCmds vk() {
+        return _vk;
     }
 
     override PhysicalDevice[] devices()
     {
         import std.array : array, uninitializedArray;
         uint count;
-        vulkanEnforce(cmds.enumeratePhysicalDevices(vk, &count, null),
+        vulkanEnforce(vk.enumeratePhysicalDevices(vkObj, &count, null),
                 "Could not enumerate Vulkan devices");
         auto devices = uninitializedArray!(VkPhysicalDevice[])(count);
-        vulkanEnforce(cmds.enumeratePhysicalDevices(vk, &count, devices.ptr),
+        vulkanEnforce(vk.enumeratePhysicalDevices(vkObj, &count, devices.ptr),
                 "Could not enumerate Vulkan devices");
 
         import std.algorithm : map;
@@ -455,20 +459,20 @@ final class VulkanInstance : VulkanObj!(VkInstance), Instance
             .array;
     }
 
-    VkInstanceCmds _cmds;
+    VkInstanceCmds _vk;
 }
 
 final class VulkanPhysicalDevice : PhysicalDevice
 {
     mixin(atomicRcCode);
 
-    this(VkPhysicalDevice vk, VulkanInstance inst) {
-        _vk = vk;
+    this(VkPhysicalDevice vkObj, VulkanInstance inst) {
+        _vkObj = vkObj;
         _inst = inst;
         _inst.retain();
-        _cmds = _inst.cmds;
+        _vk = _inst.vk;
 
-        cmds.getPhysicalDeviceProperties(_vk, &_vkProps);
+        vk.getPhysicalDeviceProperties(_vkObj, &_vkProps);
 
         _availableLayers = loadDeviceLayers(this);
         _availableExtensions = loadDeviceExtensions(this);
@@ -496,12 +500,12 @@ final class VulkanPhysicalDevice : PhysicalDevice
     }
 
 
-    @property VkPhysicalDevice vk() {
-        return _vk;
+    @property VkPhysicalDevice vkObj() {
+        return _vkObj;
     }
 
-    @property VkInstanceCmds cmds() {
-        return _cmds;
+    @property VkInstanceCmds vk() {
+        return _vk;
     }
 
     override @property string name() {
@@ -516,7 +520,7 @@ final class VulkanPhysicalDevice : PhysicalDevice
         import gfx.vulkan.wsi : swapChainExtension;
 
         VkPhysicalDeviceFeatures vkFeats;
-        cmds.getPhysicalDeviceFeatures(vk, &vkFeats);
+        vk.getPhysicalDeviceFeatures(vkObj, &vkFeats);
 
         DeviceFeatures features;
         features.anisotropy = vkFeats.samplerAnisotropy == VK_TRUE;
@@ -532,7 +536,7 @@ final class VulkanPhysicalDevice : PhysicalDevice
     override @property MemoryProperties memoryProperties()
     {
         VkPhysicalDeviceMemoryProperties vkProps=void;
-        cmds.getPhysicalDeviceMemoryProperties(_vk, &vkProps);
+        vk.getPhysicalDeviceMemoryProperties(_vkObj, &vkProps);
 
         MemoryProperties props;
 
@@ -557,21 +561,21 @@ final class VulkanPhysicalDevice : PhysicalDevice
     {
         import std.array : array, uninitializedArray;
         uint count;
-        cmds.getPhysicalDeviceQueueFamilyProperties(_vk, &count, null);
+        vk.getPhysicalDeviceQueueFamilyProperties(_vkObj, &count, null);
 
         auto vkQueueFams = uninitializedArray!(VkQueueFamilyProperties[])(count);
-        cmds.getPhysicalDeviceQueueFamilyProperties(_vk, &count, vkQueueFams.ptr);
+        vk.getPhysicalDeviceQueueFamilyProperties(_vkObj, &count, vkQueueFams.ptr);
 
         import std.algorithm : map;
-        return vkQueueFams.map!(vk => QueueFamily(
-            queueCapToGfx(vk.queueFlags), vk.queueCount
+        return vkQueueFams.map!(vkObj => QueueFamily(
+            queueCapToGfx(vkObj.queueFlags), vkObj.queueCount
         )).array;
     }
 
     override FormatProperties formatProperties(in Format format)
     {
         VkFormatProperties vkFp;
-        cmds.getPhysicalDeviceFormatProperties(_vk, format.toVk(), &vkFp);
+        vk.getPhysicalDeviceFormatProperties(_vkObj, format.toVk(), &vkFp);
 
         return FormatProperties(
             vkFp.linearTilingFeatures.toGfx(),
@@ -587,7 +591,7 @@ final class VulkanPhysicalDevice : PhysicalDevice
         );
         VkBool32 supported;
         vulkanEnforce(
-            cmds.getPhysicalDeviceSurfaceSupportKHR(vk, queueFamilyIndex, surf.vk, &supported),
+            vk.getPhysicalDeviceSurfaceSupportKHR(vkObj, queueFamilyIndex, surf.vkObj, &supported),
             "Could not query vulkan surface support"
         );
         return supported != VK_FALSE;
@@ -600,7 +604,7 @@ final class VulkanPhysicalDevice : PhysicalDevice
         );
         VkSurfaceCapabilitiesKHR vkSc;
         vulkanEnforce(
-            cmds.getPhysicalDeviceSurfaceCapabilitiesKHR(vk, surf.vk, &vkSc),
+            vk.getPhysicalDeviceSurfaceCapabilitiesKHR(vkObj, surf.vkObj, &vkSc),
             "Could not query vulkan surface capabilities"
         );
         return vkSc.toGfx();
@@ -614,12 +618,12 @@ final class VulkanPhysicalDevice : PhysicalDevice
 
         uint count;
         vulkanEnforce(
-            cmds.getPhysicalDeviceSurfaceFormatsKHR(vk, surf.vk, &count, null),
+            vk.getPhysicalDeviceSurfaceFormatsKHR(vkObj, surf.vkObj, &count, null),
             "Could not query vulkan surface formats"
         );
         auto vkSf = new VkSurfaceFormatKHR[count];
         vulkanEnforce(
-            cmds.getPhysicalDeviceSurfaceFormatsKHR(vk, surf.vk, &count, &vkSf[0]),
+            vk.getPhysicalDeviceSurfaceFormatsKHR(vkObj, surf.vkObj, &count, &vkSf[0]),
             "Could not query vulkan surface formats"
         );
 
@@ -639,12 +643,12 @@ final class VulkanPhysicalDevice : PhysicalDevice
 
         uint count;
         vulkanEnforce(
-            cmds.getPhysicalDeviceSurfacePresentModesKHR(vk, surf.vk, &count, null),
+            vk.getPhysicalDeviceSurfacePresentModesKHR(vkObj, surf.vkObj, &count, null),
             "Could not query vulkan surface present modes"
         );
         auto vkPms = new VkPresentModeKHR[count];
         vulkanEnforce(
-            cmds.getPhysicalDeviceSurfacePresentModesKHR(vk, surf.vk, &count, &vkPms[0]),
+            vk.getPhysicalDeviceSurfacePresentModesKHR(vkObj, surf.vkObj, &count, &vkPms[0]),
             "Could not query vulkan surface present modes"
         );
 
@@ -695,17 +699,17 @@ final class VulkanPhysicalDevice : PhysicalDevice
         ci.pEnabledFeatures = &vkFeats;
 
         VkDevice vkDev;
-        vulkanEnforce(cmds.createDevice(_vk, &ci, null, &vkDev),
+        vulkanEnforce(vk.createDevice(_vkObj, &ci, null, &vkDev),
                 "Vulkan device creation failed");
 
         return new VulkanDevice(vkDev, this);
     }
 
-    private VkPhysicalDevice _vk;
+    private VkPhysicalDevice _vkObj;
     private VkPhysicalDeviceProperties _vkProps;
     private VulkanInstance _inst;
 
-    private VkInstanceCmds _cmds;
+    private VkInstanceCmds _vk;
 
     private VulkanLayerProperties[] _availableLayers;
     private VulkanExtensionProperties[] _availableExtensions;

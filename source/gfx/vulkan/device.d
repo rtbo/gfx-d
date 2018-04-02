@@ -33,22 +33,22 @@ import std.typecons : Flag;
 
 class VulkanDevObj(VkType, string destroyFn) : Disposable
 {
-    this (VkType vk, VulkanDevice dev)
+    this (VkType vkObj, VulkanDevice dev)
     {
-        _vk = vk;
+        _vkObj = vkObj;
         _dev = dev;
         _dev.retain();
-        _cmds = _dev.cmds;
+        _vk = _dev.vk;
     }
 
     override void dispose() {
-        mixin("cmds."~destroyFn~"(vkDev, vk, null);");
+        mixin("vk."~destroyFn~"(vkDev, vkObj, null);");
         _dev.release();
         _dev = null;
     }
 
-    final @property VkType vk() {
-        return _vk;
+    final @property VkType vkObj() {
+        return _vkObj;
     }
 
     final @property VulkanDevice dev() {
@@ -56,32 +56,32 @@ class VulkanDevObj(VkType, string destroyFn) : Disposable
     }
 
     final @property VkDevice vkDev() {
-        return _dev.vk;
+        return _dev.vkObj;
     }
 
-    final @property VkDeviceCmds cmds() {
-        return _cmds;
+    final @property VkDeviceCmds vk() {
+        return _vk;
     }
 
-    private VkType _vk;
+    private VkType _vkObj;
     private VulkanDevice _dev;
-    private VkDeviceCmds _cmds;
+    private VkDeviceCmds _vk;
 }
 
 final class VulkanDevice : VulkanObj!(VkDevice), Device
 {
     mixin(atomicRcCode);
 
-    this (VkDevice vk, VulkanPhysicalDevice pd)
+    this (VkDevice vkObj, VulkanPhysicalDevice pd)
     {
-        super(vk);
+        super(vkObj);
         _pd = pd;
         _pd.retain();
-        _cmds = new VkDeviceCmds(vk, pd.cmds);
+        _vk = new VkDeviceCmds(vkObj, pd.vk);
     }
 
     override void dispose() {
-        cmds.destroyDevice(vk, null);
+        vk.destroyDevice(vkObj, null);
         _pd.release();
         _pd = null;
     }
@@ -90,23 +90,23 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         return _pd;
     }
 
-    @property VkDeviceCmds cmds() {
-        return _cmds;
+    @property VkDeviceCmds vk() {
+        return _vk;
     }
 
     override void waitIdle() {
         vulkanEnforce(
-            cmds.deviceWaitIdle(vk),
+            vk.deviceWaitIdle(vkObj),
             "Problem waiting for device"
         );
     }
 
     override Queue getQueue(uint queueFamilyIndex, uint queueIndex) {
         VkQueue vkQ;
-        cmds.getDeviceQueue(vk, queueFamilyIndex, queueIndex, &vkQ);
+        vk.getDeviceQueue(vkObj, queueFamilyIndex, queueIndex, &vkQ);
 
         foreach (q; _queues) {
-            if (q.vk is vkQ) {
+            if (q.vkObj is vkQ) {
                 return q;
             }
         }
@@ -124,7 +124,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkCommandPool vkPool;
         vulkanEnforce(
-            cmds.createCommandPool(vk, &cci, null, &vkPool),
+            vk.createCommandPool(vkObj, &cci, null, &vkPool),
             "Could not create vulkan command pool"
         );
 
@@ -139,7 +139,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         mai.memoryTypeIndex = memTypeIndex;
 
         VkDeviceMemory vkMem;
-        vulkanEnforce(cmds.allocateMemory(vk, &mai, null, &vkMem), "Could not allocate device memory");
+        vulkanEnforce(vk.allocateMemory(vkObj, &mai, null, &vkMem), "Could not allocate device memory");
 
         const props = pd.memoryProperties.types[memTypeIndex].props;
 
@@ -153,13 +153,13 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         VkMappedMemoryRange[] mmrs = set.mms.map!((MappedMemorySet.MM mm) {
             VkMappedMemoryRange mmr;
             mmr.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-            mmr.memory = (cast(VulkanDeviceMemory)mm.dm).vk;
+            mmr.memory = (cast(VulkanDeviceMemory)mm.dm).vkObj;
             mmr.offset = mm.offset;
             mmr.size = mm.size;
             return mmr;
         }).array;
 
-        cmds.flushMappedMemoryRanges(vk, cast(uint)mmrs.length, mmrs.ptr);
+        vk.flushMappedMemoryRanges(vkObj, cast(uint)mmrs.length, mmrs.ptr);
     }
 
     override void invalidateMappedMemory(MappedMemorySet set) {
@@ -168,13 +168,13 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         VkMappedMemoryRange[] mmrs = set.mms.map!((MappedMemorySet.MM mm) {
             VkMappedMemoryRange mmr;
             mmr.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-            mmr.memory = (cast(VulkanDeviceMemory)mm.dm).vk;
+            mmr.memory = (cast(VulkanDeviceMemory)mm.dm).vkObj;
             mmr.offset = mm.offset;
             mmr.size = mm.size;
             return mmr;
         }).array;
 
-        cmds.invalidateMappedMemoryRanges(vk, cast(uint)mmrs.length, mmrs.ptr);
+        vk.invalidateMappedMemoryRanges(vkObj, cast(uint)mmrs.length, mmrs.ptr);
     }
 
     override Buffer createBuffer(BufferUsage usage, size_t size)
@@ -185,7 +185,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         bci.usage = bufferUsageToVk(usage);
 
         VkBuffer vkBuf;
-        vulkanEnforce(cmds.createBuffer(vk, &bci, null, &vkBuf), "Could not create a Vulkan buffer");
+        vulkanEnforce(vk.createBuffer(vkObj, &bci, null, &vkBuf), "Could not create a Vulkan buffer");
 
         return new VulkanBuffer(vkBuf, this, usage, size);
     }
@@ -208,7 +208,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         ici.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
         VkImage vkImg;
-        vulkanEnforce(cmds.createImage(vk, &ici, null, &vkImg), "Could not create a Vulkan image");
+        vulkanEnforce(vk.createImage(vkObj, &ici, null, &vkImg), "Could not create a Vulkan image");
 
         return new VulkanImage(vkImg, this, type, dims, format);
     }
@@ -244,7 +244,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkSampler vkS;
         vulkanEnforce(
-            cmds.createSampler(vk, &sci, null, &vkS),
+            vk.createSampler(vkObj, &sci, null, &vkS),
             "Could not create Vulkan sampler"
         );
 
@@ -257,7 +257,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         sci.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
         VkSemaphore vkSem;
-        vulkanEnforce(cmds.createSemaphore(vk, &sci, null, &vkSem), "Could not create a Vulkan semaphore");
+        vulkanEnforce(vk.createSemaphore(vkObj, &sci, null, &vkSem), "Could not create a Vulkan semaphore");
 
         return new VulkanSemaphore(vkSem, this);
     }
@@ -270,7 +270,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
             fci.flags = VK_FENCE_CREATE_SIGNALED_BIT;
         }
         VkFence vkF;
-        vulkanEnforce(cmds.createFence(vk, &fci, null, &vkF), "Could not create a Vulkan fence");
+        vulkanEnforce(vk.createFence(vkObj, &fci, null, &vkF), "Could not create a Vulkan fence");
 
         return new VulkanFence(vkF, this);
     }
@@ -280,11 +280,11 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         import std.array : array;
 
         auto vkFs = fences.map!(
-            f => enforce(cast(VulkanFence)f, "Did not pass a Vulkan fence").vk
+            f => enforce(cast(VulkanFence)f, "Did not pass a Vulkan fence").vkObj
         ).array;
 
         vulkanEnforce(
-            cmds.resetFences(vk, cast(uint)vkFs.length, &vkFs[0]),
+            vk.resetFences(vkObj, cast(uint)vkFs.length, &vkFs[0]),
             "Could not reset vulkan fences"
         );
     }
@@ -295,7 +295,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         import std.array : array;
 
         auto vkFs = fences.map!(
-            f => enforce(cast(VulkanFence)f, "Did not pass a Vulkan fence").vk
+            f => enforce(cast(VulkanFence)f, "Did not pass a Vulkan fence").vkObj
         ).array;
 
         const vkWaitAll = waitAll ? VK_TRUE : VK_FALSE;
@@ -303,7 +303,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         const vkTimeout = nsecs < 0 ? ulong.max : cast(ulong)nsecs;
 
         vulkanEnforce(
-            cmds.waitForFences(vk, cast(uint)vkFs.length, &vkFs[0], vkWaitAll, vkTimeout),
+            vk.waitForFences(vkObj, cast(uint)vkFs.length, &vkFs[0], vkWaitAll, vkTimeout),
             "could not wait for vulkan fences"
         );
     }
@@ -324,7 +324,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkSwapchainCreateInfoKHR sci;
         sci.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        sci.surface = surf.vk;
+        sci.surface = surf.vkObj;
         sci.minImageCount = numImages;
         sci.imageFormat = format.toVk;
         sci.imageExtent = VkExtent2D(size[0], size[1]);
@@ -335,11 +335,11 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         sci.clipped = VK_TRUE;
         sci.presentMode = pm.toVk;
         sci.compositeAlpha = compositeAlphaToVk(alpha);
-        sci.oldSwapchain = oldSc ? oldSc.vk : VK_NULL_ND_HANDLE;
+        sci.oldSwapchain = oldSc ? oldSc.vkObj : VK_NULL_ND_HANDLE;
 
         VkSwapchainKHR vkSc;
         vulkanEnforce(
-            cmds.createSwapchainKHR(vk, &sci, null, &vkSc),
+            vk.createSwapchainKHR(vkObj, &sci, null, &vkSc),
             "Could not create a Vulkan Swap chain"
         );
 
@@ -413,7 +413,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkRenderPass vkRp;
         vulkanEnforce(
-            cmds.createRenderPass(vk, &rpci, null, &vkRp),
+            vk.createRenderPass(vkObj, &rpci, null, &vkRp),
             "Could not create a Vulkan render pass"
         );
 
@@ -427,9 +427,9 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         import std.algorithm : map;
         import std.array : array;
 
-        auto vkRp = enforce(cast(VulkanRenderPass)rp, "Did not pass a Vulkan render pass").vk;
+        auto vkRp = enforce(cast(VulkanRenderPass)rp, "Did not pass a Vulkan render pass").vkObj;
         auto vkAttachments = attachments.map!(
-            iv => enforce(cast(VulkanImageView)iv, "Did not pass a Vulkan image view").vk
+            iv => enforce(cast(VulkanImageView)iv, "Did not pass a Vulkan image view").vkObj
         ).array;
 
         VkFramebufferCreateInfo fci;
@@ -443,7 +443,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkFramebuffer vkFb;
         vulkanEnforce(
-            cmds.createFramebuffer(vk, &fci, null, &vkFb),
+            vk.createFramebuffer(vkObj, &fci, null, &vkFb),
             "Could not create a Vulkan Framebuffer"
         );
 
@@ -459,7 +459,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkShaderModule vkSm;
         vulkanEnforce(
-            cmds.createShaderModule(vk, &smci, null, &vkSm),
+            vk.createShaderModule(vkObj, &smci, null, &vkSm),
             "Could not create Vulkan shader module"
         );
 
@@ -482,7 +482,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkDescriptorSetLayout vkL;
         vulkanEnforce(
-            cmds.createDescriptorSetLayout(vk, &ci, null, &vkL),
+            vk.createDescriptorSetLayout(vkObj, &ci, null, &vkL),
             "Could not create Vulkan descriptor set layout"
         );
 
@@ -496,7 +496,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         import std.array : array;
 
         auto vkLayouts = layouts.map!(
-            l => enforce(cast(VulkanDescriptorSetLayout)l).vk
+            l => enforce(cast(VulkanDescriptorSetLayout)l).vkObj
         ).array;
         auto vkRanges = ranges.map!(
             r => VkPushConstantRange( shaderStageToVk(r.stages), r.offset, r.size )
@@ -511,7 +511,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkPipelineLayout vkPl;
         vulkanEnforce(
-            cmds.createPipelineLayout(vk, &ci, null, &vkPl),
+            vk.createPipelineLayout(vkObj, &ci, null, &vkPl),
             "Could not create Vulkan pipeline layout"
         );
         return new VulkanPipelineLayout(vkPl, this);
@@ -534,7 +534,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         VkDescriptorPool vkP;
         vulkanEnforce(
-            cmds.createDescriptorPool(vk, &ci, null, &vkP),
+            vk.createDescriptorPool(vkObj, &ci, null, &vkP),
             "Could not create Vulkan Descriptor Pool"
         );
 
@@ -550,7 +550,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         auto vkWrites = writeOps.map!((WriteDescriptorSet wds) {
             VkWriteDescriptorSet vkWds;
             vkWds.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            vkWds.dstSet = enforce(cast(VulkanDescriptorSet)wds.dstSet).vk;
+            vkWds.dstSet = enforce(cast(VulkanDescriptorSet)wds.dstSet).vkObj;
             vkWds.dstBinding = wds.dstBinding;
             vkWds.dstArrayElement = wds.dstArrayElem;
             vkWds.descriptorCount = cast(uint)wds.writes.count;
@@ -561,7 +561,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
                 auto w = unsafeCast!(SamplerDescWrites)(wds.writes);
                 auto vkArr = w.descs.map!((Sampler s) {
                     VkDescriptorImageInfo dii;
-                    dii.sampler = enforce(cast(VulkanSampler)s).vk;
+                    dii.sampler = enforce(cast(VulkanSampler)s).vkObj;
                     return dii;
                 }).array;
                 vkWds.pImageInfo = vkArr.ptr;
@@ -570,8 +570,8 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
                 auto w = unsafeCast!(CombinedImageSamplerDescWrites)(wds.writes);
                 auto vkArr = w.descs.map!((CombinedImageSampler cis) {
                     VkDescriptorImageInfo dii;
-                    dii.sampler = enforce(cast(VulkanSampler)cis.sampler).vk;
-                    dii.imageView = enforce(cast(VulkanImageView)cis.view).vk;
+                    dii.sampler = enforce(cast(VulkanSampler)cis.sampler).vkObj;
+                    dii.imageView = enforce(cast(VulkanImageView)cis.view).vkObj;
                     dii.imageLayout = cis.layout.toVk();
                     return dii;
                 }).array;
@@ -583,7 +583,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
                 auto w = unsafeCast!(TDescWritesBase!(ImageViewLayout))(wds.writes);
                 auto vkArr = w.descs.map!((ImageViewLayout ivl) {
                     VkDescriptorImageInfo dii;
-                    dii.imageView = enforce(cast(VulkanImageView)ivl.view).vk;
+                    dii.imageView = enforce(cast(VulkanImageView)ivl.view).vkObj;
                     dii.imageLayout = ivl.layout.toVk();
                     return dii;
                 }).array;
@@ -596,7 +596,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
                 auto w = unsafeCast!(TDescWritesBase!(BufferRange))(wds.writes);
                 auto vkArr = w.descs.map!((BufferRange br) {
                     VkDescriptorBufferInfo dbi;
-                    dbi.buffer = enforce(cast(VulkanBuffer)br.buffer).vk;
+                    dbi.buffer = enforce(cast(VulkanBuffer)br.buffer).vkObj;
                     dbi.offset = br.offset;
                     dbi.range = br.range;
                     return dbi;
@@ -607,7 +607,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
             case DescriptorType.storageTexelBuffer:
                 auto w = unsafeCast!(TDescWritesBase!(BufferView))(wds.writes);
                 auto vkArr = w.descs.map!((BufferView bv) {
-                    return enforce(cast(VulkanBufferView)bv).vk;
+                    return enforce(cast(VulkanBufferView)bv).vkObj;
                 }).array;
                 vkWds.pTexelBufferView = vkArr.ptr;
                 break;
@@ -622,16 +622,16 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         auto vkCopies = copyOps.map!((CopyDescritporSet cds) {
             VkCopyDescriptorSet vkCds;
             vkCds.sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
-            vkCds.srcSet = enforce(cast(VulkanDescriptorSet)cds.set.from).vk;
+            vkCds.srcSet = enforce(cast(VulkanDescriptorSet)cds.set.from).vkObj;
             vkCds.srcBinding = cds.binding.from;
             vkCds.srcArrayElement = cds.arrayElem.from;
-            vkCds.dstSet = enforce(cast(VulkanDescriptorSet)cds.set.to).vk;
+            vkCds.dstSet = enforce(cast(VulkanDescriptorSet)cds.set.to).vkObj;
             vkCds.dstBinding = cds.binding.to;
             vkCds.dstArrayElement = cds.arrayElem.to;
             return vkCds;
         }).array;
 
-        cmds.updateDescriptorSets(vk,
+        vk.updateDescriptorSets(vkObj,
             cast(uint)vkWrites.length, vkWrites.ptr,
             cast(uint)vkCopies.length, vkCopies.ptr
         );
@@ -654,7 +654,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
                 ssci.module_ = enforce(
                     cast(VulkanShaderModule)sm,
                     "did not pass a Vulkan shader module"
-                ).vk;
+                ).vkObj;
                 ssci.pName = toStringz(sm.entryPoint);
                 sscis ~= ssci;
             }
@@ -782,7 +782,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
             auto vkRp = rp ? enforce(
                 cast(VulkanRenderPass)rp,
                 "did not supply a Vulkan render pass"
-            ).vk : VK_NULL_ND_HANDLE;
+            ).vkObj : VK_NULL_ND_HANDLE;
 
             // following bindings are not implemented yet
             auto vkTess = new VkPipelineTessellationStateCreateInfo;
@@ -806,7 +806,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
             pcis[i].layout = enforce(
                 cast(VulkanPipelineLayout)infos[i].layout,
                 "did not pass a valid vulkan pipeline layout"
-            ).vk;
+            ).vkObj;
             pcis[i].renderPass = vkRp;
             pcis[i].subpass = infos[i].subpassIndex;
             pcis[i].basePipelineIndex = -1;
@@ -814,7 +814,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
         auto vkPls = new VkPipeline[infos.length];
         vulkanEnforce(
-            cmds.createGraphicsPipelines(vk, VK_NULL_ND_HANDLE, cast(uint)pcis.length, pcis.ptr, null, vkPls.ptr),
+            vk.createGraphicsPipelines(vkObj, VK_NULL_ND_HANDLE, cast(uint)pcis.length, pcis.ptr, null, vkPls.ptr),
             "Could not create Vulkan graphics pipeline"
         );
 
@@ -826,6 +826,6 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
     }
 
     private VulkanPhysicalDevice _pd;
-    private VkDeviceCmds _cmds;
+    private VkDeviceCmds _vk;
     private VulkanQueue[] _queues;
 }

@@ -12,9 +12,9 @@ import gfx.vulkan.device;
 class VulkanShaderModule : VulkanDevObj!(VkShaderModule, "destroyShaderModule"), ShaderModule
 {
     mixin(atomicRcCode);
-    this(VkShaderModule vk, VulkanDevice dev, string entryPoint)
+    this(VkShaderModule vkObj, VulkanDevice dev, string entryPoint)
     {
-        super(vk, dev);
+        super(vkObj, dev);
         _entryPoint = entryPoint;
     }
 
@@ -28,18 +28,18 @@ class VulkanShaderModule : VulkanDevObj!(VkShaderModule, "destroyShaderModule"),
 class VulkanPipelineLayout : VulkanDevObj!(VkPipelineLayout, "destroyPipelineLayout"), PipelineLayout
 {
     mixin(atomicRcCode);
-    this(VkPipelineLayout vk, VulkanDevice dev)
+    this(VkPipelineLayout vkObj, VulkanDevice dev)
     {
-        super(vk, dev);
+        super(vkObj, dev);
     }
 }
 
 class VulkanPipeline : VulkanDevObj!(VkPipeline, "destroyPipeline"), Pipeline
 {
     mixin(atomicRcCode);
-    this(VkPipeline vk, VulkanDevice dev, PipelineLayout pl)
+    this(VkPipeline vkObj, VulkanDevice dev, PipelineLayout pl)
     {
-        super(vk, dev);
+        super(vkObj, dev);
         this.pl = pl;
     }
 
@@ -54,18 +54,18 @@ class VulkanPipeline : VulkanDevObj!(VkPipeline, "destroyPipeline"), Pipeline
 class VulkanDescriptorSetLayout : VulkanDevObj!(VkDescriptorSetLayout, "destroyDescriptorSetLayout"), DescriptorSetLayout
 {
     mixin(atomicRcCode);
-    this(VkDescriptorSetLayout vk, VulkanDevice dev)
+    this(VkDescriptorSetLayout vkObj, VulkanDevice dev)
     {
-        super(vk, dev);
+        super(vkObj, dev);
     }
 }
 
 class VulkanDescriptorPool : VulkanDevObj!(VkDescriptorPool, "destroyDescriptorPool"), DescriptorPool
 {
     mixin(atomicRcCode);
-    this(VkDescriptorPool vk, VulkanDevice dev)
+    this(VkDescriptorPool vkObj, VulkanDevice dev)
     {
-        super(vk, dev);
+        super(vkObj, dev);
     }
 
     override DescriptorSet[] allocate(DescriptorSetLayout[] layouts)
@@ -74,18 +74,18 @@ class VulkanDescriptorPool : VulkanDevObj!(VkDescriptorPool, "destroyDescriptorP
         import std.array : array;
 
         auto vkLayouts = layouts.map!(
-            l => enforce(cast(VulkanDescriptorSetLayout)l).vk
+            l => enforce(cast(VulkanDescriptorSetLayout)l).vkObj
         ).array;
 
         VkDescriptorSetAllocateInfo ai;
         ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        ai.descriptorPool = vk;
+        ai.descriptorPool = vkObj;
         ai.descriptorSetCount = cast(uint)vkLayouts.length;
         ai.pSetLayouts = vkLayouts.ptr;
 
         auto vkSets = new VkDescriptorSet[vkLayouts.length];
         vulkanEnforce(
-            cmds.allocateDescriptorSets(vkDev, &ai, &vkSets[0]),
+            vk.allocateDescriptorSets(vkDev, &ai, &vkSets[0]),
             "Could not allocate Vulkan descriptor sets"
         );
 
@@ -100,7 +100,7 @@ class VulkanDescriptorPool : VulkanDevObj!(VkDescriptorPool, "destroyDescriptorP
 
     override void reset() {
         vulkanEnforce(
-            cmds.resetDescriptorPool(vkDev, vk, 0),
+            vk.resetDescriptorPool(vkDev, vkObj, 0),
             "Could not reset Descriptor pool"
         );
         _allocatedSets = [];
@@ -111,9 +111,9 @@ class VulkanDescriptorPool : VulkanDevObj!(VkDescriptorPool, "destroyDescriptorP
 
 class VulkanDescriptorSet : VulkanObj!(VkDescriptorSet), DescriptorSet
 {
-    this (VkDescriptorSet vk, VulkanDescriptorPool pool)
+    this (VkDescriptorSet vkObj, VulkanDescriptorPool pool)
     {
-        super(vk);
+        super(vkObj);
         _pool = pool;
     }
 

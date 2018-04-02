@@ -15,18 +15,18 @@ import gfx.vulkan.wsi;
 
 final class VulkanQueue : Queue
 {
-    this (VkQueue vk, VulkanDevice dev) {
-        _vk = vk;
+    this (VkQueue vkObj, VulkanDevice dev) {
+        _vkObj = vkObj;
         _dev = dev; // weak reference, no retain
-        _cmds = dev.cmds;
+        _vk = dev.vk;
     }
 
-    @property VkQueue vk() {
+    @property VkQueue vkObj() {
+        return _vkObj;
+    }
+
+    @property VkDeviceCmds vk() {
         return _vk;
-    }
-
-    @property VkDeviceCmds cmds() {
-        return _cmds;
     }
 
     @property Device device() {
@@ -34,7 +34,7 @@ final class VulkanQueue : Queue
     }
 
     void waitIdle() {
-        cmds.queueWaitIdle(_vk);
+        vk.queueWaitIdle(_vkObj);
     }
 
     void submit(Submission[] submissions, Fence fence)
@@ -51,7 +51,7 @@ final class VulkanQueue : Queue
                 vkWaitSems[i] = enforce(
                     cast(VulkanSemaphore)sw.sem,
                     "Did not pass a vulkan semaphore"
-                ).vk;
+                ).vkObj;
                 vkWaitDstStage[i] = pipelineStageToVk(sw.stages);
             }
 
@@ -59,13 +59,13 @@ final class VulkanQueue : Queue
                 s => enforce(
                     cast(VulkanSemaphore)s,
                     "Did not pass a vulkan semaphore"
-                ).vk
+                ).vkObj
             ).array;
             auto vkCmdBufs = s.cmdBufs.map!(
                 b => enforce(
                     cast(VulkanCommandBuffer)b,
                     "Did not pass a vulkan command buffer"
-                ).vk
+                ).vkObj
             ).array;
 
 
@@ -84,11 +84,11 @@ final class VulkanQueue : Queue
 
         VkFence vkFence;
         if (fence) {
-            vkFence = enforce(cast(VulkanFence)fence, "Did not pass a Vulkan fence").vk;
+            vkFence = enforce(cast(VulkanFence)fence, "Did not pass a Vulkan fence").vkObj;
         }
 
         vulkanEnforce(
-            cmds.queueSubmit(vk, cast(uint)vkSubmitInfos.length, vkSubmitInfos.ptr, vkFence),
+            vk.queueSubmit(vkObj, cast(uint)vkSubmitInfos.length, vkSubmitInfos.ptr, vkFence),
             "Could not submit vulkan queue"
         );
     }
@@ -101,7 +101,7 @@ final class VulkanQueue : Queue
             s => enforce(
                 cast(VulkanSemaphore)s,
                 "Did not pass a vulkan semaphore"
-            ).vk
+            ).vkObj
         ).array;
 
         auto vkScs = new VkSwapchainKHR[prs.length];
@@ -109,7 +109,7 @@ final class VulkanQueue : Queue
         foreach (i, pr; prs) {
             vkScs[i] = enforce(
                 cast(VulkanSwapchain)pr.swapChain,
-                "Did not pass a vukan swap chain").vk;
+                "Did not pass a vukan swap chain").vkObj;
             vkImgs[i] = pr.imageIndex;
         }
 
@@ -122,11 +122,11 @@ final class VulkanQueue : Queue
         qpi.pImageIndices = &vkImgs[0];
 
         vulkanEnforce(
-            cmds.queuePresentKHR(vk, &qpi), "Could not present vulkan swapchain"
+            vk.queuePresentKHR(vkObj, &qpi), "Could not present vulkan swapchain"
         );
     }
 
-    private VkQueue _vk;
+    private VkQueue _vkObj;
     private VulkanDevice _dev; // device is kept as weak reference
-    private VkDeviceCmds _cmds;
+    private VkDeviceCmds _vk;
 }

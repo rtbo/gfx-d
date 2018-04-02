@@ -14,8 +14,8 @@ class VulkanSemaphore : VulkanDevObj!(VkSemaphore, "destroySemaphore"), Semaphor
 {
     mixin(atomicRcCode);
 
-    this(VkSemaphore vk, VulkanDevice dev) {
-        super(vk, dev);
+    this(VkSemaphore vkObj, VulkanDevice dev) {
+        super(vkObj, dev);
     }
 }
 
@@ -23,19 +23,19 @@ class VulkanFence : VulkanDevObj!(VkFence, "destroyFence"), Fence
 {
     mixin(atomicRcCode);
 
-    this (VkFence vk, VulkanDevice dev) {
-        super(vk, dev);
+    this (VkFence vkObj, VulkanDevice dev) {
+        super(vkObj, dev);
     }
 
     override @property bool signaled() {
-        return cmds.getFenceStatus(vkDev, vk) == VK_SUCCESS;
+        return vk.getFenceStatus(vkDev, vkObj) == VK_SUCCESS;
     }
 
     override void reset()
     {
-        auto vkF = vk;
+        auto vkF = vkObj;
         vulkanEnforce(
-            cmds.resetFences(vkDev, 1, &vkF),
+            vk.resetFences(vkDev, 1, &vkF),
             "Could not reset Vulkan fence"
         );
     }
@@ -44,10 +44,10 @@ class VulkanFence : VulkanDevObj!(VkFence, "destroyFence"), Fence
     {
         const nsecs = timeout.total!"nsecs";
         const vkTimeout = nsecs < 0 ? ulong.max : cast(ulong)nsecs;
-        auto vkF = vk;
+        auto vkF = vkObj;
 
         vulkanEnforce(
-            cmds.waitForFences(vkDev, 1, &vkF, VK_TRUE, vkTimeout),
+            vk.waitForFences(vkDev, 1, &vkF, VK_TRUE, vkTimeout),
             "Could not wait for Vulkan fence"
         );
     }

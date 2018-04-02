@@ -16,19 +16,19 @@ import gfx.vulkan.memory;
 
 class VulkanImageBase : ImageBase
 {
-    this(VkImage vk, VulkanDevice dev, ImageType type, ImageDims dims, Format format)
+    this(VkImage vkObj, VulkanDevice dev, ImageType type, ImageDims dims, Format format)
     {
-        _vk = vk;
+        _vkObj = vkObj;
         _dev = dev;
         _type = type;
         _dims = dims;
         _format = format;
-        _cmds = dev.cmds;
+        _vk = dev.vk;
     }
 
-    final @property VkImage vk()
+    final @property VkImage vkObj()
     {
-        return _vk;
+        return _vkObj;
     }
 
     final @property VulkanDevice dev()
@@ -38,11 +38,11 @@ class VulkanImageBase : ImageBase
 
     final @property VkDevice vkDev()
     {
-        return _dev.vk;
+        return _dev.vkObj;
     }
 
-    final @property VkDeviceCmds cmds() {
-        return _cmds;
+    final @property VkDeviceCmds vk() {
+        return _vk;
     }
 
     final override @property ImageType type() {
@@ -63,7 +63,7 @@ class VulkanImageBase : ImageBase
         const it = type;
         VkImageViewCreateInfo ivci;
         ivci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        ivci.image = vk;
+        ivci.image = vkObj;
         ivci.viewType = viewType.toVkView();
         ivci.format = format.toVk();
         ivci.subresourceRange = isr.toVk();
@@ -71,16 +71,16 @@ class VulkanImageBase : ImageBase
 
         VkImageView vkIv;
         vulkanEnforce(
-            cmds.createImageView(vkDev, &ivci, null, &vkIv),
+            vk.createImageView(vkDev, &ivci, null, &vkIv),
             "Could not create Vulkan View"
         );
 
         return new VulkanImageView(vkIv, this, isr, swizzle);
     }
 
-    private VkImage _vk;
+    private VkImage _vkObj;
     private VulkanDevice _dev;
-    private VkDeviceCmds _cmds;
+    private VkDeviceCmds _vk;
     private ImageType _type;
     private ImageDims _dims;
     private Format _format;
@@ -91,21 +91,21 @@ class VulkanImage : VulkanImageBase, Image
 {
     mixin(atomicRcCode);
 
-    this(VkImage vk, VulkanDevice dev, ImageType type, ImageDims dims, Format format)
+    this(VkImage vkObj, VulkanDevice dev, ImageType type, ImageDims dims, Format format)
     {
-        super(vk, dev, type, dims, format);
+        super(vkObj, dev, type, dims, format);
         dev.retain();
     }
 
     override void dispose() {
-        cmds.destroyImage(vkDev, vk, null);
+        vk.destroyImage(vkDev, vkObj, null);
         if (_vdm) _vdm.release();
         dev.release();
     }
 
     override @property MemoryRequirements memoryRequirements() {
         VkMemoryRequirements vkMr;
-        cmds.getImageMemoryRequirements(vkDev, vk, &vkMr);
+        vk.getImageMemoryRequirements(vkDev, vkObj, &vkMr);
         return vkMr.toGfx();
     }
 
@@ -114,7 +114,7 @@ class VulkanImage : VulkanImageBase, Image
         assert(!_vdm, "Bind the same buffer twice");
         _vdm = enforce(cast(VulkanDeviceMemory)mem, "Did not pass a Vulkan memory");
         vulkanEnforce(
-            cmds.bindImageMemory(vkDev, vk, _vdm.vk, offset),
+            vk.bindImageMemory(vkDev, vkObj, _vdm.vkObj, offset),
             "Could not bind image memory"
         );
         _vdm.retain();
@@ -127,9 +127,9 @@ class VulkanImageView : VulkanDevObj!(VkImageView, "destroyImageView"), ImageVie
 {
     mixin(atomicRcCode);
 
-    this(VkImageView vk, VulkanImageBase img, ImageSubresourceRange isr, Swizzle swizzle)
+    this(VkImageView vkObj, VulkanImageBase img, ImageSubresourceRange isr, Swizzle swizzle)
     {
-        super(vk, img.dev);
+        super(vkObj, img.dev);
         _img = img;
         _isr = isr;
         _swizzle = swizzle;

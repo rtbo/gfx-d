@@ -14,8 +14,8 @@ class VulkanRenderPass : VulkanDevObj!(VkRenderPass, "destroyRenderPass"), Rende
 {
     mixin(atomicRcCode);
 
-    this(VkRenderPass vk, VulkanDevice dev) {
-        super(vk, dev);
+    this(VkRenderPass vkObj, VulkanDevice dev) {
+        super(vkObj, dev);
     }
 }
 
@@ -23,8 +23,8 @@ class VulkanFramebuffer : VulkanDevObj!(VkFramebuffer, "destroyFramebuffer"), Fr
 {
     mixin(atomicRcCode);
 
-    this(VkFramebuffer vk, VulkanDevice dev, ImageView[] views) {
-        super(vk, dev);
+    this(VkFramebuffer vkObj, VulkanDevice dev, ImageView[] views) {
+        super(vkObj, dev);
         _views = views;
         retainArray(_views);
     }

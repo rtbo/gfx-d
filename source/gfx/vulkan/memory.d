@@ -13,9 +13,9 @@ class VulkanDeviceMemory : VulkanDevObj!(VkDeviceMemory, "freeMemory"), DeviceMe
 {
     mixin(atomicRcCode);
 
-    this(VkDeviceMemory vk, VulkanDevice dev, in MemProps props, in size_t size, in uint typeIndex)
+    this(VkDeviceMemory vkObj, VulkanDevice dev, in MemProps props, in size_t size, in uint typeIndex)
     {
-        super(vk, dev);
+        super(vkObj, dev);
         _props = props;
         _size = size;
         _typeIndex = typeIndex;
@@ -36,14 +36,14 @@ class VulkanDeviceMemory : VulkanDevObj!(VkDeviceMemory, "freeMemory"), DeviceMe
     void* map(in size_t offset, in size_t size) {
         void *data;
         vulkanEnforce(
-            cmds.mapMemory(vkDev, vk, offset, size, 0, &data),
+            vk.mapMemory(vkDev, vkObj, offset, size, 0, &data),
             "Could not map device memory"
         );
         return data;
     }
 
     void unmap() {
-        cmds.unmapMemory(vkDev, vk);
+        vk.unmapMemory(vkDev, vkObj);
     }
 
     private MemProps _props;

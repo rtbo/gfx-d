@@ -27,19 +27,19 @@ class VulkanCommandPool : VulkanDevObj!(VkCommandPool, "destroyCommandPool"), Co
     }
 
     override void reset() {
-        vulkanEnforce(cmds.resetCommandPool(vkDev, vk, 0), "Could not reset command buffer");
+        vulkanEnforce(vk.resetCommandPool(vkDev, vkObj, 0), "Could not reset command buffer");
     }
 
     override CommandBuffer[] allocate(size_t count) {
         VkCommandBufferAllocateInfo cbai;
         cbai.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        cbai.commandPool = vk;
+        cbai.commandPool = vkObj;
         cbai.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         cbai.commandBufferCount = cast(uint)count;
 
         auto vkBufs = new VkCommandBuffer[count];
         vulkanEnforce(
-            cmds.allocateCommandBuffers(vkDev, &cbai, &vkBufs[0]),
+            vk.allocateCommandBuffers(vkDev, &cbai, &vkBufs[0]),
             "Could not allocate command buffers"
         );
 
@@ -56,35 +56,35 @@ class VulkanCommandPool : VulkanDevObj!(VkCommandPool, "destroyCommandPool"), Co
         import std.array : array;
 
         auto vkBufs = bufs.map!(
-            b => enforce(cast(VulkanCommandBuffer)b, "Did not pass a Vulkan command buffer").vk
+            b => enforce(cast(VulkanCommandBuffer)b, "Did not pass a Vulkan command buffer").vkObj
         ).array;
-        cmds.freeCommandBuffers(vkDev, vk, cast(uint)bufs.length, &vkBufs[0]);
+        vk.freeCommandBuffers(vkDev, vkObj, cast(uint)bufs.length, &vkBufs[0]);
     }
 }
 
 final class VulkanCommandBuffer : CommandBuffer
 {
-    this (VkCommandBuffer vk, VulkanCommandPool pool) {
-        _vk = vk;
+    this (VkCommandBuffer vkObj, VulkanCommandPool pool) {
+        _vkObj = vkObj;
         _pool = pool;
-        _cmds = pool.cmds;
+        _vk = pool.vk;
     }
 
-    @property VkCommandBuffer vk() {
-        return _vk;
+    @property VkCommandBuffer vkObj() {
+        return _vkObj;
     }
 
     override @property CommandPool pool() {
         return _pool;
     }
 
-    @property VkDeviceCmds cmds() {
-        return _cmds;
+    @property VkDeviceCmds vk() {
+        return _vk;
     }
 
     override void reset() {
         vulkanEnforce(
-            cmds.resetCommandBuffer(vk, 0), "Could not reset vulkan command buffer"
+            vk.resetCommandBuffer(vkObj, 0), "Could not reset vulkan command buffer"
         );
     }
 
@@ -95,13 +95,13 @@ final class VulkanCommandBuffer : CommandBuffer
             VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT :
             VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         vulkanEnforce(
-            cmds.beginCommandBuffer(vk, &cbbi), "Could not begin vulkan command buffer"
+            vk.beginCommandBuffer(vkObj, &cbbi), "Could not begin vulkan command buffer"
         );
     }
 
     override void end() {
         vulkanEnforce(
-            cmds.endCommandBuffer(vk), "Could not end vulkan command buffer"
+            vk.endCommandBuffer(vkObj), "Could not end vulkan command buffer"
         );
     }
 
@@ -119,7 +119,7 @@ final class VulkanCommandBuffer : CommandBuffer
             vkBufMb.dstAccessMask = accessToVk(bufMb.accessMaskTrans.to);
             vkBufMb.srcQueueFamilyIndex = bufMb.queueFamIndexTrans.from;
             vkBufMb.dstQueueFamilyIndex = bufMb.queueFamIndexTrans.to;
-            vkBufMb.buffer = enforce(cast(VulkanBuffer)bufMb.buffer, "Did not pass a Vulkan buffer").vk;
+            vkBufMb.buffer = enforce(cast(VulkanBuffer)bufMb.buffer, "Did not pass a Vulkan buffer").vkObj;
             vkBufMb.offset = bufMb.offset;
             vkBufMb.size = bufMb.size;
             return vkBufMb;
@@ -134,12 +134,12 @@ final class VulkanCommandBuffer : CommandBuffer
             vkImgMb.newLayout = imgMb.layoutTrans.to.toVk();
             vkImgMb.srcQueueFamilyIndex = imgMb.queueFamIndexTrans.from;
             vkImgMb.dstQueueFamilyIndex = imgMb.queueFamIndexTrans.to;
-            vkImgMb.image = enforce(cast(VulkanImageBase)imgMb.image, "Did not pass a Vulkan image").vk;
+            vkImgMb.image = enforce(cast(VulkanImageBase)imgMb.image, "Did not pass a Vulkan image").vkObj;
             vkImgMb.subresourceRange = imgMb.range.toVk();
             return vkImgMb;
         }).array;
 
-        cmds.cmdPipelineBarrier( vk,
+        vk.cmdPipelineBarrier( vkObj,
             pipelineStageToVk(stageTrans.from), pipelineStageToVk(stageTrans.to),
             0, 0, null,
             cast(uint)vkBufMbs.length, vkBufMbs.ptr,
@@ -153,12 +153,12 @@ final class VulkanCommandBuffer : CommandBuffer
         import std.algorithm : map;
         import std.array : array;
 
-        auto vkImg = enforce(cast(VulkanImageBase)image, "Did not pass a vulkan image").vk;
+        auto vkImg = enforce(cast(VulkanImageBase)image, "Did not pass a vulkan image").vkObj;
         auto vkLayout = layout.toVk();
         auto vkClear = cast(const(VkClearColorValue)*) cast(const(void)*) &clearValues.values;
         auto vkRanges = ranges.map!(r => r.toVk()).array;
 
-        cmds.cmdClearColorImage(vk, vkImg, vkLayout, vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
+        vk.cmdClearColorImage(vkObj, vkImg, vkLayout, vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
     }
 
     override void clearDepthStencilImage(ImageBase image, ImageLayout layout,
@@ -168,12 +168,12 @@ final class VulkanCommandBuffer : CommandBuffer
         import std.algorithm : map;
         import std.array : array;
 
-        auto vkImg = enforce(cast(VulkanImageBase)image, "Did not pass a vulkan image").vk;
+        auto vkImg = enforce(cast(VulkanImageBase)image, "Did not pass a vulkan image").vkObj;
         auto vkLayout = layout.toVk();
         auto vkClear = VkClearDepthStencilValue(clearValues.depth, clearValues.stencil);
         auto vkRanges = ranges.map!(r => r.toVk()).array;
 
-        cmds.cmdClearDepthStencilImage(vk, vkImg, vkLayout, &vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
+        vk.cmdClearDepthStencilImage(vkObj, vkImg, vkLayout, &vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
     }
 
     override void copyBuffer(Trans!Buffer buffers, CopyRegion[] regions)
@@ -185,9 +185,9 @@ final class VulkanCommandBuffer : CommandBuffer
             r => VkBufferCopy(r.offset.from, r.offset.to, r.size)
         ).array;
 
-        cmds.cmdCopyBuffer(vk,
-            enforce(cast(VulkanBuffer)buffers.from).vk,
-            enforce(cast(VulkanBuffer)buffers.to).vk,
+        vk.cmdCopyBuffer(vkObj,
+            enforce(cast(VulkanBuffer)buffers.from).vkObj,
+            enforce(cast(VulkanBuffer)buffers.to).vkObj,
             cast(uint)vkRegions.length, vkRegions.ptr
         );
     }
@@ -203,10 +203,10 @@ final class VulkanCommandBuffer : CommandBuffer
             bic => transmute!VkBufferImageCopy(bic)
         ).array;
 
-        cmds.cmdCopyBufferToImage(
-            vk,
-            enforce(cast(VulkanBuffer)srcBuffer).vk,
-            enforce(cast(VulkanImageBase)dstImage).vk,
+        vk.cmdCopyBufferToImage(
+            vkObj,
+            enforce(cast(VulkanBuffer)srcBuffer).vkObj,
+            enforce(cast(VulkanImageBase)dstImage).vkObj,
             dstLayout.toVk(),
             cast(uint)vkRegions.length, vkRegions.ptr
         );
@@ -250,45 +250,45 @@ final class VulkanCommandBuffer : CommandBuffer
 
         VkRenderPassBeginInfo bi;
         bi.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        bi.renderPass = enforce(cast(VulkanRenderPass)rp, "did not supply a valid Vulkan render pass").vk;
-        bi.framebuffer = enforce(cast(VulkanFramebuffer)fb, "did not supply a valid Vulkan frame buffer").vk;
+        bi.renderPass = enforce(cast(VulkanRenderPass)rp, "did not supply a valid Vulkan render pass").vkObj;
+        bi.framebuffer = enforce(cast(VulkanFramebuffer)fb, "did not supply a valid Vulkan frame buffer").vkObj;
         bi.renderArea = area.toVk();
         bi.clearValueCount = cast(uint)vkCvs.length;
         bi.pClearValues = vkCvs.ptr;
 
-        cmds.cmdBeginRenderPass(vk, &bi, VK_SUBPASS_CONTENTS_INLINE);
+        vk.cmdBeginRenderPass(vkObj, &bi, VK_SUBPASS_CONTENTS_INLINE);
     }
 
     override void nextSubpass() {
-        cmds.cmdNextSubpass(vk, VK_SUBPASS_CONTENTS_INLINE);
+        vk.cmdNextSubpass(vkObj, VK_SUBPASS_CONTENTS_INLINE);
     }
 
     override void endRenderPass() {
-        cmds.cmdEndRenderPass(vk);
+        vk.cmdEndRenderPass(vkObj);
     }
 
     override void bindPipeline(Pipeline pipeline)
     {
-        cmds.cmdBindPipeline(vk, VK_PIPELINE_BIND_POINT_GRAPHICS, enforce(
+        vk.cmdBindPipeline(vkObj, VK_PIPELINE_BIND_POINT_GRAPHICS, enforce(
             cast(VulkanPipeline)pipeline, "did not pass a valid Vulkan pipeline"
-        ).vk);
+        ).vkObj);
     }
 
     override void bindVertexBuffers(uint firstBinding, VertexBinding[] bindings) {
         import std.algorithm : map;
         import std.array : array;
         auto vkBufs = bindings
-                .map!(b => enforce(cast(VulkanBuffer)b.buffer).vk)
+                .map!(b => enforce(cast(VulkanBuffer)b.buffer).vkObj)
                 .array;
         auto vkOffsets = bindings
                 .map!(b => cast(VkDeviceSize)b.offset)
                 .array;
-        cmds.cmdBindVertexBuffers(vk, firstBinding, cast(uint)bindings.length, vkBufs.ptr, vkOffsets.ptr);
+        vk.cmdBindVertexBuffers(vkObj, firstBinding, cast(uint)bindings.length, vkBufs.ptr, vkOffsets.ptr);
     }
 
     override void bindIndexBuffer(Buffer indexBuf, size_t offset, IndexType type) {
-        auto vkBuf = enforce(cast(VulkanBuffer)indexBuf).vk;
-        cmds.cmdBindIndexBuffer(vk, vkBuf, offset, type.toVk());
+        auto vkBuf = enforce(cast(VulkanBuffer)indexBuf).vkObj;
+        vk.cmdBindIndexBuffer(vkObj, vkBuf, offset, type.toVk());
     }
 
     override void bindDescriptorSets(PipelineBindPoint bindPoint, PipelineLayout layout,
@@ -298,7 +298,7 @@ final class VulkanCommandBuffer : CommandBuffer
         import std.algorithm : map;
         import std.array : array;
 
-        auto vkSets = sets.map!(s => enforce(cast(VulkanDescriptorSet)s).vk).array;
+        auto vkSets = sets.map!(s => enforce(cast(VulkanDescriptorSet)s).vkObj).array;
         static if (size_t.sizeof == uint.sizeof) {
             const vkOffsets = dynamicOffsets;
         }
@@ -306,8 +306,8 @@ final class VulkanCommandBuffer : CommandBuffer
             const vkOffsets = dynamicOffsets.map!(o => cast(uint)o).array;
         }
 
-        cmds.cmdBindDescriptorSets( vk, bindPoint.toVk(),
-            enforce(cast(VulkanPipelineLayout)layout).vk,
+        vk.cmdBindDescriptorSets( vkObj, bindPoint.toVk(),
+            enforce(cast(VulkanPipelineLayout)layout).vkObj,
             firstSet, cast(uint)vkSets.length, vkSets.ptr,
             cast(uint)vkOffsets.length, vkOffsets.ptr);
     }
@@ -315,21 +315,21 @@ final class VulkanCommandBuffer : CommandBuffer
     override void pushConstants(PipelineLayout layout, ShaderStage stages,
                                 size_t offset, size_t size, const(void)* data)
     {
-        auto vkPl = enforce(cast(VulkanPipelineLayout)layout).vk;
-        cmds.cmdPushConstants(vk, vkPl, shaderStageToVk(stages), cast(uint)offset, cast(uint)size, data);
+        auto vkPl = enforce(cast(VulkanPipelineLayout)layout).vkObj;
+        vk.cmdPushConstants(vkObj, vkPl, shaderStageToVk(stages), cast(uint)offset, cast(uint)size, data);
     }
 
     override void draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance)
     {
-        cmds.cmdDraw(vk, vertexCount, instanceCount, firstVertex, firstInstance);
+        vk.cmdDraw(vkObj, vertexCount, instanceCount, firstVertex, firstInstance);
     }
 
     override void drawIndexed(uint indexCount, uint instanceCount, uint firstVertex, int vertexOffset, uint firstInstance)
     {
-        cmds.cmdDrawIndexed(vk, indexCount, instanceCount, firstVertex, vertexOffset, firstInstance);
+        vk.cmdDrawIndexed(vkObj, indexCount, instanceCount, firstVertex, vertexOffset, firstInstance);
     }
 
-    private VkCommandBuffer _vk;
+    private VkCommandBuffer _vkObj;
     private VulkanCommandPool _pool;
-    private VkDeviceCmds _cmds;
+    private VkDeviceCmds _vk;
 }

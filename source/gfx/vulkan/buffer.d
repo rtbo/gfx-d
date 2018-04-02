@@ -15,15 +15,15 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, "destroyBuffer"), Buffer
 {
     mixin(atomicRcCode);
 
-    this (VkBuffer vk, VulkanDevice dev, BufferUsage usage, size_t size)
+    this (VkBuffer vkObj, VulkanDevice dev, BufferUsage usage, size_t size)
     {
-        super(vk, dev);
+        super(vkObj, dev);
         _usage = usage;
         _size = size;
     }
 
     override void dispose() {
-        cmds.destroyBuffer(vkDev, vk, null);
+        vk.destroyBuffer(vkDev, vkObj, null);
         if (_vdm) _vdm.release();
         dev.release();
     }
@@ -38,7 +38,7 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, "destroyBuffer"), Buffer
 
     override @property MemoryRequirements memoryRequirements() {
         VkMemoryRequirements vkMr;
-        cmds.getBufferMemoryRequirements(vkDev, vk, &vkMr);
+        vk.getBufferMemoryRequirements(vkDev, vkObj, &vkMr);
         return vkMr.toGfx();
     }
 
@@ -47,7 +47,7 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, "destroyBuffer"), Buffer
         assert(!_vdm, "Bind the same buffer twice");
         _vdm = enforce(cast(VulkanDeviceMemory)mem, "Did not pass a Vulkan memory");
         vulkanEnforce(
-            cmds.bindBufferMemory(vkDev, vk, _vdm.vk, offset),
+            vk.bindBufferMemory(vkDev, vkObj, _vdm.vkObj, offset),
             "Could not bind image memory"
         );
         _vdm.retain();
@@ -67,7 +67,7 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, "destroyBuffer"), Buffer
 
         VkBufferView vkBv;
         vulkanEnforce(
-            cmds.createBufferView(vkDev, &bvci, null, &vkBv),
+            vk.createBufferView(vkDev, &bvci, null, &vkBv),
             "Could not create Vulkan buffer view"
         );
 
@@ -84,9 +84,9 @@ class VulkanBufferView : VulkanDevObj!(VkBufferView, "destroyBufferView"), Buffe
 {
     mixin(atomicRcCode);
 
-    this(VkBufferView vk, VulkanBuffer buf, Format format, size_t offset, size_t size)
+    this(VkBufferView vkObj, VulkanBuffer buf, Format format, size_t offset, size_t size)
     {
-        super(vk, buf.dev);
+        super(vkObj, buf.dev);
         _buf = buf;
         _buf.retain();
         _format = format;
