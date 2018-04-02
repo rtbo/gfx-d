@@ -180,16 +180,22 @@ final class GlFramebuffer : Framebuffer
 
         gl.GenFramebuffers(1, &_name);
 
-        import gfx.bindings.opengl.gl : GL_DRAW_FRAMEBUFFER;
+        import gfx.bindings.opengl.gl : GLenum, GLsizei, GL_COLOR_ATTACHMENT0,
+                                        GL_DRAW_FRAMEBUFFER;
 
         gl.BindFramebuffer(GL_DRAW_FRAMEBUFFER, _name);
 
-        foreach(i; 0 .. attachments.length) {
-            const desc = rp._attachments[i];
-            auto attachment = attachments[i];
-            uint colorNum = 0;
+        uint colorNum = 0;
+
+        foreach(attachment; attachments) {
             attachment.attachToFbo(GL_DRAW_FRAMEBUFFER, colorNum);
         }
+
+        auto drawBufs = new GLenum[colorNum];
+        foreach(i; 0 .. colorNum) {
+            drawBufs[i] = GL_COLOR_ATTACHMENT0 + i;
+        }
+        gl.DrawBuffers(cast(GLsizei)colorNum, drawBufs.ptr);
 
         gl.BindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     }
