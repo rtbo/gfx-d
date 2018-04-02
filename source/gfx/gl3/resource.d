@@ -177,6 +177,7 @@ final class GlImage : Image
 {
     import gfx.bindings.opengl.gl : Gl, GLenum, GLuint;
     import gfx.core.rc : atomicRcCode, Rc;
+    import gfx.graal.cmd : BufferImageCopy;
     import gfx.graal.format : Format, NumFormat;
     import gfx.graal.image;
     import gfx.graal.memory : MemoryRequirements;
@@ -237,15 +238,19 @@ final class GlImage : Image
         _glTexTarget = toGlTexTarget(type, samples > 1);
     }
 
-    GLuint name() {
+    @property GLuint name() {
         return _name;
     }
 
-    GlImgType glType() {
+    @property GLenum texTarget() {
+        return _glTexTarget;
+    }
+
+    @property GlImgType glType() {
         return _glType;
     }
 
-    NumFormat numFormat() {
+    @property NumFormat numFormat() {
         return _numFormat;
     }
 
@@ -401,6 +406,15 @@ final class GlImage : Image
         import gfx.gl3.error : glCheck;
         glCheck(gl, "bind image memory");
     }
+
+    void texSubImage(BufferImageCopy region) {
+        import gfx.bindings.opengl.gl : GL_RGBA, GL_UNSIGNED_BYTE;
+        gl.TexSubImage2D(
+            _glTexTarget, region.imageLayers.mipLevel, region.offset[0],
+            region.offset[1], region.extent[0], region.extent[1], GL_RGBA,
+            GL_UNSIGNED_BYTE, null
+        );
+    }
 }
 
 final class GlImageView : ImageView
@@ -421,7 +435,8 @@ final class GlImageView : ImageView
     private Swizzle swzl;
 
     private GlImgType glType;
-    private GLuint name;
+    package GLuint name;
+    package GLuint target;
 
     this(GlImage img, ImageType type, ImageSubresourceRange isr, Swizzle swizzle) {
         this.img = img;
@@ -434,6 +449,10 @@ final class GlImageView : ImageView
 
         glType = img._glType;
         name = img._name;
+        if (glType == GlImgType.tex) {
+            import gfx.gl3.conv : toGlTexTarget;
+            target = toGlTexTarget(type, img._samples > 1);
+        }
     }
 
     override void dispose() {

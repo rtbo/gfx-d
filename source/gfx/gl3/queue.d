@@ -229,7 +229,12 @@ final class GlCommandBuffer : CommandBuffer
                                     in ImageLayout dstLayout,
                                     in BufferImageCopy[] regions)
     {
-        warningf("unimplemented GL command");
+        import gfx.gl3.resource : GlBuffer, GlImage;
+        foreach (r; regions) {
+            _cmds ~= new CopyBufToImgCmd(
+                cast(GlBuffer)srcBuffer, cast(GlImage)dstImage, r
+            );
+        }
     }
 
     override void beginRenderPass(RenderPass rp, Framebuffer fb,
@@ -331,6 +336,11 @@ final class GlCommandBuffer : CommandBuffer
                     case DescriptorType.uniformBufferDynamic:
                         _cmds ~= new BindUniformBufferCmd(
                             b.layout.binding, d.bufferRange, dynamicOffsets[dynInd++]
+                        );
+                        break;
+                    case DescriptorType.combinedImageSampler:
+                        _cmds ~= new BindSamplerImageCmd(
+                            b.layout.binding, d.combinedImageSampler
                         );
                         break;
                     default:
@@ -444,6 +454,44 @@ private:
 
 abstract class GlCommand {
     abstract void execute(GlQueue queue, Gl gl);
+}
+
+string allFieldsCtor(T)()
+{
+    import std.array : join;
+    import std.traits : FieldNameTuple, Fields;
+
+    alias names = FieldNameTuple!T;
+    alias types = Fields!T;
+
+    string[] fields;
+    static foreach (i, n; names) {
+        fields ~= types[i].stringof ~ " " ~ n;
+    }
+    string code = "this(" ~ fields.join(", ") ~ ") {\n";
+    static foreach (n; names) {
+        code ~= "    this." ~ n ~ " = " ~ n ~ ";\n";
+    }
+    return code ~ "}";
+}
+
+final class CopyBufToImgCmd : GlCommand
+{
+    import gfx.gl3.resource : GlBuffer, GlImage;
+
+    GlBuffer buf;
+    GlImage img;
+    BufferImageCopy region;
+
+    mixin(allFieldsCtor!(typeof(this)));
+
+    override void execute(GlQueue queue, Gl gl) {
+        gl.ActiveTexture(GL_TEXTURE0);
+        gl.BindBuffer(GL_PIXEL_UNPACK_BUFFER, buf.name);
+        gl.BindTexture(img.texTarget, img.name);
+        img.texSubImage(region);
+        gl.BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    }
 }
 
 final class BindFramebufferCmd : GlCommand
@@ -767,6 +815,31 @@ final class BindUniformBufferCmd : GlCommand
             cast(GLintptr)(bufferRange.offset+dynamicOffset),
             cast(GLintptr)bufferRange.range
         );
+    }
+}
+
+final class BindSamplerImageCmd : GlCommand
+{
+    import gfx.graal.pipeline : CombinedImageSampler;
+
+    GLuint binding;
+    CombinedImageSampler cis;
+
+    mixin(allFieldsCtor!(typeof(this)));
+
+    override void execute(GlQueue queue, Gl gl) {
+        import gfx.gl3.error : glCheck;
+        import gfx.gl3.resource : GlImageView, GlSampler;
+
+        auto view = cast(GlImageView)cis.view;
+        auto sampler = cast(GlSampler)cis.sampler;
+
+        gl.ActiveTexture(GL_TEXTURE0 + binding);
+        gl.BindTexture(view.target, view.name);
+        glCheck(gl, "bind texture");
+
+        sampler.bind(view.target, binding);
+        glCheck(gl, "bind sampler");
     }
 }
 
