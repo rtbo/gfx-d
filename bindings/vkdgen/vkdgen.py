@@ -241,6 +241,10 @@ class DGenerator(OutputGenerator):
         self.features = []
         self.feature = None
         self.featureGuards = {
+            "VK_KHR_win32_surface": DGenerator.FeatureGuard(
+                "Windows",
+                [ "import core.sys.windows.windef : HINSTANCE, HWND;" ]
+            ),
             "VK_KHR_xcb_surface": DGenerator.FeatureGuard(
                 "linux",
                 [ "import xcb.xcb : xcb_connection_t, xcb_visualid_t, xcb_window_t;" ]
@@ -852,6 +856,7 @@ if __name__ == "__main__":
         addExtensions = makeREstring([
             "VK_KHR_display",
             "VK_KHR_swapchain",
+            "VK_KHR_win32_surface",
             "VK_KHR_xcb_surface",
             "VK_KHR_wayland_surface",
             "VK_KHR_surface",
