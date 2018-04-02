@@ -223,7 +223,12 @@ final class GlCommandBuffer : CommandBuffer
 
     override void copyBuffer(Trans!Buffer buffers, CopyRegion[] regions)
     {
-        warningf("unimplemented GL command");
+        import gfx.gl3.resource : GlBuffer;
+        foreach (r; regions) {
+            _cmds ~= new CopyBufToBufCmd(
+                cast(GlBuffer)buffers.from, cast(GlBuffer)buffers.to, r
+            );
+        }
     }
 
     override void copyBufferToImage(Buffer srcBuffer, ImageBase dstImage,
@@ -472,6 +477,32 @@ string allFieldsCtor(T)()
     return code ~ "}";
 }
 
+final class CopyBufToBufCmd : GlCommand
+{
+    import gfx.gl3.resource : GlBuffer;
+
+    GlBuffer src;
+    GlBuffer dst;
+    CopyRegion region;
+
+    mixin(allFieldsCtor!(typeof(this)));
+
+    override void execute(GlQueue queue, Gl gl) {
+        gl.BindBuffer(GL_COPY_READ_BUFFER, src.name);
+        gl.BindBuffer(GL_COPY_WRITE_BUFFER, dst.name);
+        gl.CopyBufferSubData(
+            GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER,
+            cast(GLintptr)region.offset.from, cast(GLintptr)region.offset.to,
+            cast(GLsizeiptr)region.size
+        );
+        gl.BindBuffer(GL_COPY_READ_BUFFER, 0);
+        gl.BindBuffer(GL_COPY_WRITE_BUFFER, 0);
+
+        import gfx.gl3.error : glCheck;
+        glCheck(gl, "copy buffer to buffer");
+    }
+}
+
 final class CopyBufToImgCmd : GlCommand
 {
     import gfx.gl3.resource : GlBuffer, GlImage;
@@ -488,6 +519,9 @@ final class CopyBufToImgCmd : GlCommand
         gl.BindTexture(img.texTarget, img.name);
         img.texSubImage(region);
         gl.BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+        import gfx.gl3.error : glCheck;
+        glCheck(gl, "copy buffer to image");
     }
 }
 
