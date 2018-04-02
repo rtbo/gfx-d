@@ -18,6 +18,7 @@ final class GlQueue : Queue, Disposable
     private Device _device;
     private GLuint readFbo;
     private GLuint vao;
+    private GlState state;
 
     this(GlShare share, Device device) {
         this.share = share;
@@ -161,18 +162,18 @@ final class GlCommandBuffer : CommandBuffer
 
     private GlCommand[] _cmds;
     private Dirty _dirty;
-    private size_t _indexOffset;
-    private GLenum _indexType;
-    private VertexBinding[] _vertexBindings;
 
     // pipeline cache
     private GLenum _primitive;
-    private Rasterizer _rasterizer;
     private VertexInputBinding[] _inputBindings;
     private VertexInputAttrib[] _inputAttribs;
-    private GLuint _prog;
-    private ViewportConfig[] _viewports;
-    private DepthInfo _depthInfo;
+
+    // index buffer cache
+    private size_t _indexOffset;
+    private GLenum _indexType;
+
+    // vertex cache
+    private VertexBinding[] _vertexBindings;
 
 
     this (CommandPool pool, GLuint fbo) {
@@ -259,30 +260,17 @@ final class GlCommandBuffer : CommandBuffer
     }
 
     override void endRenderPass()
-    {
-        //warningf("unimplemented GL command");
-    }
+    {}
 
     override void bindPipeline(Pipeline pipeline)
     {
         auto glPipeline = cast(GlPipeline)pipeline;
 
-        if (_viewports != glPipeline.info.viewports) {
-            _viewports = glPipeline.info.viewports;
-            _cmds ~= new SetViewportsCmd(_viewports);
-        }
-        if (_prog != glPipeline.prog) {
-            _prog = glPipeline.prog;
-            _cmds ~= new BindProgramCmd(_prog);
-        }
-        if (_rasterizer != glPipeline.info.rasterizer) {
-            _rasterizer = glPipeline.info.rasterizer;
-            _cmds ~= new SetRasterizerCmd(_rasterizer);
-        }
-        if (_depthInfo != glPipeline.info.depthInfo) {
-            _depthInfo = glPipeline.info.depthInfo;
-            _cmds ~= new SetDepthInfoCmd(_depthInfo);
-        }
+        _cmds ~= new BindProgramCmd(glPipeline.prog);
+        _cmds ~= new SetViewportsCmd(glPipeline.info.viewports);
+        _cmds ~= new SetRasterizerCmd(glPipeline.info.rasterizer);
+        _cmds ~= new SetDepthInfoCmd(glPipeline.info.depthInfo);
+
         bindOutputs(glPipeline.info.blendInfo);
 
         _primitive = toGl(glPipeline.info.assembly.primitive);
@@ -452,6 +440,15 @@ final class GlCommandBuffer : CommandBuffer
 
 private:
 
+struct GlState {
+    import gfx.graal.pipeline : DepthInfo, Rasterizer, ViewportConfig;
+
+    GLuint prog;
+    ViewportConfig[] vcs;
+    Rasterizer rasterizer;
+    DepthInfo depthInfo;
+}
+
 abstract class GlCommand {
     abstract void execute(GlQueue queue, Gl gl);
 }
@@ -530,7 +527,8 @@ final class SetupFramebufferCmd : GlCommand
     }
 }
 
-final class SetViewportsCmd : GlCommand {
+final class SetViewportsCmd : GlCommand
+{
     import gfx.graal.pipeline : ViewportConfig;
     ViewportConfig[] viewports;
     this (ViewportConfig[] viewports) {
@@ -538,6 +536,9 @@ final class SetViewportsCmd : GlCommand {
     }
 
     override void execute(GlQueue queue, Gl gl) {
+
+        if (queue.state.vcs == viewports) return;
+
         if (viewports.length > 1 && !queue.info.viewportArray) {
             import std.experimental.logger : error;
             error("ARB_viewport_array not supported");
@@ -572,8 +573,9 @@ final class SetViewportsCmd : GlCommand {
                 cast(GLsizei)sc.width, cast(GLsizei)sc.height
             );
         }
-    }
 
+        queue.state.vcs = viewports;
+    }
 }
 
 final class ClearColorCmd : GlCommand {
@@ -627,7 +629,9 @@ final class BindProgramCmd : GlCommand
     GLuint prog;
     this(GLuint prog) { this.prog = prog; }
     override void execute(GlQueue queue, Gl gl) {
+        if (queue.state.prog == prog) return;
         gl.UseProgram(prog);
+        queue.state.prog = prog;
     }
 }
 
@@ -640,6 +644,8 @@ final class SetRasterizerCmd : GlCommand
     override void execute(GlQueue queue, Gl gl) {
         import gfx.gl3.conv : toGl;
         import gfx.graal.pipeline : Cull, PolygonMode;
+
+        if (queue.state.rasterizer == rasterizer) return;
 
         void polygonBias(GLenum polygonMode, GLenum depthBias)
         {
@@ -698,6 +704,8 @@ final class SetRasterizerCmd : GlCommand
         else {
             gl.Disable(GL_DEPTH_CLAMP);
         }
+
+        queue.state.rasterizer = rasterizer;
     }
 }
 
@@ -711,6 +719,8 @@ final class SetDepthInfoCmd : GlCommand
     override void execute(GlQueue queue, Gl gl) {
         import gfx.gl3.conv : toGl;
 
+        if (queue.state.depthInfo == info) return;
+
         if (info.enabled) {
             gl.Enable(GL_DEPTH_TEST);
             gl.DepthFunc(toGl(info.compareOp));
@@ -723,6 +733,8 @@ final class SetDepthInfoCmd : GlCommand
         else {
             gl.Disable(GL_DEPTH_TEST);
         }
+
+        queue.state.depthInfo = info;
     }
 }
 
