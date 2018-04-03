@@ -38,7 +38,7 @@ alias GLXPbufferSGIX = XID;
 struct __GLXcontextRec;
 struct __GLXFBConfigRec;
 
-// struct definitions
+// Struct definitions
 // Structs for GLX_EXT_stereo_tree
 struct GLXStereoNotifyEventEXT {
     int type;

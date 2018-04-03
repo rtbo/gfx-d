@@ -87,6 +87,9 @@ reFuncPtrAlias = re.compile(
     r"^typedef\s+(.*)\s+\(\s*\*\s*(\w+)\)\s*\((.*)\)\s*;\s*$",
     re.MULTILINE | re.DOTALL
 )
+reDeclHandle = re.compile(
+    r"^DECLARE_HANDLE\((\w+)\)"
+)
 reFuncParam = re.compile(
     r"^(.*[\s\*])(\w+)$"
 )
@@ -238,6 +241,8 @@ class DGenerator(OutputGenerator):
         for k in self.featureGuards:
             self.featureGuards[k].name = k
         self.structDecls = []
+        self.structNames = []
+        self.handleDecls = []
         self.extensions = []
         self.cores = []
         self.lastLoaderClsName = ""
@@ -245,6 +250,7 @@ class DGenerator(OutputGenerator):
     def addStructDecl(self, decl):
         if self.opts and decl in self.opts.importedStructDecls: return
         if decl in self.structDecls: return
+        if decl in self.structNames: return
         self.structDecls.append(decl)
 
     def logMsg(self, level, *args):
@@ -345,6 +351,12 @@ class DGenerator(OutputGenerator):
             s += noneStr(elem.text)
             s += noneStr(elem.tail)
 
+        match = re.match(reDeclHandle, s)
+        if match:
+            assert name == match.group(1)
+            self.handleDecls.append(name)
+            return
+
         match = re.match(reStructDecl, s)
         if match:
             struct = match.group(1).strip()
@@ -396,6 +408,7 @@ class DGenerator(OutputGenerator):
             nameGr = 1 if match1 else 2
             fieldsGr = 2 if match1 else 1
             assert name == match.group(nameGr)
+            self.structNames.append(name)
             fields = match.group(fieldsGr)
             fieldsMatches = re.findall(reStructFields, fields)
             params = []
@@ -442,6 +455,9 @@ class DGenerator(OutputGenerator):
     def genCmd(self, cmdinfo, name):
         super().genCmd(cmdinfo, name)
 
+        if not name.startswith(self.opts.cmdPrefix):
+            return
+
         alias = cmdinfo.elem.find("alias")
         if alias != None:
             alias = alias.get("name")
@@ -476,24 +492,30 @@ class DGenerator(OutputGenerator):
             t = t.replace(" struct ", " ")
             t = mapDType(t)
             params.append(DGenerator.Param(n, t.strip()))
+
         field = name[len(self.opts.cmdPrefix):]
         self.feature.cmds.append(DGenerator.Command(name, returnType, params, "PFN_"+name, field))
 
 
 
     def issueStructDecls(self, sf):
-        if not len(self.structDecls): return
-        sf()
-        sf("// Struct declarations")
-        for sd in self.structDecls:
-            sf("struct %s;", sd)
+        if len(self.structDecls):
+            sf()
+            sf("// Struct declarations")
+            for sd in self.structDecls:
+                sf("struct %s;", sd)
+        if len(self.handleDecls):
+            sf()
+            sf("// Handle declarations")
+            for h in self.handleDecls:
+                sf("alias %s = void*;", h)
 
     def issueStructDefs(self, sf):
         feats = [f for f in self.features if len(f.structs) > 0]
         if not len(feats): return
 
         sf()
-        sf("// struct definitions")
+        sf("// Struct definitions")
         for f in feats:
             sf("// Structs for %s", f.name)
             f.beginGuard(sf)
@@ -945,7 +967,7 @@ if __name__ == "__main__":
             apiname             = "wgl",
             profile             = None,
             versions            = allVersions,
-            emitversions        = None,
+            emitversions        = allVersions,
             defaultExtensions   = "wgl",
             addExtensions       = None,
             removeExtensions    = None,
@@ -956,7 +978,11 @@ if __name__ == "__main__":
             importedStructDecls = [],
             stmts               = [
                 "version(Windows):",
-                "import gfx.bindings.core;"
+                "import core.stdc.config : c_ulong;",
+                "import core.sys.windows.windef;",
+                "import core.sys.windows.wingdi;",
+                "import gfx.bindings.core;",
+                "import gfx.bindings.opengl.gl;"
             ]
         ),
         DGeneratorOptions(
@@ -983,7 +1009,6 @@ if __name__ == "__main__":
     ]
 
     for opts in buildList:
-        if opts.apiname == "wgl": continue
         gen = DGenerator()
         reg = Registry()
         reg.loadElementTree( etree.parse( opts.regFile ))

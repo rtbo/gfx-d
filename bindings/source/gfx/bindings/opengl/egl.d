@@ -69,7 +69,7 @@ alias EGLuint64NV = khronos_utime_nanoseconds_t;
 // Struct declarations
 struct AHardwareBuffer;
 
-// struct definitions
+// Struct definitions
 // Structs for EGL_HI_clientpixmap
 struct EGLClientPixmapHI {
     void  * pData;
