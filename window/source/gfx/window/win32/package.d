@@ -126,7 +126,12 @@ class Win32Display : Display
         switch(msg)
         {
             case WM_CLOSE:
-                wnd.close();
+                if (wnd.closeHandler) {
+                    wnd._closeFlag = wnd.closeHandler();
+                }
+                else {
+                    wnd._closeFlag = true;
+                }
                 return true;
             case WM_LBUTTONDOWN:
             case WM_LBUTTONUP:
