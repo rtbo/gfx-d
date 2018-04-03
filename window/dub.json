@@ -24,7 +24,8 @@
         },
         {
             "name": "windows",
-            "platforms": ["windows"]
+            "platforms": [ "windows" ],
+            "libs": [ "user32" ]
         }
     ]
 }

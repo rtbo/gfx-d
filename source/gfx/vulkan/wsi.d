@@ -85,10 +85,33 @@ version(linux) {
     }
 }
 
-version(GfxVulkanWin32) {
+version(Windows) {
+
+    import core.sys.windows.windef : HINSTANCE, HWND;
+
     enum surfaceInstanceExtensions = [
         surfaceExtension, win32SurfaceExtension
     ];
+
+    Surface createWin32VulkanSurface(Instance graalInst, HINSTANCE hinstance, HWND hwnd) {
+        auto inst = enforce(
+            cast(VulkanInstance)graalInst,
+            "createVulkanXcbSurface called with non-vulkan instance"
+        );
+
+        VkWin32SurfaceCreateInfoKHR sci;
+        sci.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+        sci.hinstance = hinstance;
+        sci.hwnd = hwnd;
+
+        VkSurfaceKHR vkSurf;
+        vulkanEnforce(
+            inst.vk.CreateWin32SurfaceKHR(inst.vkObj, &sci, null, &vkSurf),
+            "Could not create Vulkan Xcb Surface"
+        );
+
+        return new VulkanSurface(vkSurf, inst);
+    }
 }
 version(GfxOffscreen) {
     enum surfaceInstanceExtensions = [];

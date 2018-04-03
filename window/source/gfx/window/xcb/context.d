@@ -1,5 +1,7 @@
 module gfx.window.xcb.context;
 
+version(linux):
+
 import gfx.bindings.core : SharedLib;
 import gfx.gl3.context : GlAttribs, GlContext, glVersions;
 import X11.Xlib : XDisplay = Display, XErrorEvent;

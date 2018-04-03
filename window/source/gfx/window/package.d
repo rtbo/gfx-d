@@ -60,6 +60,10 @@ Display createDisplay(in Backend[] loadOrder=defaultBackendLoadOrder)
             return new XcbDisplay(loadOrder);
         }
     }
+    else version(Windows) {
+        import gfx.window.win32 : Win32Display;
+        return new Win32Display;
+    }
     else {
         pragma(msg, "Unsupported platform");
         assert(false, "Unsupported platform");
