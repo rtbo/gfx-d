@@ -25,7 +25,7 @@
         {
             "name": "windows",
             "platforms": [ "windows" ],
-            "libs": [ "user32", "gdi32" ]
+            "libs": [ "user32", "gdi32", "dwmapi" ]
         }
     ]
 }

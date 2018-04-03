@@ -20,6 +20,7 @@ public int[] getAttribList(in GlAttribs attribs) {
         WGL_SUPPORT_OPENGL_ARB,     GL_TRUE,
         WGL_DOUBLE_BUFFER_ARB,      GL_TRUE,
         WGL_PIXEL_TYPE_ARB,         WGL_TYPE_RGBA_ARB,
+        WGL_TRANSPARENT_ARB,        GL_TRUE,
         WGL_COLOR_BITS_ARB,         colorBits(cd.surfaceType),
         WGL_DEPTH_BITS_ARB,         depthBits(dsd.surfaceType),
         WGL_STENCIL_BITS_ARB,       stencilBits(dsd.surfaceType),
@@ -189,16 +190,9 @@ public class Win32GlContext : GlContext
         auto wnd = cast(HWND)nativeHandle;
         auto dc = GetDC(wnd);
         scope(exit) ReleaseDC(wnd, dc);
-        auto res = _wgl.MakeCurrent(dc, _ctx) != 0;
-        if (!res) {
-            import std.experimental.logger : errorf;
-            const err = GetLastError();
-            LPSTR messageBuffer = null;
-            size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                                        null, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), cast(LPSTR)&messageBuffer, 0, null);
-            auto buf = new char[size];
-            buf[] = messageBuffer[0 .. size];
-            errorf(buf.idup);
+        if (!_wgl.MakeCurrent(dc, _ctx)) {
+            printLastError();
+            return false;
         }
         return true;
     }
@@ -228,7 +222,9 @@ public class Win32GlContext : GlContext
         auto wnd = cast(HWND)nativeHandle;
         auto dc = GetDC(wnd);
         scope(exit) ReleaseDC(wnd, dc);
-        SwapBuffers(dc);
+        if (!SwapBuffers(dc)) {
+            printLastError();
+        }
     }
 
     override size_t createDummy() {
@@ -250,6 +246,18 @@ public class Win32GlContext : GlContext
             win.dispose();
             dummies.remove(dummy);
         }
+    }
+
+    private void printLastError() {
+        import std.experimental.logger : errorf;
+        const err = GetLastError();
+        LPSTR messageBuffer = null;
+        size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                                    null, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), cast(LPSTR)&messageBuffer, 0, null);
+        auto buf = new char[size];
+        buf[] = messageBuffer[0 .. size];
+        errorf(buf.idup);
+        LocalFree(messageBuffer);
     }
 
     private static class DummyWindow : Disposable

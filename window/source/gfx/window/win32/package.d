@@ -173,7 +173,7 @@ class Win32Window : Window
 
         hWnd = enforce(
             CreateWindowEx(
-                WS_EX_CLIENTEDGE,
+                WS_EX_CLIENTEDGE, // | WS_EX_LAYERED,
                 wndClassName.toUTF16z,
                 "null",
                 WS_OVERLAPPEDWINDOW,
@@ -185,6 +185,15 @@ class Win32Window : Window
             ),
             "could not create win32 window"
         );
+
+        DWM_BLURBEHIND bb;
+        bb.dwFlags = DWM_BB_ENABLE;
+        bb.fEnable = TRUE;
+        bb.hRgnBlur = NULL;
+        DwmEnableBlurBehindWindow(hWnd, &bb);
+        MARGINS m = { -1 };
+        DwmExtendFrameIntoClientArea(hWnd, &m);
+
 
         import gfx.graal : Backend;
         final switch (dpy.instance.backend) {
@@ -378,3 +387,29 @@ private LRESULT win32WndProc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
     return res;
 }
+
+// a few missing bindings
+
+private:
+
+struct DWM_BLURBEHIND {
+    DWORD dwFlags;
+    BOOL  fEnable;
+    HRGN  hRgnBlur;
+    BOOL  fTransitionOnMaximized;
+}
+
+struct MARGINS {
+    int left; int right; int top; int bottom;
+}
+
+enum DWM_BB_ENABLE = 0x00000001;
+
+extern(Windows) HRESULT DwmEnableBlurBehindWindow(
+    HWND hWnd,
+    const(DWM_BLURBEHIND)* pBlurBehind
+);
+extern(Windows) HRESULT DwmExtendFrameIntoClientArea(
+    HWND    hWnd,
+    const(MARGINS)* pMarInset
+);
