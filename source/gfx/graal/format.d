@@ -325,6 +325,44 @@ enum Format {
     }
 }
 
+/// Get the colorBits of an image surface.
+@property uint colorBits (in SurfaceType st) pure {
+    switch(st) {
+    case SurfaceType.R4_G4: return 8;
+    case SurfaceType.R4_G4_B4_A4: return 16;
+    case SurfaceType.B4_G4_R4_A4: return 16;
+    case SurfaceType.R5_G6_B5: return 16;
+    case SurfaceType.B5_G6_R5: return 16;
+    case SurfaceType.R5_G5_B5_A1: return 16;
+    case SurfaceType.B5_G5_R5_A1: return 16;
+    case SurfaceType.A1_R5_G5_B5: return 16;
+    case SurfaceType.R8: return 8;
+    case SurfaceType.R8_G8: return 16;
+    case SurfaceType.R8_G8_B8: return 24;
+    case SurfaceType.B8_G8_R8: return 24;
+    case SurfaceType.R8_G8_B8_A8: return 32;
+    case SurfaceType.B8_G8_R8_A8: return 32;
+    case SurfaceType.A8_B8_G8_R8: return 32;
+    case SurfaceType.A2_R10_G10_B10: return 32;
+    case SurfaceType.A2_B10_G10_R10: return 32;
+    case SurfaceType.R16: return 16;
+    case SurfaceType.R16_G16: return 32;
+    case SurfaceType.R16_G16_B16: return 48;
+    case SurfaceType.R16_G16_B16_A16: return 64;
+    case SurfaceType.R32: return 32;
+    case SurfaceType.R32_G32: return 64;
+    case SurfaceType.R32_G32_B32: return 96;
+    case SurfaceType.R32_G32_B32_A32: return 128;
+    case SurfaceType.R64: return 64;
+    case SurfaceType.R64_G64: return 128;
+    case SurfaceType.R64_G64_B64: return 192;
+    case SurfaceType.R64_G64_B64_A64: return 256;
+    case SurfaceType.B10_G11_R11: return 32;
+    case SurfaceType.E5_B9_G9_R9: return 32;
+    default: return 0;
+    }
+}
+
 /// Get the redBits of an image surface.
 @property uint redBits (in SurfaceType st) pure {
     switch(st) {
@@ -442,6 +480,96 @@ enum Format {
     case SurfaceType.R16_G16_B16_A16: return 16;
     case SurfaceType.R32_G32_B32_A32: return 32;
     case SurfaceType.R64_G64_B64_A64: return 64;
+    default: return 0;
+    }
+}
+
+/// Get the redShift of an image surface.
+@property uint redShift (in SurfaceType st) pure {
+    switch(st) {
+    case SurfaceType.R4_G4: return 4;
+    case SurfaceType.R4_G4_B4_A4: return 12;
+    case SurfaceType.B4_G4_R4_A4: return 4;
+    case SurfaceType.R5_G6_B5: return 11;
+    case SurfaceType.R5_G5_B5_A1: return 11;
+    case SurfaceType.B5_G5_R5_A1: return 1;
+    case SurfaceType.A1_R5_G5_B5: return 10;
+    case SurfaceType.R8_G8: return 8;
+    case SurfaceType.R8_G8_B8: return 16;
+    case SurfaceType.R8_G8_B8_A8: return 24;
+    case SurfaceType.B8_G8_R8_A8: return 8;
+    case SurfaceType.A2_R10_G10_B10: return 20;
+    case SurfaceType.R16_G16: return 16;
+    case SurfaceType.R16_G16_B16: return 32;
+    case SurfaceType.R16_G16_B16_A16: return 48;
+    case SurfaceType.R32_G32: return 32;
+    case SurfaceType.R32_G32_B32: return 64;
+    case SurfaceType.R32_G32_B32_A32: return 96;
+    case SurfaceType.R64_G64: return 64;
+    case SurfaceType.R64_G64_B64: return 128;
+    case SurfaceType.R64_G64_B64_A64: return 192;
+    default: return 0;
+    }
+}
+
+/// Get the greenShift of an image surface.
+@property uint greenShift (in SurfaceType st) pure {
+    switch(st) {
+    case SurfaceType.R4_G4_B4_A4: return 8;
+    case SurfaceType.B4_G4_R4_A4: return 8;
+    case SurfaceType.R5_G6_B5: return 5;
+    case SurfaceType.B5_G6_R5: return 5;
+    case SurfaceType.R5_G5_B5_A1: return 6;
+    case SurfaceType.B5_G5_R5_A1: return 6;
+    case SurfaceType.A1_R5_G5_B5: return 5;
+    case SurfaceType.R8_G8_B8: return 8;
+    case SurfaceType.B8_G8_R8: return 8;
+    case SurfaceType.R8_G8_B8_A8: return 16;
+    case SurfaceType.B8_G8_R8_A8: return 16;
+    case SurfaceType.A8_B8_G8_R8: return 8;
+    case SurfaceType.A2_R10_G10_B10: return 10;
+    case SurfaceType.A2_B10_G10_R10: return 10;
+    case SurfaceType.R16_G16_B16: return 16;
+    case SurfaceType.R16_G16_B16_A16: return 32;
+    case SurfaceType.R32_G32_B32: return 32;
+    case SurfaceType.R32_G32_B32_A32: return 64;
+    case SurfaceType.R64_G64_B64: return 64;
+    case SurfaceType.R64_G64_B64_A64: return 128;
+    case SurfaceType.B10_G11_R11: return 11;
+    case SurfaceType.E5_B9_G9_R9: return 9;
+    default: return 0;
+    }
+}
+
+/// Get the blueShift of an image surface.
+@property uint blueShift (in SurfaceType st) pure {
+    switch(st) {
+    case SurfaceType.R4_G4_B4_A4: return 4;
+    case SurfaceType.B4_G4_R4_A4: return 12;
+    case SurfaceType.B5_G6_R5: return 11;
+    case SurfaceType.R5_G5_B5_A1: return 1;
+    case SurfaceType.B5_G5_R5_A1: return 11;
+    case SurfaceType.B8_G8_R8: return 16;
+    case SurfaceType.R8_G8_B8_A8: return 8;
+    case SurfaceType.B8_G8_R8_A8: return 24;
+    case SurfaceType.A8_B8_G8_R8: return 16;
+    case SurfaceType.A2_B10_G10_R10: return 20;
+    case SurfaceType.R16_G16_B16_A16: return 16;
+    case SurfaceType.R32_G32_B32_A32: return 32;
+    case SurfaceType.R64_G64_B64_A64: return 64;
+    case SurfaceType.B10_G11_R11: return 22;
+    case SurfaceType.E5_B9_G9_R9: return 18;
+    default: return 0;
+    }
+}
+
+/// Get the alphaShift of an image surface.
+@property uint alphaShift (in SurfaceType st) pure {
+    switch(st) {
+    case SurfaceType.A1_R5_G5_B5: return 15;
+    case SurfaceType.A8_B8_G8_R8: return 24;
+    case SurfaceType.A2_R10_G10_B10: return 30;
+    case SurfaceType.A2_B10_G10_R10: return 30;
     default: return 0;
     }
 }

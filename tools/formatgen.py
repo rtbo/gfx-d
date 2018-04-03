@@ -41,6 +41,37 @@ class Surface:
                         + self.redBits + self.greenBits + self.blueBits \
                         + self.alphaBits + self.sharedExpBits           \
                         + self.depthBits + self.stencilBits
+        self.colorBits = self.redBits + self.greenBits + self.blueBits \
+                        + self.alphaBits + self.sharedExpBits
+
+        letters = filter((lambda c: isalpha(c)), name)
+
+        self.redShift = 0
+        self.greenShift = 0
+        self.blueShift = 0
+        self.alphaShift = 0
+        comps = []
+        for l in letters:
+            bits = 0
+            if l == "R":
+                bits = self.redBits
+            elif l == "G":
+                bits = self.greenBits
+            elif l == "B":
+                bits = self.blueBits
+            elif l == "A":
+                bits = self.alphaBits
+            if bits == 0: continue
+            if "R" in comps:
+                self.redShift += bits
+            if "G" in comps:
+                self.greenShift += bits
+            if "B" in comps:
+                self.blueShift += bits
+            if "A" in comps:
+                self.alphaShift += bits
+            comps.append(l)
+
 
     def numFormatsStr(self):
         return ", ".join( ("NumFormat."+nf for nf in self.numFmts) )
@@ -113,10 +144,15 @@ def issueSurfProps(surfaces, cg):
 
     switchProp("totalBits")
     switchProp("numComponents")
+    switchProp("colorBits")
     switchProp("redBits")
     switchProp("greenBits")
     switchProp("blueBits")
     switchProp("alphaBits")
+    switchProp("redShift")
+    switchProp("greenShift")
+    switchProp("blueShift")
+    switchProp("alphaShift")
     switchProp("sharedExpBits")
     switchProp("depthBits")
     switchProp("stencilBits")
