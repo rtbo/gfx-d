@@ -413,7 +413,7 @@ private bool getShaderCompileStatus(Gl gl, in GLuint name) {
 private string getShaderLog(Gl gl, in GLuint name) {
     import gfx.bindings.opengl.gl : GL_INFO_LOG_LENGTH;
     auto len = getShaderInt(gl, name, GL_INFO_LOG_LENGTH);
-    if (len > 0) {
+    if (len > 1) { // some return 1 for empty string (null char)
         auto msg = new char[len];
         gl.GetShaderInfoLog(name, len, &len, msg.ptr);
         return msg[0 .. len-1].idup;
@@ -440,7 +440,7 @@ private bool getProgramLinkStatus(Gl gl, in GLuint name) {
 private string getProgramLog(Gl gl, in GLuint name) {
     import gfx.bindings.opengl.gl : GL_INFO_LOG_LENGTH;
     auto len = getProgramInt(gl, name, GL_INFO_LOG_LENGTH);
-    if (len > 0) {
+    if (len > 1) {
         auto msg = new char[len];
         gl.GetProgramInfoLog(name, len, &len, msg.ptr);
         return msg[0 .. len-1].idup;
