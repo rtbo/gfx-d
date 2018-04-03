@@ -62,7 +62,7 @@ Display createDisplay(in Backend[] loadOrder=defaultBackendLoadOrder)
     }
     else version(Windows) {
         import gfx.window.win32 : Win32Display;
-        return new Win32Display;
+        return new Win32Display(loadOrder);
     }
     else {
         pragma(msg, "Unsupported platform");

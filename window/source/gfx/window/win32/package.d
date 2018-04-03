@@ -8,11 +8,12 @@ import gfx.graal.presentation;
 import gfx.window;
 
 import std.exception;
+import std.experimental.logger;
 
 class Win32Display : Display
 {
     import gfx.core.rc : atomicRcCode;
-    import gfx.graal : Instance;
+    import gfx.graal : Backend, Instance;
 
     mixin(atomicRcCode);
 
@@ -20,15 +21,50 @@ class Win32Display : Display
     private Window[] _iwindows;
     private Instance _instance;
 
-    this() {
+    this(in Backend[] loadOrder) {
         assert(!g_dpy);
         g_dpy = this;
 
         registerWindowClass();
+        import std.experimental.logger : info, trace, warningf;
+        assert(!_instance);
 
-        import gfx.vulkan : createVulkanInstance, vulkanInit;
-        vulkanInit();
-        _instance = createVulkanInstance();
+        foreach (b; loadOrder) {
+            final switch (b) {
+            case Backend.vulkan:
+                try {
+                    trace("Attempting to instantiate Vulkan");
+                    import gfx.vulkan : createVulkanInstance, vulkanInit;
+                    vulkanInit();
+                    _instance = createVulkanInstance();
+                    info("Creating a Vulkan instance");
+                }
+                catch (Exception ex) {
+                    warningf("Vulkan is not available. %s", ex.msg);
+                }
+                break;
+            case Backend.gl3:
+                try {
+                    trace("Attempting to instantiate OpenGL");
+                    import gfx.core.rc : makeRc;
+                    import gfx.gl3 : GlInstance;
+                    import gfx.gl3.context : GlAttribs;
+                    import gfx.window.win32.context : Win32GlContext;
+                    auto ctx = makeRc!Win32GlContext(GlAttribs.init);
+                    trace("Creating an OpenGL instance");
+                    _instance = new GlInstance(ctx);
+                }
+                catch (Exception ex) {
+                    warningf("OpenGL is not available. %s", ex.msg);
+                }
+                break;
+            }
+            if (_instance) break;
+        }
+
+        if (!_instance) {
+            throw new Exception("Could not instantiate a backend");
+        }
     }
 
     override void dispose() {
@@ -54,28 +90,6 @@ class Win32Display : Display
             TranslateMessage(&msg);
             DispatchMessageW(&msg);
         }
-    }
-    private void registerWindowClass()
-    {
-        import std.algorithm : canFind;
-        import std.conv : to;
-        import std.utf : toUTF16z;
-
-        WNDCLASSEX wc;
-        wc.cbSize        = WNDCLASSEX.sizeof;
-        wc.style         = CS_OWNDC;
-        wc.lpfnWndProc   = &win32WndProc;
-        wc.cbClsExtra    = 0;
-        wc.cbWndExtra    = 0;
-        wc.hInstance     = GetModuleHandle(null);
-        wc.hIcon         = LoadIcon(null, IDI_APPLICATION);
-        wc.hCursor       = LoadCursor(null, IDC_ARROW);
-        wc.hbrBackground = null;
-        wc.lpszMenuName  = null;
-        wc.lpszClassName = wndClassName.toUTF16z;
-        wc.hIconSm       = LoadIcon(null, IDI_APPLICATION);
-
-        enforce(RegisterClassExW(&wc), "could not register win32 window class");
     }
 
 
@@ -136,9 +150,11 @@ class Win32Display : Display
 
 class Win32Window : Window
 {
+    import gfx.core.rc : Rc;
+
     private Win32Display dpy;
     private HWND hWnd;
-    private Surface gfxSurface;
+    private Rc!Surface gfxSurface;
 
     private MouseHandler moveHandler;
     private MouseHandler onHandler;
@@ -151,28 +167,44 @@ class Win32Window : Window
 
     this(Win32Display dpy) {
         this.dpy = dpy;
-        import std.conv : to;
         import std.utf : toUTF16z;
 
         HINSTANCE hInstance = GetModuleHandle(null);
 
-        hWnd = CreateWindowEx(
-                    WS_EX_CLIENTEDGE,
-                    wndClassName.toUTF16z,
-                    "null",
-                    WS_OVERLAPPEDWINDOW,
-                    CW_USEDEFAULT,
-                    CW_USEDEFAULT,
-                    CW_USEDEFAULT,
-                    CW_USEDEFAULT,
-                    null, null, hInstance, null);
+        hWnd = enforce(
+            CreateWindowEx(
+                WS_EX_CLIENTEDGE,
+                wndClassName.toUTF16z,
+                "null",
+                WS_OVERLAPPEDWINDOW,
+                CW_USEDEFAULT,
+                CW_USEDEFAULT,
+                CW_USEDEFAULT,
+                CW_USEDEFAULT,
+                null, null, hInstance, null
+            ),
+            "could not create win32 window"
+        );
 
-        if (hWnd is null) {
-            throw new Exception("Win32 window could not be created from class "~wndClassName.to!string);
+        import gfx.graal : Backend;
+        final switch (dpy.instance.backend) {
+        case Backend.vulkan:
+            import gfx.vulkan.wsi : createVulkanWin32Surface;
+            gfxSurface = createVulkanWin32Surface(dpy.instance, GetModuleHandle(null), hWnd);
+            break;
+
+        case Backend.gl3:
+            import gfx.gl3 : GlInstance;
+            import gfx.gl3.swapchain : GlSurface;
+            import gfx.window.win32.context : Win32GlContext;
+
+            gfxSurface = new GlSurface(cast(size_t)hWnd);
+            auto glInst = cast(GlInstance)dpy.instance;
+            auto ctx = cast(Win32GlContext)glInst.ctx;
+            ctx.setPixelFormat(hWnd);
+            ctx.makeCurrent(cast(size_t)hWnd);
+            break;
         }
-
-        import gfx.vulkan.wsi : createWin32VulkanSurface;
-        gfxSurface = createWin32VulkanSurface(dpy.instance, GetModuleHandle(null), hWnd);
 
         dpy.registerWindow(hWnd, this);
     }
@@ -185,6 +217,7 @@ class Win32Window : Window
 
     override void close() {
 		DestroyWindow(hWnd);
+        gfxSurface.unload();
         dpy.unregisterWindow(hWnd);
     }
 
@@ -215,7 +248,7 @@ class Win32Window : Window
     }
 
     override @property Surface surface() {
-        return gfxSurface;
+        return gfxSurface.obj;
     }
 
     private bool handleMouse(UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -286,19 +319,41 @@ class Win32Window : Window
     }
 }
 
-private:
-
 private __gshared Win32Display g_dpy;
-private immutable wstring wndClassName = "GfxDWin32WindowClass"w;
+package immutable wstring wndClassName = "GfxDWin32WindowClass"w;
 
 
+package void registerWindowClass()
+{
+    import std.utf : toUTF16z;
 
-int GET_X_LPARAM(in LPARAM lp) pure
+    static bool registered;
+    if (registered) return;
+    registered = true;
+
+    WNDCLASSEX wc;
+    wc.cbSize        = WNDCLASSEX.sizeof;
+    wc.style         = CS_OWNDC;
+    wc.lpfnWndProc   = &win32WndProc;
+    wc.cbClsExtra    = 0;
+    wc.cbWndExtra    = 0;
+    wc.hInstance     = GetModuleHandle(null);
+    wc.hIcon         = LoadIcon(null, IDI_APPLICATION);
+    wc.hCursor       = LoadCursor(null, IDC_ARROW);
+    wc.hbrBackground = null;
+    wc.lpszMenuName  = null;
+    wc.lpszClassName = wndClassName.toUTF16z;
+    wc.hIconSm       = LoadIcon(null, IDI_APPLICATION);
+
+    enforce(RegisterClassExW(&wc), "could not register win32 window class");
+}
+
+package int GET_X_LPARAM(in LPARAM lp) pure
 {
     return cast(int)(lp & 0x0000ffff);
 }
 
-int GET_Y_LPARAM(in LPARAM lp) pure
+package int GET_Y_LPARAM(in LPARAM lp) pure
 {
     return cast(int)((lp & 0xffff0000) >> 16);
 }

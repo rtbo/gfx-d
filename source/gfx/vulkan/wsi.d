@@ -93,7 +93,7 @@ version(Windows) {
         surfaceExtension, win32SurfaceExtension
     ];
 
-    Surface createWin32VulkanSurface(Instance graalInst, HINSTANCE hinstance, HWND hwnd) {
+    Surface createVulkanWin32Surface(Instance graalInst, HINSTANCE hinstance, HWND hwnd) {
         auto inst = enforce(
             cast(VulkanInstance)graalInst,
             "createVulkanXcbSurface called with non-vulkan instance"
