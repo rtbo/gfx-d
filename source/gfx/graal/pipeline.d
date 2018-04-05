@@ -245,7 +245,19 @@ enum ColorMask {
     b = 0x04,
     a = 0x08,
 
-    all = r | g | b | a,
+    none    = 0x00,
+    all     = r | g | b | a,
+    rg      = r | g,
+    rb      = r | b,
+    ra      = r | a,
+    gb      = g | b,
+    ga      = g | a,
+    ba      = b | a,
+    rgb     = r | g | b,
+    rga     = r | g | a,
+    rba     = r | b | a,
+    gba     = g | b | a,
+    rgba    = r | g | b | a,
 }
 
 struct ColorBlendAttachment {
@@ -253,6 +265,29 @@ struct ColorBlendAttachment {
     BlendState colorBlend;
     BlendState alphaBlend;
     ColorMask colorMask;
+
+    static ColorBlendAttachment solid(in ColorMask mask=ColorMask.all) {
+        import std.typecons : No;
+        return ColorBlendAttachment(
+            No.enabled, BlendState.init, BlendState.init, mask
+        );
+    }
+
+    static ColorBlendAttachment blend(in BlendState blendState,
+                                      in ColorMask mask=ColorMask.all) {
+        import std.typecons : Yes;
+        return ColorBlendAttachment(
+            Yes.enabled, blendState, blendState, mask
+        );
+    }
+
+    static ColorBlendAttachment blend(in BlendState color, in BlendState alpha,
+                                      in ColorMask mask=ColorMask.all) {
+        import std.typecons : Yes;
+        return ColorBlendAttachment(
+            Yes.enabled, color, alpha, mask
+        );
+    }
 }
 
 enum LogicOp {
