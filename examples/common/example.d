@@ -414,6 +414,29 @@ class Example : Disposable
         return img.giveAway();
     }
 
+    /// Create an image for stencil attachment usage
+    Image createStencilImage(uint width, uint height)
+    {
+        // assume s8_uInt is supported
+        const f = Format.s8_uInt;
+
+        // create an image
+        auto img = enforce(device.createImage(
+            ImageType.d2, ImageDims.d2(width, height), f, ImageUsage.depthStencilAttachment,
+            ImageTiling.optimal, 1, 1
+        )).rc;
+
+        // allocate memory image
+        const mr = img.memoryRequirements;
+        const memTypeInd = findMemType(mr, MemProps.deviceLocal);
+        if (memTypeInd == uint.max) return null;
+
+        auto mem = device.allocateMemory(memTypeInd, mr.size).rc;
+        img.bindMemory(mem, 0);
+
+        return img.giveAway();
+    }
+
     /// copy the content of one buffer to another
     /// srcBuf and dstBuf must support transferSrc and transferDst respectively.
     final void copyBuffer(Buffer srcBuf, Buffer dstBuf, size_t size, CommandBuffer cmdBuf)
