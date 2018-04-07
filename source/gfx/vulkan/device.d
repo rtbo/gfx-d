@@ -496,7 +496,10 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         import std.array : array;
 
         auto vkLayouts = layouts.map!(
-            l => enforce(cast(VulkanDescriptorSetLayout)l).vkObj
+            l => enforce(
+                cast(VulkanDescriptorSetLayout)l,
+                "VulkanDevice.createPipelineLayout: Did not supply a Vulkan DescriptorSetLayout"
+            ).vkObj
         ).array;
         auto vkRanges = ranges.map!(
             r => VkPushConstantRange( shaderStageToVk(r.stages), r.offset, r.size )

@@ -74,7 +74,10 @@ class VulkanDescriptorPool : VulkanDevObj!(VkDescriptorPool, "DestroyDescriptorP
         import std.array : array;
 
         auto vkLayouts = layouts.map!(
-            l => enforce(cast(VulkanDescriptorSetLayout)l).vkObj
+            l => enforce(
+                cast(VulkanDescriptorSetLayout)l,
+                "VulkanDescriptorPool.allocate: Did not supply a Vulkan DescriptorSetLayout"
+            ).vkObj
         ).array;
 
         VkDescriptorSetAllocateInfo ai;
