@@ -166,17 +166,6 @@ enum StencilOp
     decrementAndWrap,
 }
 
-struct StencilOpState
-{
-    StencilOp failOp;
-    StencilOp passOp;
-    StencilOp depthFailOp;
-    CompareOp compareOp;
-    uint compareMask;
-    uint writeMask;
-    uint reference;
-}
-
 struct DepthInfo
 {
     Flag!"enabled" enabled;
@@ -189,6 +178,17 @@ struct DepthInfo
     @property static DepthInfo none() {
         return DepthInfo.init;
     }
+}
+
+struct StencilOpState
+{
+    StencilOp failOp;
+    StencilOp passOp;
+    StencilOp depthFailOp;
+    CompareOp compareOp;
+    uint compareMask;
+    uint writeMask;
+    uint reference;
 }
 
 struct StencilInfo

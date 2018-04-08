@@ -74,9 +74,9 @@ class StencilExample : Example
         float[3] color;
     }
     immutable triangle = [
-        VertexP2C3([-1.0, -1.0], [1.0, 0.0, 0.0]),
-        VertexP2C3([ 1.0, -1.0], [0.0, 1.0, 0.0]),
-        VertexP2C3([ 0.0,  1.0], [0.0, 0.0, 1.0]),
+        VertexP2C3([-1.0,  1.0], [1.0, 0.0, 0.0]),
+        VertexP2C3([ 1.0,  1.0], [0.0, 1.0, 0.0]),
+        VertexP2C3([ 0.0, -1.0], [0.0, 0.0, 1.0]),
     ];
     immutable triangleLen = triangle.length * VertexP2C3.sizeof;
 
@@ -262,16 +262,16 @@ class StencilExample : Example
         );
         swInfo.viewports = [
             ViewportConfig(
-                Viewport(0, 0, cast(float)surfaceSize[0], cast(float)surfaceSize[1], -1, 1),
+                Viewport(0, 0, cast(float)surfaceSize[0], cast(float)surfaceSize[1], 0, 1),
                 Rect(0, 0, surfaceSize[0], surfaceSize[1])
             )
         ];
-        const sos = StencilOpState(
+        const sos1 = StencilOpState(
             StencilOp.replace, StencilOp.replace, StencilOp.replace, CompareOp.always,
-            0xff, 0xff, 0x01
+            0x01, 0x01, 0x01
         );
         swInfo.stencilInfo = StencilInfo(
-            Yes.enabled, sos, sos
+            Yes.enabled, sos1, sos1
         );
         swInfo.layout = stencilWriteLayout;
         swInfo.renderPass = renderPass;
@@ -303,12 +303,19 @@ class StencilExample : Example
         );
         solInfo.viewports = [
             ViewportConfig(
-                Viewport(0, 0, cast(float)surfaceSize[0], cast(float)surfaceSize[1], -1, 1),
+                Viewport(0, 0, cast(float)surfaceSize[0], cast(float)surfaceSize[1], 0, 1),
                 Rect(0, 0, surfaceSize[0], surfaceSize[1])
             )
         ];
         solInfo.blendInfo = ColorBlendInfo(
             none!LogicOp, [ ColorBlendAttachment.solid() ], [ 0f, 0f, 0f, 0f ]
+        );
+        const sos2 = StencilOpState(
+            StencilOp.keep, StencilOp.keep, StencilOp.keep, CompareOp.equal,
+            0x01, 0x01, 0x01
+        );
+        solInfo.stencilInfo = StencilInfo(
+            Yes.enabled, sos2, sos2
         );
         solInfo.layout = solPL;
         solInfo.renderPass = renderPass;
