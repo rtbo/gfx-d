@@ -22,7 +22,7 @@ struct Viewport {
     float y;
     float width;
     float height;
-    float minDepth;
-    float maxDepth;
+    float minDepth  = 0f;
+    float maxDepth  = 1f;
 }
 

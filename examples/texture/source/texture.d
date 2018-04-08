@@ -228,7 +228,7 @@ class TextureExample : Example
         );
         info.viewports = [
             ViewportConfig(
-                Viewport(0, 0, cast(float)surfaceSize[0], cast(float)surfaceSize[1], -1, 1),
+                Viewport(0, 0, cast(float)surfaceSize[0], cast(float)surfaceSize[1]),
                 Rect(0, 0, surfaceSize[0], surfaceSize[1])
             )
         ];
