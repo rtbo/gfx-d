@@ -5,13 +5,6 @@ import gfx.genmesh.poly;
 import std.range : isInputRange, isOutputRange, ElementType;
 import std.traits : isIntegral;
 
-enum WindingOrder
-{
-    leftHandCCW,
-    leftHandCW,
-    rightHandCCW    = leftHandCW,
-    rightHandCW     = leftHandCCW,
-}
 
 /// map a single face to another face of same shape with all elements mapped by the passed function.
 /// element type of returned face can differ from element type in input face
@@ -101,7 +94,7 @@ private struct VertexMapResult(alias vfun, FR) {
 
 
 /// eagerly call 'fun' for each triangle of the passed face
-void eachTriangle(alias fun, FT)(in FT face, WindingOrder order)
+void eachTriangle(alias fun, FT)(in FT face)
 if (isFace!FT)
 {
     import std.functional : unaryFun;
@@ -112,35 +105,21 @@ if (isFace!FT)
         _fun(triangle(v, v, v));
     })), "cannot pass the proper triangle type to "~fun.stringof);
 
-    if (order == WindingOrder.leftHandCCW) {
-        _fun(triangle(face[0], face[1], face[2]));
+    _fun(triangle(face[0], face[2], face[1]));
 
-        static if (isFlexFace!FT) {
-            if (face.length == 4) {
-                _fun(triangle(face[0], face[2], face[3]));
-            }
-        }
-        else static if (isGenFace!FT && face.length == 4) {
-            _fun(triangle(face[0], face[2], face[3]));
-        }
-    }
-    else {
-        _fun(triangle(face[0], face[2], face[1]));
-
-        static if (isFlexFace!FT) {
-            if (face.length == 4) {
-                _fun(triangle(face[0], face[3], face[2]));
-            }
-        }
-        else static if (isGenFace!FT && face.length == 4) {
+    static if (isFlexFace!FT) {
+        if (face.length == 4) {
             _fun(triangle(face[0], face[3], face[2]));
         }
+    }
+    else static if (isGenFace!FT && face.length == 4) {
+        _fun(triangle(face[0], face[3], face[2]));
     }
 }
 
 
 /// eagerly call 'fun' for each vertex of the passed face
-void eachVertex(alias fun, FT)(in FT face, WindingOrder) if (isFace!FT)
+void eachVertex(alias fun, FT)(in FT face) if (isFace!FT)
 {
     import std.functional : unaryFun;
 
@@ -155,13 +134,13 @@ void eachVertex(alias fun, FT)(in FT face, WindingOrder) if (isFace!FT)
 
 
 /// turn a range of undertermined face type into a range of triangles
-auto triangulate(FR)(FR faceRange, WindingOrder windingOrder=WindingOrder.leftHandCCW)
+auto triangulate(FR)(FR faceRange)
 if (isInputRange!FR && isFace!(ElementType!FR))
 {
     alias FT = ElementType!FR;
     alias VT = VertexType!FT;
 
-    return DecompResult!(FR, Triangle!VT, eachTriangle)(faceRange, windingOrder);
+    return DecompResult!(FR, Triangle!VT, eachTriangle)(faceRange);
 }
 
 
@@ -172,7 +151,7 @@ auto vertices(FR)(FR faceRange) if (isInputRange!FR && isFace!(ElementType!FR))
     alias VT = VertexType!FT;
 
     // winding order not relevant for eachVertex
-    return DecompResult!(FR, VT, eachVertex)(faceRange, WindingOrder.init);
+    return DecompResult!(FR, VT, eachVertex)(faceRange);
 }
 
 
@@ -185,22 +164,19 @@ private struct DecompResult(FR, TargetType, alias eachAlgo) {
 
     FR faceRange;
     TargetType[] buf;
-    WindingOrder order;
 
-    this(FR faceRange, WindingOrder order) {
+    this(FR faceRange) {
         this.faceRange = faceRange;
-        this.order = order;
         decomp(this.faceRange.front);
     }
     // for save
-    this(FR faceRange, TargetType[] buf, WindingOrder order) {
+    this(FR faceRange, TargetType[] buf) {
         this.faceRange = faceRange;
         this.buf = buf;
-        this.order = order;
     }
 
     private void decomp(in FT face) {
-        eachAlgo!((t) { buf ~= t; })(face, order);
+        eachAlgo!((t) { buf ~= t; })(face);
     }
 
     @property auto front() {

@@ -23,7 +23,7 @@ import std.stdio;
 import std.typecons;
 import std.math;
 
-class CrateExample : Example
+class TextureExample : Example
 {
     Rc!RenderPass renderPass;
     Framebuffer[] framebuffers;
@@ -105,8 +105,7 @@ class CrateExample : Example
     void prepareBuffers() {
 
         import gfx.genmesh.cube : genCube;
-        import gfx.genmesh.algorithm : indexCollectMesh, triangulate,
-                vertices, WindingOrder;
+        import gfx.genmesh.algorithm : indexCollectMesh, triangulate, vertices;
         import gfx.genmesh.poly : quad;
         import std.algorithm : map;
 
@@ -117,7 +116,7 @@ class CrateExample : Example
                     Vertex( f[2].p, f[2].n, [ 1f, 1f ] ),
                     Vertex( f[3].p, f[3].n, [ 1f, 0f ] ),
                 ))
-                .triangulate(WindingOrder.rightHandCCW)
+                .triangulate()
                 .vertices()
                 .indexCollectMesh();
 
@@ -330,7 +329,7 @@ class CrateExample : Example
 int main() {
 
     try {
-        auto example = new CrateExample();
+        auto example = new TextureExample();
         example.prepare();
         scope(exit) example.dispose();
 
@@ -360,7 +359,7 @@ int main() {
             const normals = model.inverse().transposed();
             angle += puls;
 
-            example.updateMatrices( CrateExample.Matrices(
+            example.updateMatrices( TextureExample.Matrices(
                 mvp.transposed().matrix,
                 normals.transposed().matrix
             ) );

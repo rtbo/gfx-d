@@ -111,8 +111,7 @@ class CrateExample : Example
     void prepareBuffers() {
 
         import gfx.genmesh.cube : genCube;
-        import gfx.genmesh.algorithm : indexCollectMesh, triangulate,
-                vertices, WindingOrder;
+        import gfx.genmesh.algorithm : indexCollectMesh, triangulate, vertices;
         import gfx.genmesh.poly : quad;
         import std.algorithm : map;
 
@@ -123,7 +122,7 @@ class CrateExample : Example
                     Vertex( f[2].p, f[2].n ),
                     Vertex( f[3].p, f[3].n ),
                 ))
-                .triangulate(WindingOrder.rightHandCCW)
+                .triangulate()
                 .vertices()
                 .indexCollectMesh();
 
