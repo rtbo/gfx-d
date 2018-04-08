@@ -7,7 +7,7 @@ import gfx.graal.buffer : BufferUsage, IndexType;
 import gfx.graal.format : Format;
 import gfx.graal.image : Filter, ImageType, WrapMode;
 import gfx.graal.pipeline : CompareOp, FrontFace, PolygonMode, Primitive,
-                            ShaderStage;
+                            ShaderStage, StencilOp;
 
 GLenum toGl(in BufferUsage usage) pure {
     switch (usage) {
@@ -66,6 +66,74 @@ GLenum toGlImgFmt(in Format graalFormat) pure {
     }
 }
 
+GLenum toSubImgFmt(in Format graalFormat) pure {
+    switch(graalFormat) {
+    case Format.r8_uNorm:       return GL_RED;
+    case Format.rg8_uNorm:      return GL_RG;
+    case Format.rgba8_uNorm:    return GL_RGBA;
+    case Format.r8_sInt:        return GL_RED;
+    case Format.rg8_sInt:       return GL_RG;
+    case Format.rgba8_sInt:     return GL_RGBA;
+    case Format.r8_uInt:        return GL_RED;
+    case Format.rg8_uInt:       return GL_RG;
+    case Format.rgba8_uInt:     return GL_RGBA;
+    case Format.r16_uNorm:      return GL_RED;
+    case Format.rg16_uNorm:     return GL_RG;
+    case Format.rgba16_uNorm:   return GL_RGBA;
+    case Format.r16_sInt:       return GL_RED;
+    case Format.rg16_sInt:      return GL_RG;
+    case Format.rgba16_sInt:    return GL_RGBA;
+    case Format.r16_uInt:       return GL_RED;
+    case Format.rg16_uInt:      return GL_RG;
+    case Format.rgba16_uInt:    return GL_RGBA;
+    case Format.d16_uNorm:      return GL_DEPTH_COMPONENT;
+    case Format.x8d24_uNorm:    return GL_DEPTH_COMPONENT;
+    case Format.d32_sFloat:     return GL_DEPTH_COMPONENT;
+    case Format.d24s8_uNorm:    return GL_DEPTH_COMPONENT;
+    case Format.s8_uInt:        return GL_STENCIL_INDEX;
+    default:
+        import std.format : format;
+        throw new Exception(format("Gfx-GL3: Format.%s is not supported.", graalFormat));
+    }
+}
+
+GLenum toSubImgType(in Format graalFormat) pure {
+    switch(graalFormat) {
+    case Format.r8_uNorm:
+    case Format.rg8_uNorm:
+    case Format.rgba8_uNorm:
+    case Format.r8_sInt:
+    case Format.rg8_sInt:
+    case Format.rgba8_sInt:
+    case Format.r8_uInt:
+    case Format.rg8_uInt:
+    case Format.rgba8_uInt:
+        return GL_UNSIGNED_BYTE;
+    case Format.r16_uNorm:
+    case Format.rg16_uNorm:
+    case Format.rgba16_uNorm:
+    case Format.r16_sInt:
+    case Format.rg16_sInt:
+    case Format.rgba16_sInt:
+    case Format.r16_uInt:
+    case Format.rg16_uInt:
+    case Format.rgba16_uInt:
+    case Format.d16_uNorm:
+        return GL_UNSIGNED_SHORT;
+    case Format.x8d24_uNorm:
+        return GL_UNSIGNED_INT;
+    case Format.d32_sFloat:
+        return GL_FLOAT;
+    case Format.d24s8_uNorm:
+        return GL_UNSIGNED_INT;
+    case Format.s8_uInt:
+        return GL_UNSIGNED_BYTE;
+    default:
+        import std.format : format;
+        throw new Exception(format("Gfx-GL3: Format.%s is not supported.", graalFormat));
+    }
+}
+
 GLenum toGlMag(in Filter filter) pure {
     final switch(filter) {
     case Filter.nearest: return GL_NEAREST;
@@ -105,6 +173,19 @@ GLenum toGl(in CompareOp op) pure {
     case CompareOp.notEqual:        return GL_NOTEQUAL;
     case CompareOp.greaterOrEqual:  return GL_GEQUAL;
     case CompareOp.always:          return GL_ALWAYS;
+    }
+}
+
+GLenum toGl(in StencilOp op) pure {
+    final switch (op) {
+    case StencilOp.keep:                return GL_KEEP;
+    case StencilOp.zero:                return GL_ZERO;
+    case StencilOp.replace:             return GL_REPLACE;
+    case StencilOp.incrementAndClamp:   return GL_INCR;
+    case StencilOp.decrementAndClamp:   return GL_DECR;
+    case StencilOp.invert:              return GL_INVERT;
+    case StencilOp.incrementAndWrap:    return GL_INCR_WRAP;
+    case StencilOp.decrementAndWrap:    return GL_DECR_WRAP;
     }
 }
 

@@ -101,16 +101,17 @@ final class GlRenderPass : RenderPass
 
     mixin(atomicRcCode);
 
-    private AttachmentDescription[] _attachments;
-    private SubpassDescription[]    _subpasses;
-    private SubpassDependency[]     _deps;
+    package AttachmentDescription[] attachments;
+    package SubpassDescription[]    subpasses;
+    package SubpassDependency[]     deps;
 
     this(   in AttachmentDescription[] attachments,
             in SubpassDescription[] subpasses,
-            in SubpassDependency[] dependencies) {
-        _attachments = attachments.dup;
-        _subpasses = subpasses.clone();
-        _deps = dependencies.dup;
+            in SubpassDependency[] dependencies)
+    {
+        this.attachments = attachments.dup;
+        this.subpasses = subpasses.clone();
+        this.deps = dependencies.dup;
     }
 
     override void dispose() {}
@@ -163,7 +164,7 @@ final class GlFramebuffer : Framebuffer
         import std.exception : enforce;
 
         enforce(
-            rp._attachments.length == attachments.length,
+            rp.attachments.length == attachments.length,
             "Render pass do not fit with attachments in Framebuffer creation"
         );
 

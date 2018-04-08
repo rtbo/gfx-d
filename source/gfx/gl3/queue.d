@@ -137,7 +137,7 @@ final class GlCommandBuffer : CommandBuffer
     import gfx.core.types : Rect;
     import gfx.gl3 : GlShare, GlInfo;
     import gfx.gl3.conv : toGl;
-    import gfx.gl3.pipeline : GlPipeline;
+    import gfx.gl3.pipeline : GlPipeline, GlRenderPass;
     import gfx.graal.buffer : Buffer, IndexType;
     import gfx.graal.image : ImageBase, ImageLayout, ImageSubresourceRange;
     import gfx.graal.pipeline : ColorBlendInfo, DepthInfo, DescriptorSet,
@@ -162,6 +162,11 @@ final class GlCommandBuffer : CommandBuffer
 
     private GlCommand[] _cmds;
     private Dirty _dirty;
+
+    // render pass cache
+    private GlRenderPass _renderPass;
+    private GlColorAttachment[] _attachments; // TODO: static array
+    private uint _subpass;
 
     // pipeline cache
     private GLenum _primitive;
@@ -247,6 +252,16 @@ final class GlCommandBuffer : CommandBuffer
                                   Rect area, ClearValues[] clearValues)
     {
         import gfx.gl3.pipeline : GlFramebuffer;
+        import gfx.graal.pipeline : ColorBlendAttachment;
+        import std.algorithm : map;
+        import std.array : array;
+
+        _renderPass = cast(GlRenderPass)rp;
+        _attachments = _renderPass.attachments.map!(
+            ad => GlColorAttachment(false, ad, ColorBlendAttachment.init)
+        ).array;
+        setActiveSubpass(0);
+
         const glFb = cast(GlFramebuffer)fb;
         _cmds ~= new BindFramebufferCmd(glFb.name);
         foreach (cv; clearValues) {
@@ -261,7 +276,7 @@ final class GlCommandBuffer : CommandBuffer
 
     override void nextSubpass()
     {
-        warningf("unimplemented GL command");
+        setActiveSubpass(_subpass+1);
     }
 
     override void endRenderPass()
@@ -275,8 +290,17 @@ final class GlCommandBuffer : CommandBuffer
         _cmds ~= new SetViewportsCmd(glPipeline.info.viewports);
         _cmds ~= new SetRasterizerCmd(glPipeline.info.rasterizer);
         _cmds ~= new SetDepthInfoCmd(glPipeline.info.depthInfo);
+        _cmds ~= new SetStencilInfoCmd(glPipeline.info.stencilInfo);
 
-        bindOutputs(glPipeline.info.blendInfo);
+        uint curAttach = 0;
+        foreach (ref a; _attachments) {
+            if (a.enabled) {
+                auto cba = glPipeline.info.blendInfo.attachments[curAttach++];
+                a.attachment = cba;
+            }
+        }
+        assert(curAttach == glPipeline.info.blendInfo.attachments.length);
+        _cmds ~= new BindBlendSlotsCmd(_attachments.dup);
 
         _primitive = toGl(glPipeline.info.assembly.primitive);
         _inputBindings = glPipeline.info.inputBindings;
@@ -427,18 +451,17 @@ final class GlCommandBuffer : CommandBuffer
         }
     }
 
-    void bindOutputs(ColorBlendInfo blendInfo) {
-        if (blendInfo.logicOp.isSome) {
-            // enable logicOp
-            // TODO
-            warning("Gl logicOp not implemented");
+    void setActiveSubpass(uint subpass) {
+        assert(_renderPass);
+        assert(_attachments.length == _renderPass.attachments.length);
+        const sp = _renderPass.subpasses[subpass];
+        foreach (ref a; _attachments) {
+            a.enabled = false;
         }
-        else {
-            // disable logicOp
+        foreach (ar; sp.colors) {
+            _attachments[ar.attachment].enabled = true;
         }
-        foreach (slot, attachment; blendInfo.attachments) {
-            _cmds ~= new BindBlendSlotCmd(cast(GLuint)slot, attachment);
-        }
+        _subpass = subpass;
     }
 
 }
@@ -446,12 +469,22 @@ final class GlCommandBuffer : CommandBuffer
 private:
 
 struct GlState {
-    import gfx.graal.pipeline : DepthInfo, Rasterizer, ViewportConfig;
+    import gfx.graal.pipeline : DepthInfo, Rasterizer, StencilInfo, ViewportConfig;
 
     GLuint prog;
     ViewportConfig[] vcs;
     Rasterizer rasterizer;
     DepthInfo depthInfo;
+    StencilInfo stencilInfo;
+}
+
+struct GlColorAttachment {
+    import gfx.graal.pipeline : ColorBlendAttachment;
+    import gfx.graal.renderpass : AttachmentDescription;
+
+    bool enabled;
+    AttachmentDescription desc;
+    ColorBlendAttachment attachment;
 }
 
 abstract class GlCommand {
@@ -649,10 +682,12 @@ final class ClearDepthStencilCmd : GlCommand {
 
     override void execute(GlQueue queue, Gl gl) {
         if (depth) {
+            gl.DepthMask(GL_TRUE);
             gl.ClearBufferfv(GL_DEPTH, 0, &values.depth);
         }
         if (stencil) {
             const val = cast(GLint)values.stencil;
+            gl.StencilMask(GLuint.max);
             gl.ClearBufferiv(GL_STENCIL, 0, &val);
         }
     }
@@ -769,6 +804,41 @@ final class SetDepthInfoCmd : GlCommand
         }
 
         queue.state.depthInfo = info;
+    }
+}
+
+final class SetStencilInfoCmd : GlCommand
+{
+    import gfx.graal.pipeline : StencilInfo;
+
+    StencilInfo info;
+    this(StencilInfo info) { this.info = info; }
+
+    override void execute(GlQueue queue, Gl gl) {
+        import gfx.gl3.conv : toGl;
+        import gfx.graal.pipeline : StencilOpState;
+
+        if (queue.state.stencilInfo == info) return;
+
+        if (info.enabled) {
+            gl.Enable(GL_STENCIL_TEST);
+            void bindFace(GLenum face, StencilOpState state) {
+                gl.StencilOpSeparate(
+                    face, toGl(state.failOp), toGl(state.depthFailOp), toGl(state.passOp)
+                );
+                gl.StencilFuncSeparate(
+                    face, toGl(state.compareOp), state.reference, state.compareMask
+                );
+                gl.StencilMaskSeparate(
+                    face, state.writeMask
+                );
+            }
+            bindFace(GL_FRONT, info.front);
+            bindFace(GL_BACK, info.back);
+        }
+        else {
+            gl.Disable(GL_STENCIL_TEST);
+        }
     }
 }
 
@@ -889,36 +959,44 @@ final class BindSamplerImageCmd : GlCommand
     }
 }
 
-final class BindBlendSlotCmd : GlCommand
+final class BindBlendSlotsCmd : GlCommand
 {
-    import gfx.graal.pipeline : ColorBlendAttachment, ColorMask;
+    import gfx.graal.pipeline : ColorMask;
 
-    GLuint slot;
-    ColorBlendAttachment blendInfo;
+    GlColorAttachment[] attachments;
 
-    this(GLuint slot, ColorBlendAttachment blendInfo) {
-        this.slot = slot;
-        this.blendInfo = blendInfo;
+    this(GlColorAttachment[] attachments) {
+        this.attachments = attachments;
     }
 
     override void execute(GlQueue queue, Gl gl) {
-        if (blendInfo.enabled) {
-            // TODO
-            import std.experimental.logger : warning;
-            warning("Gl blending not implemented");
+        foreach (GLuint slot, a; attachments) {
+            if (a.enabled) {
+                // TODO logicOp
+                if (a.attachment.enabled) {
+                    // TODO
+                    import std.experimental.logger : warning;
+                    warning("Gl blending not implemented");
+                }
+                else {
+                    gl.Disablei(GL_BLEND, slot);
+                }
+                import std.typecons : BitFlags, Yes;
+                BitFlags!(ColorMask, Yes.unsafe) cm = a.attachment.colorMask;
+                gl.ColorMaski(
+                    slot,
+                    (cm & ColorMask.r) ? GL_TRUE : GL_FALSE,
+                    (cm & ColorMask.g) ? GL_TRUE : GL_FALSE,
+                    (cm & ColorMask.b) ? GL_TRUE : GL_FALSE,
+                    (cm & ColorMask.a) ? GL_TRUE : GL_FALSE
+                );
+            }
+            else {
+                gl.ColorMaski(
+                    slot, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE
+                );
+            }
         }
-        else {
-            gl.Disablei(GL_BLEND, slot);
-        }
-        import std.typecons : BitFlags, Yes;
-        BitFlags!(ColorMask, Yes.unsafe) cm = blendInfo.colorMask;
-        gl.ColorMaski(
-            slot,
-            (cm & ColorMask.r) ? GL_TRUE : GL_FALSE,
-            (cm & ColorMask.g) ? GL_TRUE : GL_FALSE,
-            (cm & ColorMask.b) ? GL_TRUE : GL_FALSE,
-            (cm & ColorMask.a) ? GL_TRUE : GL_FALSE
-        );
     }
 }
 

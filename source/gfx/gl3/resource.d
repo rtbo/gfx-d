@@ -408,11 +408,11 @@ final class GlImage : Image
     }
 
     void texSubImage(BufferImageCopy region) {
-        import gfx.bindings.opengl.gl : GL_RGBA, GL_UNSIGNED_BYTE;
+        import gfx.gl3.conv : toSubImgFmt, toSubImgType;
         gl.TexSubImage2D(
             _glTexTarget, region.imageLayers.mipLevel, region.offset[0],
-            region.offset[1], region.extent[0], region.extent[1], GL_RGBA,
-            GL_UNSIGNED_BYTE, null
+            region.offset[1], region.extent[0], region.extent[1], toSubImgFmt(_format),
+            toSubImgType(_format), null
         );
     }
 }
