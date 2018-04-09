@@ -225,8 +225,10 @@ class Win32Window : Window
 
     override void show(uint width, uint height) {
         RECT r;
-        GetClientRect(hWnd, &r);
-        SetWindowPos(hWnd, HWND_TOP, r.left, r.top, width, height, SWP_SHOWWINDOW);
+        r.right = width;
+        r.bottom = height;
+        AdjustWindowRectEx(&r, WS_BORDER | WS_CAPTION, FALSE, 0);
+        SetWindowPos(hWnd, HWND_TOP, 0, 0, r.right - r.left, r.bottom - r.top, SWP_SHOWWINDOW | SWP_NOMOVE);
     }
 
     override void close() {
