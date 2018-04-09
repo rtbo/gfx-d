@@ -191,14 +191,17 @@ class Win32Window : Window
             "could not create win32 window"
         );
 
-        DWM_BLURBEHIND bb;
-        bb.dwFlags = DWM_BB_ENABLE;
-        bb.fEnable = TRUE;
-        bb.hRgnBlur = NULL;
-        DwmEnableBlurBehindWindow(hWnd, &bb);
-        MARGINS m = { -1 };
-        DwmExtendFrameIntoClientArea(hWnd, &m);
+        // What follow is a non-portable way to have alpha value of framebuffer used in desktop composition
+        // (by default composition makes window completely opaque)
+        // only works on Windows 7 and therefore disabled
 
+        // DWM_BLURBEHIND bb;
+        // bb.dwFlags = DWM_BB_ENABLE;
+        // bb.fEnable = TRUE;
+        // bb.hRgnBlur = NULL;
+        // DwmEnableBlurBehindWindow(hWnd, &bb);
+        // MARGINS m = { -1 };
+        // DwmExtendFrameIntoClientArea(hWnd, &m);
 
         import gfx.graal : Backend;
         final switch (dpy.instance.backend) {
@@ -399,24 +402,26 @@ private LRESULT win32WndProc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 private:
 
-struct DWM_BLURBEHIND {
-    DWORD dwFlags;
-    BOOL  fEnable;
-    HRGN  hRgnBlur;
-    BOOL  fTransitionOnMaximized;
-}
+// see comment in Win32Window ctor
 
-struct MARGINS {
-    int left; int right; int top; int bottom;
-}
+// struct DWM_BLURBEHIND {
+//     DWORD dwFlags;
+//     BOOL  fEnable;
+//     HRGN  hRgnBlur;
+//     BOOL  fTransitionOnMaximized;
+// }
 
-enum DWM_BB_ENABLE = 0x00000001;
+// struct MARGINS {
+//     int left; int right; int top; int bottom;
+// }
 
-extern(Windows) HRESULT DwmEnableBlurBehindWindow(
-    HWND hWnd,
-    const(DWM_BLURBEHIND)* pBlurBehind
-);
-extern(Windows) HRESULT DwmExtendFrameIntoClientArea(
-    HWND    hWnd,
-    const(MARGINS)* pMarInset
-);
+// enum DWM_BB_ENABLE = 0x00000001;
+
+// extern(Windows) HRESULT DwmEnableBlurBehindWindow(
+//     HWND hWnd,
+//     const(DWM_BLURBEHIND)* pBlurBehind
+// );
+// extern(Windows) HRESULT DwmExtendFrameIntoClientArea(
+//     HWND    hWnd,
+//     const(MARGINS)* pMarInset
+// );
