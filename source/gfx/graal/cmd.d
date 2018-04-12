@@ -163,7 +163,7 @@ struct ImageCopyRegion
 
 struct BufferImageCopy
 {
-    size_t bufferOffset;
+    ulong bufferOffset;
     uint bufferWidth;
     uint bufferHeight;
     ImageSubresourceLayer imageLayers;
