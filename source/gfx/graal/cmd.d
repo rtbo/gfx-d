@@ -142,6 +142,22 @@ struct ClearValues
         type = Type.depthStencil;
         values.depthStencil = depthStencil;
     }
+
+    static ClearValues color(in float r, in float g, in float b, in float a) {
+        return ClearValues(ClearColorValues(r, g, b, a));
+    }
+
+    static ClearValues color(in int r, in int g, in int b, in int a) {
+        return ClearValues(ClearColorValues(r, g, b, a));
+    }
+
+    static ClearValues color(in uint r, in uint g, in uint b, in uint a) {
+        return ClearValues(ClearColorValues(r, g, b, a));
+    }
+
+    static ClearValues depthStencil(in float depth, in uint stencil) {
+        return ClearValues(ClearDepthStencilValues(depth, stencil));
+    }
 }
 
 struct VertexBinding {
