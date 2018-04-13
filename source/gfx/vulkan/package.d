@@ -429,6 +429,11 @@ final class VulkanInstance : VulkanObj!(VkInstance), Instance
     }
 
     override void dispose() {
+        if (_vkCb) {
+            vk.DestroyDebugReportCallbackEXT(vkObj, _vkCb, null);
+            _vkCb = null;
+            _callback = null;
+        }
         vk.DestroyInstance(vkObj, null);
     }
 
@@ -460,7 +465,50 @@ final class VulkanInstance : VulkanObj!(VkInstance), Instance
             .array;
     }
 
+    override void setDebugCallback(DebugCallback callback) {
+        VkDebugReportCallbackCreateInfoEXT ci;
+        ci.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+        ci.flags = 0x1f;
+        ci.pfnCallback = &gfxd_vk_DebugReportCallback;
+        ci.pUserData = cast(void*)this;
+
+        vk.CreateDebugReportCallbackEXT(vkObj, &ci, null, &_vkCb);
+        _callback = callback;
+    }
+
     VkInstanceCmds _vk;
+    VkDebugReportCallbackEXT _vkCb;
+    DebugCallback _callback;
+}
+
+extern(C) nothrow {
+    VkBool32 gfxd_vk_DebugReportCallback(VkDebugReportFlagsEXT flags,
+                                         VkDebugReportObjectTypeEXT objectType,
+                                         ulong object,
+                                         size_t location,
+                                         int messageCode,
+                                         const(char)* pLayerPrefix,
+                                         const(char)* pMessage,
+                                         void* pUserData)
+    {
+        auto vkInst = cast(VulkanInstance)pUserData;
+        if (vkInst && vkInst._callback) {
+            import gfx.vulkan.conv : debugReportFlagsToGfx;
+            import std.string : fromStringz;
+            try {
+                vkInst._callback(debugReportFlagsToGfx(flags), fromStringz(pMessage).idup);
+            }
+            catch(Exception ex) {
+                import std.exception : collectException;
+                import std.stdio : stderr;
+                collectException(
+                    stderr.writefln("Exception thrown in debug callback: %s", ex.msg)
+                );
+            }
+        }
+
+        return VK_FALSE;
+    }
 }
 
 final class VulkanPhysicalDevice : PhysicalDevice

@@ -1,7 +1,7 @@
 module gfx.gl3;
 
 import gfx.core.rc : AtomicRefCounted;
-import gfx.graal : Instance;
+import gfx.graal : DebugCallback, Instance;
 import gfx.graal.device : PhysicalDevice;
 
 class GlInstance : Instance
@@ -13,15 +13,18 @@ class GlInstance : Instance
     mixin(atomicRcCode);
 
     private Rc!GlContext _ctx;
+    private Rc!GlShare _share;
     private Rc!PhysicalDevice _phd;
 
     this(GlContext ctx) {
         _ctx = ctx;
-        _phd = new GlPhysicalDevice(_ctx);
+        _share = new GlShare(_ctx);
+        _phd = new GlPhysicalDevice(_share);
     }
 
     override void dispose() {
         _phd.unload();
+        _share.unload();
         _ctx.unload();
     }
 
@@ -37,6 +40,10 @@ class GlInstance : Instance
 
     override PhysicalDevice[] devices() {
         return [ _phd.obj ];
+    }
+
+    override void setDebugCallback(DebugCallback callback) {
+        _share._callback = callback;
     }
 
     @property GlContext ctx() {
@@ -110,6 +117,7 @@ class GlShare : AtomicRefCounted
     private size_t _dummyWin;
     private Gl _gl;
     private GlInfo _info;
+    private DebugCallback _callback;
 
     this(GlContext ctx) {
         _ctx = ctx;
@@ -157,12 +165,12 @@ class GlPhysicalDevice : PhysicalDevice
     private Rc!GlShare _share;
     private string _name;
 
-    this(GlContext ctx) {
-        _share = new GlShare(ctx);
+    this(GlShare share) {
+        _share = _share;
 
         import gfx.bindings.opengl.gl : GL_RENDERER;
         import std.string : fromStringz;
-        _name = fromStringz(cast(const(char)*)ctx.gl.GetString(GL_RENDERER)).idup;
+        _name = fromStringz(cast(const(char)*)share.gl.GetString(GL_RENDERER)).idup;
     }
 
     override void dispose() {

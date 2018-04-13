@@ -6,6 +6,7 @@ package:
 import gfx.bindings.vulkan;
 
 import gfx.core.types;
+import gfx.graal : Severity;
 import gfx.graal.buffer;
 import gfx.graal.cmd;
 import gfx.graal.format;
@@ -248,6 +249,10 @@ VkBool32 flagToVk(F)(F val)
 }
 
 // flags conversion
+
+Severity debugReportFlagsToGfx(in VkDebugReportFlagsEXT flags) nothrow pure {
+    return cast(Severity) flags;
+}
 
 MemProps memPropsToGfx(in VkMemoryPropertyFlags vkFlags)
 {
