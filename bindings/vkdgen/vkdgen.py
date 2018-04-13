@@ -361,9 +361,15 @@ class DGenerator(OutputGenerator):
                     lineSplit = line.split()
                     if len(lineSplit) == 0:
                         continue
-                    assert len(lineSplit) == 2
-                    typeStr = lineSplit[0]
-                    paramName = lineSplit[1].replace(",", "").replace(")", "").replace(";", "")
+                    if len(lineSplit) == 3 and lineSplit[0] == "const":
+                        typeStr = "const(" + lineSplit[1] + ")"
+                        typeStr = typeStr.replace("*)", ")*")
+                        paramName = lineSplit[2]
+                    else:
+                        assert len(lineSplit) == 2
+                        typeStr = lineSplit[0]
+                        paramName = lineSplit[1]
+                    paramName = paramName.replace(",", "").replace(")", "").replace(";", "")
                     params.append(
                         DGenerator.Param(paramName, typeStr)
                     )
@@ -454,7 +460,7 @@ class DGenerator(OutputGenerator):
         self.sf()
         self.sf("// Function pointers")
         self.sf()
-        self.sf("extern(C) nothrow @nogc {")
+        self.sf("extern(C) nothrow {")
         with self.sf.indent_block():
             feats = [f for f in self.features if len(f.funcptrs) > 0]
             for i, f in enumerate(feats):
@@ -860,7 +866,7 @@ if __name__ == "__main__":
             "VK_KHR_xcb_surface",
             "VK_KHR_wayland_surface",
             "VK_KHR_surface",
-            "VK_KHR_debug_report",
+            "VK_EXT_debug_report",
         ]),
     ))
 

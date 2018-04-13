@@ -118,6 +118,9 @@ version(Windows) {
     alias VkWin32SurfaceCreateFlagsKHR = VkFlags;
 }
 
+// VK_EXT_debug_report
+alias VkDebugReportFlagsEXT = VkFlags;
+
 // Handles
 
 // VK_VERSION_1_0
@@ -161,6 +164,9 @@ version(X86_64) {
     // VK_KHR_display
     struct VkDisplayKHR_T;     alias VkDisplayKHR     = VkDisplayKHR_T*;
     struct VkDisplayModeKHR_T; alias VkDisplayModeKHR = VkDisplayModeKHR_T*;
+
+    // VK_EXT_debug_report
+    struct VkDebugReportCallbackEXT_T; alias VkDebugReportCallbackEXT = VkDebugReportCallbackEXT_T*;
 }
 else {
     // VK_VERSION_1_0
@@ -194,6 +200,9 @@ else {
     // VK_KHR_display
     alias VkDisplayKHR     = ulong;
     alias VkDisplayModeKHR = ulong;
+
+    // VK_EXT_debug_report
+    alias VkDebugReportCallbackEXT = ulong;
 }
 
 // Constants
@@ -246,9 +255,15 @@ version(Windows) {
     enum VK_KHR_WIN32_SURFACE_EXTENSION_NAME = "VK_KHR_win32_surface";
 }
 
+// VK_EXT_debug_report
+enum VK_EXT_DEBUG_REPORT_SPEC_VERSION               = 9;
+enum VK_EXT_DEBUG_REPORT_EXTENSION_NAME             = "VK_EXT_debug_report";
+enum VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_EXT   = VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT;
+
 // Function pointers
 
-extern(C) nothrow @nogc {
+extern(C) nothrow {
     // VK_VERSION_1_0
     alias PFN_vkAllocationFunction = void* function(
         void*                   pUserData,
@@ -280,6 +295,18 @@ extern(C) nothrow @nogc {
         VkSystemAllocationScope  allocationScope
     );
     alias PFN_vkVoidFunction = void function();
+
+    // VK_EXT_debug_report
+    alias PFN_vkDebugReportCallbackEXT = VkBool32 function(
+        VkDebugReportFlagsEXT      flags,
+        VkDebugReportObjectTypeEXT objectType,
+        uint64_t                   object,
+        size_t                     location,
+        int32_t                    messageCode,
+        const(char)*               pLayerPrefix,
+        const(char)*               pMessage,
+        void*                      pUserData
+    );
 }
 
 // Enumerations
@@ -2388,6 +2415,96 @@ enum VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_BIT_KHR               = VkDisplayPlaneAlph
 enum VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR = VkDisplayPlaneAlphaFlagBitsKHR.VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR;
 
 
+// VK_EXT_debug_report
+enum VkDebugReportObjectTypeEXT {
+    VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT                        = 0,
+    VK_DEBUG_REPORT_OBJECT_TYPE_INSTANCE_EXT                       = 1,
+    VK_DEBUG_REPORT_OBJECT_TYPE_PHYSICAL_DEVICE_EXT                = 2,
+    VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_EXT                         = 3,
+    VK_DEBUG_REPORT_OBJECT_TYPE_QUEUE_EXT                          = 4,
+    VK_DEBUG_REPORT_OBJECT_TYPE_SEMAPHORE_EXT                      = 5,
+    VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT                 = 6,
+    VK_DEBUG_REPORT_OBJECT_TYPE_FENCE_EXT                          = 7,
+    VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT                  = 8,
+    VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT                         = 9,
+    VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT                          = 10,
+    VK_DEBUG_REPORT_OBJECT_TYPE_EVENT_EXT                          = 11,
+    VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT                     = 12,
+    VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_VIEW_EXT                    = 13,
+    VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT                     = 14,
+    VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT                  = 15,
+    VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_CACHE_EXT                 = 16,
+    VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT                = 17,
+    VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT                    = 18,
+    VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT                       = 19,
+    VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT          = 20,
+    VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT                        = 21,
+    VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_POOL_EXT                = 22,
+    VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT                 = 23,
+    VK_DEBUG_REPORT_OBJECT_TYPE_FRAMEBUFFER_EXT                    = 24,
+    VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_POOL_EXT                   = 25,
+    VK_DEBUG_REPORT_OBJECT_TYPE_SURFACE_KHR_EXT                    = 26,
+    VK_DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT                  = 27,
+    VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT      = 28,
+    VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_KHR_EXT                    = 29,
+    VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_MODE_KHR_EXT               = 30,
+    VK_DEBUG_REPORT_OBJECT_TYPE_OBJECT_TABLE_NVX_EXT               = 31,
+    VK_DEBUG_REPORT_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_NVX_EXT   = 32,
+    VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT               = 33,
+    VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR_EXT = 1000085000,
+    VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR_EXT   = 1000156000,
+}
+enum VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT                        = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_INSTANCE_EXT                       = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_INSTANCE_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_PHYSICAL_DEVICE_EXT                = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_PHYSICAL_DEVICE_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_EXT                         = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_QUEUE_EXT                          = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_QUEUE_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_SEMAPHORE_EXT                      = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_SEMAPHORE_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT                 = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_FENCE_EXT                          = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_FENCE_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT                  = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT                         = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT                          = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_EVENT_EXT                          = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_EVENT_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT                     = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_VIEW_EXT                    = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_VIEW_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT                     = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT                  = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_CACHE_EXT                 = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_CACHE_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT                = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT                    = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT                       = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT          = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT                        = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_POOL_EXT                = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_POOL_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT                 = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_FRAMEBUFFER_EXT                    = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_FRAMEBUFFER_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_POOL_EXT                   = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_POOL_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_SURFACE_KHR_EXT                    = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_SURFACE_KHR_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT                  = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT      = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_KHR_EXT                    = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_KHR_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_MODE_KHR_EXT               = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_MODE_KHR_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_OBJECT_TABLE_NVX_EXT               = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_OBJECT_TABLE_NVX_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_NVX_EXT   = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_NVX_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT               = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR_EXT = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR_EXT;
+enum VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR_EXT   = VkDebugReportObjectTypeEXT.VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR_EXT;
+
+enum VkDebugReportFlagBitsEXT {
+    VK_DEBUG_REPORT_INFORMATION_BIT_EXT         = 0x00000001,
+    VK_DEBUG_REPORT_WARNING_BIT_EXT             = 0x00000002,
+    VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT = 0x00000004,
+    VK_DEBUG_REPORT_ERROR_BIT_EXT               = 0x00000008,
+    VK_DEBUG_REPORT_DEBUG_BIT_EXT               = 0x00000010,
+}
+enum VK_DEBUG_REPORT_INFORMATION_BIT_EXT         = VkDebugReportFlagBitsEXT.VK_DEBUG_REPORT_INFORMATION_BIT_EXT;
+enum VK_DEBUG_REPORT_WARNING_BIT_EXT             = VkDebugReportFlagBitsEXT.VK_DEBUG_REPORT_WARNING_BIT_EXT;
+enum VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT = VkDebugReportFlagBitsEXT.VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
+enum VK_DEBUG_REPORT_ERROR_BIT_EXT               = VkDebugReportFlagBitsEXT.VK_DEBUG_REPORT_ERROR_BIT_EXT;
+enum VK_DEBUG_REPORT_DEBUG_BIT_EXT               = VkDebugReportFlagBitsEXT.VK_DEBUG_REPORT_DEBUG_BIT_EXT;
+
+
 // Structures
 
 // VK_VERSION_1_0
@@ -3495,6 +3612,15 @@ version(Windows) {
     }
 }
 
+// VK_EXT_debug_report
+struct VkDebugReportCallbackCreateInfoEXT {
+    VkStructureType              sType;
+    const(void)*                 pNext;
+    VkDebugReportFlagsEXT        flags;
+    PFN_vkDebugReportCallbackEXT pfnCallback;
+    void*                        pUserData;
+}
+
 // Command pointer aliases
 
 extern(C) nothrow @nogc {
@@ -4445,6 +4571,29 @@ extern(C) nothrow @nogc {
             uint32_t         queueFamilyIndex,
         );
     }
+
+    // VK_EXT_debug_report
+    alias PFN_vkCreateDebugReportCallbackEXT = VkResult function (
+        VkInstance                                 instance,
+        const(VkDebugReportCallbackCreateInfoEXT)* pCreateInfo,
+        const(VkAllocationCallbacks)*              pAllocator,
+        VkDebugReportCallbackEXT*                  pCallback,
+    );
+    alias PFN_vkDestroyDebugReportCallbackEXT = void function (
+        VkInstance                    instance,
+        VkDebugReportCallbackEXT      callback,
+        const(VkAllocationCallbacks)* pAllocator,
+    );
+    alias PFN_vkDebugReportMessageEXT = void function (
+        VkInstance                 instance,
+        VkDebugReportFlagsEXT      flags,
+        VkDebugReportObjectTypeEXT objectType,
+        uint64_t                   object,
+        size_t                     location,
+        int32_t                    messageCode,
+        const(char)*               pLayerPrefix,
+        const(char)*               pMessage,
+    );
 }
 
 
@@ -4539,6 +4688,11 @@ final class VkInstanceCmds {
             _CreateWin32SurfaceKHR                          = cast(PFN_vkCreateWin32SurfaceKHR)                         loader(instance, "vkCreateWin32SurfaceKHR");
             _GetPhysicalDeviceWin32PresentationSupportKHR   = cast(PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR)  loader(instance, "vkGetPhysicalDeviceWin32PresentationSupportKHR");
         }
+
+        // VK_EXT_debug_report
+        _CreateDebugReportCallbackEXT                   = cast(PFN_vkCreateDebugReportCallbackEXT)                  loader(instance, "vkCreateDebugReportCallbackEXT");
+        _DestroyDebugReportCallbackEXT                  = cast(PFN_vkDestroyDebugReportCallbackEXT)                 loader(instance, "vkDestroyDebugReportCallbackEXT");
+        _DebugReportMessageEXT                          = cast(PFN_vkDebugReportMessageEXT)                         loader(instance, "vkDebugReportMessageEXT");
     }
 
     /// Commands for VK_VERSION_1_0
@@ -4708,6 +4862,22 @@ final class VkInstanceCmds {
         }
     }
 
+    /// Commands for VK_EXT_debug_report
+    VkResult CreateDebugReportCallbackEXT (VkInstance instance, const(VkDebugReportCallbackCreateInfoEXT)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkDebugReportCallbackEXT* pCallback) {
+        assert(_CreateDebugReportCallbackEXT !is null, "vkCreateDebugReportCallbackEXT was not loaded. Requested by VK_EXT_debug_report");
+        return _CreateDebugReportCallbackEXT(instance, pCreateInfo, pAllocator, pCallback);
+    }
+    /// ditto
+    void DestroyDebugReportCallbackEXT (VkInstance instance, VkDebugReportCallbackEXT callback, const(VkAllocationCallbacks)* pAllocator) {
+        assert(_DestroyDebugReportCallbackEXT !is null, "vkDestroyDebugReportCallbackEXT was not loaded. Requested by VK_EXT_debug_report");
+        return _DestroyDebugReportCallbackEXT(instance, callback, pAllocator);
+    }
+    /// ditto
+    void DebugReportMessageEXT (VkInstance instance, VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const(char)* pLayerPrefix, const(char)* pMessage) {
+        assert(_DebugReportMessageEXT !is null, "vkDebugReportMessageEXT was not loaded. Requested by VK_EXT_debug_report");
+        return _DebugReportMessageEXT(instance, flags, objectType, object, location, messageCode, pLayerPrefix, pMessage);
+    }
+
     // fields for VK_VERSION_1_0
     private PFN_vkDestroyInstance                                _DestroyInstance;
     private PFN_vkEnumeratePhysicalDevices                       _EnumeratePhysicalDevices;
@@ -4756,6 +4926,11 @@ final class VkInstanceCmds {
         private PFN_vkCreateWin32SurfaceKHR                          _CreateWin32SurfaceKHR;
         private PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR   _GetPhysicalDeviceWin32PresentationSupportKHR;
     }
+
+    // fields for VK_EXT_debug_report
+    private PFN_vkCreateDebugReportCallbackEXT                   _CreateDebugReportCallbackEXT;
+    private PFN_vkDestroyDebugReportCallbackEXT                  _DestroyDebugReportCallbackEXT;
+    private PFN_vkDebugReportMessageEXT                          _DebugReportMessageEXT;
 }
 
 // Device commands
