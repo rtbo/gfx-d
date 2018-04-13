@@ -206,8 +206,8 @@ int main() {
 
         import std.datetime.stopwatch : StopWatch;
 
-        size_t frameCount;
-        size_t lastUs;
+        uint frameCount;
+        ulong lastUs;
         StopWatch sw;
         sw.start();
 
