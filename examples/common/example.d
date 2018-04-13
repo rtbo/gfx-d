@@ -15,6 +15,25 @@ import std.exception;
 import std.typecons;
 import std.traits : isArray;
 
+struct FPSProbe {
+    import std.datetime.stopwatch : StopWatch;
+
+    private StopWatch sw;
+    private size_t lastUsecs;
+    private size_t lastFc;
+    size_t frameCount;
+
+    void start() { sw.start(); }
+    void tick() { frameCount += 1; }
+    @property float fps() {
+        const usecs = sw.peek().total!"usecs"();
+        const fps = 1000_000f * (frameCount - lastFc) / (usecs-lastUsecs);
+        lastFc = frameCount;
+        lastUsecs = usecs;
+        return fps;
+    }
+}
+
 class Example : Disposable
 {
     string title;
@@ -78,6 +97,15 @@ class Example : Disposable
         // Create a window. The surface is created during the call to show.
         window = display.createWindow();
         window.show(640, 480);
+
+        instance.setDebugCallback((Severity sev, string msg) {
+            import std.stdio : writefln;
+            writefln("Gfx backend %s message: %s", sev, msg);
+            if (sev == Severity.error) {
+                // debug break;
+                asm { int 0x03; }
+            }
+        });
 
         // The rest of the preparation.
         prepareDevice();
@@ -339,6 +367,16 @@ class Example : Disposable
         return createStaticBuffer(start[0 .. data.sizeof], usage);
     }
 
+    bool bindImageMemory(Image img, MemProps props=MemProps.deviceLocal) {
+        const mr = img.memoryRequirements;
+        const memTypeInd = findMemType(mr, MemProps.deviceLocal);
+        if (memTypeInd == uint.max) return false;
+
+        auto mem = device.allocateMemory(memTypeInd, mr.size).rc;
+        img.bindMemory(mem, 0);
+        return true;
+    }
+
     /// create an image to be used as texture
     Image createTextureImage(const(void)[] data, ImageType type, ImageDims dims,
                       Format format, uint levels=1)
@@ -365,12 +403,7 @@ class Example : Disposable
         )).rc;
 
         // allocate memory image
-        const mr = img.memoryRequirements;
-        const memTypeInd = findMemType(mr, MemProps.deviceLocal);
-        if (memTypeInd == uint.max) return null;
-
-        auto mem = device.allocateMemory(memTypeInd, mr.size).rc;
-        img.bindMemory(mem, 0);
+        if (!bindImageMemory(img)) return null;
 
         {
             auto b = autoCmdBuf().rc;
@@ -404,12 +437,7 @@ class Example : Disposable
         )).rc;
 
         // allocate memory image
-        const mr = img.memoryRequirements;
-        const memTypeInd = findMemType(mr, MemProps.deviceLocal);
-        if (memTypeInd == uint.max) return null;
-
-        auto mem = device.allocateMemory(memTypeInd, mr.size).rc;
-        img.bindMemory(mem, 0);
+        if (!bindImageMemory(img)) return null;
 
         return img.giveAway();
     }
@@ -427,12 +455,7 @@ class Example : Disposable
         )).rc;
 
         // allocate memory image
-        const mr = img.memoryRequirements;
-        const memTypeInd = findMemType(mr, MemProps.deviceLocal);
-        if (memTypeInd == uint.max) return null;
-
-        auto mem = device.allocateMemory(memTypeInd, mr.size).rc;
-        img.bindMemory(mem, 0);
+        if (!bindImageMemory(img)) return null;
 
         return img.giveAway();
     }

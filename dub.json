@@ -16,7 +16,8 @@
         "examples/triangle",
         "examples/texture",
         "examples/depth",
-        "examples/stencil"
+        "examples/stencil",
+        "examples/shadow"
     ],
     "dependencies": {
         "gfx:bindings": "*",
