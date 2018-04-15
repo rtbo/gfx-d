@@ -166,7 +166,7 @@ class GlPhysicalDevice : PhysicalDevice
     private string _name;
 
     this(GlShare share) {
-        _share = _share;
+        _share = share;
 
         import gfx.bindings.opengl.gl : GL_RENDERER;
         import std.string : fromStringz;
