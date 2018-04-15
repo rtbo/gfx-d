@@ -132,8 +132,34 @@ final class ShadowExample : Example
     }
 
     override void dispose() {
-        meshPipeline.unload();
+        device.waitIdle();
+
+        vertBuf.unload();
+        indBuf.unload();
+        meshDynamicBuf.unload();
+        meshStaticBuf.unload();
+        ligUniformBuf.unload();
+
+        descPool.unload();
+
+        shadowRenderPass.unload();
         shadowPipeline.unload();
+        shadowTex.unload();
+        shadowSampler.unload();
+        shadowFramebuffer.unload();
+        shadowDSLayout.unload();
+        shadowLayout.unload();
+
+        meshRenderPass.unload();
+        meshPipeline.unload();
+        disposeArray(framebuffers);
+        meshShadowView.unload();
+        meshDSLayout.unload();
+        meshLayout.unload();
+
+        reinitArray(lights);
+
+        super.dispose();
     }
 
     override void prepare() {
@@ -164,7 +190,11 @@ final class ShadowExample : Example
             ImageTiling.optimal, 1, 1
         );
         enforce(bindImageMemory(shadowTex));
-        meshShadowView = shadowTex.createView(ImageType.d2Array, ImageSubresourceRange(ImageAspect.depth, 0, 1, 0, numLights), Swizzle.identity);
+        meshShadowView = shadowTex.createView(
+            ImageType.d2Array,
+            ImageSubresourceRange(ImageAspect.depth, 0, 1, 0, numLights),
+            Swizzle.identity
+        );
 
         shadowSampler = device.createSampler(SamplerInfo(
             Filter.linear, Filter.linear, Filter.nearest,
@@ -642,7 +672,7 @@ final class ShadowExample : Example
                 meshRenderPass, fb.meshFramebuffer, Rect(0, 0, surfaceSize[0], surfaceSize[1]),
                 [
                     ClearValues.color(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f),
-                    ClearValues.depthStencil(0f, 0)
+                    ClearValues.depthStencil(1f, 0)
                 ]
             );
 
@@ -682,7 +712,7 @@ int main() {
 
         const winSize = example.surfaceSize;
         const proj = mat4.perspective(winSize[0], winSize[1], 45, 1f, 20f);
-        const viewProj = proj * mat4.look_at(vec3(3, -10, 6), vec3(0, 0, 0), vec3(0, 0, 1));
+        const viewProj = proj * mat4.look_at(vec3(3, 10, 6), vec3(0, 0, 0), vec3(0, 0, 1));
 
         FPSProbe fpsProbe;
         fpsProbe.start();
