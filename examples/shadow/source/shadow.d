@@ -11,6 +11,7 @@ import gfx.graal.format;
 import gfx.graal.image;
 import gfx.graal.pipeline;
 import gfx.graal.renderpass;
+import gfx.graal.sync;
 
 import gl3n.linalg : mat4, mat3, quat, vec3, vec4;
 
@@ -32,6 +33,7 @@ final class ShadowExample : Example
     Rc!DescriptorPool descPool;
 
     // shadow pass
+    Rc!Semaphore shadowFinishedSem;
     Rc!RenderPass shadowRenderPass;
     Rc!Pipeline shadowPipeline;
     Rc!Image shadowTex;
@@ -195,6 +197,19 @@ final class ShadowExample : Example
             ImageSubresourceRange(ImageAspect.depth, 0, 1, 0, numLights),
             Swizzle.identity
         );
+        {
+            auto b = autoCmdBuf().rc;
+            b.cmdBuf.pipelineBarrier(
+                trans(PipelineStage.topOfPipe, PipelineStage.earlyFragmentTests), [], [
+                    ImageMemoryBarrier(
+                        trans(Access.none, Access.depthStencilAttachmentRead | Access.depthStencilAttachmentWrite),
+                        trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
+                        trans(queueFamilyIgnored, queueFamilyIgnored),
+                        shadowTex, ImageSubresourceRange(ImageAspect.depth, 0, 1, 0, numLights)
+                    )
+                ]
+            );
+        }
 
         shadowSampler = device.createSampler(SamplerInfo(
             Filter.linear, Filter.linear, Filter.nearest,
@@ -348,6 +363,7 @@ final class ShadowExample : Example
             ),
         ];
         shadowRenderPass = device.createRenderPass(attachments, subpasses, []);
+        shadowFinishedSem = device.createSemaphore();
     }
 
     void prepareMeshRenderPass() {
@@ -632,6 +648,53 @@ final class ShadowExample : Example
         }
     }
 
+    override void render()
+    {
+        import core.time : dur;
+        import gfx.graal.queue : PresentRequest, StageWait, Submission;
+        import std.algorithm : map;
+        import std.array : array;
+
+        bool needReconstruction;
+        const imgInd = swapchain.acquireNextImage(dur!"seconds"(-1), imageAvailableSem, needReconstruction);
+        const cmdBufInd = nextCmdBuf();
+
+        // we have cmdbufs for each light that must be used on every frame
+        // therefore, we must sync with the same fence on every frame
+        fences[0].wait();
+        fences[0].reset();
+
+        recordCmds(cmdBufInd, imgInd);
+
+        auto shadowSubmission = Submission(
+            [],
+            [ shadowFinishedSem ],
+            lights.map!(l => l.cmdBuf).array
+        );
+        auto meshSubmission = Submission(
+            [
+                StageWait(shadowFinishedSem, PipelineStage.fragmentShader),
+                StageWait(imageAvailableSem, PipelineStage.transfer)
+            ],
+            [ renderingFinishSem ], [ cmdBufs[cmdBufInd] ]
+        );
+
+        graphicsQueue.submit(
+            [ shadowSubmission, meshSubmission ], fences[0]
+        );
+
+        presentQueue.present(
+            [ renderingFinishSem ],
+            [ PresentRequest(swapchain, imgInd) ]
+        );
+
+        // if (needReconstruction) {
+        //     prepareSwapchain(swapchain);
+        //     presentPool.reset();
+        // }
+    }
+
+
     override void recordCmds(ulong cmdBufInd, ulong imgInd)
     {
         void recordLight(uint il, Light l) {
@@ -660,8 +723,6 @@ final class ShadowExample : Example
 
             buf.end();
         }
-
-        const shadowVsLen = cast(uint)(ShadowVsLocals.sizeof * lights.length * meshes.length);
 
         void recordMeshes() {
             auto buf = cmdBufs[cmdBufInd];
@@ -693,8 +754,10 @@ final class ShadowExample : Example
             buf.end();
         }
 
+        foreach (uint il, ref l; lights) {
+            recordLight(il, l);
+        }
         recordMeshes();
-
     }
 
 }

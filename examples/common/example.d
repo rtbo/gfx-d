@@ -219,12 +219,7 @@ class Example : Disposable
 
         recordCmds(cmdBufInd, imgInd);
 
-        presentQueue.submit([
-            Submission (
-                [ StageWait(imageAvailableSem, PipelineStage.transfer) ],
-                [ renderingFinishSem ], [ cmdBufs[cmdBufInd] ]
-            )
-        ], fences[cmdBufInd] );
+        submit(cmdBufInd);
 
         presentQueue.present(
             [ renderingFinishSem ],
@@ -235,6 +230,15 @@ class Example : Disposable
         //     prepareSwapchain(swapchain);
         //     presentPool.reset();
         // }
+    }
+
+    void submit(ulong cmdBufInd) {
+        graphicsQueue.submit([
+            Submission (
+                [ StageWait(imageAvailableSem, PipelineStage.transfer) ],
+                [ renderingFinishSem ], [ cmdBufs[cmdBufInd] ]
+            )
+        ], fences[cmdBufInd] );
     }
 
 
