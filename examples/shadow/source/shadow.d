@@ -129,8 +129,8 @@ final class ShadowExample : Example
         Rc!Framebuffer shadowFb;
     }
 
-    this() {
-        super("Shadow");
+    this(string[] args=[]) {
+        super("Shadow", args);
     }
 
     override void dispose() {
@@ -769,10 +769,10 @@ final class ShadowExample : Example
 
 }
 
-int main() {
+int main(string[] args) {
 
     try {
-        auto example = new ShadowExample();
+        auto example = new ShadowExample(args);
         example.prepare();
         scope(exit) example.dispose();
 

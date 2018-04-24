@@ -37,6 +37,7 @@ struct FPSProbe {
 class Example : Disposable
 {
     string title;
+    string[] args;
     Rc!Display display;
     Window window;
     Rc!Instance instance;
@@ -59,9 +60,10 @@ class Example : Disposable
     enum numCmdBufs=2;
     size_t cmdBufInd;
 
-    this (string title)
+    this (string title, string[] args=[])
     {
         this.title = title;
+        this.args = args;
     }
 
     override void dispose() {
@@ -89,10 +91,22 @@ class Example : Disposable
 
     void prepare()
     {
+        bool noVulkan = false;
+        foreach (a; args) {
+            if (a == "--no-vulkan" || a == "nv") {
+                noVulkan = true;
+                break;
+            }
+        }
+        Backend[] backendLoadOrder;
+        if (!noVulkan) {
+            backendLoadOrder ~= Backend.vulkan;
+        }
+        backendLoadOrder ~= Backend.gl3;
         // Create a display for the running platform
         // The instance is created by the display. Backend is chosen at runtime
         // depending on detected API support. (i.e. Vulkan is preferred)
-        display = createDisplay();
+        display = createDisplay(backendLoadOrder);
         instance = display.instance;
         // Create a window. The surface is created during the call to show.
         window = display.createWindow();
