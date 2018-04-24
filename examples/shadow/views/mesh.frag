@@ -53,6 +53,8 @@ void main() {
         vec4 light_local = light.proj * vec4(v_Position, 1.0);
         // compute texture coordinates for shadow lookup
         light_local.xyw = (light_local.xyz/light_local.w + 1.0) / 2.0;
+        // do we have to reverse y ?
+        // light_local.y = 1.0 - light_local.y;
         light_local.z = i;
         // do the lookup, using HW PCF and comparison
         float shadow = texture(shadowSampler, light_local);

@@ -183,7 +183,7 @@ final class ShadowExample : Example
 
         // setting up lights
 
-        enum numLights = 3;
+        enum numLights = 2;
 
         shadowTex = device.createImage(
             ImageType.d2Array, ImageDims.d2Array(shadowSize, shadowSize, numLights),
@@ -213,7 +213,7 @@ final class ShadowExample : Example
         shadowSampler = device.createSampler(SamplerInfo(
             Filter.linear, Filter.linear, Filter.nearest,
             [WrapMode.repeat, WrapMode.repeat, WrapMode.repeat],
-            some(16f), 0f, [0f, 0f]
+            none!float, 0f, [0f, 0f], some(CompareOp.lessOrEqual)
         ));
 
         auto ligCmdBufs = cmdPool.allocate(numLights);
@@ -242,7 +242,7 @@ final class ShadowExample : Example
         lights = [
             makeLight(0, [7, -5, 10], [0.5, 0.7, 0.5, 1], 60),
             makeLight(1, [-5, 7, 10], [0.7, 0.5, 0.5, 1], 45),
-            makeLight(2, [10, 7, 5], [0.5, 0.5, 0.7, 1], 90),
+            // makeLight(2, [10, 7, 5], [0.5, 0.5, 0.7, 1], 90),
         ];
 
         {
@@ -312,16 +312,16 @@ final class ShadowExample : Example
             return makeMesh(cubeVertOffset, cubeIndOffset, cubeNumIndices, rpm, model, color);
         }
 
-        auto makePlane(in float rpm, in mat4 model, in float[4] color) {
-            return makeMesh(planeVertOffset, planeIndOffset, planeNumIndices, rpm, model, color);
+        auto makePlane(in mat4 model, in float[4] color) {
+            return makeMesh(planeVertOffset, planeIndOffset, planeNumIndices, 0, model, color);
         }
 
         meshes = [
-            makeCube(20, [-2, -2, 2], 0.7, 10, [0.8, 0.2, 0.2, 1]),
-            makeCube(60, [2, -2, 2], 1.3, 50, [0.2, 0.8, 0.2, 1]),
+            makeCube(3, [-2, -2, 2], 0.7, 10, [0.8, 0.2, 0.2, 1]),
+            makeCube(7, [2, -2, 2], 1.3, 50, [0.2, 0.8, 0.2, 1]),
             makeCube(10, [-2, 2, 2], 1.1, 140, [0.2, 0.2, 0.8, 1]),
             makeCube(5, [2, 2, 2], 0.9, 210, [0.8, 0.8, 0.2, 1]),
-            makePlane(0f, mat4.identity, [1, 1, 1, 1]),
+            makePlane(mat4.identity, [1, 1, 1, 1]),
         ];
 
         {
@@ -445,8 +445,6 @@ final class ShadowExample : Example
             [ shadowDSLayout ], []
         );
 
-        const numLights = cast(uint)lights.length;
-
         meshDSLayout = device.createDescriptorSetLayout(
             [
                 PipelineLayoutBinding(0, DescriptorType.uniformBufferDynamic, 1, ShaderStage.vertex),
@@ -529,7 +527,7 @@ final class ShadowExample : Example
             )
         ];
         info.depthInfo = DepthInfo(
-            Yes.enabled, Yes.write, CompareOp.less, No.boundsTest, 0f, 1f
+            Yes.enabled, Yes.write, CompareOp.lessOrEqual, No.boundsTest, 0f, 1f
         );
         info.blendInfo = ColorBlendInfo(
             none!LogicOp, [], [ 0f, 0f, 0f, 0f ]
@@ -572,7 +570,7 @@ final class ShadowExample : Example
             )
         ];
         info.depthInfo = DepthInfo(
-            Yes.enabled, Yes.write, CompareOp.less, No.boundsTest, 0f, 1f
+            Yes.enabled, Yes.write, CompareOp.lessOrEqual, No.boundsTest, 0f, 1f
         );
         info.blendInfo = ColorBlendInfo(
             none!LogicOp, [ ColorBlendAttachment.solid() ], [ 0f, 0f, 0f, 0f ]
@@ -767,6 +765,15 @@ final class ShadowExample : Example
         recordMeshes();
     }
 
+}
+
+@property mat4 correctionMat() pure nothrow {
+    return mat4(
+        1f,     0f,     0f,     0f,
+        0f,     1f,     0f,     0f,
+        0f,     0f,   0.5f,     0f,
+        0f,     0f,   0.5f,     1f,
+    );
 }
 
 int main(string[] args) {
