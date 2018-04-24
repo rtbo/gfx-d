@@ -26,8 +26,7 @@ final class ShadowExample : Example
     Rc!Buffer vertBuf;
     Rc!Buffer indBuf;
 
-    Rc!Buffer meshDynamicBuf;       // per mesh and per light
-    Rc!Buffer meshStaticBuf;        // per mesh
+    Rc!Buffer meshUniformBuf;       // per mesh and per light
     Rc!Buffer ligUniformBuf;        // per light
 
     Rc!DescriptorPool descPool;
@@ -57,7 +56,7 @@ final class ShadowExample : Example
     Light[] lights;
 
     // constants
-    enum shadowSize = 2048;
+    enum shadowSize = 1024;
     enum maxLights = 5;
 
     final class PerImage : Disposable
@@ -93,8 +92,9 @@ final class ShadowExample : Example
         float[4][4] model;
     }
 
-    static struct MeshFsMaterial {  // meshStaticBuf (per mesh)
+    static struct MeshFsMaterial {  // meshDynamicBuf (per mesh)
         float[4] color;
+        float[4] padding;
     }
 
     static struct LightBlk {        // within MeshFsLights
@@ -138,8 +138,7 @@ final class ShadowExample : Example
 
         vertBuf.unload();
         indBuf.unload();
-        meshDynamicBuf.unload();
-        meshStaticBuf.unload();
+        meshUniformBuf.unload();
         ligUniformBuf.unload();
 
         descPool.unload();
@@ -243,7 +242,7 @@ final class ShadowExample : Example
         lights = [
             makeLight(0, [7, -5, 10], [0.5, 0.7, 0.5, 1], 60),
             makeLight(1, [-5, 7, 10], [0.7, 0.5, 0.5, 1], 45),
-            makeLight(2, [10, 7, -5], [0.5, 0.5, 0.7, 1], 90),
+            makeLight(2, [10, 7, 5], [0.5, 0.5, 0.7, 1], 90),
         ];
 
         {
@@ -264,8 +263,6 @@ final class ShadowExample : Example
         // vertBuf: cube vertices | plane vertices
         // indBuf:  cube indices  | plane indices
 
-        enum numCubes = 4;
-
         import gfx.genmesh.cube : genCube;
         import gfx.genmesh.algorithm : indexCollectMesh, triangulate, vertices;
         import gfx.genmesh.poly : quad;
@@ -283,10 +280,10 @@ final class ShadowExample : Example
                 .indexCollectMesh();
 
         const planeVertices = [
-            Vertex([-1, -1,  0],    [ 0,  0,  1]),
-            Vertex([ 1, -1,  0],    [ 0,  0,  1]),
-            Vertex([ 1,  1,  0],    [ 0,  0,  1]),
-            Vertex([-1,  1,  0],    [ 0,  0,  1]),
+            Vertex([-7,  7,  0],    [ 0,  0,  1]),
+            Vertex([ 7,  7,  0],    [ 0,  0,  1]),
+            Vertex([ 7, -7,  0],    [ 0,  0,  1]),
+            Vertex([-7, -7,  0],    [ 0,  0,  1]),
         ];
 
         const ushort[] planeIndices = [ 0,  1,  2,  2,  3,  0 ];
@@ -335,14 +332,10 @@ final class ShadowExample : Example
             auto inds = cube.indices ~ planeIndices;
             indBuf = createStaticBuffer(inds, BufferUsage.index);
         }
-        {
-            import std.array : array;
-            auto data = meshes.map!(m => MeshFsMaterial(m.color.vector)).array;
-            meshStaticBuf = createStaticBuffer(data, BufferUsage.uniform);
-        }
-        meshDynamicBuf = createDynamicBuffer(
+        meshUniformBuf = createDynamicBuffer(
             ShadowVsLocals.sizeof * meshes.length * lights.length +
-            MeshVsLocals.sizeof * meshes.length,
+            MeshVsLocals.sizeof * meshes.length +
+            MeshFsMaterial.sizeof * meshes.length,
             BufferUsage.uniform
         );
     }
@@ -457,7 +450,7 @@ final class ShadowExample : Example
         meshDSLayout = device.createDescriptorSetLayout(
             [
                 PipelineLayoutBinding(0, DescriptorType.uniformBufferDynamic, 1, ShaderStage.vertex),
-                PipelineLayoutBinding(1, DescriptorType.uniformBuffer, 1, ShaderStage.fragment),
+                PipelineLayoutBinding(1, DescriptorType.uniformBufferDynamic, 1, ShaderStage.fragment),
                 PipelineLayoutBinding(2, DescriptorType.uniformBuffer, 1, ShaderStage.fragment),
                 PipelineLayoutBinding(3, DescriptorType.combinedImageSampler, 1, ShaderStage.fragment),
             ]
@@ -468,8 +461,8 @@ final class ShadowExample : Example
 
         descPool = device.createDescriptorPool( 2,
             [
-                DescriptorPoolSize(DescriptorType.uniformBufferDynamic, 2),
-                DescriptorPoolSize(DescriptorType.uniformBuffer, 2),
+                DescriptorPoolSize(DescriptorType.uniformBufferDynamic, 3),
+                DescriptorPoolSize(DescriptorType.uniformBuffer, 1),
                 DescriptorPoolSize(DescriptorType.combinedImageSampler, 1)
             ]
         );
@@ -480,7 +473,6 @@ final class ShadowExample : Example
 
         const shadowVsLen = cast(uint)(ShadowVsLocals.sizeof * lights.length * meshes.length);
         const meshVsLen = cast(uint)(MeshVsLocals.sizeof * meshes.length);
-        const meshFsMatLen = cast(uint)(MeshFsMaterial.sizeof * meshes.length);
         const ligFsLen = cast(uint)MeshFsLights.sizeof;
 
         import std.algorithm : map;
@@ -488,13 +480,13 @@ final class ShadowExample : Example
 
         auto writes = [
             WriteDescriptorSet(shadowDS, 0, 0, new UniformBufferDynamicDescWrites(
-                [ BufferRange(meshDynamicBuf, 0, ShadowVsLocals.sizeof) ]
+                [ BufferRange(meshUniformBuf, 0, ShadowVsLocals.sizeof) ]
             )),
             WriteDescriptorSet(meshDS, 0, 0, new UniformBufferDynamicDescWrites(
-                [ BufferRange(meshDynamicBuf, shadowVsLen, MeshVsLocals.sizeof) ]
+                [ BufferRange(meshUniformBuf, shadowVsLen, MeshVsLocals.sizeof) ]
             )),
-            WriteDescriptorSet(meshDS, 1, 0, new UniformBufferDescWrites(
-                [ BufferRange(meshStaticBuf, 0, meshFsMatLen) ]
+            WriteDescriptorSet(meshDS, 1, 0, new UniformBufferDynamicDescWrites(
+                [ BufferRange(meshUniformBuf, shadowVsLen+meshVsLen, MeshFsMaterial.sizeof) ]
             )),
             WriteDescriptorSet(meshDS, 2, 0, new UniformBufferDescWrites(
                 [ BufferRange(ligUniformBuf, 0, ligFsLen) ]
@@ -620,7 +612,7 @@ final class ShadowExample : Example
         import gfx.graal.device : MappedMemorySet;
         import gfx.graal.memory : mapMemory;
 
-        auto mem = meshDynamicBuf.boundMemory;
+        auto mem = meshUniformBuf.boundMemory;
 
         {
             auto mm = mem.mapMemory!ShadowVsLocals(0, lights.length*meshes.length);
@@ -640,6 +632,17 @@ final class ShadowExample : Example
                 mm[im] = MeshVsLocals(
                     columnMajor(viewProj * m.model),
                     columnMajor(m.model),
+                );
+            }
+            MappedMemorySet mms;
+            mm.addToSet(mms);
+            device.flushMappedMemory(mms);
+        }
+        {
+            auto mm = mem.mapMemory!MeshFsMaterial(shadowVsLen+meshVsLen, meshes.length);
+            foreach (im, ref m; meshes) {
+                mm[im] = MeshFsMaterial(
+                    m.color.vector
                 );
             }
             MappedMemorySet mms;
@@ -680,7 +683,11 @@ final class ShadowExample : Example
         );
 
         graphicsQueue.submit(
-            [ shadowSubmission, meshSubmission ], fences[0]
+            [
+                shadowSubmission,
+                meshSubmission
+            ],
+            fences[0]
         );
 
         presentQueue.present(
@@ -703,7 +710,7 @@ final class ShadowExample : Example
 
             buf.beginRenderPass(
                 shadowRenderPass, l.shadowFb, Rect(0, 0, shadowSize, shadowSize),
-                [ ClearValues.depthStencil(0f, 0) ]
+                [ ClearValues.depthStencil(1f, 0) ]
             );
 
             buf.bindPipeline(shadowPipeline);
@@ -744,7 +751,7 @@ final class ShadowExample : Example
                 buf.bindDescriptorSets(
                     PipelineBindPoint.graphics, meshLayout, 0, [ meshDS ],
                     [
-                        c * MeshVsLocals.sizeof
+                        c * MeshVsLocals.sizeof, c * MeshFsMaterial.sizeof
                     ]
                 );
                 buf.drawIndexed(m.numVertices, 1, 0, 0, 0);
@@ -775,7 +782,7 @@ int main() {
 
         const winSize = example.surfaceSize;
         const proj = mat4.perspective(winSize[0], winSize[1], 45, 1f, 20f);
-        const viewProj = proj * mat4.look_at(vec3(3, 10, 6), vec3(0, 0, 0), vec3(0, 0, 1));
+        const viewProj = proj * mat4.look_at(vec3(3, -10, 6), vec3(0, 0, 0), vec3(0, 0, 1));
 
         FPSProbe fpsProbe;
         fpsProbe.start();
