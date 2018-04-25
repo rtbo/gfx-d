@@ -245,9 +245,11 @@ interface ImageView : AtomicRefCounted
     @property Swizzle swizzle();
 }
 
-
+/// Type of filter for texture sampling
 enum Filter {
+    ///
     nearest,
+    ///
     linear,
 }
 
@@ -290,19 +292,29 @@ enum BorderColor
     return (cast(int)color & 0x06) == 4;
 }
 
-///
+/// Structure holding texture sampler information.
+/// It is used to create samplers.
 struct SamplerInfo {
+    /// The minification filter
     Filter minFilter;
+    /// The magnification filter
     Filter magFilter;
+    /// The filter used between mipmap levels
     Filter mipmapFilter;
+    /// The wrap mode for look-ups outside of [ 0 , 1 ] in the three axis
     WrapMode[3] wrapMode;
+    /// Enables anisotropy filtering. The value set serves as maximum covering fragments.
     Option!float anisotropy;
-    float lodBias;
-    float[2] lodRange;
+    float lodBias = 0f;
+    float[2] lodRange = [ 0f, 0f ];
+    /// Enables a comparison operation during lookup of depth/stencil based textures.
+    /// Mostly useful for shadow maps.
     Option!CompareOp compare;
     BorderColor borderColor;
+    /// If set, lookup is done in texel space rather than normalized coordinates.
     Flag!"unnormalizeCoords" unnormalizeCoords;
 
+    /// Initializes a bilinear filtering SamplerInfo
     static @property SamplerInfo bilinear() {
         SamplerInfo si;
         si.minFilter = Filter.linear;
@@ -310,11 +322,20 @@ struct SamplerInfo {
         return si;
     }
 
+    /// Initializes a trilinear filtering SamplerInfo (that is also linear between mipmap levels)
     static @property SamplerInfo trilinear() {
         SamplerInfo si;
         si.minFilter = Filter.linear;
         si.magFilter = Filter.linear;
         si.mipmapFilter = Filter.linear;
+        return si;
+    }
+
+    /// Enables comparison operation for depth/stencil texture look-ups.
+    /// Use this with shadow samplers.
+    SamplerInfo withCompareOp(in CompareOp op) const {
+        SamplerInfo si = this;
+        si.compare = some(op);
         return si;
     }
 }
