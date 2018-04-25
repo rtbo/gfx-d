@@ -240,6 +240,35 @@ struct Mat(T, size_t R, size_t C)
         return _rep[index(r, c)];
     }
 
+    /// Return a slice of the matrix
+    @property Mat!(T, RE-RS, CE-CS) slice(size_t RS, size_t RE, size_t CS, size_t CE)() const
+    if (RE > RS && RE <= rowLength && CE > CS && CE <= columnLength)
+    {
+        Mat!(T, RE-RS, CE-CS) res = void;
+        static foreach (r; RS .. RE)
+        {
+            static foreach (c; CS .. CE)
+            {
+                res[r-RS, c-CS] = comp(r, c);
+            }
+        }
+        return res;
+    }
+
+    /// Assign a slice of this matrix
+    /// e.g: $(D_CODE mat.slice!(0, 2) = otherMat;)
+    @property void slice(size_t RS, size_t CS, U, size_t UR, size_t UC)(in Mat!(U, UR, UC) mat)
+    if (RS+UR <= rowLength && CS+UC <= columnLength && isImplicitlyConvertible!(U, T))
+    {
+        static foreach (r; 0 .. UR)
+        {
+            static foreach (c; 0 .. UC)
+            {
+                _rep[index(r+RS, c+CS)] = mat[r, c];
+            }
+        }
+    }
+
     /// Build an augmented matrix (add oth to the right of this matrix)
     /// ---
     /// immutable m = IMat2(4, 5, 6, 8);
