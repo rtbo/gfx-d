@@ -10,6 +10,7 @@
     "subPackages": [
         "bindings",
         "window",
+        "math",
         "genmesh",
 
         "examples/swapchain",

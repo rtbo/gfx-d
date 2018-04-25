@@ -1,0 +1,12 @@
+{
+	"name": "matmul",
+	"authors": [
+		"Remi Thebault"
+	],
+	"description": "A matrix multiplication benchmark",
+	"copyright": "Copyright © 2018, Remi Thebault",
+	"license": "MIT",
+	"dependencies": {
+        "gfx:math" : { "path": "../../../"  }
+	}
+}
