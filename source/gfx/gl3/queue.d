@@ -295,8 +295,7 @@ final class GlCommandBuffer : CommandBuffer
         uint curAttach = 0;
         foreach (ref a; _attachments) {
             if (a.enabled) {
-                auto cba = glPipeline.info.blendInfo.attachments[curAttach++];
-                a.attachment = cba;
+                a.attachment = glPipeline.info.blendInfo.attachments[curAttach++];
             }
         }
         assert(curAttach == glPipeline.info.blendInfo.attachments.length);
@@ -654,6 +653,7 @@ final class ClearColorCmd : GlCommand {
     }
 
     override void execute(GlQueue queue, Gl gl) {
+        gl.ColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         final switch (values.type) {
         case ClearColorValues.Type.f32:
             gl.ClearBufferfv(GL_COLOR, 0, &values.values.f32[0]);
