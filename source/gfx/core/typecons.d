@@ -33,8 +33,14 @@ version(unittest) {
 }
 
 /// constructs an option from a value
-Option!T some(T)(T val) {
-    return Option!T(val);
+auto some(T)(T val) {
+    static if (isNullAssignable!T) {
+        return Option!T(val);
+    }
+    else {
+        import std.traits : Unqual;
+        return Option!(Unqual!T)(val);
+    }
 }
 
 /// symbolic value that constructs an Option in none state
