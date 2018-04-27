@@ -28,9 +28,9 @@ alias IVec4 = Vec!(int, 4);
 auto vec(Comps...)(Comps comps)
 if (Comps.length > 0 && !(Comps.length == 1 && isStaticArray!(Comps[0])))
 {
-    import std.traits : CommonType;
+    import std.traits : CommonType, Unqual;
     alias FlatTup = CompTup!(Comps);
-    alias CompType = CommonType!(typeof(FlatTup.init.expand));
+    alias CompType = Unqual!(CommonType!(typeof(FlatTup.init.expand)));
     alias ResVec = Vec!(CompType, FlatTup.length);
     return ResVec (comps);
 }
@@ -123,7 +123,7 @@ template vec (size_t N)
 
     auto vec (T)(in T comp) if (isNumeric!T)
     {
-        return Vec!(T, N)(comp);
+        return Vec!(Unqual!T, N)(comp);
     }
 }
 
@@ -179,16 +179,18 @@ struct Vec(T, size_t N) if(N > 0 && isNumeric!T)
             "type sequence "~Comps.stringof~" (size "~nc.to!string~
             ") do not fit the size of "~Vec!(T, N).stringof~" (size "~N.to!string~").");
 
+        const ct = compTup(comps);
+
         static if (
-            is(typeof([ compTup(comps).expand ])) &&
-            isImplicitlyConvertible!(typeof([ compTup(comps).expand ]), typeof(_rep))
+            is(typeof([ ct.expand ])) &&
+            isImplicitlyConvertible!(typeof([ ct.expand ]), typeof(_rep))
         )
         {
-            _rep = [ compTup(comps).expand ];
+            _rep = [ ct.expand ];
         }
         else {
-            foreach (i, c; compTup(comps)) {
-                _rep[i] = cast(T)c;
+            static foreach (i; 0 .. ct.length) {
+                _rep[i] = cast(T)ct[i];
             }
         }
     }
@@ -382,9 +384,8 @@ struct Vec(T, size_t N) if(N > 0 && isNumeric!T)
                 && __traits(isIntegral, U))) && isNumeric!U)
     {
         Vec!(T, N) res = void;
-        foreach (i, ref r; res)
-        {
-            mixin("r = val " ~ op ~ " _rep[i];");
+        static foreach (i; 0 .. N) {
+            mixin("res[i] = val " ~ op ~ " _rep[i];");
         }
         return res;
     }
@@ -698,6 +699,7 @@ template CompTup(T...)
 auto compTup(T...)(T vals) pure nothrow @nogc @safe
 {
     import std.meta : Repeat;
+    import std.traits : Unqual;
     import std.typecons : tuple;
 
     static if (T.length == 0) {
@@ -707,7 +709,7 @@ auto compTup(T...)(T vals) pure nothrow @nogc @safe
         return tuple(vals[0]);
     }
     else static if (T.length == 1 && isStaticArray!(T[0])) {
-        alias U = typeof(T[0][0]);
+        alias U = Unqual!(typeof(T[0][0]));
         return Tuple!(Repeat!(T[0].length, U))(vals);
     }
     else static if (T.length == 1 && isVec!(T[0])) {
