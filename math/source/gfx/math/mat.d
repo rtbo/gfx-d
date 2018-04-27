@@ -525,6 +525,145 @@ unittest
     assert(approxUlp(ml * mr, exp));
 }
 
+/// Give the transposed form of a matrix.
+auto transpose(M)(in M mat) if (isMat!M)
+{
+    alias T = M.Component;
+    enum R = M.rowLength;
+    enum C = M.columnLength;
+
+    Mat!(T, C, R) res = void;
+    static foreach (r; 0 .. R) {
+        static foreach (c; 0 .. C) {
+            res[c, r] = mat[r, c];
+        }
+    }
+    return res;
+}
+
+/// Compute the determinant of a matrix.
+@property T determinant(T)(in Mat2!T mat)
+{
+    return mat[0, 0]*mat[1, 1] - mat[0, 1]*mat[1, 0];
+}
+/// ditto
+@property T determinant(T)(in Mat3!T mat)
+{
+    return mat[0, 0] * determinant(Mat2!T(mat[1, 1], mat[1, 2], mat[2, 1], mat[2, 2]))
+        - mat[1, 0] * determinant(Mat2!T(mat[0, 1], mat[0, 2], mat[2, 1], mat[2, 2]))
+        + mat[2, 0] * determinant(Mat2!T(mat[0, 1], mat[0, 2], mat[1, 1], mat[1, 2]));
+}
+/// ditto
+@property T determinant(T)(in Mat4!T mat)
+{
+    return mat[0, 0] * determinant(Mat3!T(
+        mat[1, 1], mat[1, 2], mat[1, 3],
+        mat[2, 1], mat[2, 2], mat[2, 3],
+        mat[3, 1], mat[3, 2], mat[3, 3],
+    ))
+    - mat[1, 0] * determinant(Mat3!T(
+        mat[0, 1], mat[0, 2], mat[0, 3],
+        mat[2, 1], mat[2, 2], mat[2, 3],
+        mat[3, 1], mat[3, 2], mat[3, 3],
+    ))
+    + mat[2, 0] * determinant(Mat3!T(
+        mat[0, 1], mat[0, 2], mat[0, 3],
+        mat[1, 1], mat[1, 2], mat[1, 3],
+        mat[3, 1], mat[3, 2], mat[3, 3],
+    ))
+    - mat[2, 0] * determinant(Mat3!T(
+        mat[0, 1], mat[0, 2], mat[0, 3],
+        mat[1, 1], mat[1, 2], mat[1, 3],
+        mat[2, 1], mat[2, 2], mat[2, 3],
+    ));
+}
+
+/// Compute the inverse of a matrix with Gaussian elimination method.
+/// Complexity O(n3).
+@property M inverse(M)(in M mat)
+if (isMat!M)
+{
+    import std.traits : isFloatingPoint;
+
+    static assert(isFloatingPoint!(M.Component), "inverse only works with floating point matrices");
+    static assert(M.rowLength == M.columnLength, "inverse only works with square matrices");
+
+    alias T = M.Component;
+    enum N = M.rowLength;
+
+    auto pivot = mat ~ Mat!(real, N, N).identity;
+    static assert(is(pivot.Component == real));
+    ptrdiff_t pivotR = -1;
+    static foreach (c; 0 .. N)
+    {{
+        // find the max row of column c.
+        auto colMax = pivot[pivotR+1, c];
+        ptrdiff_t maxR = pivotR+1;
+        foreach (r; pivotR+2 .. N)
+        {
+            const val = pivot[r, c];
+            if (val > colMax)
+            {
+                maxR = r;
+                colMax = val;
+            }
+        }
+        if (colMax != 0)
+        {
+            pivotR += 1;
+            // normalizing the row where the max was found
+            static foreach (cc; 0 .. 2*N)
+            {
+                pivot[maxR, cc] /= colMax;
+            }
+            // switching pivot row with the max row
+            if (pivotR != maxR)
+            {
+                static foreach (cc; 0 .. 2*N)
+                {{
+                    const swapTmp = pivot[maxR, cc];
+                    pivot[maxR, cc] = pivot[pivotR, cc];
+                    pivot[pivotR, cc] = swapTmp;
+                }}
+            }
+            static foreach (r; 0 .. N)
+            {
+                if (r != pivotR)
+                {
+                    const fact = pivot[r, c];
+                    if (fact != 0)
+                    {
+                        static foreach (cc; 0 .. 2*N)
+                        {
+                            pivot[r, cc] = pivot[r, cc] - fact * pivot[pivotR, cc];
+                        }
+                    }
+                }
+            }
+        }
+    }}
+    return cast(Mat!(T, N, N)) pivot.slice!(0, N, N, 2*N);
+}
+
+///
+unittest
+{
+    /// Example from https://en.wikipedia.org/wiki/Gaussian_elimination
+    const m = FMat3(
+        2, -1, 0,
+        -1, 2, -1,
+        0, -1, 2
+    );
+    const invM = inverse(m);
+
+    import gfx.math.approx : approxUlp;
+    assert(approxUlp(invM, FMat3(
+        0.75f, 0.5f, 0.25f,
+        0.5f,  1f,   0.5f,
+        0.25f, 0.5f, 0.75f
+    )));
+    assert(approxUlp(inverse(invM), m));
+}
 
 package:
 
