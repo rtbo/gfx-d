@@ -16,7 +16,7 @@ import gfx.graal.presentation;
 import gfx.graal.queue;
 import gfx.graal.renderpass;
 
-import gl3n.linalg : mat4, mat3, vec3, vec4;
+import gfx.math;
 
 import std.exception;
 import std.stdio;
@@ -56,21 +56,21 @@ class DepthExample : Example
     }
 
     struct Vertex {
-        float[3] position;
-        float[3] normal;
-        float[4] color;
+        FVec3 position;
+        FVec3 normal;
+        FVec4 color;
     }
 
     struct Matrices {
-        float[4][4] mvp;
-        float[4][4] normal;
+        FMat4 mvp;
+        FMat4 normal;
     }
 
     enum maxLights = 5;
 
     struct Light {
-        float[4] direction;
-        float[4] color;
+        FVec4 direction;
+        FVec4 color;
     }
 
     struct Lights {
@@ -117,10 +117,10 @@ class DepthExample : Example
 
         const cube = genCube()
                 .map!(f => quad(
-                    Vertex( f[0].p, f[0].n ),
-                    Vertex( f[1].p, f[1].n ),
-                    Vertex( f[2].p, f[2].n ),
-                    Vertex( f[3].p, f[3].n ),
+                    Vertex( fvec(f[0].p), fvec(f[0].n) ),
+                    Vertex( fvec(f[1].p), fvec(f[1].n) ),
+                    Vertex( fvec(f[2].p), fvec(f[2].n) ),
+                    Vertex( fvec(f[3].p), fvec(f[3].n) ),
                 ))
                 .triangulate()
                 .vertices()
@@ -128,9 +128,9 @@ class DepthExample : Example
 
         cubeLen = cube.vertices.length;
 
-        const red   = [ 1f, 0f, 0f, 1f ];
-        const green = [ 0f, 1f, 0f, 1f ];
-        const blue  = [ 0f, 0f, 1f, 1f ];
+        const red   = fvec( 1f, 0f, 0f, 1f );
+        const green = fvec( 0f, 1f, 0f, 1f );
+        const blue  = fvec( 0f, 0f, 1f, 1f );
         const colors = [ red, green, blue ];
 
         Vertex[] verts;
@@ -146,12 +146,9 @@ class DepthExample : Example
         vertBuf = createStaticBuffer(verts, BufferUsage.vertex);
         indBuf = createStaticBuffer(indices, BufferUsage.index);
 
-        auto normalize(in float[4] vec) {
-            return vec4(vec).normalized().vector;
-        }
         const lights = Lights( [
-            Light(normalize([1.0, 1.0, 1.0, 0.0]),    [0.8, 0.5, 0.2, 1.0]),
-            Light(normalize([-1.0, 1.0, 1.0, 0.0]),    [0.2, 0.5, 0.8, 1.0]),
+            Light(normalize(fvec(1.0, 1.0, -1.0, 0.0)),  fvec(0.8, 0.5, 0.2, 1.0)),
+            Light(normalize(fvec(-1.0, 1.0, -1.0, 0.0)), fvec(0.2, 0.5, 0.8, 1.0)),
             Light.init, Light.init, Light.init
         ], 2);
 
@@ -374,24 +371,26 @@ int main(string[] args) {
         // 6 RPM at 60 FPS
         const puls = 6 * 2*PI / 3600f;
         auto angle = 0f;
-        const view = mat4.look_at(vec3(0, -7, -2), vec3(0, 0, 0), vec3(0, -1, 0));
-        const proj = mat4.perspective(640, 480, 45, 1, 10);
+        const view = lookAt(fvec(0, -7, 2), fvec(0, 0, 0), fvec(0, 0, 1));
+        const proj = perspective!float(45, 4f/3f, 1f, 10f);
         const viewProj = proj*view;
 
         DepthExample.Matrices[3] matrices;
 
         while (!example.window.closeFlag) {
 
+            import gfx.math.inverse : inverse;
+
             foreach (m; 0 .. 3) {
                 const posAngle = cast(float)(m * 2f * PI / 3f);
-                const model = mat4.rotation(posAngle + angle, vec3(0, 0, 1))
-                        * mat4.translation(2, 0, 0)
-                        * mat4.rotation(-angle, vec3(0, 0, 1));
+                const model = rotation(posAngle + angle, fvec(0, 0, 1))
+                        * translation(2f, 0f, 0f)
+                        * rotation(-angle, fvec(0, 0, 1));
                 const mvp = viewProj*model;
-                const normals = model.inverse().transposed();
+                const normals = model.inverse();
                 matrices[m] = DepthExample.Matrices(
-                    mvp.transposed().matrix,
-                    normals.transposed().matrix
+                    mvp.transpose(),
+                    normals,
                 );
             }
 
