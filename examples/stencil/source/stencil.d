@@ -81,8 +81,8 @@ class StencilExample : Example
     immutable triangleLen = triangle.length * VertexP2C3.sizeof;
 
 
-    this() {
-        super("Stencil");
+    this(string[] args) {
+        super("Stencil", args);
     }
 
     override void dispose() {
@@ -380,10 +380,10 @@ class StencilExample : Example
 
 }
 
-int main() {
+int main(string[] args) {
 
     try {
-        auto example = new StencilExample();
+        auto example = new StencilExample(args);
         example.prepare();
         scope(exit) example.dispose();
 

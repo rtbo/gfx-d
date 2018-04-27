@@ -69,8 +69,8 @@ class TextureExample : Example
         uint num;
     }
 
-    this() {
-        super("Texture");
+    this(string[] args) {
+        super("Texture", args);
     }
 
     override void dispose() {
@@ -326,10 +326,10 @@ class TextureExample : Example
 
 }
 
-int main() {
+int main(string[] args) {
 
     try {
-        auto example = new TextureExample();
+        auto example = new TextureExample(args);
         example.prepare();
         scope(exit) example.dispose();
 

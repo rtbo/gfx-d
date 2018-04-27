@@ -37,8 +37,8 @@ class TriangleExample : Example
         float[4] color;
     }
 
-    this() {
-        super("Triangle");
+    this(string[] args) {
+        super("Triangle", args);
     }
 
     override void dispose() {
@@ -193,10 +193,10 @@ class TriangleExample : Example
 
 }
 
-int main() {
+int main(string[] args) {
 
     try {
-        auto example = new TriangleExample();
+        auto example = new TriangleExample(args);
         example.prepare();
         scope(exit) example.dispose();
 

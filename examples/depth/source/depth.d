@@ -23,7 +23,7 @@ import std.stdio;
 import std.typecons;
 import std.math;
 
-class CrateExample : Example
+class DepthExample : Example
 {
     Rc!RenderPass renderPass;
     Rc!Pipeline pipeline;
@@ -78,8 +78,8 @@ class CrateExample : Example
         uint num;
     }
 
-    this() {
-        super("Depth");
+    this(string[] args) {
+        super("Depth", args);
     }
 
     override void dispose() {
@@ -352,10 +352,10 @@ class CrateExample : Example
 
 }
 
-int main() {
+int main(string[] args) {
 
     try {
-        auto example = new CrateExample();
+        auto example = new DepthExample(args);
         example.prepare();
         scope(exit) example.dispose();
 
@@ -378,7 +378,7 @@ int main() {
         const proj = mat4.perspective(640, 480, 45, 1, 10);
         const viewProj = proj*view;
 
-        CrateExample.Matrices[3] matrices;
+        DepthExample.Matrices[3] matrices;
 
         while (!example.window.closeFlag) {
 
@@ -389,7 +389,7 @@ int main() {
                         * mat4.rotation(-angle, vec3(0, 0, 1));
                 const mvp = viewProj*model;
                 const normals = model.inverse().transposed();
-                matrices[m] = CrateExample.Matrices(
+                matrices[m] = DepthExample.Matrices(
                     mvp.transposed().matrix,
                     normals.transposed().matrix
                 );
