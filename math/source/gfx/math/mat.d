@@ -315,6 +315,11 @@ struct Mat(T, size_t R, size_t C)
         return row(r);
     }
 
+    /// Assign a row
+    void opIndexAssign(in Row row, in size_t r) {
+        _rep[r*columnLength .. (r+1)*columnLength] = row.data;
+    }
+
     /// Number of components per direction.
     size_t opDollar(size_t i)() const
     {
@@ -541,52 +546,15 @@ auto transpose(M)(in M mat) if (isMat!M)
     return res;
 }
 
-/// Compute the determinant of a matrix.
-@property T determinant(T)(in Mat2!T mat)
-{
-    return mat[0, 0]*mat[1, 1] - mat[0, 1]*mat[1, 0];
-}
-/// ditto
-@property T determinant(T)(in Mat3!T mat)
-{
-    return mat[0, 0] * determinant(Mat2!T(mat[1, 1], mat[1, 2], mat[2, 1], mat[2, 2]))
-        - mat[1, 0] * determinant(Mat2!T(mat[0, 1], mat[0, 2], mat[2, 1], mat[2, 2]))
-        + mat[2, 0] * determinant(Mat2!T(mat[0, 1], mat[0, 2], mat[1, 1], mat[1, 2]));
-}
-/// ditto
-@property T determinant(T)(in Mat4!T mat)
-{
-    return mat[0, 0] * determinant(Mat3!T(
-        mat[1, 1], mat[1, 2], mat[1, 3],
-        mat[2, 1], mat[2, 2], mat[2, 3],
-        mat[3, 1], mat[3, 2], mat[3, 3],
-    ))
-    - mat[1, 0] * determinant(Mat3!T(
-        mat[0, 1], mat[0, 2], mat[0, 3],
-        mat[2, 1], mat[2, 2], mat[2, 3],
-        mat[3, 1], mat[3, 2], mat[3, 3],
-    ))
-    + mat[2, 0] * determinant(Mat3!T(
-        mat[0, 1], mat[0, 2], mat[0, 3],
-        mat[1, 1], mat[1, 2], mat[1, 3],
-        mat[3, 1], mat[3, 2], mat[3, 3],
-    ))
-    - mat[2, 0] * determinant(Mat3!T(
-        mat[0, 1], mat[0, 2], mat[0, 3],
-        mat[1, 1], mat[1, 2], mat[1, 3],
-        mat[2, 1], mat[2, 2], mat[2, 3],
-    ));
-}
-
 /// Compute the inverse of a matrix with Gaussian elimination method.
 /// Complexity O(n3).
-@property M inverse(M)(in M mat)
+@property M gaussianInverse(M)(in M mat)
 if (isMat!M)
 {
     import std.traits : isFloatingPoint;
 
-    static assert(isFloatingPoint!(M.Component), "inverse only works with floating point matrices");
-    static assert(M.rowLength == M.columnLength, "inverse only works with square matrices");
+    static assert(isFloatingPoint!(M.Component), "gaussianInverse only works with floating point matrices");
+    static assert(M.rowLength == M.columnLength, "gaussianInverse only works with square matrices");
 
     alias T = M.Component;
     enum N = M.rowLength;
@@ -654,7 +622,7 @@ unittest
         -1, 2, -1,
         0, -1, 2
     );
-    const invM = inverse(m);
+    const invM = gaussianInverse(m);
 
     import gfx.math.approx : approxUlp;
     assert(approxUlp(invM, FMat3(
@@ -662,7 +630,7 @@ unittest
         0.5f,  1f,   0.5f,
         0.25f, 0.5f, 0.75f
     )));
-    assert(approxUlp(inverse(invM), m));
+    assert(approxUlp(gaussianInverse(invM), m));
 }
 
 package:
