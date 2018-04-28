@@ -633,7 +633,6 @@ unittest
     assert(approxUlp(gaussianInverse(invM), m));
 }
 
-package:
 
 /// Check whether MatT is a Mat
 template isMat(MatT)
@@ -661,6 +660,13 @@ template isMat(size_t R, size_t C, MatT)
         enum isMat = false;
     }
 }
+
+/// Check whether M is 2x2 matrix
+enum isMat2(M) = isMat!(2, 2, M);
+/// Check whether M is 3x3 matrix
+enum isMat3(M) = isMat!(3, 3, M);
+/// Check whether M is 4x4 matrix
+enum isMat4(M) = isMat!(4, 4, M);
 
 /// Check if all types of MatSeq are instantiation of Mat
 template areMat(MatSeq...)

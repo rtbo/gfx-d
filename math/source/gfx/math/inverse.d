@@ -1,18 +1,18 @@
 /// Matrix determinant and inverse
 module gfx.math.inverse;
 
-import gfx.math.mat : isMat, Mat2, Mat3, Mat4;
+import gfx.math.mat;
 
 // algos in this module are from GLM
 
 /// Compute the determinant of a matrix.
-@property T determinant(T)(in Mat2!T m)
+@property auto determinant(M)(in M m) if (isMat2!M)
 {
     return m[0, 0] * m[1, 1] - m[0, 1] * m[1, 0];
 }
 
 /// ditto
-@property T determinant(T)(in Mat3!T m)
+@property auto determinant(M)(in M m) if (isMat3!M)
 {
     return
         + m[0, 0] * (m[1, 1] * m[2, 2] - m[1, 2] * m[2, 1])
@@ -21,7 +21,7 @@ import gfx.math.mat : isMat, Mat2, Mat3, Mat4;
 }
 
 /// ditto
-@property T determinant(T)(in Mat4!T m)
+@property auto determinant(M)(in M m) if (isMat4!M)
 {
     import gfx.math.vec : vec4;
 
@@ -45,7 +45,7 @@ import gfx.math.mat : isMat, Mat2, Mat3, Mat4;
 }
 
 /// Compute the inverse of a matrix
-M inverse(M)(in M m) if (isMat!(2, 2, M))
+M inverse(M)(in M m) if (isMat2!M)
 {
     alias T = M.Component;
 
@@ -62,7 +62,7 @@ M inverse(M)(in M m) if (isMat!(2, 2, M))
 }
 
 /// ditto
-M inverse(M)(in M m) if (isMat!(3, 3, M))
+M inverse(M)(in M m) if (isMat3!M)
 {
     alias T = M.Component;
 
@@ -89,8 +89,6 @@ M inverse(M)(in M m) if (isMat!(3, 3, M))
 ///
 unittest
 {
-    import gfx.math.mat : FMat3;
-
     /// Example from https://en.wikipedia.org/wiki/Gaussian_elimination
     const m = FMat3(
         2, -1, 0,
@@ -110,9 +108,8 @@ unittest
 
 
 /// ditto
-M inverse(M)(in M m) if (isMat!(4, 4, M))
+M inverse(M)(in M m) if (isMat4!M)
 {
-    import gfx.math.mat : mat, transpose;
     import gfx.math.vec : vec;
 
     alias T = M.Component;
@@ -178,8 +175,141 @@ M inverse(M)(in M m) if (isMat!(4, 4, M))
 ///
 unittest {
     import gfx.math.transform : translation;
+    import gfx.math.approx : approxUlpAndAbs;
 
     const trM = translation!float(3, 4, 5);
+    const expected = translation!float(-3, -4, -5);
     const inv = inverse(trM);
 
+    assert(approxUlpAndAbs( inv, expected ));
+    assert(approxUlpAndAbs( inverse(inv), trM ));
+    assert(approxUlpAndAbs( inv * trM, FMat4.identity ));
+}
+
+/// Fast matrix inverse for affine matrices
+M affineInverse(M)(in M m) if(isMat3!M)
+{
+    import gfx.math.vec : vec;
+    alias T = M.Component;
+
+    const inv = inverse(m.slice!(0, 2, 0, 2));
+    const col = -inv * vec(m.column(2), T(1));
+
+    return M (
+        vec!T( inv[0], col[0] ),
+        vec!T( inv[1], col[1] ),
+        vec!T( 0, 0,    1 ),
+    );
+}
+
+/// ditto
+M affineInverse(M)(in M m) if(isMat4!M)
+{
+    import gfx.math.vec : vec;
+    alias T = M.Component;
+
+    const inv = inverse(m.slice!(0, 3, 0, 3));
+    const col = -(inv * m.column(3).xyz);
+
+    return M (
+        vec!T( inv[0], col[0] ),
+        vec!T( inv[1], col[1] ),
+        vec!T( inv[2], col[2] ),
+        vec!T( 0, 0, 0,    1 ),
+    );
+}
+
+/// Compute the invert transpose of a matrix
+M inverseTranspose(M)(in M m) if(isMat2!M)
+{
+    alias T = M.Component;
+
+    const oneOverD = T(1) / (m[0, 0] * m[1, 1] - m[0, 1] * m[1, 0]);
+
+    return M (
+        + m[1, 1] * oneOverD,
+        - m[0, 1] * oneOverD,
+        - m[1, 0] * oneOverD,
+        + m[0, 0] * oneOverD,
+    );
+}
+
+/// ditto
+M inverseTranspose(M)(in M m) if(isMat3!M)
+{
+    alias T = M.Component;
+
+    const oneOverD = T(1) / (
+        + m[0, 0] * (m[1, 1] * m[2, 2] - m[2, 1] * m[1, 2])
+        - m[1, 0] * (m[0, 1] * m[2, 2] - m[2, 1] * m[0, 2])
+        + m[2, 0] * (m[0, 1] * m[1, 2] - m[1, 1] * m[0, 2])
+    );
+
+    return M (
+        + (m[1, 1] * m[2, 2] - m[1, 2] * m[2, 1]) * oneOverD,
+        - (m[0, 1] * m[2, 2] - m[0, 2] * m[2, 1]) * oneOverD,
+        + (m[0, 1] * m[1, 2] - m[0, 2] * m[1, 1]) * oneOverD,
+        - (m[1, 0] * m[2, 2] - m[1, 2] * m[2, 0]) * oneOverD,
+        + (m[0, 0] * m[2, 2] - m[0, 2] * m[2, 0]) * oneOverD,
+        - (m[0, 0] * m[1, 2] - m[0, 2] * m[1, 0]) * oneOverD,
+        + (m[1, 0] * m[2, 1] - m[1, 1] * m[2, 0]) * oneOverD,
+        - (m[0, 0] * m[2, 1] - m[0, 1] * m[2, 0]) * oneOverD,
+        + (m[0, 0] * m[1, 1] - m[0, 1] * m[1, 0]) * oneOverD,
+    );
+}
+
+/// ditto
+M inverseTranspose(M)(in M m) if(isMat4!M)
+{
+    alias T = M.Component;
+
+    const subFactor00 = m[2, 2] * m[3, 3] - m[2, 3] * m[3, 2];
+    const subFactor01 = m[1, 2] * m[3, 3] - m[1, 3] * m[3, 2];
+    const subFactor02 = m[1, 2] * m[2, 3] - m[1, 3] * m[2, 2];
+    const subFactor03 = m[0, 2] * m[3, 3] - m[0, 3] * m[3, 2];
+    const subFactor04 = m[0, 2] * m[2, 3] - m[0, 3] * m[2, 2];
+    const subFactor05 = m[0, 2] * m[1, 3] - m[0, 3] * m[1, 2];
+    const subFactor06 = m[2, 1] * m[3, 3] - m[2, 3] * m[3, 1];
+    const subFactor07 = m[1, 1] * m[3, 3] - m[1, 3] * m[3, 1];
+    const subFactor08 = m[1, 1] * m[2, 3] - m[1, 3] * m[2, 1];
+    const subFactor09 = m[0, 1] * m[3, 3] - m[0, 3] * m[3, 1];
+    const subFactor10 = m[0, 1] * m[2, 3] - m[0, 3] * m[2, 1];
+    const subFactor11 = m[1, 1] * m[3, 3] - m[1, 3] * m[3, 1];
+    const subFactor12 = m[0, 1] * m[1, 3] - m[0, 3] * m[1, 1];
+    const subFactor13 = m[2, 1] * m[3, 2] - m[2, 2] * m[3, 1];
+    const subFactor14 = m[1, 1] * m[3, 2] - m[1, 2] * m[3, 1];
+    const subFactor15 = m[1, 1] * m[2, 2] - m[1, 2] * m[2, 1];
+    const subFactor16 = m[0, 1] * m[3, 2] - m[0, 2] * m[3, 1];
+    const subFactor17 = m[0, 1] * m[2, 2] - m[0, 2] * m[2, 1];
+    const subFactor18 = m[0, 1] * m[1, 2] - m[0, 2] * m[1, 1];
+
+    M inv = void;
+    inv[0, 0] = + (m[1, 1] * subFactor00 - m[2, 1] * subFactor01 + m[3, 1] * subFactor02);
+    inv[1, 0] = - (m[0, 1] * subFactor00 - m[2, 1] * subFactor03 + m[3, 1] * subFactor04);
+    inv[2, 0] = + (m[0, 1] * subFactor01 - m[1, 1] * subFactor03 + m[3, 1] * subFactor05);
+    inv[3, 0] = - (m[0, 1] * subFactor02 - m[1, 1] * subFactor04 + m[2, 1] * subFactor05);
+
+    inv[0, 1] = - (m[1, 0] * subFactor00 - m[2, 0] * subFactor01 + m[3, 0] * subFactor02);
+    inv[1, 1] = + (m[0, 0] * subFactor00 - m[2, 0] * subFactor03 + m[3, 0] * subFactor04);
+    inv[2, 1] = - (m[0, 0] * subFactor01 - m[1, 0] * subFactor03 + m[3, 0] * subFactor05);
+    inv[3, 1] = + (m[0, 0] * subFactor02 - m[1, 0] * subFactor04 + m[2, 0] * subFactor05);
+
+    inv[0, 2] = + (m[1, 0] * subFactor06 - m[2, 0] * subFactor07 + m[3, 0] * subFactor08);
+    inv[1, 2] = - (m[0, 0] * subFactor06 - m[2, 0] * subFactor09 + m[3, 0] * subFactor10);
+    inv[2, 2] = + (m[0, 0] * subFactor11 - m[1, 0] * subFactor09 + m[3, 0] * subFactor12);
+    inv[3, 2] = - (m[0, 0] * subFactor08 - m[1, 0] * subFactor10 + m[2, 0] * subFactor12);
+
+    inv[0, 3] = - (m[1, 0] * subFactor13 - m[2, 0] * subFactor14 + m[3, 0] * subFactor15);
+    inv[1, 3] = + (m[0, 0] * subFactor13 - m[2, 0] * subFactor16 + m[3, 0] * subFactor17);
+    inv[2, 3] = - (m[0, 0] * subFactor14 - m[1, 0] * subFactor16 + m[3, 0] * subFactor18);
+    inv[3, 3] = + (m[0, 0] * subFactor15 - m[1, 0] * subFactor17 + m[2, 0] * subFactor18);
+
+    const oneOverD = T(1) / (
+        + m[0, 0] * inv[0, 0]
+        + m[1, 0] * inv[1, 0]
+        + m[2, 0] * inv[2, 0]
+        + m[3, 0] * inv[3, 0]
+    );
+
+    return inv * oneOverD;
 }
