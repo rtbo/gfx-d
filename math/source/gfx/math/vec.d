@@ -686,6 +686,13 @@ template isVec(size_t N, VecT)
     }
 }
 
+/// ditto
+enum isVec2(VecT) = isVec!(2, VecT);
+/// ditto
+enum isVec3(VecT) = isVec!(3, VecT);
+/// ditto
+enum isVec4(VecT) = isVec!(4, VecT);
+
 
 package:
 
