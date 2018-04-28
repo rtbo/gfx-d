@@ -213,6 +213,33 @@ struct Mat(T, size_t R, size_t C)
         return res;
     }
 
+    // compile time indexing
+
+    /// Index a row at compile time
+    @property Row ct(size_t r)() const
+    {
+        static assert(r < rowLength);
+        enum start = r*columnLength;
+        enum end = (r+1)*columnLength;
+        return Row(_rep[start .. end]);
+    }
+
+    /// Index a component at compile time
+    @property Component ct(size_t r, size_t c)() const
+    {
+        static assert(r < rowLength && c < columnLength);
+        enum ind = r*columnLength + c;
+        return _rep[ind];
+    }
+
+    /// ditto
+    @property ref Component ct(size_t r, size_t c)()
+    {
+        static assert(r < rowLength && c < columnLength);
+        enum ind = r*columnLength + c;
+        return _rep[ind];
+    }
+
     // runtime indexing
 
     /// Index a matrix row.
@@ -364,9 +391,9 @@ struct Mat(T, size_t R, size_t C)
                 ResMat.Component resComp = 0;
                 static foreach (rc; 0 .. columnLength)
                 {
-                    resComp += comp(r, rc) * oth.comp(rc, c);
+                    resComp += ct!(r, rc) * oth.ct!(rc, c);
                 }
-                res[r, c] = resComp;
+                res.ct!(r, c) = resComp;
             }}
         }
         return res;
@@ -477,6 +504,11 @@ struct Mat(T, size_t R, size_t C)
         return res ~ "]";
     }
 
+    private static @property ctIndex(size_t r, size_t c)()
+    {
+        static assert(r < rowLength && c < columnLength);
+        return r * columnLength + c;
+    }
 
     private static size_t index(in size_t r, in size_t c)
     {
@@ -598,12 +630,12 @@ if (isMat!M)
             {
                 if (r != pivotR)
                 {
-                    const fact = pivot[r, c];
+                    const fact = pivot.ct!(r, c);
                     if (fact != 0)
                     {
                         static foreach (cc; 0 .. 2*N)
                         {
-                            pivot[r, cc] = pivot[r, cc] - fact * pivot[pivotR, cc];
+                            pivot.ct!(r, cc) = pivot.ct!(r, cc) - fact * pivot[pivotR, cc];
                         }
                     }
                 }
