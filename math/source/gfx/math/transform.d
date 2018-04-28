@@ -20,9 +20,9 @@ auto translation(X, Y)(in X x, in Y y)
 }
 
 /// ditto
-Mat3x3!T translation(T)(in Vec2!T v)
+auto translation(V)(in V v) if (isVec2!V)
 {
-    return Mat3x3!T (
+    return Mat3x3!(V.Component) (
         1, 0, v.x,
         0, 1, v.y,
         0, 0, 1,
@@ -42,9 +42,9 @@ auto translation(X, Y, Z)(in X x, in Y y, in Z z)
 }
 
 /// ditto
-Mat4x4!T translation(T)(in Vec3!T v)
+auto translation(V)(in V v) if (isVec3!V)
 {
-    return Mat4x4!T (
+    return Mat4x4!(V.Component) (
         1, 0, 0, v.x,
         0, 1, 0, v.y,
         0, 0, 1, v.z,
@@ -189,18 +189,18 @@ unittest
 
 
 /// Build a pure 3d rotation matrix with angle in radians
-auto rotationPure(V) (in real angle, in V axis)
-if (isVec!(3, V))
+auto rotationPure(T, V) (in T angle, in V axis)
+if (isFloatingPoint!T && isVec!(3, V))
 {
     static assert (
         isFloatingPoint!(V.Component),
         "rotationPure must be passed a floating point axis"
     );
     import std.math : cos, sin;
-    immutable u = normalize(cast(Vec3!real)axis);
-    immutable c = cos(angle);
-    immutable s = sin(angle);
-    immutable c1 = 1 - c;
+    const u = normalize(axis);
+    const c = cos(angle);
+    const s = sin(angle);
+    const c1 = 1 - c;
     return Mat3x3!(V.Component) (
         // row 1
         c1 * u.x * u.x  +  c,
@@ -219,11 +219,11 @@ if (isVec!(3, V))
 
 /// Build a rotation matrix.
 /// angle in radians.
-Mat3x3!T rotation(T) (in real angle)
+Mat3x3!T rotation(T) (in T angle) if (isFloatingPoint!T)
 {
     import std.math : cos, sin;
-    immutable c = cast(T) cos(angle);
-    immutable s = cast(T) sin(angle);
+    const c = cast(T) cos(angle);
+    const s = cast(T) sin(angle);
     return Mat3x3!T (
         c, -s, 0,
         s, c, 0,
@@ -232,14 +232,14 @@ Mat3x3!T rotation(T) (in real angle)
 }
 
 /// ditto
-auto rotation(V) (in real angle, in V axis)
-if (isVec!(3, V) && isFloatingPoint!(V.Component))
+auto rotation(T, V) (in T angle, in V axis)
+if (isVec!(3, V) && isFloatingPoint!T)
 {
     static assert (
         isFloatingPoint!(V.Component),
         "rotation must be passed a floating point axis"
     );
-    immutable m = rotationPure(angle, axis);
+    const m = rotationPure(angle, axis);
     return mat(
         vec(m[0], 0),
         vec(m[1], 0),
@@ -249,13 +249,9 @@ if (isVec!(3, V) && isFloatingPoint!(V.Component))
 }
 
 /// ditto
-auto rotation(X, Y, Z) (in real angle, in X x, in Y y, in Z z)
-if (allSatisfy!(isNumeric, X, Y, Z))
+auto rotation(T) (in T angle, in T x, in T y, in T z)
+if (isFloatingPoint!T)
 {
-    static assert (
-        allSatisfy!(isFloatingPoint, X, Y, Z),
-        "rotation must be passed a floating point axis"
-    );
     return rotation(angle, vec(x, y, z));
 }
 
@@ -263,8 +259,8 @@ if (allSatisfy!(isNumeric, X, Y, Z))
 /// This is equivalent to the expression $(D_CODE rotation(...) * m)
 /// but actually save computation by knowing
 /// where the ones and zeros are in a pure rotation matrix.
-M rotate (M) (in M m, in real angle)
-if (isMat!(3, 3, M))
+M rotate (M, T) (in M m, in T angle)
+if (isMat!(3, 3, M) && isFloatingPoint!T)
 {
     import std.math : cos, sin;
     immutable c = cos(angle);
@@ -284,8 +280,8 @@ if (isMat!(3, 3, M))
 }
 
 /// ditto
-M rotate (M) (in M m, in real angle)
-if (isMat!(2, 3, M))
+M rotate (M, T) (in M m, in T angle)
+if (isMat!(2, 3, M) && isFloatingPoint!T)
 {
     import std.math : cos, sin;
     immutable c = cos(angle);
@@ -303,11 +299,11 @@ if (isMat!(2, 3, M))
 }
 
 /// ditto
-M rotate (M, V) (in M m, in real angle, in V axis)
-if (isMat!(4, 4, M) && isVec!(3, V))
+M rotate (M, T, V) (in M m, in T angle, in V axis)
+if (isMat!(4, 4, M) && isFloatingPoint!T && isVec!(3, V))
 {
     static assert (
-        allSatisfy!(isFloatingPoint, V.Component),
+        isFloatingPoint!(V.Component),
         "rotate must be passed a floating point axis"
     );
     immutable r = rotationPure(angle, axis);
@@ -333,14 +329,14 @@ if (isMat!(4, 4, M) && isVec!(3, V))
 }
 
 /// ditto
-M rotate (M, V) (in M m, in real angle, in V axis)
-if (isMat!(3, 4, M) && isVec!(3, V) && isFloatingPoint!(V.Component))
+M rotate (M, T, V) (in M m, in T angle, in V axis)
+if (isMat!(3, 4, M) && isVec!(3, V) && isFloatingPoint!T)
 {
     static assert (
         isFloatingPoint!(V.Component),
         "rotate must be passed a floating point axis"
     );
-    immutable r = rotationPure(angle, axis);
+    const r = rotationPure(angle, axis);
     return M (
         // row 1
         r[0, 0]*m[0, 0] + r[0, 1]*m[1, 0] + r[0, 2]*m[2, 0],
@@ -361,8 +357,8 @@ if (isMat!(3, 4, M) && isVec!(3, V) && isFloatingPoint!(V.Component))
 }
 
 /// ditto
-M rotate (M, X, Y, Z) (in M m, in real angle, in X x, in Y y, in Z z)
-if ((isMat!(3, 4, M) || isMat!(4, 4, M)) && allSatisfy!(isFloatingPoint, X, Y, Z))
+M rotate (M, T) (in M m, in T angle, in T x, in T y, in T z)
+if ((isMat!(3, 4, M) || isMat!(4, 4, M)) && isFloatingPoint!T)
 {
     return rotate(m, angle, vec(x, y, z));
 }
@@ -409,9 +405,9 @@ if (allSatisfy!(isNumeric, X, Y))
 }
 
 /// ditto
-Mat3!T scale(T) (in Vec2!T v)
+auto scale(V) (in V v) if (isVec2!V)
 {
-    return Mat3!T (
+    return Mat3!(V.Component) (
         v.x, 0, 0,
         0, v.y, 0,
         0, 0, 1,
@@ -431,9 +427,9 @@ if (allSatisfy!(isNumeric, X, Y, Z))
 }
 
 /// ditto
-Mat4!T scale(T) (in Vec3!T v)
+auto scale(V) (in V v) if (isVec3!V)
 {
-    return Mat4!T (
+    return Mat4!(V.Component) (
         v.x, 0, 0, 0,
         0, v.y, 0, 0,
         0, 0, v.z, 0,
