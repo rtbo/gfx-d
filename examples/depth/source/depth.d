@@ -379,7 +379,7 @@ int main(string[] args) {
 
         while (!example.window.closeFlag) {
 
-            import gfx.math.inverse : inverse;
+            import gfx.math.inverse : affineInverse;
 
             foreach (m; 0 .. 3) {
                 const posAngle = cast(float)(m * 2f * PI / 3f);
@@ -387,10 +387,9 @@ int main(string[] args) {
                         * translation(2f, 0f, 0f)
                         * rotation(-angle, fvec(0, 0, 1));
                 const mvp = viewProj*model;
-                const normals = model.inverse();
                 matrices[m] = DepthExample.Matrices(
                     mvp.transpose(),
-                    normals,
+                    model.affineInverse(), // need the transpose of model inverse
                 );
             }
 
