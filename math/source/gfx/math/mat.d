@@ -562,6 +562,15 @@ struct Mat(T, size_t R, size_t C)
         return this;
     }
 
+    /// Assign operation of a matrix with a matrix on its right.
+    auto opOpAssign(string op, M)(in M mat)
+    if ((op == "+" || op == "-" || op == "*") && is(typeof(mixin("this"~op~"mat"))))
+    {
+        const newThis = mixin("this "~op~" mat");
+        _rep = newThis._rep;
+        return this;
+    }
+
     string toString() const
     {
         /// [
