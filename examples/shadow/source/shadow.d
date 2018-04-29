@@ -13,7 +13,7 @@ import gfx.graal.pipeline;
 import gfx.graal.renderpass;
 import gfx.graal.sync;
 
-import gl3n.linalg : mat4, mat3, quat, vec3, vec4;
+import gfx.math;
 
 import std.math : PI;
 import std.stdio;
@@ -78,29 +78,29 @@ final class ShadowExample : Example
     // supporting structs
 
     static struct Vertex {
-        float[3] position;
-        float[3] normal;
+        FVec3 position;
+        FVec3 normal;
     }
 
     // uniform types
     static struct ShadowVsLocals {  // meshDynamicBuf (per mesh and per light)
-        float[4][4] proj;
+        FMat4 proj;
     }
 
     static struct MeshVsLocals {    // meshDynamicBuf (per mesh)
-        float[4][4] mvp;
-        float[4][4] model;
+        FMat4 mvp;
+        FMat4 model;
     }
 
     static struct MeshFsMaterial {  // meshDynamicBuf (per mesh)
-        float[4] color;
-        float[4] padding;
+        FVec4 color;
+        FVec4 padding;
     }
 
     static struct LightBlk {        // within MeshFsLights
-        float[4] position;
-        float[4] color;
-        float[4][4] proj;
+        FVec4 position;
+        FVec4 color;
+        FMat4 proj;
     }
 
     static struct MeshFsLights {     // ligUniformBuf (static, single instance)
@@ -115,15 +115,15 @@ final class ShadowExample : Example
         uint indOffset;
         uint numVertices;
         float pulse;
-        vec4 color;
-        mat4 model;
+        FVec4 color;
+        FMat4 model;
     }
 
     static struct Light {
-        vec4 position;
-        vec4 color;
-        mat4 view;
-        mat4 proj;
+        FVec4 position;
+        FVec4 color;
+        FMat4 view;
+        FMat4 proj;
         CommandBuffer cmdBuf;
         Rc!ImageView shadowPlane;
         Rc!Framebuffer shadowFb;
@@ -173,17 +173,13 @@ final class ShadowExample : Example
         preparePipelines();
     }
 
-    static auto columnMajor(in mat4 mat) {
-        return mat.transposed().matrix;
-    }
-
     void prepareSceneAndResources() {
 
         import std.exception : enforce;
 
         // setting up lights
 
-        enum numLights = 2;
+        enum numLights = 1;
 
         shadowTex = device.createImage(
             ImageType.d2Array, ImageDims.d2Array(shadowSize, shadowSize, numLights),
@@ -218,16 +214,16 @@ final class ShadowExample : Example
 
         auto ligCmdBufs = cmdPool.allocate(numLights);
 
-        auto makeLight(uint layer, float[3] pos, float[4] color, float fov)
+        auto makeLight(uint layer, FVec3 pos, FVec4 color, float fov)
         {
             enum near = 1f;
             enum far = 20f;
 
             Light l;
-            l.position = vec4(pos, 1);
-            l.color = vec4(color);
-            l.view = mat4.look_at(vec3(pos), vec3(0, 0, 0), vec3(0, 0, 1));
-            l.proj = mat4.perspective(100, 100, fov, near, far);
+            l.position = fvec(pos, 1);
+            l.color = color;
+            l.view = lookAt(pos, fvec(0, 0, 0), fvec(0, 0, 1));
+            l.proj = perspective(fov, 1f, near, far);
             l.shadowPlane = shadowTex.createView(
                 ImageType.d2,
                 ImageSubresourceRange(
@@ -240,9 +236,9 @@ final class ShadowExample : Example
             return l;
         }
         lights = [
-            makeLight(0, [7, -5, 10], [0.5, 0.7, 0.5, 1], 60),
-            makeLight(1, [-5, 7, 10], [0.7, 0.5, 0.5, 1], 45),
-            // makeLight(2, [10, 7, 5], [0.5, 0.5, 0.7, 1], 90),
+            makeLight(0, fvec(7, -5, 10), fvec(0.5, 0.7, 0.5, 1), 60),
+            // makeLight(1, fvec(-5, 7, 10), fvec(0.7, 0.5, 0.5, 1), 45),
+            // makeLight(2, fvec(10, 7, 5), fvec(0.5, 0.5, 0.7, 1), 90),
         ];
 
         {
@@ -250,7 +246,7 @@ final class ShadowExample : Example
             mfl.numLights = numLights;
             foreach (ind, l; lights) {
                 mfl.lights[ind] = LightBlk(
-                    l.position.vector, l.color.vector, columnMajor(l.proj*l.view)
+                    l.position, l.color, transpose(l.proj*l.view)
                 );
             }
             auto data = cast(void[])((&mfl)[0 .. 1]);
@@ -270,20 +266,20 @@ final class ShadowExample : Example
 
         const cube = genCube()
                 .map!(f => quad(
-                    Vertex( f[0].p, f[0].n ),
-                    Vertex( f[1].p, f[1].n ),
-                    Vertex( f[2].p, f[2].n ),
-                    Vertex( f[3].p, f[3].n ),
+                    Vertex( fvec(f[0].p), fvec(f[0].n) ),
+                    Vertex( fvec(f[1].p), fvec(f[1].n) ),
+                    Vertex( fvec(f[2].p), fvec(f[2].n) ),
+                    Vertex( fvec(f[3].p), fvec(f[3].n) ),
                 ))
                 .triangulate()
                 .vertices()
                 .indexCollectMesh();
 
         const planeVertices = [
-            Vertex([-7,  7,  0],    [ 0,  0,  1]),
-            Vertex([ 7,  7,  0],    [ 0,  0,  1]),
-            Vertex([ 7, -7,  0],    [ 0,  0,  1]),
-            Vertex([-7, -7,  0],    [ 0,  0,  1]),
+            Vertex(fvec(-7,  7,  0), fvec(0,  0,  1)),
+            Vertex(fvec( 7,  7,  0), fvec(0,  0,  1)),
+            Vertex(fvec( 7, -7,  0), fvec(0,  0,  1)),
+            Vertex(fvec(-7, -7,  0), fvec(0,  0,  1)),
         ];
 
         const ushort[] planeIndices = [ 0,  1,  2,  2,  3,  0 ];
@@ -299,29 +295,28 @@ final class ShadowExample : Example
         const planeNumIndices = cast(uint)planeIndices.length;
 
         auto makeMesh(in uint vertOffset, in uint indOffset, in uint numVertices, in float rpm,
-                      in mat4 model, in float[4] color) {
-            return Mesh(vertOffset, indOffset, numVertices, rpm*2*PI/3600f, vec4(color), model);
+                      in FMat4 model, in FVec4 color) {
+            return Mesh(vertOffset, indOffset, numVertices, rpm*2*PI/3600f, color, model);
         }
 
-        auto makeCube(in float rpm, in float[3] pos, in float scale, in float angle, in float[4] color) {
-            const offset = vec3(pos);
-            const r = quat.axis_rotation(angle*PI/180.0, offset.normalized).to_matrix!(4, 4);
-            const t = mat4.translation(offset);
-            const s = mat4.scaling(scale, scale, scale);
+        auto makeCube(in float rpm, in FVec3 pos, in float scale, in float angle, in FVec4 color) {
+            const r = rotation(angle*PI/180f, normalize(pos));
+            const t = translation(pos);
+            const s = gfx.math.scale(scale, scale, scale);
             const model = t * s * r;
             return makeMesh(cubeVertOffset, cubeIndOffset, cubeNumIndices, rpm, model, color);
         }
 
-        auto makePlane(in mat4 model, in float[4] color) {
+        auto makePlane(in FMat4 model, in FVec4 color) {
             return makeMesh(planeVertOffset, planeIndOffset, planeNumIndices, 0, model, color);
         }
 
         meshes = [
-            makeCube(3, [-2, -2, 2], 0.7, 10, [0.8, 0.2, 0.2, 1]),
-            makeCube(7, [2, -2, 2], 1.3, 50, [0.2, 0.8, 0.2, 1]),
-            makeCube(10, [-2, 2, 2], 1.1, 140, [0.2, 0.2, 0.8, 1]),
-            makeCube(5, [2, 2, 2], 0.9, 210, [0.8, 0.8, 0.2, 1]),
-            makePlane(mat4.identity, [1, 1, 1, 1]),
+            makeCube(3, fvec(-2, -2, 2), 0.7, 10, fvec(0.8, 0.2, 0.2, 1)),
+            // makeCube(7, fvec(2, -2, 2), 1.3, 50, fvec(0.2, 0.8, 0.2, 1)),
+            // makeCube(10, fvec(-2, 2, 2), 1.1, 140, fvec(0.2, 0.2, 0.8, 1)),
+            // makeCube(5, fvec(2, 2, 2), 0.9, 210, fvec(0.8, 0.8, 0.2, 1)),
+            makePlane(FMat4.identity, fvec(1, 1, 1, 1)),
         ];
 
         {
@@ -596,11 +591,11 @@ final class ShadowExample : Example
         }
     }
 
-    void updateBuffers(in mat4 viewProj) {
+    void updateBuffers(in FMat4 viewProj) {
 
-        const axis = vec3(0, 0, 1);
+        const axis = fvec(0, 0, 1);
         foreach (ref m; meshes) {
-            const r = quat.axis_rotation(m.pulse, axis).to_matrix!(4, 4);
+            const r = rotation(m.pulse, axis);
             m.model *= r;
         }
 
@@ -616,7 +611,7 @@ final class ShadowExample : Example
             auto mm = mem.mapMemory!ShadowVsLocals(0, lights.length*meshes.length);
             foreach (il, ref l; lights) {
                 foreach (im, ref m; meshes) {
-                    const mat = ShadowVsLocals(columnMajor(l.proj * l.view * m.model));
+                    const mat = ShadowVsLocals(transpose(l.proj * l.view * m.model));
                     mm[il*meshes.length + im] = mat;
                 }
             }
@@ -628,8 +623,8 @@ final class ShadowExample : Example
             auto mm = mem.mapMemory!MeshVsLocals(shadowVsLen, meshes.length);
             foreach (im, ref m; meshes) {
                 mm[im] = MeshVsLocals(
-                    columnMajor(viewProj * m.model),
-                    columnMajor(m.model),
+                    transpose(viewProj * m.model),
+                    transpose(m.model),
                 );
             }
             MappedMemorySet mms;
@@ -639,9 +634,7 @@ final class ShadowExample : Example
         {
             auto mm = mem.mapMemory!MeshFsMaterial(shadowVsLen+meshVsLen, meshes.length);
             foreach (im, ref m; meshes) {
-                mm[im] = MeshFsMaterial(
-                    m.color.vector
-                );
+                mm[im] = MeshFsMaterial( m.color );
             }
             MappedMemorySet mms;
             mm.addToSet(mms);
@@ -767,15 +760,6 @@ final class ShadowExample : Example
 
 }
 
-@property mat4 correctionMat() pure nothrow {
-    return mat4(
-        1f,     0f,     0f,     0f,
-        0f,     1f,     0f,     0f,
-        0f,     0f,   0.5f,     0f,
-        0f,     0f,   0.5f,     1f,
-    );
-}
-
 int main(string[] args) {
 
     try {
@@ -788,8 +772,8 @@ int main(string[] args) {
         };
 
         const winSize = example.surfaceSize;
-        const proj = mat4.perspective(winSize[0], winSize[1], 45, 1f, 20f);
-        const viewProj = proj * mat4.look_at(vec3(3, -10, 6), vec3(0, 0, 0), vec3(0, 0, 1));
+        const proj = perspective(45, winSize[0]/(cast(float)winSize[1]), 1f, 20f);
+        const viewProj = proj * lookAt(fvec(3, -10, 6), fvec(0, 0, 0), fvec(0, 0, 1));
 
         FPSProbe fpsProbe;
         fpsProbe.start();
