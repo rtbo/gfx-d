@@ -215,6 +215,22 @@ struct Mat(T, size_t R, size_t C)
 
     // compile time indexing
 
+    /// Index a component at compile time
+    @property Component ct(size_t r, size_t c)() const
+    {
+        static assert(r < rowLength && c < columnLength);
+        enum ind = r*columnLength + c;
+        return _rep[ind];
+    }
+
+    /// Assign a compile time indexed component
+    void ct(size_t r, size_t c)(in Component comp)
+    {
+        static assert(r < rowLength && c < columnLength);
+        enum ind = r*columnLength + c;
+        _rep[ind] = comp;
+    }
+
     /// Index a row at compile time
     @property Row ct(size_t r)() const
     {
@@ -224,20 +240,35 @@ struct Mat(T, size_t R, size_t C)
         return Row(_rep[start .. end]);
     }
 
-    /// Index a component at compile time
-    @property Component ct(size_t r, size_t c)() const
+    /// Assign a row indexed at compile time
+    void ct(size_t r)(in Row row)
     {
-        static assert(r < rowLength && c < columnLength);
-        enum ind = r*columnLength + c;
-        return _rep[ind];
+        static assert(r < rowLength);
+        enum start = r*columnLength;
+        enum end = (r+1)*columnLength;
+        _rep[start .. end] = row.array;
     }
 
-    /// ditto
-    @property ref Component ct(size_t r, size_t c)()
+    /// Index a column at compile time
+    @property Column ctCol(size_t c)() const
     {
-        static assert(r < rowLength && c < columnLength);
-        enum ind = r*columnLength + c;
-        return _rep[ind];
+        static assert(c < columnLength);
+        Column col = void;
+        static foreach (r; 0 .. rowLength) {{
+            enum ind = r*columnLength + c;
+            col[r] = _rep[ind];
+        }}
+        return col;
+    }
+
+    /// Assign a column indexed at compile time
+    void ctCol(size_t c)(in Column col)
+    {
+        static assert(r < columnLength);
+        static foreach (r; 0 .. rowLength) {{
+            enum ind = r*columnLength + c;
+            _rep[ind] = col[r];
+        }}
     }
 
     // runtime indexing
@@ -382,20 +413,50 @@ struct Mat(T, size_t R, size_t C)
         //  1 2 3     7 8     1*7 + 2*9 + 3*3   1*8 + 2*1 + 3*5
         //  4 5 6  x  9 1  =  4*7 + 5*9 + 6*3   4*8 + 5*9 + 6*3
         //            3 5
+
         alias ResMat = Mat!(CommonType!(T, U), rowLength, UC);
         ResMat res = void;
-        static foreach(r; 0 .. rowLength)
-        {
-            static foreach (c; 0 .. UC)
-            {{
-                ResMat.Component resComp = 0;
-                static foreach (rc; 0 .. columnLength)
-                {
-                    resComp += ct!(r, rc) * oth.ct!(rc, c);
-                }
-                res.ct!(r, c) = resComp;
-            }}
-        }
+
+        // following is tested but reduces performance by an order of magnitude
+        // it vectorizes row * col multiplication but has more indexing and moving of data
+        // import core.simd : float4;
+        // static if (is(T==float) && is(U==float) && R==4 && C==4 && __traits(compiles, float4.init * float4.init)) {
+        //     static foreach (r; 0 .. 4)
+        //     {
+        //         static foreach (c; 0 .. 4)
+        //         {{
+        //             float4 thisRow;
+        //             float4 othCol;
+        //             float4 vecRes;
+        //             thisRow.array[0..4] = (ct!r).array;
+        //             othCol.array[0..4] = (oth.ctCol!c).array;
+        //             vecRes = thisRow * othCol;
+
+        //             float[4] arr = vecRes.array;
+        //             ResMat.Component resComp = 0;
+        //             static foreach (rc; 0 .. columnLength)
+        //             {
+        //                 resComp += arr[rc];
+        //             }
+        //             res.ct!(r, c) = resComp;
+        //         }}
+        //     }
+        // }
+        // else {
+            static foreach(r; 0 .. rowLength)
+            {
+                static foreach (c; 0 .. UC)
+                {{
+                    ResMat.Component resComp = 0;
+                    static foreach (rc; 0 .. columnLength)
+                    {
+                        resComp += ct!(r, rc) * oth.ct!(rc, c);
+                    }
+                    res.ct!(r, c) = resComp;
+                }}
+            }
+        // }
+
         return res;
     }
 
