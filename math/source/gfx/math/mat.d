@@ -106,10 +106,12 @@ struct Mat(T, size_t R, size_t C)
 
     private T[R*C] _rep;
 
-    /// The amount of rows in the matrix.
+    /// The number of rows in the matrix.
     enum rowLength = R;
-    /// The amount of columns in the matrix.
+    /// The number of columns in the matrix.
     enum columnLength = C;
+    /// The number of components in the matrix;
+    enum compLength = R*C;
     /// The matrix rows type.
     alias Row = Vec!(T, columnLength);
     /// The matrix columns type.
@@ -207,7 +209,7 @@ struct Mat(T, size_t R, size_t C)
     if (__traits(compiles, cast(U)T.init))
     {
         Mat!(U, rowLength, columnLength) res = void;
-        static foreach (i; 0 .. rowLength*columnLength) {
+        static foreach (i; 0 .. compLength) {
             res._rep[i] = cast(U)_rep[i];
         }
         return res;
@@ -472,7 +474,7 @@ struct Mat(T, size_t R, size_t C)
             ResVec.Component resComp = 0;
             static foreach (c; 0 .. columnLength)
             {
-                resComp += comp(r, c) * vec[c];
+                resComp += ct!(r, c) * vec[c];
             }
             res[r] = resComp;
         }}
@@ -491,7 +493,7 @@ struct Mat(T, size_t R, size_t C)
             ResVec.Component resComp = 0;
             static foreach (r; 0 .. rowLength)
             {
-                resComp += vec[r] * comp(r, c);
+                resComp += vec[r] * ct!(r, c);
             }
             res[c] = resComp;
         }}
@@ -504,12 +506,23 @@ struct Mat(T, size_t R, size_t C)
     if ((op == "+" || op == "-" || op == "*" || op == "/") &&
         !is(CommonType!(T, U) == void))
     {
-        alias ResMat = Mat!(CommonType!(T, U), rowLength, columnLength);
+        // import core.simd;
+
+        alias ResT = CommonType!(T, U);
+        alias ResMat = Mat!(ResT, rowLength, columnLength);
         ResMat res = void;
-        static foreach (i; 0 .. rowLength*columnLength)
-        {
-            mixin("res._rep[i] = _rep[i] "~op~" val;");
-        }
+
+        // static if ((compLength%8)==0 && hasSIMD && hasAVX && is(ResT == float) && is(typeof(mixin("float8.init"~op~"val")))) {
+        //     simdScalarOp!(ResMat, U, float8, 8, "vec"~op~"val")(res, val);
+        // }
+        // else static if ((compLength%4)==0 && hasSIMD && is(ResT == float) && is(typeof(mixin("float4.init"~op~"val")))) {
+        //     simdScalarOp!(ResMat, U, float4, 4, "vec"~op~"val")(res, val);
+        // }
+        // else {
+            static foreach (i; 0 .. compLength) {
+                mixin("res._rep[i] = _rep[i] "~op~" val;");
+            }
+        // }
         return res;
     }
 
@@ -518,12 +531,23 @@ struct Mat(T, size_t R, size_t C)
     if ((op == "+" || op == "-" || op == "*" || op == "/") &&
         !is(CommonType!(T, U) == void))
     {
-        alias ResMat = Mat!(CommonType!(T, U), rowLength, columnLength);
+        // import core.simd;
+
+        alias ResT = CommonType!(T, U);
+        alias ResMat = Mat!(ResT, rowLength, columnLength);
         ResMat res = void;
-        static foreach (i; 0 .. rowLength*columnLength)
-        {
-            mixin("res._rep[i] = val "~op~" _rep[i];");
-        }
+
+        // static if ((compLength%8)==0 && hasSIMD && hasAVX && is(ResT == float) && is(typeof(mixin("val"~op~"float8.init")))) {
+        //     simdScalarOp!(ResMat, U, float8, 8, "val"~op~"vec")(res, val);
+        // }
+        // else static if ((compLength%4)==0 && hasSIMD && is(ResT == float) && is(typeof(mixin("val"~op~"float4.init")))) {
+        //     simdScalarOp!(ResMat, U, float4, 4, "val"~op~"vec")(res, val);
+        // }
+        // else {
+            static foreach (i; 0 .. compLength) {
+                mixin("res._rep[i] = val "~op~" _rep[i];");
+            }
+        // }
         return res;
     }
 
@@ -532,12 +556,11 @@ struct Mat(T, size_t R, size_t C)
     if ((op == "+" || op == "-" || op == "*" || op == "/") &&
         !is(CommonType!(T, U) == void))
     {
-        static foreach (i; 0 .. rowLength*columnLength) {
+        static foreach (i; 0 .. compLength) {
             mixin("_rep[i] "~op~"= val;");
         }
         return this;
     }
-
 
     string toString() const
     {
@@ -588,6 +611,18 @@ struct Mat(T, size_t R, size_t C)
             }
         }
         return code ~ ")";
+    }
+
+    private void simdScalarOp(M, U, SimdVecT, size_t size, string expr)(ref M res, in U val) const
+    {
+        static assert( (compLength % size) == 0 );
+        SimdVecT vec = void;
+        static foreach (i; 0 .. compLength/size) {{
+            enum start = i*size; enum end = start+size;
+            vec.array[0 .. size] = _rep[start .. end];
+            vec = mixin(expr);
+            res._rep[start .. end] = vec.array[0 .. size];
+        }}
     }
 }
 
@@ -782,6 +817,12 @@ template areMat(size_t R, size_t C, MatSeq...)
 }
 
 private:
+
+
+version (D_SIMD) { enum hasSIMD = true; } else { enum hasSIMD = false; }
+version (D_AVX) { enum hasAVX = true; } else { enum hasAVX = false; }
+version (D_AVX2) { enum hasAVX2 = true; } else { enum hasAVX2 = false; }
+
 
 /// Return a sequence of vectors and matrices as a flat tuple of rows.
 template rowTuple(Rows...)
