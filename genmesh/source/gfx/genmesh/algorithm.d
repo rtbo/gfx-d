@@ -105,15 +105,15 @@ if (isFace!FT)
         _fun(triangle(v, v, v));
     })), "cannot pass the proper triangle type to "~fun.stringof);
 
-    _fun(triangle(face[0], face[2], face[1]));
+    _fun(triangle(face[0], face[1], face[2]));
 
     static if (isFlexFace!FT) {
         if (face.length == 4) {
-            _fun(triangle(face[0], face[3], face[2]));
+            _fun(triangle(face[0], face[2], face[3]));
         }
     }
     else static if (isGenFace!FT && face.length == 4) {
-        _fun(triangle(face[0], face[3], face[2]));
+        _fun(triangle(face[0], face[2], face[3]));
     }
 }
 

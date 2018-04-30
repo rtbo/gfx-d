@@ -10,8 +10,8 @@ auto lookAt(V)(in V eye, in V target, in V up) if (isVec!V)
     alias T = V.Component;
 
     const z = normalize(eye - target);
-    const x = normalize(cross(z, up));
-    const y = cross(x, z);
+    const x = cross(normalize(up), z);
+    const y = cross(z, x);
 
     return Mat4!T(
         Vec4!T( x,      -dot(x, eye)),
