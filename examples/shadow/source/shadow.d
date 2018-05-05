@@ -56,7 +56,7 @@ final class ShadowExample : Example
     Light[] lights;
 
     // constants
-    enum shadowSize = 1024;
+    enum shadowSize = 2048;
     enum maxLights = 5;
 
     final class PerImage : Disposable
@@ -179,7 +179,7 @@ final class ShadowExample : Example
 
         // setting up lights
 
-        enum numLights = 1;
+        enum numLights = 3;
 
         shadowTex = device.createImage(
             ImageType.d2Array, ImageDims.d2Array(shadowSize, shadowSize, numLights),
@@ -216,7 +216,7 @@ final class ShadowExample : Example
 
         auto makeLight(uint layer, FVec3 pos, FVec4 color, float fov)
         {
-            enum near = 1f;
+            enum near = 5f;
             enum far = 20f;
 
             Light l;
@@ -237,8 +237,8 @@ final class ShadowExample : Example
         }
         lights = [
             makeLight(0, fvec(7, -5, 10), fvec(0.5, 0.7, 0.5, 1), 60),
-            // makeLight(1, fvec(-5, 7, 10), fvec(0.7, 0.5, 0.5, 1), 45),
-            // makeLight(2, fvec(10, 7, 5), fvec(0.5, 0.5, 0.7, 1), 90),
+            makeLight(1, fvec(-5, 7, 10), fvec(0.7, 0.5, 0.5, 1), 45),
+            makeLight(2, fvec(10, 7, 5), fvec(0.5, 0.5, 0.7, 1), 90),
         ];
 
         {
@@ -313,9 +313,9 @@ final class ShadowExample : Example
 
         meshes = [
             makeCube(3, fvec(-2, -2, 2), 0.7, 10, fvec(0.8, 0.2, 0.2, 1)),
-            // makeCube(7, fvec(2, -2, 2), 1.3, 50, fvec(0.2, 0.8, 0.2, 1)),
-            // makeCube(10, fvec(-2, 2, 2), 1.1, 140, fvec(0.2, 0.2, 0.8, 1)),
-            // makeCube(5, fvec(2, 2, 2), 0.9, 210, fvec(0.8, 0.8, 0.2, 1)),
+            makeCube(7, fvec(2, -2, 2), 1.3, 50, fvec(0.2, 0.8, 0.2, 1)),
+            makeCube(10, fvec(-2, 2, 2), 1.1, 140, fvec(0.2, 0.2, 0.8, 1)),
+            makeCube(5, fvec(2, 2, 2), 0.9, 210, fvec(0.8, 0.8, 0.2, 1)),
             makePlane(FMat4.identity, fvec(1, 1, 1, 1)),
         ];
 
@@ -513,7 +513,7 @@ final class ShadowExample : Example
         info.assembly = InputAssembly(Primitive.triangleList, No.primitiveRestart);
         info.rasterizer = Rasterizer(
             PolygonMode.fill, Cull.back, FrontFace.ccw, No.depthClamp,
-            none!DepthBias, 1f
+            some(DepthBias(1f, 0f, 2f)), 1f
         );
         info.viewports = [
             ViewportConfig(

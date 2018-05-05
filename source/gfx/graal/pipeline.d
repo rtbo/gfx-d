@@ -128,10 +128,20 @@ enum PolygonMode {
     fill, line, point,
 }
 
+/// Defines how a polygon can be offset (mainly to avoid shadow artifacts).
+/// Given m as maximum depth slope of the triangle and r as implementation defined
+/// minimal resolvable difference, the offset of the triangle is defined as follow:
+/// o = m * slopeFactor + r * constantFactor
+/// If clamp == 0f, o is used directly as effective offset.
+/// If clamp > 0f, the effective offset is min(o, clamp)
+/// If clamp < 0f, the effective offset is max(o, clamp)
 struct DepthBias
 {
+    /// Factor multiplied by the minimal resolvable difference of the depth buffer
     float constantFactor;
+    /// Clamps the effective offset to a particular value
     float clamp;
+    /// Factor multiplied by the maximum depth slope of the polygon.
     float slopeFactor;
 }
 

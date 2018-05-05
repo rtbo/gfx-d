@@ -46,18 +46,20 @@ void main() {
         Light light = lights.lights[i];
 
         // compute Lambertian diffuse term
-        vec3 light_dir = normalize(light.pos.xyz - v_Position);
-        float diffuse = max(0.0, dot(normal, light_dir));
+        const vec3 lightDir = normalize(light.pos.xyz - v_Position);
+        const float diffuse = max(0.0, dot(normal, lightDir));
 
         // project into the light space
-        vec4 light_local = light.proj * vec4(v_Position, 1.0);
+        const vec4 lightLocal = light.proj * vec4(v_Position, 1.0);
         // compute texture coordinates for shadow lookup
-        light_local.xyw = (light_local.xyz/light_local.w + 1.0) / 2.0;
-        // do we have to reverse y ?
-        // light_local.y = 1.0 - light_local.y;
-        light_local.z = i;
+        const vec4 shadowCoord = vec4(
+            ( lightLocal.xy / lightLocal.w + 1.0 ) / 2.0,
+            float(i),
+            lightLocal.z / lightLocal.w
+        );
         // do the lookup, using HW PCF and comparison
-        float shadow = texture(shadowSampler, light_local);
+        const float shadow = texture(shadowSampler, shadowCoord);
+
         // add light contribution
         color += shadow * diffuse * light.color.xyz;
     }
