@@ -363,7 +363,7 @@ private enum sharedAtomicMethods = q{
         immutable rc = atomicOp!"+="(_refCount, 1);
         debug(rc) {
             import std.experimental.logger : logf;
-            logf("retain %s: %s", typeof(this).stringof, rc);
+            logf("retain %s: %s -> %s", typeof(this).stringof, rc-1, rc);
         }
         return this;
     }
@@ -375,7 +375,7 @@ private enum sharedAtomicMethods = q{
 
         debug(rc) {
             import std.experimental.logger : logf;
-            logf("release %s: %s", typeof(this).stringof, rc);
+            logf("release %s: %s -> %s", typeof(this).stringof, rc+1, rc);
         }
         if (rc == 0 && disposeOnZero) {
             debug(rc) {

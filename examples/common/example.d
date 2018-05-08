@@ -250,7 +250,7 @@ class Example : Disposable
         graphicsQueue.submit([
             Submission (
                 [ StageWait(imageAvailableSem, PipelineStage.transfer) ],
-                [ renderingFinishSem ], [ cmdBufs[cmdBufInd] ]
+                [ renderingFinishSem.obj ], [ cmdBufs[cmdBufInd] ]
             )
         ], fences[cmdBufInd] );
     }

@@ -166,12 +166,12 @@ class SwapchainExample : Disposable
         presentQueue.submit([
             Submission (
                 [ StageWait(imageAvailableSem, PipelineStage.transfer) ],
-                [ renderingFinishSem ], [ presentCmdBufs[imgInd] ]
+                [ renderingFinishSem.obj ], [ presentCmdBufs[imgInd] ]
             )
         ], null);
 
         presentQueue.present(
-            [ renderingFinishSem ],
+            [ renderingFinishSem.obj ],
             [ PresentRequest(swapchain, imgInd) ]
         );
 

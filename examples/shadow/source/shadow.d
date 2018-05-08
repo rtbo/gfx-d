@@ -143,6 +143,7 @@ final class ShadowExample : Example
 
         descPool.unload();
 
+        shadowFinishedSem.unload();
         shadowRenderPass.unload();
         shadowPipeline.unload();
         shadowTex.unload();
@@ -382,7 +383,7 @@ final class ShadowExample : Example
     void prepareFramebuffers() {
         foreach (ref l; lights) {
             l.shadowFb = device.createFramebuffer(
-                shadowRenderPass, [ l.shadowPlane ], shadowSize, shadowSize, 1
+                shadowRenderPass, [ l.shadowPlane.obj ], shadowSize, shadowSize, 1
             );
         }
 
@@ -662,7 +663,7 @@ final class ShadowExample : Example
 
         auto shadowSubmission = Submission(
             [],
-            [ shadowFinishedSem ],
+            [ shadowFinishedSem.obj ],
             lights.map!(l => l.cmdBuf).array
         );
         auto meshSubmission = Submission(
@@ -670,7 +671,7 @@ final class ShadowExample : Example
                 StageWait(shadowFinishedSem, PipelineStage.fragmentShader),
                 StageWait(imageAvailableSem, PipelineStage.transfer)
             ],
-            [ renderingFinishSem ], [ cmdBufs[cmdBufInd] ]
+            [ renderingFinishSem.obj ], [ cmdBufs[cmdBufInd] ]
         );
 
         graphicsQueue.submit(
@@ -682,7 +683,7 @@ final class ShadowExample : Example
         );
 
         presentQueue.present(
-            [ renderingFinishSem ],
+            [ renderingFinishSem.obj ],
             [ PresentRequest(swapchain, imgInd) ]
         );
 
