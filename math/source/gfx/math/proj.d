@@ -1,4 +1,12 @@
 /// Projection matrices
+/// Assumption is made that the model-view coordinates are right-handed,
+/// with X to the right, Y up, and Z out of the screen.
+/// A second assumption is that in the final normalized clipping space, Z points into
+/// the screen.
+/// The projection transforms have two options (DepthClip and NDC) that will affect
+/// how the coordinates are transformed in the final normalized clipping space.
+/// NDC affects only X and Y (X always to the right, Y either upwards or downwards
+/// for leftHanded and rightHanded respectively), and DepthClip affects Z depth range.
 module gfx.math.proj;
 
 import gfx.math.mat;
@@ -635,19 +643,19 @@ alias perspective = perspectiveCT!(defNdc, defDepthClip);
 ///     near:   position of the near plane
 ///     far:    position of the far plane
 /// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
-Mat4!T perspectiveRT(T)(NDC ndc, DepthClip dc, in T l, in T r, in T b, in T t, in T n, in T f)
+Mat4!T perspectiveRT(T)(NDC ndc, DepthClip dc, in T fovx, in T aspect, in T near, in T far)
 {
     if (ndc == NDC.rightHand && dc == DepthClip.zeroToOne) {
-        return perspective_RH_01(l, r, b, t, n, f);
+        return perspective_RH_01(fovx, aspect, near, far);
     }
     else if (ndc == NDC.rightHand && dc == DepthClip.minusOneToOne) {
-        return perspective_RH_M11(l, r, b, t, n, f);
+        return perspective_RH_M11(fovx, aspect, near, far);
     }
     else if (ndc == NDC.leftHand && dc == DepthClip.zeroToOne) {
-        return perspective_LH_01(l, r, b, t, n, f);
+        return perspective_LH_01(fovx, aspect, near, far);
     }
     else if (ndc == NDC.leftHand && dc == DepthClip.minusOneToOne) {
-        return perspective_LH_M11(l, r, b, t, n, f);
+        return perspective_LH_M11(fovx, aspect, near, far);
     }
     else {
         assert(false);
