@@ -701,18 +701,28 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
             vkAssy.topology = infos[i].assembly.primitive.toVk();
             vkAssy.primitiveRestartEnable = infos[i].assembly.primitiveRestart ? VK_TRUE : VK_FALSE;
 
-            auto vkViewports = infos[i].viewports.map!(vc => vc.viewport).map!(
-                vp => VkViewport(vp.x, vp.y, vp.width, vp.height, vp.minDepth, vp.maxDepth)
-            ).array;
-            auto vkScissors = infos[i].viewports.map!(vc => vc.scissors).map!(
-                r => VkRect2D(VkOffset2D(r.x, r.y), VkExtent2D(r.width, r.height))
-            ).array;
             auto vkViewport = new VkPipelineViewportStateCreateInfo;
             vkViewport.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-            vkViewport.viewportCount = cast(uint)max(1, infos[i].viewports.length);
-            vkViewport.pViewports = vkViewports.ptr;
-            vkViewport.scissorCount = cast(uint)max(1, infos[i].viewports.length);
-            vkViewport.pScissors = vkScissors.ptr;
+            if (infos[i].viewports.length) {
+                auto vkViewports = infos[i].viewports.map!(vc => vc.viewport).map!(
+                    vp => VkViewport(vp.x, vp.y, vp.width, vp.height, vp.minDepth, vp.maxDepth)
+                ).array;
+                auto vkScissors = infos[i].viewports.map!(vc => vc.scissors).map!(
+                    r => VkRect2D(VkOffset2D(r.x, r.y), VkExtent2D(r.width, r.height))
+                ).array;
+                vkViewport.viewportCount = cast(uint)infos[i].viewports.length;
+                vkViewport.pViewports = vkViewports.ptr;
+                vkViewport.scissorCount = cast(uint)infos[i].viewports.length;
+                vkViewport.pScissors = vkScissors.ptr;
+            }
+            else {
+                static const dummyVp = VkViewport(0f, 0f, 1f, 1f, 0f, 1f);
+                static const dummySc = VkRect2D(VkOffset2D(0, 0), VkExtent2D(1, 1));
+                vkViewport.viewportCount = 1;
+                vkViewport.pViewports = &dummyVp;
+                vkViewport.scissorCount = 1;
+                vkViewport.pScissors = &dummySc;
+            }
 
             auto vkRasterizer = new VkPipelineRasterizationStateCreateInfo;
             vkRasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;

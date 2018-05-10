@@ -212,6 +212,9 @@ interface CommandBuffer
     void copyBufferToImage(Buffer srcBuffer, ImageBase dstImage,
                            in ImageLayout dstLayout, in BufferImageCopy[] regions);
 
+    void setViewport(in uint firstViewport, in Viewport[] viewports);
+    void setScissor(in uint firstScissor, in Rect[] scissors);
+
     void beginRenderPass(RenderPass rp, Framebuffer fb,
                          Rect area, ClearValues[] clearValues);
 

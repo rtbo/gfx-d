@@ -263,12 +263,12 @@ class DepthExample : Example
             PolygonMode.fill, Cull.back, FrontFace.ccw, No.depthClamp,
             none!DepthBias, 1f
         );
-        info.viewports = [
-            ViewportConfig(
-                Viewport(0, 0, cast(float)surfaceSize[0], cast(float)surfaceSize[1]),
-                Rect(0, 0, surfaceSize[0], surfaceSize[1])
-            )
-        ];
+        // info.viewports = [
+        //     ViewportConfig(
+        //         Viewport(0, 0, cast(float)surfaceSize[0], cast(float)surfaceSize[1]),
+        //         Rect(0, 0, surfaceSize[0], surfaceSize[1])
+        //     )
+        // ];
         info.depthInfo = DepthInfo(
             Yes.enabled, Yes.write, CompareOp.less, No.boundsTest, 0f, 1f
         );
@@ -282,6 +282,7 @@ class DepthExample : Example
             ],
             [ 0f, 0f, 0f, 0f ]
         );
+        info.dynamicStates = [ DynamicState.viewport, DynamicState.scissor ];
         info.layout = layout;
         info.renderPass = renderPass;
         info.subpassIndex = 0;
@@ -327,6 +328,9 @@ class DepthExample : Example
         auto fb = framebuffers[imgInd];
 
         buf.begin(No.persistent);
+
+        buf.setViewport(0, [ Viewport(0f, 0f, cast(float)surfaceSize[0], cast(float)surfaceSize[1]) ]);
+        buf.setScissor(0, [ Rect(0, 0, surfaceSize[0], surfaceSize[1]) ]);
 
         buf.beginRenderPass(
             renderPass, fb.framebuffer,

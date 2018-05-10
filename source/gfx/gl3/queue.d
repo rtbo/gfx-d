@@ -134,7 +134,7 @@ final class GlCommandPool : CommandPool
 final class GlCommandBuffer : CommandBuffer
 {
     import gfx.core.typecons : Trans;
-    import gfx.core.types : Rect;
+    import gfx.core.types : Rect, Viewport;
     import gfx.gl3 : GlShare, GlInfo;
     import gfx.gl3.conv : toGl;
     import gfx.gl3.pipeline : GlPipeline, GlRenderPass;
@@ -248,6 +248,16 @@ final class GlCommandBuffer : CommandBuffer
         }
     }
 
+    override void setViewport(in uint firstViewport, in Viewport[] viewports)
+    {
+        _cmds ~= new SetViewportsCmd(firstViewport, viewports);
+    }
+
+    override void setScissor(in uint firstScissor, in Rect[] scissors)
+    {
+        _cmds ~= new SetScissorsCmd(firstScissor, scissors);
+    }
+
     override void beginRenderPass(RenderPass rp, Framebuffer fb,
                                   Rect area, ClearValues[] clearValues)
     {
@@ -287,7 +297,7 @@ final class GlCommandBuffer : CommandBuffer
         auto glPipeline = cast(GlPipeline)pipeline;
 
         _cmds ~= new BindProgramCmd(glPipeline.prog);
-        _cmds ~= new SetViewportsCmd(glPipeline.info.viewports);
+        _cmds ~= new SetViewportConfigsCmd(glPipeline.info.viewports);
         _cmds ~= new SetRasterizerCmd(glPipeline.info.rasterizer);
         _cmds ~= new SetDepthInfoCmd(glPipeline.info.depthInfo);
         _cmds ~= new SetStencilInfoCmd(glPipeline.info.stencilInfo);
@@ -468,10 +478,13 @@ final class GlCommandBuffer : CommandBuffer
 private:
 
 struct GlState {
+    import gfx.core.types : Rect, Viewport;
     import gfx.graal.pipeline : DepthInfo, Rasterizer, StencilInfo, ViewportConfig;
 
     GLuint prog;
-    ViewportConfig[] vcs;
+    const(ViewportConfig)[] vcs;
+    const(Viewport)[] viewports;
+    const(Rect)[] scissors;
     Rasterizer rasterizer;
     DepthInfo depthInfo;
     StencilInfo stencilInfo;
@@ -593,7 +606,7 @@ final class SetupFramebufferCmd : GlCommand
     }
 }
 
-final class SetViewportsCmd : GlCommand
+final class SetViewportConfigsCmd : GlCommand
 {
     import gfx.graal.pipeline : ViewportConfig;
     ViewportConfig[] viewports;
@@ -641,6 +654,99 @@ final class SetViewportsCmd : GlCommand
         }
 
         queue.state.vcs = viewports;
+    }
+}
+
+final class SetViewportsCmd : GlCommand
+{
+    import gfx.core.types : Viewport;
+
+    uint firstViewport;
+    const(Viewport)[] viewports;
+
+    this (in uint firstViewport, const(Viewport)[] viewports) {
+        this.firstViewport = firstViewport;
+        this.viewports = viewports;
+    }
+
+    override void execute(GlQueue queue, Gl gl) {
+
+        if (queue.state.viewports == viewports) return;
+
+        bool useArray = viewports.length > 1 || firstViewport > 0;
+
+        if (useArray && !queue.info.viewportArray) {
+            import std.experimental.logger : error;
+            error("ARB_viewport_array not supported");
+            viewports = viewports[0..1];
+            firstViewport = 0;
+            useArray = false;
+        }
+
+        if (useArray) {
+            foreach (i, vp; viewports) {
+                gl.ViewportIndexedf(cast(GLuint)(i+firstViewport), vp.x, vp.y, vp.width, vp.height);
+                gl.DepthRangeIndexed(cast(GLuint)(i+firstViewport), vp.minDepth, vp.maxDepth);
+            }
+        }
+        else if (viewports.length == 1) {
+            const vp = viewports[0];
+            gl.Viewport(
+                cast(GLint)vp.x, cast(GLint)vp.y,
+                cast(GLsizei)vp.width, cast(GLsizei)vp.height
+            );
+            gl.DepthRangef(vp.minDepth, vp.maxDepth);
+        }
+
+        queue.state.viewports = viewports;
+    }
+}
+
+final class SetScissorsCmd : GlCommand
+{
+    import gfx.core.types : Rect;
+
+    uint firstScissor;
+    const(Rect)[] scissors;
+
+    this (in uint firstScissor, const(Rect)[] scissors) {
+        this.firstScissor = firstScissor;
+        this.scissors = scissors;
+    }
+
+    override void execute(GlQueue queue, Gl gl)
+    {
+        import std.algorithm : equal, map;
+
+        if (queue.state.scissors == scissors) return;
+
+        bool useArray = scissors.length > 1 || firstScissor > 0;
+        if (useArray && !queue.info.viewportArray) {
+            import std.experimental.logger : error;
+            error("ARB_viewport_array not supported");
+            scissors = scissors[0..1];
+            firstScissor = 0;
+            useArray = false;
+        }
+
+        if (useArray) {
+            foreach (i, sc; scissors) {
+                gl.ScissorIndexed(
+                    cast(GLuint)(i+firstScissor),
+                    cast(GLint)sc.x, cast(GLint)sc.y,
+                    cast(GLsizei)sc.width, cast(GLsizei)sc.height
+                );
+            }
+        }
+        else if (scissors.length == 1) {
+            const sc = scissors[0];
+            gl.Scissor(
+                cast(GLint)sc.x, cast(GLint)sc.y,
+                cast(GLsizei)sc.width, cast(GLsizei)sc.height
+            );
+        }
+
+        queue.state.scissors = scissors;
     }
 }
 

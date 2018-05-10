@@ -212,6 +212,20 @@ final class VulkanCommandBuffer : CommandBuffer
         );
     }
 
+    override void setViewport(in uint firstViewport, in Viewport[] viewports)
+    {
+        import gfx.core.util : transmute;
+        const vkVp = transmute!(const(VkViewport)[])(viewports);
+        vk.CmdSetViewport(vkObj, firstViewport, cast(uint)vkVp.length, vkVp.ptr);
+    }
+
+    override void setScissor(in uint firstScissor, in Rect[] scissors)
+    {
+        import gfx.core.util : transmute;
+        const vkSc = transmute!(const(VkRect2D)[])(scissors);
+        vk.CmdSetScissor(vkObj, firstScissor, cast(uint)vkSc.length, vkSc.ptr);
+    }
+
     override void beginRenderPass(RenderPass rp, Framebuffer fb,
                                   Rect area, ClearValues[] clearValues)
     {
