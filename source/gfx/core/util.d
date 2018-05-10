@@ -61,12 +61,37 @@ template unsafeCast(U) if (is(U == const))
 
 
 /// Return a bit by bit unchecked identical representation of the passed argument
-@system
-U transmute(U, T)(in T value)
+template transmute(U)
 {
-    static assert(T.sizeof == U.sizeof, "can only transmute to identical object size");
-    static assert(!is(T == class) && !is(T == interface), "cannot used transmute on objects");
-    static assert(!is(U == class) && !is(U == interface), "cannot used transmute on objects");
+    import std.traits : isDynamicArray;
 
-    return *cast(U*)cast(void*)&value;
+    static if (!isDynamicArray!U) {
+        @system @nogc nothrow pure
+        U transmute(T)(in T value)
+        {
+            static assert(T.sizeof == U.sizeof, "can only transmute to identical type size");
+            static assert(!is(T == class) && !is(T == interface), "cannot used transmute on objects");
+            static assert(!is(U == class) && !is(U == interface), "cannot used transmute on objects");
+
+            return *cast(U*)cast(void*)&value;
+        }
+    }
+    else {
+        @system @nogc nothrow pure
+        U transmute(T)(T[] value)
+        {
+            import std.traits : isMutable;
+
+            alias V = typeof(U.init[0]);
+
+            static assert(T.sizeof == V.sizeof, "can only transmute to identical type size");
+            static assert(!is(T == class) && !is(T == interface), "cannot used transmute on objects");
+            static assert(!is(V == class) && !is(V == interface), "cannot used transmute on objects");
+            static if (!isMutable!V) {
+                static assert(!isMutable!T, "transmute is not meant to cast constness away");
+            }
+
+            return (cast(V*)cast(void*)value.ptr)[0 .. value.length];
+        }
+    }
 }
