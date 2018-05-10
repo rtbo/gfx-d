@@ -12,7 +12,76 @@ final class GlDeviceMemory : DeviceMemory
     import gfx.core.rc : atomicRcCode;
     import gfx.graal.memory : MemProps;
 
-    mixin(atomicRcCode);
+    //mixin(atomicRcCode);
+    private size_t _refCount=0;
+    import std.typecons : Flag, Yes;
+
+    public final shared override @property size_t refCountShared() const
+    {
+        import core.atomic : atomicLoad;
+        return atomicLoad(_refCount);
+    }
+
+    public final shared override shared(typeof(this)) retainShared()
+    {
+        import core.atomic : atomicOp;
+        immutable rc = atomicOp!"+="(_refCount, 1);
+        debug(rc) {
+            import std.experimental.logger : logf;
+            logf("retain %s: %s -> %s", typeof(this).stringof, rc-1, rc);
+        }
+        return this;
+    }
+
+    public final shared override shared(typeof(this)) releaseShared(in Flag!"disposeOnZero" disposeOnZero = Yes.disposeOnZero)
+    {
+        import core.atomic : atomicOp;
+        immutable rc = atomicOp!"-="(_refCount, 1);
+
+        debug(rc) {
+            import std.experimental.logger : logf;
+            logf("release %s: %s -> %s", typeof(this).stringof, rc+1, rc);
+        }
+        if (rc == 0 && disposeOnZero) {
+            debug(rc) {
+                import std.experimental.logger : logf;
+                logf("dispose %s", typeof(this).stringof);
+            }
+            synchronized(this) {
+                // cast shared away
+                import gfx.core.rc : Disposable;
+                auto obj = cast(Disposable)this;
+                obj.dispose();
+            }
+            return null;
+        }
+        else {
+            return this;
+        }
+    }
+
+    public final shared override shared(typeof(this)) rcLockShared()
+    {
+        import core.atomic : atomicLoad, cas;
+        while (1) {
+            immutable c = atomicLoad(_refCount);
+
+            if (c == 0) {
+                debug(rc) {
+                    import std.experimental.logger : logf;
+                    logf("rcLock %s: %s", typeof(this).stringof, c);
+                }
+                return null;
+            }
+            if (cas(&_refCount, c, c+1)) {
+                debug(rc) {
+                    import std.experimental.logger : logf;
+                    logf("rcLock %s: %s", typeof(this).stringof, c+1);
+                }
+                return this;
+            }
+        }
+    }
 
     private uint _typeIndex;
     private MemProps _props;
@@ -424,7 +493,76 @@ final class GlImageView : ImageView
     import gfx.graal.image : ImageBase, ImageDims, ImageSubresourceRange,
                              ImageType, Swizzle;
 
-    mixin(atomicRcCode);
+    //mixin(atomicRcCode);
+    private size_t _refCount=0;
+    import std.typecons : Flag, Yes;
+
+    public final shared override @property size_t refCountShared() const
+    {
+        import core.atomic : atomicLoad;
+        return atomicLoad(_refCount);
+    }
+
+    public final shared override shared(typeof(this)) retainShared()
+    {
+        import core.atomic : atomicOp;
+        immutable rc = atomicOp!"+="(_refCount, 1);
+        debug(rc) {
+            import std.experimental.logger : logf;
+            logf("retain %s: %s -> %s", typeof(this).stringof, rc-1, rc);
+        }
+        return this;
+    }
+
+    public final shared override shared(typeof(this)) releaseShared(in Flag!"disposeOnZero" disposeOnZero = Yes.disposeOnZero)
+    {
+        import core.atomic : atomicOp;
+        immutable rc = atomicOp!"-="(_refCount, 1);
+
+        debug(rc) {
+            import std.experimental.logger : logf;
+            logf("release %s: %s -> %s", typeof(this).stringof, rc+1, rc);
+        }
+        if (rc == 0 && disposeOnZero) {
+            debug(rc) {
+                import std.experimental.logger : logf;
+                logf("dispose %s", typeof(this).stringof);
+            }
+            synchronized(this) {
+                // cast shared away
+                import gfx.core.rc : Disposable;
+                auto obj = cast(Disposable)this;
+                obj.dispose();
+            }
+            return null;
+        }
+        else {
+            return this;
+        }
+    }
+
+    public final shared override shared(typeof(this)) rcLockShared()
+    {
+        import core.atomic : atomicLoad, cas;
+        while (1) {
+            immutable c = atomicLoad(_refCount);
+
+            if (c == 0) {
+                debug(rc) {
+                    import std.experimental.logger : logf;
+                    logf("rcLock %s: %s", typeof(this).stringof, c);
+                }
+                return null;
+            }
+            if (cas(&_refCount, c, c+1)) {
+                debug(rc) {
+                    import std.experimental.logger : logf;
+                    logf("rcLock %s: %s", typeof(this).stringof, c+1);
+                }
+                return this;
+            }
+        }
+    }
 
     private Gl gl;
     private GlInfo glInfo;

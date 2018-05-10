@@ -32,8 +32,7 @@ struct DeviceFeatures {
     }
 }
 
-struct DeviceLimits {
-}
+struct DeviceLimits {}
 
 enum DeviceType {
     other,
@@ -102,22 +101,10 @@ struct MappedMemorySet
     }
 
     package(gfx) void addMM(MM mm) {
-        mm.dm.retain();
         mms ~= mm;
     }
 
-
     package(gfx) MM[] mms;
-
-    this(this) {
-        import std.algorithm : each;
-        mms.each!(m => m.dm.retain());
-    }
-
-    ~this() {
-        import std.algorithm : each;
-        mms.each!(m => m.dm.release());
-    }
 }
 
 /// Handle to a logical device

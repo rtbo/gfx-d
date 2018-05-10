@@ -664,7 +664,7 @@ final class ShadowExample : Example
         auto shadowSubmission = Submission(
             [],
             [ shadowFinishedSem.obj ],
-            lights.map!(l => l.cmdBuf).array
+            lights.map!((ref Light l) { return l.cmdBuf; }).array
         );
         auto meshSubmission = Submission(
             [
@@ -696,7 +696,7 @@ final class ShadowExample : Example
 
     override void recordCmds(ulong cmdBufInd, ulong imgInd)
     {
-        void recordLight(uint il, Light l) {
+        void recordLight(uint il, ref Light l) {
             auto buf = l.cmdBuf;
             buf.begin(No.persistent);
 

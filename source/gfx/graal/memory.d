@@ -42,7 +42,7 @@ struct MemoryRequirements {
 
 struct MemoryMap(T)
 {
-    private Rc!DeviceMemory dm;
+    private DeviceMemory dm;
     private size_t offset;
     private T[] data;
 
@@ -63,7 +63,7 @@ struct MemoryMap(T)
 
     void addToSet(ref MappedMemorySet set)
     {
-        set.addMM(MappedMemorySet.MM(dm.obj, offset, data.length*T.sizeof));
+        set.addMM(MappedMemorySet.MM(dm, offset, data.length*T.sizeof));
     }
 
     size_t opDollar() {
