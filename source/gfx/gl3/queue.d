@@ -258,6 +258,41 @@ final class GlCommandBuffer : CommandBuffer
         _cmds ~= new SetScissorsCmd(firstScissor, scissors);
     }
 
+    override void setDepthBounds(in float minDepth, in float maxDepth)
+    {
+        warningf("unimplemented GL command");
+    }
+
+    void setLineWidth(in float lineWidth)
+    {
+        _cmds ~= new SetLineWidthCmd(lineWidth);
+    }
+
+    override void setDepthBias(in float constFactor, in float clamp, in float slopeFactor)
+    {
+        _cmds ~= new SetDepthBiasCmd(constFactor, clamp, slopeFactor);
+    }
+
+    override void setStencilCompareMask(in StencilFace faceMask, in uint compareMask)
+    {
+        warningf("unimplemented GL command");
+    }
+
+    override void setStencilWriteMask(in StencilFace faceMask, in uint writeMask)
+    {
+        warningf("unimplemented GL command");
+    }
+
+    override void setStencilReference(in StencilFace faceMask, in uint reference)
+    {
+        warningf("unimplemented GL command");
+    }
+
+    override void setBlendConstants(in float[4] blendConstants)
+    {
+        _cmds ~= new SetBlendConstantsCmd(blendConstants);
+    }
+
     override void beginRenderPass(RenderPass rp, Framebuffer fb,
                                   Rect area, ClearValues[] clearValues)
     {
@@ -747,6 +782,48 @@ final class SetScissorsCmd : GlCommand
         }
 
         queue.state.scissors = scissors;
+    }
+}
+
+final class SetLineWidthCmd : GlCommand
+{
+    float lineWidth;
+    this (in float lineWidth) {
+        this.lineWidth = lineWidth;
+    }
+    override void execute(GlQueue queue, Gl gl) {
+        gl.LineWidth(this.lineWidth);
+    }
+}
+
+final class SetDepthBiasCmd : GlCommand
+{
+    float constFactor;
+    float clamp;
+    float slopeFactor;
+
+    mixin(allFieldsCtor!(typeof(this)));
+
+    override void execute(GlQueue queue, Gl gl)
+    {
+        if (queue.info.polygonOffsetClamp) {
+            gl.PolygonOffsetClamp(slopeFactor, constFactor, clamp);
+        }
+        else {
+            gl.PolygonOffset(slopeFactor, constFactor);
+        }
+    }
+}
+
+final class SetBlendConstantsCmd : GlCommand
+{
+    float[4] constants;
+
+    mixin(allFieldsCtor!(typeof(this)));
+
+    override void execute(GlQueue queue, Gl gl)
+    {
+        gl.BlendColor(constants[0], constants[1], constants[2], constants[3]);
     }
 }
 

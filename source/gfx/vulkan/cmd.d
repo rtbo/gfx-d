@@ -226,6 +226,41 @@ final class VulkanCommandBuffer : CommandBuffer
         vk.CmdSetScissor(vkObj, firstScissor, cast(uint)vkSc.length, vkSc.ptr);
     }
 
+    override void setDepthBounds(in float minDepth, in float maxDepth)
+    {
+        vk.CmdSetDepthBounds(vkObj, minDepth, maxDepth);
+    }
+
+    override void setLineWidth(in float lineWidth)
+    {
+        vk.CmdSetLineWidth(vkObj, lineWidth);
+    }
+
+    override void setDepthBias(in float constFactor, in float clamp, in float slopeFactor)
+    {
+        vk.CmdSetDepthBias(vkObj, constFactor, clamp, slopeFactor);
+    }
+
+    override void setStencilCompareMask(in StencilFace faceMask, in uint compareMask)
+    {
+        vk.CmdSetStencilCompareMask(vkObj, cast(VkStencilFaceFlags)faceMask, compareMask);
+    }
+
+    override void setStencilWriteMask(in StencilFace faceMask, in uint writeMask)
+    {
+        vk.CmdSetStencilWriteMask(vkObj, cast(VkStencilFaceFlags)faceMask, writeMask);
+    }
+
+    override void setStencilReference(in StencilFace faceMask, in uint reference)
+    {
+        vk.CmdSetStencilReference(vkObj, cast(VkStencilFaceFlags)faceMask, reference);
+    }
+
+    override void setBlendConstants(in float[4] blendConstants)
+    {
+        vk.CmdSetBlendConstants(vkObj, blendConstants);
+    }
+
     override void beginRenderPass(RenderPass rp, Framebuffer fb,
                                   Rect area, ClearValues[] clearValues)
     {

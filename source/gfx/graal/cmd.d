@@ -187,6 +187,13 @@ struct BufferImageCopy
     uint[3] extent;
 }
 
+enum StencilFace
+{
+    front = 1,
+    back = 2,
+    frontAndBack = 3,
+}
+
 interface CommandBuffer
 {
     @property CommandPool pool();
@@ -214,6 +221,13 @@ interface CommandBuffer
 
     void setViewport(in uint firstViewport, in Viewport[] viewports);
     void setScissor(in uint firstScissor, in Rect[] scissors);
+    void setDepthBounds(in float minDepth, in float maxDepth);
+    void setLineWidth(in float lineWidth);
+    void setDepthBias(in float constFactor, in float clamp, in float slopeFactor);
+    void setStencilCompareMask(in StencilFace faceMask, in uint compareMask);
+    void setStencilWriteMask(in StencilFace faceMask, in uint writeMask);
+    void setStencilReference(in StencilFace faceMask, in uint reference);
+    void setBlendConstants(in float[4] blendConstants);
 
     void beginRenderPass(RenderPass rp, Framebuffer fb,
                          Rect area, ClearValues[] clearValues);
