@@ -4,14 +4,15 @@
         "Rémi Thebault"
     ],
     "description": "D graphics rendering library",
-    "copyright": "Copyright © 2016, Rémi Thebault",
+    "copyright": "Copyright © 2016-2018, Rémi Thebault",
     "license": "MIT",
 
     "subPackages": [
         "bindings",
-        "window",
-        "math",
+        "desc",
         "genmesh",
+        "math",
+        "window",
 
         "examples/swapchain",
         "examples/triangle",

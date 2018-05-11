@@ -1,0 +1,12 @@
+{
+    "name": "desc",
+    "authors": [
+        "Rémi Thebault"
+    ],
+    "description": "D graphics rendering library - descriptive API package",
+    "copyright": "Copyright © 2018, Rémi Thebault",
+    "license": "MIT",
+    "dependencies": {
+        "sdlang-d": "~>0.10.2"
+    }
+}

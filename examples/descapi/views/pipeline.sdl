@@ -1,0 +1,55 @@
+graal:descriptorSetLayout {
+    store "dsl"
+    bindings {
+        0 descriptorType="uniformBufferDynamic" descriptorCount=1 stages="vertex"
+        1 descriptorType="uniformBuffer" descriptorCount=1 stages="fragment"
+    }
+}
+graal:pipelineLayout {
+    store "layout"
+    layouts {
+        "store:dsl"
+    }
+    // this is optional
+    ranges {}
+}
+graal:pipeline {
+    store "pl"
+    vertexShader "asset:shader.vert" entryPoint="main"
+    fragmentShader "asset:shader.frag" entryPoint="main"
+    inputBindings {
+        0 stride="sizeof:Vertex" instanced=off
+    }
+    inputAttribs {
+        // three ways to specify input attribs
+        0 binding=0 format="rgb32_sFloat" offset="0"
+        1 binding=0 format="formatof:Vertex.normal" offset="offsetof:Vertex.normal"
+        2 binding=0 member="Vertex.color" // shortcut to formatof and offsetof
+    }
+    assembly primitive="triangleList" primitiveRestart=off
+    // if depthBias needed, specify it in a children of rasterizer
+    rasterizer polygonMode="fill" cull="back" front="ccw" lineWidth=1.0f depthClamp=off
+    /* examples of static viewport specification, not used because in dynamicStates
+    viewports {
+        viewport x=0 y=0 width="value:win_width" height="value:win_height" minDepth=0 maxDepth=1
+        // if scissors not specified default to the following
+        scissors x=0 y=0 width="value:win_width" height="value:win_height"
+        // if specified there must be the same number of viewport and scissors
+        // (building array of ViewportConfig)
+    }
+    // the same can be shortcut like this
+    viewport x=0 y=0 width="value:win_width" height="value:win_height" minDepth=0 maxDepth=1
+    */
+    // if depthBounds needed, specify it in a children of depthInfo
+    depthInfo on write=on compareOp="less"
+    blendInfo {
+        logicOp off  // optional
+        attachments {
+            solid colorMask="rgba"
+        }
+        blendConstants 0 0 0 0 // can be omitted if not used in blending
+    }
+    dynamicStates "viewport"
+    layout "store:layout"
+    renderPass "store:rp" subpass=0
+}
