@@ -124,8 +124,8 @@ class TextureExample : Example
             return vec4(vec).normalized().vector;
         }
         const lights = Lights( [
-            Light(normalize([1.0, 1.0, 1.0, 0.0]),    [0.8, 0.5, 0.2, 1.0]),
-            Light(normalize([-1.0, 1.0, 1.0, 0.0]),    [0.2, 0.5, 0.8, 1.0]),
+            Light(normalize([1.0, 1.0, -1.0, 0.0]),    [0.8, 0.5, 0.2, 1.0]),
+            Light(normalize([-1.0, 1.0, -1.0, 0.0]),    [0.2, 0.5, 0.8, 1.0]),
             Light.init, Light.init, Light.init
         ], 2);
 
@@ -326,6 +326,18 @@ class TextureExample : Example
 
 }
 
+/// correction matrix for the vulkan coordinate system
+// (gl3n is made with opengl in mind)
+mat4 correctionMatrix() pure
+{
+    return mat4(
+        1f, 0f, 0f, 0f,
+        0f, -1f, 0f, 0f,
+        0f, 0f, 0.5f, 0.5f,
+        0f, 0f, 0f, 1f,
+    );
+}
+
 int main(string[] args) {
 
     try {
@@ -349,9 +361,9 @@ int main(string[] args) {
         // 6 RPM at 60 FPS
         const puls = 6 * 2*PI / 3600f;
         auto angle = 0f;
-        const view = mat4.look_at(vec3(0, -5, -3), vec3(0, 0, 0), vec3(0, -1, 0));
+        const view = mat4.look_at(vec3(0, -5, 3), vec3(0, 0, 0), vec3(0, 0, 1));
         const proj = mat4.perspective(640, 480, 45, 1, 10);
-        const viewProj = proj*view;
+        const viewProj = correctionMatrix() * proj*view;
 
         while (!example.window.closeFlag) {
             const model = mat4.rotation(angle, vec3(0, 0, 1));
