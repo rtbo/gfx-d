@@ -1,9 +1,9 @@
 {
-	"name": "depth",
+	"name": "declapi",
 	"authors": [
 		"Remi Thebault"
 	],
-	"description": "gfx-d depth example",
+	"description": "gfx-d declapi example",
 	"copyright": "Copyright © 2016, Remi Thebault",
 	"license": "MIT",
 	"targetType": "executable",

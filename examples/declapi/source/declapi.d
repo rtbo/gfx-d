@@ -1,10 +1,11 @@
-module depth;
+module declapi;
 
 import example;
 
 import gfx.core.rc;
 import gfx.core.typecons;
 import gfx.core.types;
+import gfx.decl.engine;
 import gfx.graal.buffer;
 import gfx.graal.cmd;
 import gfx.graal.device;
@@ -23,7 +24,7 @@ import std.stdio;
 import std.typecons;
 import std.math;
 
-class DescAPIExample : Example
+class DeclAPIExample : Example
 {
     Rc!RenderPass renderPass;
     Rc!Pipeline pipeline;
@@ -40,6 +41,8 @@ class DescAPIExample : Example
     Rc!DescriptorSetLayout setLayout;
     DescriptorSet set;
 
+    DeclarativeEngine declEng;
+
     class PerImage : Disposable {
         ImageBase       color;
         Rc!ImageView    colorView;
@@ -55,9 +58,15 @@ class DescAPIExample : Example
         }
     }
 
-    struct Vertex {
+    struct Vertex
+    {
+        @(Format.rgb32_sFloat)
         FVec3 position;
+
+        @(Format.rgb32_sFloat)
         FVec3 normal;
+
+        @(Format.rgba32_sFloat)
         FVec4 color;
     }
 
@@ -79,7 +88,7 @@ class DescAPIExample : Example
     }
 
     this(string[] args) {
-        super("Depth", args);
+        super("Declarative API", args);
     }
 
     override void dispose() {
@@ -96,11 +105,19 @@ class DescAPIExample : Example
         layout.unload();
         pipeline.unload();
         renderPass.unload();
+        declEng.dispose();
         super.dispose();
     }
 
     override void prepare() {
         super.prepare();
+
+        declEng = new DeclarativeEngine(device);
+        declEng.declareStruct!Vertex();
+        declEng.addView!"shader.vert.spv"();
+        declEng.addView!"shader.frag.spv"();
+        declEng.runSDLSource(cast(string)import("pipeline.sdl"));
+
         prepareBuffers();
         prepareRenderPass();
         prepareFramebuffers();
@@ -239,12 +256,7 @@ class DescAPIExample : Example
             cast(immutable(uint)[])import("shader.frag.spv"), "main"
         );
 
-        const layoutBindings = [
-            PipelineLayoutBinding(0, DescriptorType.uniformBufferDynamic, 1, ShaderStage.vertex),
-            PipelineLayoutBinding(1, DescriptorType.uniformBuffer, 1, ShaderStage.fragment),
-        ];
-
-        setLayout = device.createDescriptorSetLayout(layoutBindings);
+        setLayout = declEng.store.expect!DescriptorSetLayout("dsl");
         layout = device.createPipelineLayout([setLayout], []);
 
         PipelineInfo info;
@@ -356,7 +368,7 @@ class DescAPIExample : Example
 int main(string[] args) {
 
     try {
-        auto example = new DescAPIExample(args);
+        auto example = new DeclAPIExample(args);
         example.prepare();
         scope(exit) example.dispose();
 
@@ -379,7 +391,7 @@ int main(string[] args) {
         const proj = perspective!float(45, 4f/3f, 1f, 10f);
         const viewProj = proj*view;
 
-        DepthExample.Matrices[3] matrices;
+        DeclAPIExample.Matrices[3] matrices;
 
         while (!example.window.closeFlag) {
 
@@ -391,7 +403,7 @@ int main(string[] args) {
                         * translation(2f, 0f, 0f)
                         * rotation(-angle, fvec(0, 0, 1));
                 const mvp = viewProj*model;
-                matrices[m] = DepthExample.Matrices(
+                matrices[m] = DeclAPIExample.Matrices(
                     mvp.transpose(),
                     model.affineInverse(), // need the transpose of model inverse
                 );

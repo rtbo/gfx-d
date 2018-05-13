@@ -9,7 +9,6 @@
 
     "subPackages": [
         "bindings",
-        "desc",
         "genmesh",
         "math",
         "window",
@@ -19,10 +18,12 @@
         "examples/texture",
         "examples/depth",
         "examples/stencil",
-        "examples/shadow"
+        "examples/shadow",
+        "examples/declapi"
     ],
     "dependencies": {
         "gfx:bindings": "*",
+        "sdlang-d": "~>0.10.2",
         "spirv_cross": { "path": "3rdparty/spirv_cross-d" }
     },
 
