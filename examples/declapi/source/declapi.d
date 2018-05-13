@@ -116,7 +116,7 @@ class DeclAPIExample : Example
         declEng.declareStruct!Vertex();
         declEng.addView!"shader.vert.spv"();
         declEng.addView!"shader.frag.spv"();
-        declEng.runSDLSource(cast(string)import("pipeline.sdl"));
+        declEng.parseSDLSource(cast(string)import("pipeline.sdl"), "pipeline.sdl");
 
         prepareBuffers();
         prepareRenderPass();
@@ -249,9 +249,7 @@ class DeclAPIExample : Example
         Rc!ShaderModule vtxShader;
         Rc!ShaderModule fragShader;
 
-        vtxShader = device.createShaderModule(
-            cast(immutable(uint)[])import("shader.vert.spv"), "main"
-        );
+        vtxShader = declEng.store.expect!ShaderModule("vertexShader");
         fragShader = device.createShaderModule(
             cast(immutable(uint)[])import("shader.frag.spv"), "main"
         );

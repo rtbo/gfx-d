@@ -18,6 +18,30 @@ class GfxSDLErrorException : Exception
     }
 }
 
+class NoSuchAssetException : GfxSDLErrorException
+{
+    string assetPath;
+
+    this(string assetPath, Location location=Location.init)
+    {
+        import std.format : format;
+        this.assetPath = assetPath;
+        super(format("no such asset: %s", assetPath), location);
+    }
+}
+
+class NoSuchViewException : GfxSDLErrorException
+{
+    string viewName;
+
+    this(string viewName, Location location=Location.init)
+    {
+        import std.format : format;
+        this.viewName = viewName;
+        super(format("no such view: %s", viewName), location);
+    }
+}
+
 class NoSuchStructException : GfxSDLErrorException
 {
     string structName;
@@ -72,6 +96,7 @@ class DeclarativeEngine : Disposable
     private string[] _assetPaths;
     private immutable(void)[][string] _views;
     private StructDecl[] _structDecls;
+    private string[] _localKeys;
     private int _storeAnonKey;
 
 
@@ -102,69 +127,65 @@ class DeclarativeEngine : Disposable
         _structDecls ~= StructDecl.makeFor!T();
     }
 
-    void runSDLSource(string sdl, string filename=null)
+    void parseSDLSource(string sdl, string filename=null)
     {
         auto root = parseSource(sdl, filename);
-        runSDL(root);
+        parseSDL(root);
     }
 
-    void runSDLFile(string filename)
+    void parseSDLFile(string filename)
     {
         auto root = parseFile(filename);
-        runSDL(root);
+        parseSDL(root);
     }
 
 
-    private void runSDL(Tag root)
+    private void parseSDL(Tag root)
     {
         PipelineInfo[] plis;
         string[] plKeys;
 
         foreach (t; root.namespaces["graal"].tags) {
-            if (t.name == "descriptorSetLayout") {
+            if (t.name == "DescriptorSetLayout") {
                 DescriptorSetLayout dsl;
                 const key = parseDescriptorSetLayout(t, dsl);
-                store.store!DescriptorSetLayout(key, dsl);
+                _store.store!DescriptorSetLayout(key, dsl);
             }
-            else if (t.name == "pipelineLayout") {
+            else if (t.name == "PipelineLayout") {
                 PipelineLayout pll;
                 const key = parsePipelineLayout(t, pll);
-                store.store!PipelineLayout(key, pll);
+                _store.store!PipelineLayout(key, pll);
             }
-            else if (t.name == "pipeline") {
+            else if (t.name == "ShaderModule") {
+                ShaderModule sm;
+                const key = parseShaderModule(t, sm);
+                _store.store!ShaderModule(key, sm);
+            }
+            else if (t.name == "Pipeline") {
                 PipelineInfo pli = void;
-                plKeys ~= parsePipelineInfo(t, pli, true);
+                plKeys ~= parsePipelineInfo(t, pli);
                 plis ~= pli;
             }
-            else if (t.name == "pipelineInfo") {
+            else if (t.name == "PipelineInfo") {
                 PipelineInfo pli = void;
-                const key = parsePipelineInfo(t, pli, false);
-                store.store!PipelineInfo(key, pli);
+                const key = parsePipelineInfo(t, pli);
+                _store.store!PipelineInfo(key, pli);
             }
         }
 
         if (plis.length) {
-            static void releaseSh(ShaderModule shm) {
-                if (shm) shm.release();
-            }
             auto pls = _device.createPipelines(plis);
             foreach(i, pl; pls) {
-                store.store!Pipeline(plKeys[i], pl);
-                releaseSh(plis[i].shaders.vertex);
-                releaseSh(plis[i].shaders.tessControl);
-                releaseSh(plis[i].shaders.tessEval);
-                releaseSh(plis[i].shaders.geometry);
-                releaseSh(plis[i].shaders.fragment);
+                _store.store!Pipeline(plKeys[i], pl);
             }
         }
+
+        foreach (k; _localKeys) _store.remove(k);
     }
 
     private string parseDescriptorSetLayout(Tag tag, out DescriptorSetLayout dsl)
     {
         import std.conv : to;
-
-        string storeKey = tag.getTagValue!string("store");
-        if (!storeKey) storeKey = newAnonKey();
 
         PipelineLayoutBinding[] bindings;
         auto btags = tag.expectTag("bindings");
@@ -178,14 +199,11 @@ class DeclarativeEngine : Disposable
         }
 
         dsl = _device.createDescriptorSetLayout(bindings);
-        return storeKey;
+        return getStoreKey(tag);
     }
 
     private string parsePipelineLayout(Tag tag, out PipelineLayout pll)
     {
-        string storeKey = tag.getTagValue!string("store");
-        if (!storeKey) storeKey = newAnonKey();
-
         DescriptorSetLayout[] layouts;
         auto layoutsTag = tag.getTag("layouts");
         if (layoutsTag) {
@@ -207,12 +225,178 @@ class DeclarativeEngine : Disposable
         }
 
         pll = _device.createPipelineLayout(layouts, ranges);
-        return storeKey;
+        return getStoreKey(tag);
     }
 
-    private string parsePipelineInfo(Tag tag, out PipelineInfo plInfo, bool willReleaseShaders)
+    private string parseShaderModule(Tag tag, out ShaderModule mod)
     {
-        return null;
+        immutable(uint)[] src;
+        auto st = tag.expectTag("source");
+        string srcStr;
+        ubyte[] srcData;
+        if (st.tryGetValue!string(srcStr)) {
+            src = getShaderSrcFromString(srcStr, st.location);
+        }
+        else if (st.tryGetValue!(ubyte[])(srcData)) {
+            import std.exception : assumeUnique;
+            src = assumeUnique(cast(uint[])srcData);
+        }
+        else {
+            throw new GfxSDLErrorException(
+                "ill-formed source tag in graal:ShaderModule", tag.location
+            );
+        }
+
+        const ep = tag.getTagValue!string("entryPoint", "main");
+
+        mod = _device.createShaderModule(src, ep);
+        return getStoreKey(tag);
+    }
+
+    private string parseShaderModuleAttr(Tag tag, out ShaderModule mod)
+    {
+        immutable(uint)[] src;
+        auto srcAttr = enforce(findAttr(tag, "source"), new GfxSDLErrorException(
+            "source attribute is mandatory in graal:ShaderModule", tag.location
+        ));
+        string srcStr;
+        ubyte[] srcData;
+        if (srcAttr.tryGetValue!string(srcStr)) {
+            src = getShaderSrcFromString(srcStr, srcAttr.location);
+        }
+        else if (srcAttr.tryGetValue!(ubyte[])(srcData)) {
+            import std.exception : assumeUnique;
+            src = assumeUnique(cast(uint[])srcData);
+        }
+        else {
+            throw new GfxSDLErrorException(
+                "ill-formed source attribute in graal:ShaderModule", tag.location
+            );
+        }
+
+        const ep = tag.getAttribute!string("entryPoint", "main");
+
+        mod = _device.createShaderModule(src, ep);
+        return getStoreKeyAttr(tag);
+    }
+
+    immutable(uint)[] getShaderSrcFromString(in string srcStr, in Location location)
+    {
+        import std.algorithm : startsWith;
+
+        if (srcStr.startsWith("view:")) {
+            const name = srcStr["view:".length .. $];
+            return cast(immutable(uint)[])getView(name, location);
+        }
+        else if (srcStr.startsWith("asset:")) {
+            const name = srcStr["asset:".length .. $];
+            return cast(immutable(uint)[])getAsset(name, location);
+        }
+        else {
+            throw new GfxSDLErrorException(
+                format("\"%s\" could not lead to a shader source file", srcStr),
+                location
+            );
+        }
+    }
+
+    private string parsePipelineInfo(Tag tag, out PipelineInfo plInfo)
+    {
+        foreach (t; tag.expectTag("shaders").tags) {
+            ShaderModule sm;
+            if (t.attributes.length) {
+                // inline shader
+                const key = parseShaderModuleAttr(t, sm);
+                _store.store!ShaderModule(key, sm);
+            }
+            else {
+                // literal or alreadystored
+                sm = parseStoreRefOrLiteral!(ShaderModule, parseShaderModule)(t);
+            }
+            switch (t.name) {
+            case "vertex":      plInfo.shaders.vertex = sm; break;
+            case "tessControl": plInfo.shaders.tessControl = sm; break;
+            case "tessEval":    plInfo.shaders.tessEval = sm; break;
+            case "geometry":    plInfo.shaders.geometry = sm; break;
+            case "fragment":    plInfo.shaders.fragment = sm; break;
+            default:
+                throw new GfxSDLErrorException(
+                    "Unknown shader stage: " ~ t.name, t.location
+                );
+            }
+        }
+
+        foreach(t; tag.expectTag("inputBindings").tags) {
+            VertexInputBinding vib;
+            vib.binding = t.expectValue!int();
+            vib.stride = expectSizeOffsetAttr(t, "stride");
+            import std.typecons : Flag;
+            vib.instanced = cast(Flag!"instanced")t.getAttribute!bool("instanced", false);
+            plInfo.inputBindings ~= vib;
+        }
+
+        foreach(t; tag.expectTag("inputAttribs").tags) {
+            VertexInputAttrib via;
+            via.location = t.expectValue!int();
+            via.binding = t.expectAttribute!int("binding");
+            auto attr = t.findAttr("member");
+            if (attr) {
+                import std.algorithm : findSplit;
+                const ms = attr.value.get!string();
+                const sf = ms.findSplit(".");
+                if (!sf[2].length) {
+                    throw new GfxSDLErrorException(format(
+                        "could not resolve \"%s\" to a struct field", ms
+                    ), attr.location);
+                }
+                const s = findStruct(sf[0], attr.location);
+                via.format = s.getFormat(sf[2], attr.location);
+                via.offset = s.getOffset(sf[2], attr.location);
+            }
+            else {
+                via.format = expectFormatAttr(t, "format");
+                via.offset = expectSizeOffsetAttr(t, "offset");
+            }
+            plInfo.inputAttribs ~= via;
+        }
+
+        return getStoreKey(tag);
+    }
+
+    private string getStoreKey(Tag tag)
+    {
+        auto t = tag.getTag("store");
+        if (t) return t.expectValue!string();
+        t = tag.getTag("local-store");
+        if (t) {
+            const key = t.expectValue!string();
+            _localKeys ~= key;
+            return key;
+        }
+        else {
+            const key = newAnonKey();
+            _localKeys ~= key;
+            return key;
+        }
+    }
+
+    private string getStoreKeyAttr(Tag tag)
+    {
+        foreach (attr; tag.attributes) {
+            if (attr.name == "store") {
+                return attr.value.get!string();
+            }
+            if (attr.name == "local-store") {
+                const key = attr.value.get!string();
+                _localKeys ~= key;
+                return key;
+            }
+        }
+        {
+            const key = newAnonKey();
+            _localKeys ~= key;
+            return key;
+        }
     }
 
     private string newAnonKey()
@@ -220,6 +404,30 @@ class DeclarativeEngine : Disposable
         import std.conv : to;
         const key = ++_storeAnonKey;
         return key.to!string;
+    }
+
+    private immutable(void)[] getAsset(in string name, in Location location)
+    {
+        import std.algorithm : map;
+        import std.file : exists, read;
+        import std.path : buildPath;
+        import std.exception : assumeUnique;
+
+        foreach (p; _assetPaths.map!(ap => buildPath(ap, name))) {
+            if (exists(p)) {
+                return assumeUnique(read(p));
+            }
+        }
+        throw new NoSuchAssetException(name, location);
+    }
+
+    private immutable(void)[] getView(in string name, in Location location)
+    {
+        auto p = name in _views;
+        if (!p) {
+            throw new NoSuchViewException(name, location);
+        }
+        return *p;
     }
 
     private T parseStoreRefOrLiteral(T, alias parseF)(Tag tag)
@@ -246,9 +454,9 @@ class DeclarativeEngine : Disposable
             import std.algorithm : startsWith;
             if (!storeStr.startsWith("store:")) {
                 throw new GfxSDLErrorException(
-                    format("Cannot parse DescriptorSetLayout: " ~
+                    format("Cannot parse %s: " ~
                         "must specify a store reference or a literal " ~
-                        "(\"%s\" is not a valid store reference)", storeStr),
+                        "(\"%s\" is not a valid store reference)", T.stringof, storeStr),
                     tag.location
                 );
             }
@@ -283,7 +491,7 @@ class DeclarativeEngine : Disposable
             const struct_ = sf[0];
             const field = sf[2];
             const sd = findStruct(struct_, attr.location);
-            if (field) {
+            if (field.length) {
                 return cast(uint)sd.getSize(field, attr.location);
             }
             else {
@@ -307,6 +515,30 @@ class DeclarativeEngine : Disposable
         );
     }
 
+
+    private Format expectFormatAttr(Tag tag, in string attrName="format")
+    {
+        import std.algorithm : findSplit, startsWith;
+
+        auto formatStr = tag.expectAttribute!string(attrName);
+        if (formatStr.startsWith("formatof:")) {
+            const sf = formatStr["formatof:".length .. $].findSplit(".");
+            const struct_ = sf[0];
+            const field = sf[2];
+            if (!field.length) {
+                throw new GfxSDLErrorException(
+                    format("\"%s\" cannot resolve to a struct field (required by \"formatof:\"", sf),
+                    tag.location
+                );
+            }
+            return findStruct(struct_, tag.location).getFormat(field, tag.location);
+        }
+        else {
+            import std.conv : to;
+            return formatStr.to!Format;
+        }
+    }
+
     private StructDecl findStruct(in string name, Location location) {
         foreach (ref sd; _structDecls) {
             if (sd.name == name) return sd;
@@ -322,6 +554,39 @@ Attribute findAttr(Tag tag, string attrName)
     foreach (attr; tag.attributes)
         if (attr.name == attrName) return attr;
     return null;
+}
+
+bool tryGetValue(T)(Tag tag, out T val)
+{
+    foreach (ref v; tag.values) {
+        if (v.convertsTo!T) {
+            val = v.get!T();
+            return true;
+        }
+    }
+    return false;
+}
+
+bool tryGetValue(T)(Attribute attr, out T val)
+{
+    if (attr.value.convertsTo!T) {
+        val = attr.value.get!T();
+        return true;
+    }
+    return false;
+}
+
+bool tryGetAttr(T)(Tag tag, in string name, out T val)
+{
+    foreach (attr; tag.attributes) {
+        if (attr.name == name) {
+            if (attr.value.convertsTo!T) {
+                val = attr.value.get!T();
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 E parseFlags(E)(in string s) if (is(E == enum))
@@ -361,7 +626,6 @@ struct StructDecl
         alias N = FieldNameTuple!T;
 
         const offsets = T.init.tupleof.offsetof;
-
         StructDecl sd;
         sd.name = T.stringof;
         sd.size = T.sizeof;
