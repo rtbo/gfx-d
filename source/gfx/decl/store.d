@@ -10,16 +10,24 @@ class NoSuchKeyException : Exception
     private this(in string key, in Store store)
     {
         import std.format : format;
+        this.key = key;
         super(format("no such key in %s store: %s", store, key));
     }
 }
 
-// class WrongTypeException : Exception
-// {
-//     string type;
-//     string key;
+class WrongTypeException : Exception
+{
+    string type;
+    string key;
 
-// }
+    private this(in string type, in string key, in Store store)
+    {
+        import std.format : format;
+        this.type = type;
+        this.key = key;
+        super(format("key \"%s\" in store %s did not find the expected type: %s", key, store, type));
+    }
+}
 
 class DeclarativeStore : Disposable
 {
@@ -58,60 +66,66 @@ class DeclarativeStore : Disposable
     T expect(T)(in string key)
     {
         enum store = storeOf!T;
-        static if (store == Store.rc) {
-            auto val = key in _rcStore;
-            if (val) {
-                auto t = cast(T)*val;
-                if (t) return t;
-            }
+        T val = void;
+        if (tryLookUp!(T, store)(key, val)) {
+            return val;
         }
-        else static if (store == Store.value) {
-            auto val = key in _valueStore;
-            if (val) return *val;
+        else {
+            throw new NoSuchKeyException(key, store);
         }
-        else static if (store == Store.obj) {
-            auto val = key in _objStore;
-            if (val) {
-                static if (is(T : Object)) {
-                    return cast(T)(*val);
-                }
-                else {
-                    import gfx.core.util : unsafeCast;
-                    auto vo = unsafeCast!(ValueObject!T)(*val);
-                    return vo.payload;
-                }
-            }
-        }
-        else static assert(false);
-        throw new NoSuchKeyException(key, store);
     }
 
     T get(T)(in string key, T def=T.init)
     {
         enum store = storeOf!T;
+        T val = void;
+        if (tryLookUp!(T, store)(key, val)) {
+            return val;
+        }
+        else {
+            return def;
+        }
+    }
+
+    private bool tryLookUp(T, Store store)(in string key, out T val)
+    {
         static if (store == Store.rc) {
-            auto val = key in _rcStore;
-            if (val) return *val;
+            auto pval = key in _rcStore;
+            if (pval) {
+                val = cast(T)(*pval);
+                if (val) return true;
+                else throw new WrongTypeException(T.stringof, key, store);
+            }
         }
         else static if (store == Store.value) {
-            auto val = key in _valueStore;
-            if (val) return *val;
+            auto pval = key in _valueStore;
+            if (pval) {
+                if (pval.convertsTo!T) {
+                    val = pval.get!T();
+                    return true;
+                }
+                else throw new WrongTypeException(T.stringof, key, store);
+            }
         }
         else static if (store == Store.obj) {
-            auto val = key in _objStore;
-            if (val) {
+            auto pval = key in _objStore;
+            if (pval) {
                 static if (is(T : Object)) {
-                    return cast(T)(*val);
+                    val = cast(T)(*pval);
+                    if (val) return true;
                 }
                 else {
-                    import gfx.core.util : unsafeCast;
-                    auto vo = unsafeCast!(ValueObject!T)(*val);
-                    return vo.payload;
+                    auto vo = cast(ValueObject!T)(*pval);
+                    if (vo) {
+                        val = vo.payload;
+                        return true;
+                    }
                 }
+                throw new WrongTypeException(T.stringof, key, store);
             }
         }
         else static assert(false);
-        return def;
+        return false;
     }
 
     bool remove(in string key)

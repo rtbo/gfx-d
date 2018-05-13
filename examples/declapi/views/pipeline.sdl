@@ -5,15 +5,15 @@ graal:descriptorSetLayout {
         1 descriptorType="uniformBuffer" descriptorCount=1 stages="fragment"
     }
 }
-// graal:pipelineLayout {
-//     store "layout"
-//     layouts {
-//         "store:dsl"
-//     }
-//     // this is optional
-//     ranges {
-//     }
-// }
+graal:pipelineLayout {
+    store "layout"
+    layouts {
+        "store:dsl"
+    }
+    // this is optional
+    ranges {
+    }
+}
 // graal:pipeline {
 //     store "pl"
 //     vertexShader "view:shader.vert" entryPoint="main"

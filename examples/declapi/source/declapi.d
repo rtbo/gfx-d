@@ -257,7 +257,7 @@ class DeclAPIExample : Example
         );
 
         setLayout = declEng.store.expect!DescriptorSetLayout("dsl");
-        layout = device.createPipelineLayout([setLayout], []);
+        layout = declEng.store.expect!PipelineLayout("layout");
 
         PipelineInfo info;
         info.shaders.vertex = vtxShader;

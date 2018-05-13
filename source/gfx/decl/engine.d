@@ -3,44 +3,58 @@ module gfx.decl.engine;
 import gfx.core.rc : Disposable;
 import gfx.core.typecons : Option;
 import gfx.graal.format : Format;
+import sdlang;
 
-class NoSuchStructException : Exception
+class GfxSDLErrorException : Exception
 {
-    string structName;
+    string msg;
+    Location location;
 
-    this(string structName)
-    {
+    this(string msg, Location location) {
         import std.format : format;
-        this.structName = structName;
-        super(format("no such struct: %s", structName));
+        this.msg = msg;
+        this.location = location;
+        super(format("%s:(%s,%s): Gfx-SDL error: %s", location.file, location.line, location.col, msg));
     }
 }
 
-class NoSuchFieldException : Exception
+class NoSuchStructException : GfxSDLErrorException
+{
+    string structName;
+
+    this(string structName, Location location=Location.init)
+    {
+        import std.format : format;
+        this.structName = structName;
+        super(format("no such struct: %s", structName), location);
+    }
+}
+
+class NoSuchFieldException : GfxSDLErrorException
 {
     string structName;
     string fieldName;
 
-    this(string structName, string fieldName)
+    this(string structName, string fieldName, Location location=Location.init)
     {
         import std.format : format;
         this.structName = structName;
         this.fieldName = fieldName;
-        super(format("no such field: %s.%s", structName, fieldName));
+        super(format("no such field: %s.%s", structName, fieldName), location);
     }
 }
 
-class UnknownFieldFormatException : Exception
+class UnknownFieldFormatException : GfxSDLErrorException
 {
     string structName;
     string fieldName;
 
-    this(string structName, string fieldName)
+    this(string structName, string fieldName, Location location=Location.init)
     {
         import std.format : format;
         this.structName = structName;
         this.fieldName = fieldName;
-        super(format("field format is not known for: %s.%s", structName, fieldName));
+        super(format("field format is not known for: %s.%s", structName, fieldName), location);
     }
 }
 
@@ -50,7 +64,8 @@ class DeclarativeEngine : Disposable
     import gfx.decl.store : DeclarativeStore;
     import gfx.graal.device : Device;
     import gfx.graal.pipeline;
-    import sdlang;
+    import std.exception : enforce;
+    import std.format : format;
 
     private Rc!Device _device;
     private DeclarativeStore _store;
@@ -168,7 +183,31 @@ class DeclarativeEngine : Disposable
 
     private string parsePipelineLayout(Tag tag, out PipelineLayout pll)
     {
-        return null;
+        string storeKey = tag.getTagValue!string("store");
+        if (!storeKey) storeKey = newAnonKey();
+
+        DescriptorSetLayout[] layouts;
+        auto layoutsTag = tag.getTag("layouts");
+        if (layoutsTag) {
+            foreach (lt; layoutsTag.all.tags) {
+                layouts ~= parseStoreRefOrLiteral!(DescriptorSetLayout, parseDescriptorSetLayout)(lt);
+            }
+        }
+
+        PushConstantRange[] ranges;
+        auto rangesTag = tag.getTag("ranges");
+        if (rangesTag) {
+            foreach (rt; rangesTag.all.tags) {
+                PushConstantRange pcr;
+                pcr.stages = rt.expectAttribute!string("stages").parseFlags!ShaderStage();
+                pcr.size = expectSizeOffsetAttr(rt, "size");
+                pcr.offset = expectSizeOffsetAttr(rt, "offset");
+                ranges ~= pcr;
+            }
+        }
+
+        pll = _device.createPipelineLayout(layouts, ranges);
+        return storeKey;
     }
 
     private string parsePipelineInfo(Tag tag, out PipelineInfo plInfo, bool willReleaseShaders)
@@ -182,10 +221,108 @@ class DeclarativeEngine : Disposable
         const key = ++_storeAnonKey;
         return key.to!string;
     }
+
+    private T parseStoreRefOrLiteral(T, alias parseF)(Tag tag)
+    {
+        import std.format : format;
+
+        string storeStr = tag.getValue!string();
+        const hasChildren = tag.all.tags.length > 0;
+
+        if (storeStr && hasChildren) {
+            throw new GfxSDLErrorException(
+                format("Cannot parse %s: both value and children specified", T.stringof),
+                tag.location
+            );
+        }
+        if (!storeStr && !hasChildren) {
+            // likely value was not a string, or only attributes specified
+            throw new GfxSDLErrorException(
+                format("Cannot parse %s", T.stringof), tag.location
+            );
+        }
+        T res;
+        if (storeStr) {
+            import std.algorithm : startsWith;
+            if (!storeStr.startsWith("store:")) {
+                throw new GfxSDLErrorException(
+                    format("Cannot parse DescriptorSetLayout: " ~
+                        "must specify a store reference or a literal " ~
+                        "(\"%s\" is not a valid store reference)", storeStr),
+                    tag.location
+                );
+            }
+            const key = storeStr["store:".length .. $];
+            res = _store.expect!T(key);
+        }
+        else {
+            const key = parseF(tag, res);
+            _store.store(key, res);
+        }
+        return enforce(res);
+    }
+
+
+    private uint expectSizeOffsetAttr(Tag tag, in string attrName)
+    {
+        auto attr = tag.findAttr(attrName);
+        if (!attr) {
+            throw new GfxSDLErrorException(
+                "Could not find attribute "~attrName, tag.location
+            );
+        }
+
+        if (attr.value.convertsTo!int) {
+            return attr.value.get!int();
+        }
+
+        import std.algorithm : findSplit, startsWith;
+        string s = attr.value.get!string();
+        if (s.startsWith("sizeof:")) {
+            const sf = s["sizeof:".length .. $].findSplit(".");
+            const struct_ = sf[0];
+            const field = sf[2];
+            const sd = findStruct(struct_, attr.location);
+            if (field) {
+                return cast(uint)sd.getSize(field, attr.location);
+            }
+            else {
+                return cast(uint)sd.size;
+            }
+        }
+        if (s.startsWith("offsetof:")) {
+            const sf = s["offsetof:".length .. $].findSplit(".");
+            const struct_ = sf[0];
+            const field = sf[2];
+            if (!field.length) {
+                throw new GfxSDLErrorException(
+                    format("\"%s\" cannot resolve to a struct field (required by \"offsetof:\"", sf),
+                    attr.location
+                );
+            }
+            return cast(uint)findStruct(struct_, attr.location).getOffset(field, attr.location);
+        }
+        throw new GfxSDLErrorException(
+            "Could not find attribute "~attrName, tag.location
+        );
+    }
+
+    private StructDecl findStruct(in string name, Location location) {
+        foreach (ref sd; _structDecls) {
+            if (sd.name == name) return sd;
+        }
+        throw new NoSuchStructException(name, location);
+    }
 }
 
 private:
 
+Attribute findAttr(Tag tag, string attrName)
+{
+    foreach (attr; tag.attributes)
+        if (attr.name == attrName) return attr;
+    return null;
+}
 
 E parseFlags(E)(in string s) if (is(E == enum))
 {
@@ -247,25 +384,25 @@ struct StructDecl
         return sd;
     }
 
-    size_t getSize(in string field) const
+    size_t getSize(in string field, in Location location=Location.init) const
     {
         foreach(f; fields) {
             if (f.name == field)
                 return f.size;
         }
-        throw new NoSuchFieldException(name, field);
+        throw new NoSuchFieldException(name, field, location);
     }
 
-    size_t getOffset(in string field) const
+    size_t getOffset(in string field, in Location location=Location.init) const
     {
         foreach(f; fields) {
             if (f.name == field)
                 return f.offset;
         }
-        throw new NoSuchFieldException(name, field);
+        throw new NoSuchFieldException(name, field, location);
     }
 
-    Format getFormat(in string field) const
+    Format getFormat(in string field, in Location location=Location.init) const
     {
         foreach(f; fields) {
             if (f.name == field) {
@@ -273,11 +410,11 @@ struct StructDecl
                     return f.format.get;
                 }
                 else {
-                    throw new UnknownFieldFormatException(name, field);
+                    throw new UnknownFieldFormatException(name, field, location);
                 }
             }
         }
-        throw new NoSuchFieldException(name, field);
+        throw new NoSuchFieldException(name, field, location);
     }
 }
 
