@@ -116,7 +116,7 @@ class DeclAPIExample : Example
         declEng.declareStruct!Vertex();
         declEng.addView!"shader.vert.spv"();
         declEng.addView!"shader.frag.spv"();
-        declEng.parseSDLSource(cast(string)import("pipeline.sdl"), "pipeline.sdl");
+        declEng.parseSDLView!"pipeline.sdl"();
 
         prepareBuffers();
         prepareRenderPass();
@@ -246,42 +246,11 @@ class DeclAPIExample : Example
 
     void preparePipeline()
     {
-        Rc!ShaderModule vtxShader;
-        Rc!ShaderModule fragShader;
-
-        vtxShader = declEng.store.expect!ShaderModule("vertexShader");
-        fragShader = device.createShaderModule(
-            cast(immutable(uint)[])import("shader.frag.spv"), "main"
-        );
-
         setLayout = declEng.store.expect!DescriptorSetLayout("dsl");
         layout = declEng.store.expect!PipelineLayout("layout");
 
-        PipelineInfo info;
-        info.shaders.vertex = vtxShader;
-        info.shaders.fragment = fragShader;
-        info.inputBindings = [
-            VertexInputBinding(0, Vertex.sizeof, No.instanced)
-        ];
-        info.inputAttribs = [
-            VertexInputAttrib(0, 0, Format.rgb32_sFloat, 0),
-            VertexInputAttrib(1, 0, Format.rgb32_sFloat, Vertex.normal.offsetof),
-            VertexInputAttrib(2, 0, Format.rgba32_sFloat, Vertex.color.offsetof),
-        ];
-        info.assembly = InputAssembly(Primitive.triangleList, No.primitiveRestart);
-        info.rasterizer = Rasterizer(
-            PolygonMode.fill, Cull.back, FrontFace.ccw, No.depthClamp,
-            none!DepthBias, 1f
-        );
-        // info.viewports = [
-        //     ViewportConfig(
-        //         Viewport(0, 0, cast(float)surfaceSize[0], cast(float)surfaceSize[1]),
-        //         Rect(0, 0, surfaceSize[0], surfaceSize[1])
-        //     )
-        // ];
-        info.depthInfo = DepthInfo(
-            Yes.enabled, Yes.write, CompareOp.less, No.boundsTest, 0f, 1f
-        );
+        PipelineInfo info = declEng.store.expect!PipelineInfo("pl");
+
         info.blendInfo = ColorBlendInfo(
             none!LogicOp, [
                 ColorBlendAttachment(No.enabled,

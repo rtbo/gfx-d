@@ -85,6 +85,7 @@ class UnknownFieldFormatException : GfxSDLErrorException
 class DeclarativeEngine : Disposable
 {
     import gfx.core.rc : Rc;
+    import gfx.core.types;
     import gfx.decl.store : DeclarativeStore;
     import gfx.graal.device : Device;
     import gfx.graal.pipeline;
@@ -136,6 +137,13 @@ class DeclarativeEngine : Disposable
     void parseSDLFile(string filename)
     {
         auto root = parseFile(filename);
+        parseSDL(root);
+    }
+
+    void parseSDLView(string name)()
+    {
+        const sdl = cast(string)import(name);
+        auto root = parseSource(sdl, name);
         parseSDL(root);
     }
 
@@ -360,7 +368,187 @@ class DeclarativeEngine : Disposable
             plInfo.inputAttribs ~= via;
         }
 
+        plInfo.assembly = parseInputAssembly(tag.expectTag("assembly"));
+        plInfo.rasterizer = parseRasterizer(tag.expectTag("rasterizer"));
+        plInfo.viewports = parseViewportConfigs(tag);
+        plInfo.depthInfo = parseDepthInfo(tag.getTag("depthInfo"));
+        plInfo.stencilInfo = parseStencilInfo(tag.getTag("stencilInfo"));
+
         return getStoreKey(tag);
+    }
+
+    private InputAssembly parseInputAssembly(Tag tag)
+    {
+        import std.conv : to;
+        import std.typecons : Flag;
+
+        InputAssembly assembly;
+        assembly.primitive = tag.expectAttribute!string("primitive").to!Primitive;
+        assembly.primitiveRestart =
+                cast(Flag!"primitiveRestart")tag.getAttribute!bool("primitiveRestart", false);
+        return assembly;
+    }
+
+    private Rasterizer parseRasterizer(Tag tag)
+    {
+        import std.conv : to;
+        import std.typecons : Flag;
+        import gfx.core.typecons : some;
+
+        Rasterizer res;
+        res.mode = tag.expectAttribute!string("polygonMode").to!PolygonMode;
+        res.cull = tag.getAttribute!string("cull", "none").parseFlags!Cull;
+        res.front = tag.getAttribute!string("front", "ccw").to!FrontFace;
+        res.depthClamp = cast(Flag!"depthClamp")tag.getAttribute!bool("depthClamp", false);
+        res.lineWidth = tag.getAttribute!float("lineWidth", 1f);
+        auto dbt = tag.getTag("depthBias");
+        if (dbt) {
+            DepthBias db;
+            db.slopeFactor = dbt.expectAttribute!float("slope");
+            db.constantFactor = dbt.expectAttribute!float("const");
+            db.clamp = dbt.getAttribute!float("clamp", 0f);
+            res.depthBias = some(db);
+        }
+        return res;
+    }
+
+    private ViewportConfig[] parseViewportConfigs(Tag plTag)
+    {
+        Viewport[] vps;
+        Rect[] scs;
+        Location loc;
+        auto vpt = plTag.getTag("viewports");
+        if (vpt) {
+            foreach(t; plTag.tags) {
+                if (t.name == "viewport") {
+                    vps ~= parseViewport(t);
+                }
+                else if (t.name == "scissors") {
+                    scs ~= parseRect(t);
+                }
+            }
+            loc = vpt.location;
+        }
+        else {
+            vpt = plTag.getTag("viewport");
+            if (vpt) {
+                vps ~= parseViewport(vpt);
+                loc = vpt.location;
+            }
+        }
+
+        if (!vps.length && !scs.length) return null;
+        if (scs.length && scs.length != vps.length) {
+            throw new GfxSDLErrorException("must state the same number of viewport and scissors", loc);
+        }
+
+        ViewportConfig[] configs;
+        if (vps.length == scs.length) {
+            foreach (i; 0 .. vps.length) {
+                configs ~= ViewportConfig(vps[i], scs[i]);
+            }
+        }
+        else {
+            assert(vps.length && !scs.length);
+            foreach (vp; vps) {
+                const sc = Rect(cast(uint)vp.x, cast(uint)vp.y, cast(uint)vp.width, cast(uint)vp.height);
+                configs ~= ViewportConfig(vp, sc);
+            }
+        }
+        return configs;
+    }
+
+
+    private Viewport parseViewport(Tag tag)
+    {
+        Viewport vp = void;
+        vp.x = expectLiteralOrStoreValAttr!float(tag, "x");
+        vp.y = expectLiteralOrStoreValAttr!float(tag, "y");
+        vp.width = expectLiteralOrStoreValAttr!float(tag, "width");
+        vp.height = expectLiteralOrStoreValAttr!float(tag, "height");
+        vp.minDepth = getLiteralOrStoreValAttr!float(tag, "minDepth", 0f);
+        vp.minDepth = getLiteralOrStoreValAttr!float(tag, "maxDepth", 1f);
+        return vp;
+    }
+
+    private Rect parseRect(Tag tag)
+    {
+        Rect r = void;
+        r.x = expectLiteralOrStoreValAttr!int(tag, "x");
+        r.y = expectLiteralOrStoreValAttr!int(tag, "y");
+        r.width = expectLiteralOrStoreValAttr!int(tag, "width");
+        r.height = expectLiteralOrStoreValAttr!int(tag, "height");
+        return r;
+    }
+
+    private DepthInfo parseDepthInfo(Tag tag)
+    {
+        import std.conv : to;
+        import std.typecons : Flag;
+
+        DepthInfo res;
+        // no tag = disabled = init
+        if (tag) {
+            // can optionally specify on/off as value (defaults to on)
+            res.enabled = cast(Flag!"enabled")tag.getValue!bool(true);
+            if (res.enabled) {
+                res.write = cast(Flag!"write")tag.expectAttribute!bool("write");
+                res.compareOp = tag.expectAttribute!string("compareOp").to!CompareOp;
+                auto bt = tag.getTag("boundsTest");
+                if (bt) {
+                    // same as depth test, on/off is optional and defaults to on
+                    res.boundsTest = cast(Flag!"boundsTest")tag.getValue!bool(true);
+                    if (res.boundsTest) {
+                        res.minBounds = expectLiteralOrStoreValAttr!float(bt, "min");
+                        res.maxBounds = expectLiteralOrStoreValAttr!float(bt, "max");
+                    }
+                }
+            }
+        }
+        return res;
+    }
+
+    StencilInfo parseStencilInfo(Tag tag)
+    {
+        import std.typecons : Flag;
+
+        StencilInfo res;
+        if (tag) {
+            res.enabled = cast(Flag!"enabled")tag.getValue!bool(true);
+            res.front = parseStencilOpState(tag.getTag("front"));
+            res.back = parseStencilOpState(tag.getTag("back"));
+        }
+        return res;
+    }
+
+    StencilOpState parseStencilOpState(Tag tag)
+    {
+        import std.conv : to;
+
+        if (!tag) return StencilOpState.init;
+
+        StencilOpState res = void;
+        res.compareOp = tag.expectAttribute!string("compareOp").to!CompareOp;
+        string ops;
+        if (tag.tryGetAttr!string("op", ops)) {
+            const op = ops.to!StencilOp;
+            res.failOp = op; res.passOp = op; res.depthFailOp = op;
+        }
+        else {
+            res.failOp = tag.expectAttribute!string("failOp").to!StencilOp;
+            res.passOp = tag.expectAttribute!string("passOp").to!StencilOp;
+            res.depthFailOp = tag.expectAttribute!string("depthFailOp").to!StencilOp;
+        }
+        int mask;
+        if (tag.tryGetAttr!int("mask", mask)) {
+            res.compareMask = mask; res.writeMask = mask; res.refMask = mask;
+        }
+        else {
+            res.compareMask = tag.expectAttribute!int("compareMask");
+            res.writeMask = tag.expectAttribute!int("writeMask");
+            res.refMask = tag.expectAttribute!int("refMask");
+        }
+        return res;
     }
 
     private string getStoreKey(Tag tag)
@@ -470,6 +658,46 @@ class DeclarativeEngine : Disposable
         return enforce(res);
     }
 
+    private T getLiteralOrStoreValAttr(T)(Tag tag, in string attrName, T def=T.init)
+    {
+        T res;
+        if (!literalOrStoreValAttr!T(tag, attrName, res)) {
+            res = def;
+        }
+        return res;
+    }
+
+    private T expectLiteralOrStoreValAttr(T)(Tag tag, in string attrName)
+    {
+        T res;
+        if (!literalOrStoreValAttr!T(tag, attrName, res)) {
+            throw new GfxSDLErrorException(
+                format("Could not resolveValue %s value from attribute \"%s\"", T.stringof, attrName),
+                tag.location
+            );
+        }
+        return res;
+    }
+
+    private bool literalOrStoreValAttr(T)(Tag tag, in string attrName, out T res)
+    {
+        import std.algorithm : startsWith;
+
+        if (tag.tryGetAttr!T(attrName, res)) {
+            return true;
+        }
+        else {
+            string str;
+            if (tryGetAttr(tag, attrName, str)) {
+                if (str.startsWith("store:")) {
+                    const key = str["store:".length .. $];
+                    res = _store.expect!T(key);
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
 
     private uint expectSizeOffsetAttr(Tag tag, in string attrName)
     {

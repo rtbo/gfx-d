@@ -24,22 +24,23 @@ graal:ShaderModule {
     // local-store does the same as store but is cleaned up right after parsing is done.
     // It can be reference later in the same document but cannot be retrieved from D code.
     // Note that store is allowed everywhere local-store is and vice-versa.
-    local-store "vertexShader"
+    store "vertSh"
     // source can also be asset or binary base64 (although that is discouraged)
     source "view:shader.vert.spv"
     entryPoint "main" // this is the default and can be omitted
 }
-graal:Pipeline {
+graal:PipelineInfo {
     store "pl"
     shaders {
         // shaders can be attached from the store
-        vertex "store:vertexShader"
+        vertex "store:vertSh"
         // or created inline
-        fragment source="view:shader.frag.spv" entryPoint="main"
+        fragment source="view:shader.frag.spv" entryPoint="main" store="fragSh"
         // another possibility would be
         // fragment {
         //     source "view:shader.frag.spv"
         //     entryPoint="main"
+        //     store="fragSh"
         // }
     }
     inputBindings {
@@ -53,7 +54,9 @@ graal:Pipeline {
     }
     assembly primitive="triangleList" primitiveRestart=off
     // if depthBias needed, specify it in a children of rasterizer
-    rasterizer polygonMode="fill" cull="back" front="ccw" lineWidth=1.0f depthClamp=off
+    rasterizer polygonMode="fill" cull="back" front="ccw" lineWidth=1 depthClamp=off {
+        depthBias slope=2f const=1f
+    }
     /*  examples of static viewport specification, not used here because of dynamicStates
         win_width and win_height must be set in the store before parsing
     viewports {
@@ -69,7 +72,7 @@ graal:Pipeline {
     // if depthBounds needed, specify it in a children of depthInfo
     depthInfo on write=on compareOp="less"
     blendInfo {
-        logicOp off  // optional
+        logicOp off  // default value (optional)
         attachments {
             solid colorMask="rgba"
         }

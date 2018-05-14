@@ -198,7 +198,7 @@ struct StencilOpState
     CompareOp compareOp;
     uint compareMask;
     uint writeMask;
-    uint reference;
+    uint refMask;
 }
 
 struct StencilInfo
