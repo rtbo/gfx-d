@@ -24,12 +24,12 @@ graal:ShaderModule {
     // local-store does the same as store but is cleaned up right after parsing is done.
     // It can be reference later in the same document but cannot be retrieved from D code.
     // Note that store is allowed everywhere local-store is and vice-versa.
-    store "vertSh"
+    local-store "vertSh"
     // source can also be asset or binary base64 (although that is discouraged)
     source "view:shader.vert.spv"
     entryPoint "main" // this is the default and can be omitted
 }
-graal:PipelineInfo {
+graal:Pipeline {
     store "pl"
     shaders {
         // shaders can be attached from the store
@@ -76,9 +76,9 @@ graal:PipelineInfo {
         attachments {
             solid colorMask="rgba"
         }
-        blendConstants 0 0 0 0 // can be omitted if not used in blending
+        blendConstants 0f 0f 0f 0f // can be omitted if not used in blending
     }
-    dynamicStates "viewport"
+    dynamicStates "viewport" "scissor"
     layout "store:layout"
     renderPass "store:rp" subpass=0
 }

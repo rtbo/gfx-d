@@ -112,15 +112,17 @@ class DeclAPIExample : Example
     override void prepare() {
         super.prepare();
 
+        prepareBuffers();
+        prepareRenderPass();
+        prepareFramebuffers();
+
         declEng = new DeclarativeEngine(device);
         declEng.declareStruct!Vertex();
         declEng.addView!"shader.vert.spv"();
         declEng.addView!"shader.frag.spv"();
+        declEng.store.store("rp", renderPass);
         declEng.parseSDLView!"pipeline.sdl"();
 
-        prepareBuffers();
-        prepareRenderPass();
-        prepareFramebuffers();
         preparePipeline();
         prepareDescriptorSet();
     }
@@ -248,26 +250,7 @@ class DeclAPIExample : Example
     {
         setLayout = declEng.store.expect!DescriptorSetLayout("dsl");
         layout = declEng.store.expect!PipelineLayout("layout");
-
-        PipelineInfo info = declEng.store.expect!PipelineInfo("pl");
-
-        info.blendInfo = ColorBlendInfo(
-            none!LogicOp, [
-                ColorBlendAttachment(No.enabled,
-                    BlendState(trans(BlendFactor.one, BlendFactor.zero), BlendOp.add),
-                    BlendState(trans(BlendFactor.one, BlendFactor.zero), BlendOp.add),
-                    ColorMask.all
-                )
-            ],
-            [ 0f, 0f, 0f, 0f ]
-        );
-        info.dynamicStates = [ DynamicState.viewport, DynamicState.scissor ];
-        info.layout = layout;
-        info.renderPass = renderPass;
-        info.subpassIndex = 0;
-
-        auto pls = device.createPipelines( [info] );
-        pipeline = pls[0];
+        pipeline = declEng.store.expect!Pipeline("pl");
     }
 
     void prepareDescriptorSet() {

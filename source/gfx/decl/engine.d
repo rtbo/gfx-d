@@ -89,6 +89,7 @@ class DeclarativeEngine : Disposable
     import gfx.decl.store : DeclarativeStore;
     import gfx.graal.device : Device;
     import gfx.graal.pipeline;
+    import gfx.graal.renderpass : RenderPass;
     import std.exception : enforce;
     import std.format : format;
 
@@ -373,6 +374,18 @@ class DeclarativeEngine : Disposable
         plInfo.viewports = parseViewportConfigs(tag);
         plInfo.depthInfo = parseDepthInfo(tag.getTag("depthInfo"));
         plInfo.stencilInfo = parseStencilInfo(tag.getTag("stencilInfo"));
+        plInfo.blendInfo = parseColorBlendInfo(tag.expectTag("blendInfo"));
+        auto dynTag = tag.getTag("dynamicStates");
+        if (dynTag) {
+            import std.algorithm : map;
+            import std.array : array;
+            import std.conv : to;
+            plInfo.dynamicStates = dynTag.values.map!(v => v.get!string.to!DynamicState).array;
+        }
+        plInfo.layout = parseStoreRefOrLiteral!(PipelineLayout, parsePipelineLayout)(tag.expectTag("layout"));
+        auto rpTag = tag.expectTag("renderPass");
+        plInfo.renderPass = expectStoreRef!RenderPass(rpTag);
+        plInfo.subpassIndex = rpTag.expectAttribute!int("subpass");
 
         return getStoreKey(tag);
     }
@@ -551,6 +564,74 @@ class DeclarativeEngine : Disposable
         return res;
     }
 
+    private ColorBlendInfo parseColorBlendInfo(Tag tag)
+    {
+        import gfx.core.typecons : some;
+        import std.conv : to;
+
+        ColorBlendInfo res;
+
+        bool lopEnabled;
+        string lopStr;
+        if (tag.tryGetAttr!bool("logicOp", lopEnabled)) {
+            if (lopEnabled) {
+                throw new GfxSDLErrorException("logicOp can only be set to off or to LogicOp value", tag.location);
+            }
+        }
+        else if (tag.tryGetAttr!string("logicOp", lopStr)) {
+            res.logicOp = some(lopStr.to!LogicOp);
+        }
+
+        auto attTag = tag.getTag("attachments");
+        if (attTag) foreach(t; attTag.tags) {
+            ColorBlendAttachment attachment;
+            if (t.name == "blend") {
+                import std.typecons : Yes;
+                attachment.enabled = Yes.enabled;
+                attachment.colorBlend = parseBlendState(t.expectTag("color"));
+                attachment.alphaBlend = parseBlendState(t.expectTag("alpha"));
+            }
+            else if (t.name != "solid") {
+                throw new GfxSDLErrorException(format(
+                    "tag \"%s\" is not allowed in color attachments", t.name
+                ), t.location);
+            }
+            string maskStr;
+            if (t.tryGetAttr!string("colorMask", maskStr)) {
+                attachment.colorMask = maskStr.to!ColorMask;
+            }
+            else {
+                attachment.colorMask = ColorMask.all;
+            }
+            res.attachments ~= attachment;
+        }
+
+        auto constTag = tag.getTag("blendConstants");
+        if (constTag) {
+            import std.algorithm : map;
+            import std.array : array;
+
+            const bc = constTag.values.map!(v => v.coerce!float).array;
+            if (bc.length != 4) {
+                throw new GfxSDLErrorException("blendConstants must have 4 floats", constTag.location);
+            }
+            res.blendConstants = bc;
+        }
+
+        return res;
+    }
+
+    private BlendState parseBlendState(Tag tag)
+    {
+        import std.conv : to;
+
+        BlendState state;
+        state.factor.from = tag.expectAttribute!string("srcFactor").to!BlendFactor;
+        state.factor.to = tag.expectAttribute!string("destFactor").to!BlendFactor;
+        state.op = tag.expectAttribute!string("op").to!BlendOp;
+        return state;
+    }
+
     private string getStoreKey(Tag tag)
     {
         auto t = tag.getTag("store");
@@ -616,6 +697,23 @@ class DeclarativeEngine : Disposable
             throw new NoSuchViewException(name, location);
         }
         return *p;
+    }
+
+    private T expectStoreRef(T)(Tag tag)
+    {
+        import std.algorithm : startsWith;
+
+        string storeStr = tag.expectValue!string();
+        if (!storeStr.startsWith("store:")) {
+            throw new GfxSDLErrorException(
+                format("Cannot parse %s: " ~
+                    "must specify a store reference or a literal " ~
+                    "(\"%s\" is not a valid store reference)", T.stringof, storeStr),
+                tag.location
+            );
+        }
+        const key = storeStr["store:".length .. $];
+        return _store.expect!T(key);
     }
 
     private T parseStoreRefOrLiteral(T, alias parseF)(Tag tag)
