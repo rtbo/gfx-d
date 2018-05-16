@@ -183,9 +183,9 @@ final class ShadowExample : Example
         enum numLights = 3;
 
         shadowTex = device.createImage(
-            ImageType.d2Array, ImageDims.d2Array(shadowSize, shadowSize, numLights),
-            Format.d32_sFloat, ImageUsage.sampled | ImageUsage.depthStencilAttachment,
-            ImageTiling.optimal, 1, 1
+            ImageInfo.d2Array(shadowSize, shadowSize, numLights)
+                .withFormat(Format.d32_sFloat)
+                .withUsage(ImageUsage.sampled | ImageUsage.depthStencilAttachment)
         );
         enforce(bindImageMemory(shadowTex));
         meshShadowView = shadowTex.createView(

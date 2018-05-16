@@ -254,14 +254,8 @@ final class GlImage : Image
 
     mixin(atomicRcCode);
 
-    private ImageType _type;
-    private ImageDims _dims;
-    private Format _format;
+    private ImageInfo _info;
     private NumFormat _numFormat;
-    private ImageUsage _usage;
-    private ImageTiling _tiling;
-    private uint _samples;
-    private uint _levels;
 
     private GlImgType _glType;
     private GLuint _name;
@@ -271,28 +265,21 @@ final class GlImage : Image
     private GlInfo glInfo;
     private Rc!GlDeviceMemory _mem;
 
-    this(GlShare share, ImageType type, ImageDims dims, Format format, ImageUsage usage,
-            ImageTiling tiling, uint samples, uint levels)
+    this(GlShare share, ImageInfo info)
     {
         import gfx.graal.format : formatDesc;
         import std.exception : enforce;
-        _type = type;
-        _dims = dims;
-        _format = format;
-        _numFormat = formatDesc(format).numFormat;
-        _usage = usage;
-        _tiling = tiling;
-        _samples = samples;
-        _levels = levels;
+        _info = info;
+        _numFormat = formatDesc(info.format).numFormat;
 
         gl = share.gl;
         glInfo = share.info;
 
         const notRB = ~(ImageUsage.colorAttachment | ImageUsage.depthStencilAttachment);
-        if ((usage & notRB) == ImageUsage.none && tiling == ImageTiling.optimal) {
+        if ((info.usage & notRB) == ImageUsage.none && info.tiling == ImageTiling.optimal) {
             _glType = GlImgType.renderBuf;
             enforce(
-                _type == ImageType.d2,
+                _info.type == ImageType.d2,
                 "Gfx-GL3: ImageUsage indicates the use of a RenderBuffer, which only supports 2D images"
             );
             gl.GenRenderbuffers(1, &_name);
@@ -303,8 +290,8 @@ final class GlImage : Image
         }
 
         import gfx.gl3.conv : toGlImgFmt, toGlTexTarget;
-        _glFormat = toGlImgFmt(format);
-        _glTexTarget = toGlTexTarget(type, samples > 1);
+        _glFormat = toGlImgFmt(_info.format);
+        _glTexTarget = toGlTexTarget(_info.type, _info.samples > 1);
     }
 
     @property GLuint name() {
@@ -335,17 +322,8 @@ final class GlImage : Image
         _mem.unload();
     }
 
-    override @property ImageType type() {
-        return _type;
-    }
-    override @property Format format() {
-        return _format;
-    }
-    override @property ImageDims dims() {
-        return _dims;
-    }
-    override @property uint levels() {
-        return _levels;
+    override @property ImageInfo info() {
+        return _info;
     }
 
     override ImageView createView(ImageType viewType, ImageSubresourceRange isr, Swizzle swizzle)
@@ -357,11 +335,12 @@ final class GlImage : Image
         import gfx.graal.format : formatDesc, totalBits;
         import gfx.graal.memory : MemProps;
 
-        const fd = formatDesc(_format);
+        const fd = formatDesc(_info.format);
 
         MemoryRequirements mr;
         mr.alignment = 4;
-        mr.size = _dims.width * _dims.height * _dims.depth * _dims.layers * fd.surfaceType.totalBits / 8;
+        mr.size = _info.dims.width * _info.dims.height * _info.dims.depth *
+                  _info.layers * fd.surfaceType.totalBits / 8;
         mr.memTypeMask = 1;
         return mr;
     }
@@ -375,68 +354,68 @@ final class GlImage : Image
         final switch(_glType) {
         case GlImgType.tex:
             gl.BindTexture(_glTexTarget, _name);
-            if (glInfo.textureStorage || (_samples > 1 && glInfo.textureStorageMS)) {
-                final switch (_type) {
+            if (glInfo.textureStorage || (_info.samples > 1 && glInfo.textureStorageMS)) {
+                final switch (_info.type) {
                 case ImageType.d1:
-                    gl.TexStorage1D(_glTexTarget, _levels, _glFormat, _dims.width);
+                    gl.TexStorage1D(_glTexTarget, _info.levels, _glFormat, _info.dims.width);
                     break;
                 case ImageType.d1Array:
-                    gl.TexStorage2D(_glTexTarget, _levels, _glFormat, _dims.width, _dims.layers);
+                    gl.TexStorage2D(_glTexTarget, _info.levels, _glFormat, _info.dims.width, _info.layers);
                     break;
                 case ImageType.d2:
-                    if (_samples <= 1)
-                        gl.TexStorage2D(_glTexTarget, _levels, _glFormat, _dims.width, _dims.height);
+                    if (_info.samples <= 1)
+                        gl.TexStorage2D(_glTexTarget, _info.levels, _glFormat, _info.dims.width, _info.dims.height);
                     else
                         gl.TexStorage2DMultisample(
-                            _glTexTarget, _samples, _glFormat, _dims.width, _dims.height, GL_TRUE
+                            _glTexTarget, _info.samples, _glFormat, _info.dims.width, _info.dims.height, GL_TRUE
                         );
                     break;
                 case ImageType.d2Array:
-                    if (_samples <= 1)
-                        gl.TexStorage3D(_glTexTarget, _levels, _glFormat, _dims.width, _dims.height, _dims.layers);
+                    if (_info.samples <= 1)
+                        gl.TexStorage3D(_glTexTarget, _info.levels, _glFormat, _info.dims.width, _info.dims.height, _info.layers);
                     else
                         gl.TexStorage3DMultisample(
-                            _glTexTarget, _samples, _glFormat, _dims.width, _dims.height, _dims.layers, GL_TRUE
+                            _glTexTarget, _info.samples, _glFormat, _info.dims.width, _info.dims.height, _info.layers, GL_TRUE
                         );
                     break;
                 case ImageType.d3:
-                    gl.TexStorage3D(_glTexTarget, _levels, _glFormat, _dims.width, _dims.height, _dims.depth);
+                    gl.TexStorage3D(_glTexTarget, _info.levels, _glFormat, _info.dims.width, _info.dims.height, _info.dims.depth);
                     break;
                 case ImageType.cube:
-                    gl.TexStorage2D(_glTexTarget, _levels, _glFormat, _dims.width, _dims.height);
+                    gl.TexStorage2D(_glTexTarget, _info.levels, _glFormat, _info.dims.width, _info.dims.height);
                     break;
                 case ImageType.cubeArray:
-                    gl.TexStorage3D(_glTexTarget, _levels, _glFormat, _dims.width, _dims.height, _dims.layers*6);
+                    gl.TexStorage3D(_glTexTarget, _info.levels, _glFormat, _info.dims.width, _info.dims.height, _info.layers*6);
                     break;
                 }
             }
             else {
 
-                GLsizei width = _dims.width;
-                GLsizei height = _dims.height;
-                GLsizei depth = _dims.depth;
+                GLsizei width = _info.dims.width;
+                GLsizei height = _info.dims.height;
+                GLsizei depth = _info.dims.depth;
 
-                foreach (l; 0.._levels) {
+                foreach (l; 0.._info.levels) {
 
-                    final switch (_type) {
+                    final switch (_info.type) {
                     case ImageType.d1:
                         gl.TexImage1D(_glTexTarget, l, _glFormat, width, 0, 0, 0, null);
                         break;
                     case ImageType.d1Array:
-                        gl.TexImage2D(_glTexTarget, l, _glFormat, width, _dims.layers, 0, 0, 0, null);
+                        gl.TexImage2D(_glTexTarget, l, _glFormat, width, _info.layers, 0, 0, 0, null);
                         break;
                     case ImageType.d2:
-                        if (_samples <= 1)
+                        if (_info.samples <= 1)
                             gl.TexImage2D(_glTexTarget, l, _glFormat, width, height, 0, 0, 0, null);
                         else
-                            gl.TexImage2DMultisample(_glTexTarget, _samples, _glFormat, width, height, GL_TRUE);
+                            gl.TexImage2DMultisample(_glTexTarget, _info.samples, _glFormat, width, height, GL_TRUE);
                         break;
                     case ImageType.d2Array:
-                        if (_samples <= 1)
-                            gl.TexImage3D(_glTexTarget, l, _glFormat, width, height, _dims.layers, 0, 0, 0, null);
+                        if (_info.samples <= 1)
+                            gl.TexImage3D(_glTexTarget, l, _glFormat, width, height, _info.layers, 0, 0, 0, null);
                         else
                             gl.TexImage3DMultisample(
-                                _glTexTarget, _samples, _glFormat, width, height, _dims.layers, GL_TRUE
+                                _glTexTarget, _info.samples, _glFormat, width, height, _info.layers, GL_TRUE
                             );
                         break;
                     case ImageType.d3:
@@ -446,7 +425,7 @@ final class GlImage : Image
                         gl.TexImage2D(_glTexTarget, l, _glFormat, width, height, 0, 0, 0, null);
                         break;
                     case ImageType.cubeArray:
-                        gl.TexImage3D(_glTexTarget, l, _glFormat, width, height, _dims.layers*6, 0, 0, 0, null);
+                        gl.TexImage3D(_glTexTarget, l, _glFormat, width, height, _info.layers*6, 0, 0, 0, null);
                         break;
                     }
 
@@ -460,13 +439,13 @@ final class GlImage : Image
 
         case GlImgType.renderBuf:
             gl.BindRenderbuffer(GL_RENDERBUFFER, _name);
-            if (_samples > 1) {
+            if (_info.samples > 1) {
                 gl.RenderbufferStorageMultisample(
-                    GL_RENDERBUFFER, _samples, _glFormat, _dims.width, _dims.height
+                    GL_RENDERBUFFER, _info.samples, _glFormat, _info.dims.width, _info.dims.height
                 );
             }
             else {
-                gl.RenderbufferStorage(GL_RENDERBUFFER, _glFormat, _dims.width, _dims.height);
+                gl.RenderbufferStorage(GL_RENDERBUFFER, _glFormat, _info.dims.width, _info.dims.height);
             }
             gl.BindRenderbuffer(GL_RENDERBUFFER, 0);
             break;
@@ -480,8 +459,8 @@ final class GlImage : Image
         import gfx.gl3.conv : toSubImgFmt, toSubImgType;
         gl.TexSubImage2D(
             _glTexTarget, region.imageLayers.mipLevel, region.offset[0],
-            region.offset[1], region.extent[0], region.extent[1], toSubImgFmt(_format),
-            toSubImgType(_format), null
+            region.offset[1], region.extent[0], region.extent[1], toSubImgFmt(_info.format),
+            toSubImgType(_info.format), null
         );
     }
 }
@@ -569,6 +548,7 @@ final class GlImageView : ImageView
     private Rc!GlImage img;
     private ImageDims imgDims;
     private ImageType type;
+    private uint layers;
     private ImageSubresourceRange isr;
     private Swizzle swzl;
 
@@ -580,8 +560,9 @@ final class GlImageView : ImageView
         this.img = img;
         this.gl = img.gl;
         this.glInfo = img.glInfo;
-        this.imgDims = img.dims;
+        this.imgDims = img.info.dims;
         this.type = type;
+        this.layers = img.info.layers;
         this.isr = isr;
         this.swzl = swizzle;
 
@@ -589,7 +570,7 @@ final class GlImageView : ImageView
         name = img._name;
         if (glType == GlImgType.tex) {
             import gfx.gl3.conv : toGlTexTarget;
-            target = toGlTexTarget(type, img._samples > 1);
+            target = toGlTexTarget(type, img._info.samples > 1);
         }
     }
 
@@ -633,7 +614,7 @@ final class GlImageView : ImageView
 
         final switch(glType) {
         case GlImgType.tex:
-            if (imgDims.layers > 1 && isr.layers == 1) {
+            if (layers > 1 && isr.layers == 1) {
                 gl.FramebufferTextureLayer(
                     target, glAttachment, name, cast(GLint)isr.firstLevel, cast(GLint)isr.firstLayer
                 );

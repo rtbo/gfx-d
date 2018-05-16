@@ -170,8 +170,8 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "DestroySwapchainKHR"), Sw
             import std.array : array;
             _images = vkImgs
                     .map!((VkImage vkImg) {
-                        const dims = ImageDims.d2(_size[0], _size[1]);
-                        auto img = new VulkanImageBase(vkImg, dev, ImageType.d2, dims, _format);
+                        const info = ImageInfo.d2(_size[0], _size[1]).withFormat(_format);
+                        auto img = new VulkanImageBase(vkImg, dev, info);
                         return cast(ImageBase)img;
                     })
                     .array;

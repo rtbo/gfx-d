@@ -190,27 +190,27 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         return new VulkanBuffer(vkBuf, this, usage, size);
     }
 
-    override Image createImage(ImageType type, ImageDims dims, Format format,
-                               ImageUsage usage, ImageTiling tiling, uint samples,
-                               uint levels=1)
+    override Image createImage(in ImageInfo info)
     {
+        import gfx.core.util : transmute;
+
         VkImageCreateInfo ici;
         ici.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        if (type.isCube) ici.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
-        ici.imageType = type.toVk();
-        ici.format = format.toVk();
-        ici.extent = VkExtent3D(dims.width, dims.height, dims.depth);
-        ici.mipLevels = levels;
-        ici.arrayLayers = dims.layers;
-        ici.samples = cast(typeof(ici.samples))samples;
-        ici.tiling = tiling.toVk();
-        ici.usage = imageUsageToVk(usage);
+        if (info.type.isCube) ici.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+        ici.imageType = info.type.toVk();
+        ici.format = info.format.toVk();
+        ici.extent = info.dims.transmute!VkExtent3D;
+        ici.mipLevels = info.levels;
+        ici.arrayLayers = info.layers;
+        ici.samples = cast(typeof(ici.samples))info.samples;
+        ici.tiling = info.tiling.toVk();
+        ici.usage = imageUsageToVk(info.usage);
         ici.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
         VkImage vkImg;
         vulkanEnforce(vk.CreateImage(vkObj, &ici, null, &vkImg), "Could not create a Vulkan image");
 
-        return new VulkanImage(vkImg, this, type, dims, format);
+        return new VulkanImage(vkImg, this, info);
     }
 
     Sampler createSampler(in SamplerInfo info) {

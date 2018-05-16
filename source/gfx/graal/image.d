@@ -9,6 +9,93 @@ import gfx.graal.pipeline : CompareOp;
 
 import std.typecons : Flag;
 
+struct ImageInfo
+{
+    ImageType type;
+    ImageDims dims;
+    Format format;
+    ImageUsage usage;
+    ImageTiling tiling;
+    uint layers=1;
+    uint samples=1;
+    uint levels=1;
+
+    static ImageInfo d1 (in uint width) {
+        return ImageInfo(
+            ImageType.d1,
+            ImageDims(width, 1, 1)
+        );
+    }
+    static ImageInfo d2 (in uint width, in uint height) {
+        return ImageInfo(
+            ImageType.d2,
+            ImageDims(width, height, 1)
+        );
+    }
+    static ImageInfo d3 (in uint width, in uint height, in uint depth) {
+        return ImageInfo(
+            ImageType.d3,
+            ImageDims(width, height, depth)
+        );
+    }
+    static ImageInfo cube (in uint width, in uint height) {
+        return ImageInfo(
+            ImageType.cube,
+            ImageDims(width, height, 6)
+        );
+    }
+    static ImageInfo d1Array (in uint width, in uint layers) {
+        auto ii = ImageInfo(
+            ImageType.d1Array,
+            ImageDims(width, 1, 1)
+        );
+        ii.layers = layers;
+        return ii;
+    }
+    static ImageInfo d2Array (in uint width, uint height, in uint layers) {
+        auto ii = ImageInfo(
+            ImageType.d2Array,
+            ImageDims(width, height, 1)
+        );
+        ii.layers = layers;
+        return ii;
+    }
+    static ImageInfo cubeArray (in uint width, in uint height, in uint layers) {
+        auto ii = ImageInfo(
+            ImageType.cubeArray,
+            ImageDims(width, height, 1)
+        );
+        ii.layers = layers;
+        return ii;
+    }
+
+    ImageInfo withFormat(in Format format) const {
+        ImageInfo ii = this;
+        ii.format = format;
+        return ii;
+    }
+    ImageInfo withUsage(in ImageUsage usage) const {
+        ImageInfo ii = this;
+        ii.usage = usage;
+        return ii;
+    }
+    ImageInfo withTiling(in ImageTiling tiling) const {
+        ImageInfo ii = this;
+        ii.tiling = tiling;
+        return ii;
+    }
+    ImageInfo withSamples(in uint samples) const {
+        ImageInfo ii = this;
+        ii.samples = samples;
+        return ii;
+    }
+    ImageInfo withLevels(in uint levels) const {
+        ImageInfo ii = this;
+        ii.levels = levels;
+        return ii;
+    }
+}
+
 enum ImageType {
     d1, d1Array,
     d2, d2Array,
@@ -40,31 +127,8 @@ immutable cubeFaces = [
 struct ImageDims
 {
     uint width;
-    uint height;
-    uint depth;
-    uint layers;
-
-    static ImageDims d1 (in uint width) {
-        return ImageDims(width, 1, 1, 1);
-    }
-    static ImageDims d2 (in uint width, in uint height) {
-        return ImageDims(width, height, 1, 1);
-    }
-    static ImageDims d3 (in uint width, in uint height, in uint depth) {
-        return ImageDims(width, height, depth, 1);
-    }
-    static ImageDims cube (in uint width, in uint height) {
-        return ImageDims(width, height, 6, 1);
-    }
-    static ImageDims d1Array (in uint width, in uint layers) {
-        return ImageDims(width, 1, 1, layers);
-    }
-    static ImageDims d2Array (in uint width, uint height, in uint layers) {
-        return ImageDims(width, height, 1, layers);
-    }
-    static ImageDims cubeArray (in uint width, in uint height, in uint layers) {
-        return ImageDims(width, height, 6, layers);
-    }
+    uint height=1;
+    uint depth=1;
 }
 
 enum ImageUsage {
@@ -222,10 +286,7 @@ unittest {
 
 interface ImageBase
 {
-    @property ImageType type();
-    @property Format format();
-    @property ImageDims dims();
-    @property uint levels();
+    @property ImageInfo info();
 
     // TODO: deduce view type from subrange and image type
     ImageView createView(ImageType viewtype, ImageSubresourceRange isr, Swizzle swizzle);

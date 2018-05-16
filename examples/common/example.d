@@ -396,11 +396,10 @@ class Example : Disposable
     }
 
     /// create an image to be used as texture
-    Image createTextureImage(const(void)[] data, ImageType type, ImageDims dims,
-                      Format format, uint levels=1)
+    Image createTextureImage(const(void)[] data, in ImageInfo info)
     {
         const FormatFeatures requirement = FormatFeatures.sampledImage;
-        const formatProps = physicalDevice.formatProperties(format);
+        const formatProps = physicalDevice.formatProperties(info.format);
         enforce( (formatProps.optimalTiling & requirement) == requirement );
 
         // create staging buffer
@@ -416,8 +415,7 @@ class Example : Disposable
 
         // create an image
         auto img = enforce(device.createImage(
-            type, dims, format, ImageUsage.sampled | ImageUsage.transferDst,
-            ImageTiling.optimal, 1, levels
+            info.withUsage(info.usage | ImageUsage.sampled | ImageUsage.transferDst)
         )).rc;
 
         // allocate memory image
@@ -450,8 +448,7 @@ class Example : Disposable
 
         // create an image
         auto img = enforce(device.createImage(
-            ImageType.d2, ImageDims.d2(width, height), f, ImageUsage.depthStencilAttachment,
-            ImageTiling.optimal, 1, 1
+            ImageInfo.d2(width, height).withFormat(f).withUsage(ImageUsage.depthStencilAttachment)
         )).rc;
 
         // allocate memory image
@@ -468,8 +465,7 @@ class Example : Disposable
 
         // create an image
         auto img = enforce(device.createImage(
-            ImageType.d2, ImageDims.d2(width, height), f, ImageUsage.depthStencilAttachment,
-            ImageTiling.optimal, 1, 1
+            ImageInfo.d2(width, height).withFormat(f).withUsage(ImageUsage.depthStencilAttachment)
         )).rc;
 
         // allocate memory image
@@ -489,7 +485,7 @@ class Example : Disposable
     /// the image layout must be transferDstOptimal buffer the call
     final void copyBufferToImage(Buffer srcBuf, Image dstImg, CommandBuffer cmdBuf)
     {
-        const dims = dstImg.dims;
+        const dims = dstImg.info.dims;
 
         BufferImageCopy region;
         region.extent = [dims.width, dims.height, dims.depth];

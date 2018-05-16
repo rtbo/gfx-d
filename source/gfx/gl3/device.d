@@ -15,8 +15,8 @@ class GlDevice : Device
     import gfx.graal.buffer :       Buffer, BufferUsage;
     import gfx.graal.device :       MappedMemorySet;
     import gfx.graal.format :       Format;
-    import gfx.graal.image :        Image, ImageDims, ImageTiling, ImageType,
-                                    ImageView, ImageUsage, Sampler, SamplerInfo;
+    import gfx.graal.image :        Image, ImageInfo, ImageUsage, ImageView,
+                                    Sampler, SamplerInfo;
     import gfx.graal.memory :       DeviceMemory, MemoryProperties;
     import gfx.graal.presentation : CompositeAlpha, PresentMode, Surface,
                                     Swapchain;
@@ -74,11 +74,9 @@ class GlDevice : Device
         return new GlBuffer(_share, usage, size);
     }
 
-    Image createImage(ImageType type, ImageDims dims, Format format,
-                      ImageUsage usage, ImageTiling tiling, uint samples,
-                      uint levels=1) {
+    Image createImage(in ImageInfo info) {
         import gfx.gl3.resource : GlImage;
-        return new GlImage(_share, type, dims, format, usage, tiling, samples, levels);
+        return new GlImage(_share, info);
     }
 
     Sampler createSampler(in SamplerInfo info) {

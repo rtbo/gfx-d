@@ -123,9 +123,7 @@ interface Device : AtomicRefCounted
 
     Buffer createBuffer(BufferUsage usage, size_t size);
 
-    Image createImage(ImageType type, ImageDims dims, Format format,
-                      ImageUsage usage, ImageTiling tiling, uint samples,
-                      uint levels=1);
+    Image createImage(in ImageInfo info);
 
     Sampler createSampler(in SamplerInfo info);
 

@@ -210,7 +210,7 @@ class DepthExample : Example
                 ) ]
             );
 
-            const hasStencil = formatDesc(pi.depth.format).surfaceType.stencilBits > 0;
+            const hasStencil = formatDesc(pi.depth.info.format).surfaceType.stencilBits > 0;
             const aspect = hasStencil ? ImageAspect.depthStencil : ImageAspect.depth;
             b.cmdBuf.pipelineBarrier(
                 trans(PipelineStage.topOfPipe, PipelineStage.earlyFragmentTests), [], [

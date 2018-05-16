@@ -16,13 +16,11 @@ import gfx.vulkan.memory;
 
 class VulkanImageBase : ImageBase
 {
-    this(VkImage vkObj, VulkanDevice dev, ImageType type, ImageDims dims, Format format)
+    this(VkImage vkObj, VulkanDevice dev, ImageInfo info)
     {
         _vkObj = vkObj;
         _dev = dev;
-        _type = type;
-        _dims = dims;
-        _format = format;
+        _info = info;
         _vk = dev.vk;
     }
 
@@ -45,27 +43,18 @@ class VulkanImageBase : ImageBase
         return _vk;
     }
 
-    final override @property ImageType type() {
-        return _type;
-    }
-    final @property Format format() {
-        return _format;
-    }
-    final override @property ImageDims dims() {
-        return _dims;
-    }
-    final @property uint levels() {
-        return _levels;
+    final override @property ImageInfo info() {
+        return _info;
     }
 
     override VulkanImageView createView(ImageType viewType, ImageSubresourceRange isr, Swizzle swizzle)
     {
-        const it = type;
+        const it = _info.type;
         VkImageViewCreateInfo ivci;
         ivci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         ivci.image = vkObj;
         ivci.viewType = viewType.toVkView();
-        ivci.format = format.toVk();
+        ivci.format = _info.format.toVk();
         ivci.subresourceRange = isr.toVk();
         ivci.components = swizzle.toVk();
 
@@ -81,19 +70,16 @@ class VulkanImageBase : ImageBase
     private VkImage _vkObj;
     private VulkanDevice _dev;
     private VkDeviceCmds _vk;
-    private ImageType _type;
-    private ImageDims _dims;
-    private Format _format;
-    private uint _levels;
+    private ImageInfo _info;
 }
 
 class VulkanImage : VulkanImageBase, Image
 {
     mixin(atomicRcCode);
 
-    this(VkImage vkObj, VulkanDevice dev, ImageType type, ImageDims dims, Format format)
+    this(VkImage vkObj, VulkanDevice dev, ImageInfo info)
     {
-        super(vkObj, dev, type, dims, format);
+        super(vkObj, dev, info);
         dev.retain();
     }
 

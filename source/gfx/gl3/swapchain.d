@@ -28,7 +28,7 @@ package final class GlSwapchain : Swapchain
     import gfx.gl3.device : GlDevice;
     import gfx.gl3.resource : GlImage;
     import gfx.graal.format : Format;
-    import gfx.graal.image : ImageBase, ImageDims, ImageUsage, ImageTiling, ImageType;
+    import gfx.graal.image : ImageBase, ImageInfo, ImageUsage;
     import gfx.graal.presentation : CompositeAlpha, PresentMode;
     import gfx.graal.sync : Semaphore;
 
@@ -58,8 +58,7 @@ package final class GlSwapchain : Swapchain
         mem.retain();
         foreach (i; 0 .. numImages) {
             auto img = new GlImage(
-                _share, ImageType.d2, ImageDims.d2(size[0], size[1]), format,
-                usage, ImageTiling.optimal, 0, 1
+                _share, ImageInfo.d2(size[0], size[1]).withFormat(format).withUsage(usage)
             );
             img.bindMemory(mem, 0);
 
