@@ -1010,7 +1010,7 @@ final class SetStencilInfoCmd : GlCommand
                     face, toGl(state.failOp), toGl(state.depthFailOp), toGl(state.passOp)
                 );
                 gl.StencilFuncSeparate(
-                    face, toGl(state.compareOp), state.reference, state.compareMask
+                    face, toGl(state.compareOp), state.refMask, state.compareMask
                 );
                 gl.StencilMaskSeparate(
                     face, state.writeMask

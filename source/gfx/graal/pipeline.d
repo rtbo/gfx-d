@@ -198,7 +198,7 @@ struct StencilOpState
     CompareOp compareOp;
     uint compareMask;
     uint writeMask;
-    uint reference;
+    uint refMask;
 }
 
 struct StencilInfo
@@ -323,7 +323,7 @@ struct ColorBlendInfo
 {
     Option!LogicOp logicOp;
     ColorBlendAttachment[] attachments;
-    float[4] blendConstants;
+    float[4] blendConstants = [ 0f, 0f, 0f, 0f ];
 }
 
 enum DynamicState {

@@ -185,6 +185,7 @@ void releaseArray(T, K)(ref T[K] arr) if (isAtomicRefCounted!T)
 {
     import std.algorithm : each;
     arr.each!((k, el) => releaseObj(el));
+    arr.clear();
     arr = null;
 }
 
@@ -204,6 +205,7 @@ void reinitArray(T, K)(ref T[K] arr) if (is(T == struct))
     foreach(k, ref t; arr) {
         t = T.init;
     }
+    arr.clear();
     arr = null;
 }
 
