@@ -7,10 +7,14 @@
 	"copyright": "Copyright © 2016, Remi Thebault",
 	"license": "MIT",
 	"targetType": "executable",
-	"stringImportPaths": ["shaders"],
+	"sourcePaths": [
+		"source", "../common"
+	],
     "dependencies": {
-        "gfx-d" : { "path": "../../"  },
-        "derelict-glfw3" : "~>3.1.0",
-        "derelict-gl3" : "~>1.0.18"
-    }
+        "gfx" : { "path": "../../"  },
+		"gfx:window" : { "path": "../../window" }
+	},
+	"preGenerateCommands-linux": [
+		"bash $PACKAGE_DIR/../gen_example_spirv.sh $PACKAGE_DIR"
+	]
 }

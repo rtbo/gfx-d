@@ -1,0 +1,15 @@
+{
+	"name": "mathbench",
+	"authors": [
+		"Remi Thebault"
+	],
+	"description": "A matrix multiplication benchmark",
+	"copyright": "Copyright © 2018, Remi Thebault",
+	"license": "MIT",
+	"dependencies": {
+		"gfx:math" : { "path": "../../"  },
+		"gl3n" : "~>1.3.1"
+	},
+	"sourceFiles": [ "objs/glm.o" ],
+	"libs": [ "stdc++" ]
+}

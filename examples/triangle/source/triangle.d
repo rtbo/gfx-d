@@ -1,93 +1,233 @@
 module triangle;
 
-import gfx.foundation.rc;
-import gfx.foundation.typecons;
-import gfx.pipeline;
+import example;
 
-import gfx.window.glfw;
+import gfx.core.rc;
+import gfx.core.typecons;
+import gfx.core.types;
+import gfx.graal.buffer;
+import gfx.graal.cmd;
+import gfx.graal.device;
+import gfx.graal.format;
+import gfx.graal.image;
+import gfx.graal.memory;
+import gfx.graal.pipeline;
+import gfx.graal.presentation;
+import gfx.graal.queue;
+import gfx.graal.renderpass;
 
-import std.stdio : writeln;
+import std.exception;
+import std.stdio;
+import std.typecons;
 
-
-struct Vertex {
-    @GfxName("a_Pos")   float[2] pos;
-    @GfxName("a_Color") float[3] color;
-}
-
-struct PipeMeta {
-    VertexInput!Vertex input;
-
-    @GfxName("o_Color")
-    ColorOutput!Rgba8 output;
-}
-
-alias PipeState = PipelineState!PipeMeta;
-
-
-
-immutable triangle = [
-    Vertex([-0.5, -0.5], [1.0, 0.0, 0.0]),
-    Vertex([ 0.5, -0.5], [0.0, 1.0, 0.0]),
-    Vertex([ 0.0,  0.5], [0.0, 0.0, 1.0]),
-];
-
-immutable float[4] backColor = [0.1, 0.2, 0.3, 1.0];
-
-
-int main()
+class TriangleExample : Example
 {
-    /// window with a color buffer and no depth/stencil buffer
-    auto window = rc(gfxGlfwWindow!Rgba8("gfx-d - Triangle", 640, 480, 4));
-    auto colRtv = rc(window.colorSurface.viewAsRenderTarget());
+    Rc!RenderPass renderPass;
+    Framebuffer[] framebuffers;
+    Rc!Pipeline pipeline;
+    PerImage[] perImages;
+    Rc!Buffer vertBuf;
+
+    struct PerImage {
+        bool undefinedLayout=true;
+    }
+
+    struct Vertex {
+        float[4] position;
+        float[4] color;
+    }
+
+    this(string[] args) {
+        super("Triangle", args);
+    }
+
+    override void dispose() {
+        if (device) {
+            device.waitIdle();
+        }
+        vertBuf.unload();
+        pipeline.unload();
+        renderPass.unload();
+        releaseArray(framebuffers);
+        super.dispose();
+    }
+
+    override void prepare() {
+        super.prepare();
+        prepareBuffer();
+        prepareRenderPass();
+        preparePipeline();
+    }
+
+    void prepareBuffer() {
+        const vertexData = [
+            Vertex([-0.7f,  0.7f, 0f, 1f], [ 0f, 1f, 0f, 1f ]),
+            Vertex([ 0.7f,  0.7f, 0f, 1f], [ 1f, 0f, 0f, 1f ]),
+            Vertex([   0f, -0.7f, 0f, 1f], [ 0f, 0f, 1f, 1f ]),
+        ];
+
+        vertBuf = createStaticBuffer(vertexData, BufferUsage.vertex);
+    }
+
+    void prepareRenderPass() {
+        const attachments = [
+            AttachmentDescription(swapchain.format, 1,
+                AttachmentOps(LoadOp.clear, StoreOp.store),
+                AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
+                trans(ImageLayout.presentSrc, ImageLayout.presentSrc),
+                No.mayAlias
+            )
+        ];
+        const subpasses = [
+            SubpassDescription(
+                [], [ AttachmentRef(0, ImageLayout.colorAttachmentOptimal) ],
+                none!AttachmentRef, []
+            )
+        ];
+
+        renderPass = device.createRenderPass(attachments, subpasses, []);
+
+        framebuffers = new Framebuffer[scImages.length];
+        foreach (i; 0 .. scImages.length) {
+            framebuffers[i] = device.createFramebuffer(renderPass, [
+                scImages[i].createView(
+                    ImageType.d2,
+                    ImageSubresourceRange(ImageAspect.color),
+                    Swizzle.identity
+                )
+            ], surfaceSize[0], surfaceSize[1], 1);
+        }
+        retainArray(framebuffers);
+    }
+
+    void preparePipeline()
     {
-        auto vbuf = makeRc!(VertexBuffer!Vertex)(triangle);
-        auto slice = VertexBufferSlice(vbuf.count);
-        auto prog = makeRc!Program(ShaderSet.vertexPixel(
-            import("130-triangle.v.glsl"),
-            import("130-triangle.f.glsl"),
-        ));
-        auto pso = makeRc!PipeState(prog.obj, Primitive.triangles, Rasterizer.fill.withSamples());
+        auto vtxShader = device.createShaderModule(
+            cast(immutable(uint)[])import("shader.vert.spv"), "main"
+        ).rc;
+        auto fragShader = device.createShaderModule(
+            cast(immutable(uint)[])import("shader.frag.spv"), "main"
+        ).rc;
 
-        auto data = PipeState.Data.init;
-        data.input = vbuf;
-        data.output = colRtv;
+        PipelineInfo info;
+        info.shaders.vertex = vtxShader;
+        info.shaders.fragment = fragShader;
+        info.inputBindings = [
+            VertexInputBinding(0, Vertex.sizeof, No.instanced)
+        ];
+        info.inputAttribs = [
+            VertexInputAttrib(0, 0, Format.rgba32_sFloat, 0),
+            VertexInputAttrib(1, 0, Format.rgba32_sFloat, Vertex.color.offsetof),
+        ];
+        info.assembly = InputAssembly(Primitive.triangleList, No.primitiveRestart);
+        info.rasterizer = Rasterizer(
+            PolygonMode.fill, Cull.back, FrontFace.ccw, No.depthClamp,
+            none!DepthBias, 1f
+        );
+        info.viewports = [
+            ViewportConfig(
+                Viewport(0, 0, cast(float)surfaceSize[0], cast(float)surfaceSize[1]),
+                Rect(0, 0, surfaceSize[0], surfaceSize[1])
+            )
+        ];
+        info.blendInfo = ColorBlendInfo(
+            none!LogicOp, [
+                ColorBlendAttachment(No.enabled,
+                    BlendState(trans(BlendFactor.one, BlendFactor.zero), BlendOp.add),
+                    BlendState(trans(BlendFactor.one, BlendFactor.zero), BlendOp.add),
+                    ColorMask.all
+                )
+            ],
+            [ 0f, 0f, 0f, 0f ]
+        );
+        info.layout = device.createPipelineLayout([], []);
+        info.renderPass = renderPass;
+        info.subpassIndex = 0;
 
-        auto encoder = Encoder(window.device.makeCommandBuffer());
+        auto pls = device.createPipelines( [info] );
+        pipeline = pls[0];
+    }
 
-        // will quit on any key hit (as well as on close by 'x' click)
-        window.onKey = (int, int, int, int) {
-            window.shouldClose = true;
+
+    override void recordCmds(size_t cmdBufInd, size_t imgInd) {
+        import gfx.core.typecons : trans;
+
+        if (!perImages.length) {
+            perImages = new PerImage[scImages.length];
+        }
+
+        const cv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
+        auto subrange = ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1);
+
+        auto buf = cmdBufs[cmdBufInd];
+
+        //buf.reset();
+        buf.begin(No.persistent);
+
+        if (perImages[imgInd].undefinedLayout) {
+            buf.pipelineBarrier(
+                trans(PipelineStage.colorAttachment, PipelineStage.colorAttachment), [],
+                [ ImageMemoryBarrier(
+                    trans(Access.none, Access.colorAttachmentWrite),
+                    trans(ImageLayout.undefined, ImageLayout.presentSrc),
+                    trans(graphicsQueueIndex, graphicsQueueIndex),
+                    scImages[imgInd], subrange
+                ) ]
+            );
+            perImages[imgInd].undefinedLayout = false;
+        }
+
+        buf.beginRenderPass(
+            renderPass, framebuffers[imgInd],
+            Rect(0, 0, surfaceSize[0], surfaceSize[1]), [ ClearValues(cv) ]
+        );
+
+        buf.bindPipeline(pipeline);
+        buf.bindVertexBuffers(0, [ VertexBinding(vertBuf, 0) ]);
+        buf.draw(3, 1, 0, 0);
+
+        buf.endRenderPass();
+
+        buf.end();
+    }
+
+}
+
+int main(string[] args) {
+
+    try {
+        auto example = new TriangleExample(args);
+        example.prepare();
+        scope(exit) example.dispose();
+
+        example.window.onMouseOn = (uint, uint) {
+            example.window.closeFlag = true;
         };
 
-        window.onFbResize = (ushort w, ushort h) {
-            encoder.setViewport(0, 0, w, h);
-        };
+        import std.datetime.stopwatch : StopWatch;
 
-        import std.datetime : StopWatch;
-
-        size_t frameCount;
+        uint frameCount;
+        ulong lastUs;
         StopWatch sw;
         sw.start();
 
-        /* Loop until the user closes the window */
-        while (!window.shouldClose) {
+        enum reportFreq = 100;
 
-            encoder.clear!Rgba8(colRtv, backColor);
-            encoder.draw!PipeMeta(slice, pso, data);
-            encoder.flush(window.device);
-
-            /* Swap front and back buffers */
-            window.swapBuffers();
-
-            /* Poll for and process events */
-            window.pollEvents();
-
-            frameCount += 1;
+        while (!example.window.closeFlag) {
+            example.display.pollAndDispatch();
+            example.render();
+            ++ frameCount;
+            if ((frameCount % reportFreq) == 0) {
+                const us = sw.peek().total!"usecs";
+                writeln("FPS: ", 1000_000.0 * reportFreq / (us - lastUs));
+                lastUs = us;
+            }
         }
 
-        auto ms = sw.peek().msecs();
-        writeln("FPS: ", 1000.0f*frameCount / ms);
+        return 0;
     }
-
-    return 0;
+    catch(Exception ex) {
+        stderr.writeln("error occured: ", ex.msg);
+        return 1;
+    }
 }

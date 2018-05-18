@@ -1,389 +1,795 @@
 module shadow;
 
-import gfx.device;
-import gfx.foundation.rc;
-import gfx.foundation.typecons;
-import gfx.pipeline;
-import gfx.window.glfw;
+import example;
 
-import gl3n.linalg : mat4, mat3, vec3, vec4, quat, Vector;
+import gfx.core.rc;
+import gfx.core.typecons;
+import gfx.core.types;
+import gfx.graal.buffer;
+import gfx.graal.cmd;
+import gfx.graal.format;
+import gfx.graal.image;
+import gfx.graal.pipeline;
+import gfx.graal.renderpass;
+import gfx.graal.sync;
 
-import std.stdio : writeln, writefln;
+import gfx.math;
+
 import std.math : PI;
-
-enum maxNumLights = 5;
-
-struct Vertex {
-    @GfxName("a_Pos")       float[3] pos;
-    @GfxName("a_Normal")    float[3] normal;
-}
-
-struct ShadowVsLocals {
-    float[4][4] transform;
-}
-
-struct MeshVsLocals {
-    float[4][4] modelViewProj;
-    float[4][4] model;
-}
-struct MeshPsLocals {
-    float[4]    matColor;
-    int         numLights;
-    int[3]      padding;
-    this(float[4] mc, int nl) {
-        matColor = mc; numLights = nl;
-    }
-}
-struct LightParam {
-    float[4]    pos;
-    float[4]    color;
-    float[4][4] proj;
-}
+import std.stdio;
+import std.typecons;
 
 
-// shadow pass pipeline: render into z-buffer what is viewed from light
-struct ShadowPipeMeta {
-    VertexInput!Vertex              input;
+final class ShadowExample : Example
+{
+    // generic resources
+    Rc!Buffer vertBuf;
+    Rc!Buffer indBuf;
 
-    @GfxName("Locals")
-    ConstantBlock!ShadowVsLocals    locals;
+    Rc!Buffer meshUniformBuf;       // per mesh and per light
+    Rc!Buffer ligUniformBuf;        // per light
 
-    @GfxDepth(DepthTest.lessEqualWrite)
-    DepthOutput!Depth               output;
-}
+    Rc!DescriptorPool descPool;
 
-// render pass pipeline: render lighted meshes and sample shadow from z-buffer texture
-struct MeshPipeMeta {
-    VertexInput!Vertex              input;
+    // shadow pass
+    Rc!Semaphore shadowFinishedSem;
+    Rc!RenderPass shadowRenderPass;
+    Rc!Pipeline shadowPipeline;
+    Rc!Image shadowTex;
+    Rc!Sampler shadowSampler;
+    Rc!Framebuffer shadowFramebuffer;
+    Rc!DescriptorSetLayout shadowDSLayout;
+    Rc!PipelineLayout shadowLayout;
+    DescriptorSet shadowDS;
 
-    @GfxName("VsLocals")
-    ConstantBlock!MeshVsLocals      vsLocals;
+    // mesh pass
+    Rc!RenderPass meshRenderPass;
+    Rc!Pipeline meshPipeline;
+    PerImage[] framebuffers;
+    Rc!ImageView meshShadowView;
+    Rc!DescriptorSetLayout meshDSLayout;
+    Rc!PipelineLayout meshLayout;
+    DescriptorSet meshDS;
 
-    @GfxName("PsLocals")
-    ConstantBlock!MeshPsLocals      psLocals;
+    // scene
+    Mesh[] meshes;
+    Light[] lights;
 
-    @GfxName("Lights")
-    ConstantBlock!LightParam        lights;
+    // constants
+    enum shadowSize = 2048;
+    enum maxLights = 5;
 
-    @GfxName("u_Shadow")
-    ResourceView!Depth              shadow;
+    final class PerImage : Disposable
+    {
+        ImageBase color;
+        Rc!ImageView colorView;
+        Rc!Image depth;
+        Rc!ImageView depthView;
+        Rc!Framebuffer meshFramebuffer;
 
-    @GfxName("u_Shadow")
-    ResourceSampler                 shadowSampler;
-
-    @GfxName("o_Color")
-    ColorOutput!Rgba8               colorOutput;
-
-    @GfxDepth(DepthTest.lessEqualWrite)
-    DepthOutput!Depth               depthOutput;
-}
-
-
-alias ShadowPipeline = PipelineState!ShadowPipeMeta;
-alias MeshPipeline = PipelineState!MeshPipeMeta;
-
-
-immutable float[4] background = [0.1, 0.2, 0.3, 1.0];
-
-
-immutable planeVertices = [
-    Vertex([-1, -1,  0],    [ 0,  0,  1]),
-    Vertex([ 1, -1,  0],    [ 0,  0,  1]),
-    Vertex([ 1,  1,  0],    [ 0,  0,  1]),
-    Vertex([-1,  1,  0],    [ 0,  0,  1]),
-];
-
-immutable ushort[] planeIndices = [
-     0,  1,  2,  2,  3,  0,
-];
-
-struct Mesh {
-    mat4                modelMat;
-    vec4                color;
-    ShadowPipeline.Data shadowData;
-    MeshPipeline.Data   meshData;
-    VertexBufferSlice   slice;
-    bool                dynamic;
-}
-
-struct Light {
-    vec4                        position;
-    mat4                        viewMat;
-    mat4                        projMat;
-    vec4                        color;
-    Rc!(DepthStencilView!Depth) shadow;
-    Encoder                     encoder;
-}
-
-class Scene : RefCounted {
-    mixin(rcCode);
-
-    Rc!(ConstBuffer!LightParam) lightBlk;
-    Light[]                     lights;
-    Mesh[]                      meshes;
-
-    this(Device device, RenderTargetView!Rgba8 winRtv, DepthStencilView!Depth winDsv) {
-        import gfx.genmesh.cube : genCube;
-        import gfx.genmesh.poly : quad;
-        import gfx.genmesh.algorithm;
-        import std.algorithm : map;
-        import std.array : array;
-
-        auto makeShadowTex() {
-            import gfx.pipeline.texture : TextureUsage, TexUsageFlags, Texture2DArray;
-
-            TexUsageFlags usage = TextureUsage.depthStencil | TextureUsage.shaderResource;
-            return new Texture2DArray!Depth(usage, 1, 1024, 1024, maxNumLights);
+        override void dispose() {
+            meshFramebuffer.unload();
+            colorView.unload();
+            depth.unload();
+            depthView.unload();
         }
-        auto shadowTex = makeShadowTex().rc;
-        auto shadowSrv = shadowTex.viewAsShaderResource(0, 0, newSwizzle()).rc;
-        auto shadowSampler = new Sampler(shadowSrv,
-                    SamplerInfo(FilterMethod.bilinear, WrapMode.clamp)
-                    .withComparison(Comparison.lessEqual)).rc;
+    }
 
-        enum near = 1f;
-        enum far = 20f;
+    // supporting structs
 
-        auto makeLight(ubyte layer, float[3] pos, float[4] color, float fov) {
-            import gfx.pipeline.texture : DSVReadOnlyFlags;
-            return Light(
-                vec4(pos, 1),
-                mat4.look_at(vec3(pos), vec3(0, 0, 0), vec3(0, 0, 1)),
-                mat4.perspective(100, 100, fov, near, far),
-                vec4(color),
-                shadowTex.viewAsDepthStencil(0, some(layer), DSVReadOnlyFlags.init).rc,
-                Encoder(device.makeCommandBuffer())
+    static struct Vertex {
+        FVec3 position;
+        FVec3 normal;
+    }
+
+    // uniform types
+    static struct ShadowVsLocals {  // meshDynamicBuf (per mesh and per light)
+        FMat4 proj;
+    }
+
+    static struct MeshVsLocals {    // meshDynamicBuf (per mesh)
+        FMat4 mvp;
+        FMat4 model;
+    }
+
+    static struct MeshFsMaterial {  // meshDynamicBuf (per mesh)
+        FVec4 color;
+        FVec4 padding;
+    }
+
+    static struct LightBlk {        // within MeshFsLights
+        FVec4 position;
+        FVec4 color;
+        FMat4 proj;
+    }
+
+    static struct MeshFsLights {     // ligUniformBuf (static, single instance)
+        int numLights;
+        int[3] padding;
+        LightBlk[maxLights] lights;
+    }
+
+    // scene types
+    static struct Mesh {
+        uint vertOffset;
+        uint indOffset;
+        uint numVertices;
+        float pulse;
+        FVec4 color;
+        FMat4 model;
+    }
+
+    static struct Light {
+        FVec4 position;
+        FVec4 color;
+        FMat4 view;
+        FMat4 proj;
+        CommandBuffer cmdBuf;
+        Rc!ImageView shadowPlane;
+        Rc!Framebuffer shadowFb;
+    }
+
+    this(string[] args=[]) {
+        super("Shadow", args);
+    }
+
+    override void dispose() {
+        device.waitIdle();
+
+        vertBuf.unload();
+        indBuf.unload();
+        meshUniformBuf.unload();
+        ligUniformBuf.unload();
+
+        descPool.unload();
+
+        shadowFinishedSem.unload();
+        shadowRenderPass.unload();
+        shadowPipeline.unload();
+        shadowTex.unload();
+        shadowSampler.unload();
+        shadowFramebuffer.unload();
+        shadowDSLayout.unload();
+        shadowLayout.unload();
+
+        meshRenderPass.unload();
+        meshPipeline.unload();
+        disposeArray(framebuffers);
+        meshShadowView.unload();
+        meshDSLayout.unload();
+        meshLayout.unload();
+
+        reinitArray(lights);
+
+        super.dispose();
+    }
+
+    override void prepare() {
+        super.prepare();
+        prepareSceneAndResources();
+        prepareShadowRenderPass();
+        prepareMeshRenderPass();
+        prepareFramebuffers();
+        prepareDescriptors();
+        preparePipelines();
+    }
+
+    void prepareSceneAndResources() {
+
+        import std.exception : enforce;
+
+        // setting up lights
+
+        enum numLights = 3;
+
+        shadowTex = device.createImage(
+            ImageInfo.d2Array(shadowSize, shadowSize, numLights)
+                .withFormat(Format.d32_sFloat)
+                .withUsage(ImageUsage.sampled | ImageUsage.depthStencilAttachment)
+        );
+        enforce(bindImageMemory(shadowTex));
+        meshShadowView = shadowTex.createView(
+            ImageType.d2Array,
+            ImageSubresourceRange(ImageAspect.depth, 0, 1, 0, numLights),
+            Swizzle.identity
+        );
+        {
+            auto b = autoCmdBuf().rc;
+            b.cmdBuf.pipelineBarrier(
+                trans(PipelineStage.topOfPipe, PipelineStage.earlyFragmentTests), [], [
+                    ImageMemoryBarrier(
+                        trans(Access.none, Access.depthStencilAttachmentRead | Access.depthStencilAttachmentWrite),
+                        trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
+                        trans(queueFamilyIgnored, queueFamilyIgnored),
+                        shadowTex, ImageSubresourceRange(ImageAspect.depth, 0, 1, 0, numLights)
+                    )
+                ]
             );
         }
 
-        auto lights = [
-            makeLight(0, [7, -5, 10], [0.5, 0.65, 0.5, 1], 60),
-            makeLight(1, [-5, 7, 10], [0.65, 0.5, 0.5, 1], 45),
+        shadowSampler = device.createSampler(SamplerInfo(
+            Filter.linear, Filter.linear, Filter.nearest,
+            [WrapMode.repeat, WrapMode.repeat, WrapMode.repeat],
+            none!float, 0f, [0f, 0f], some(CompareOp.lessOrEqual)
+        ));
+
+        auto ligCmdBufs = cmdPool.allocate(numLights);
+
+        auto makeLight(uint layer, FVec3 pos, FVec4 color, float fov)
+        {
+            enum near = 5f;
+            enum far = 20f;
+
+            Light l;
+            l.position = fvec(pos, 1);
+            l.color = color;
+            l.view = lookAt(pos, fvec(0, 0, 0), fvec(0, 0, 1));
+            l.proj = perspective(fov, 1f, near, far);
+            l.shadowPlane = shadowTex.createView(
+                ImageType.d2,
+                ImageSubresourceRange(
+                    ImageAspect.depth, 0, 1, layer, 1
+                ),
+                Swizzle.identity
+            );
+            l.cmdBuf = ligCmdBufs[layer];
+
+            return l;
+        }
+        lights = [
+            makeLight(0, fvec(7, -5, 10), fvec(0.5, 0.7, 0.5, 1), 60),
+            makeLight(1, fvec(-5, 7, 10), fvec(0.7, 0.5, 0.5, 1), 45),
+            makeLight(2, fvec(10, 7, 5), fvec(0.5, 0.5, 0.7, 1), 90),
         ];
 
-        auto cube = genCube()
-                .vertexMap!(v => Vertex(v.p, v.n))
+        {
+            MeshFsLights mfl;
+            mfl.numLights = numLights;
+            foreach (ind, l; lights) {
+                mfl.lights[ind] = LightBlk(
+                    l.position, l.color, transpose(l.proj*l.view)
+                );
+            }
+            auto data = cast(void[])((&mfl)[0 .. 1]);
+            ligUniformBuf = createStaticBuffer(data, BufferUsage.uniform);
+        }
+
+        // setup meshes
+
+        // buffers layout:
+        // vertBuf: cube vertices | plane vertices
+        // indBuf:  cube indices  | plane indices
+
+        import gfx.genmesh.cube : genCube;
+        import gfx.genmesh.algorithm : indexCollectMesh, triangulate, vertices;
+        import gfx.genmesh.poly : quad;
+        import std.algorithm : map;
+
+        const cube = genCube()
+                .map!(f => quad(
+                    Vertex( fvec(f[0].p), fvec(f[0].n) ),
+                    Vertex( fvec(f[1].p), fvec(f[1].n) ),
+                    Vertex( fvec(f[2].p), fvec(f[2].n) ),
+                    Vertex( fvec(f[3].p), fvec(f[3].n) ),
+                ))
                 .triangulate()
                 .vertices()
                 .indexCollectMesh();
 
-        auto cubeBuf = makeRc!(VertexBuffer!Vertex)(cube.vertices);
-        auto cubeSlice = VertexBufferSlice(new IndexBuffer!ushort(cube.indices));
-        auto planeBuf = makeRc!(VertexBuffer!Vertex)(planeVertices.map!(
-            v => Vertex((vec3(v.pos)*7).vector, v.normal)
-        ).array());
-        auto planeSlice = VertexBufferSlice(new IndexBuffer!ushort(planeIndices));
-
-        auto shadowLocals = makeRc!(ConstBuffer!ShadowVsLocals)(1);
-        auto meshVsLocals = makeRc!(ConstBuffer!MeshVsLocals)(1);
-        auto meshPsLocals = makeRc!(ConstBuffer!MeshPsLocals)(1);
-        auto lightBlk = makeRc!(ConstBuffer!LightParam)(maxNumLights);
-
-        auto makeMesh(in mat4 modelMat, in float[4] color, VertexBuffer!Vertex vbuf,
-                VertexBufferSlice slice, bool dynamic) {
-            ShadowPipeline.Data shadowData;
-            shadowData.input = vbuf;
-            shadowData.locals = shadowLocals;
-            // shadowData.output will be set for each light at render time
-
-            auto meshData = MeshPipeline.Data (
-                vbuf.rc, meshVsLocals, meshPsLocals, lightBlk,
-                shadowSrv, shadowSampler, winRtv.rc, winDsv.rc
-            );
-
-            return Mesh(modelMat, vec4(color), shadowData, meshData, slice, dynamic);
-        }
-
-        auto makeCube(in float[3] pos, in float scale, in float angle, in float[4] color) {
-            immutable offset = vec3(pos);
-
-            immutable r = quat.axis_rotation(angle*PI/180.0, offset.normalized).to_matrix!(4, 4);
-            immutable t = mat4.translation(offset);
-            immutable s = mat4.scaling(scale, scale, scale);
-            immutable model = t * s * r;
-            return makeMesh(model, color, cubeBuf, cubeSlice, true);
-        }
-
-        this.lightBlk = lightBlk;
-        this.lights = lights;
-        this.meshes = [
-            makeCube([-2, -2, 2], 0.7, 10, [0.8, 0.2, 0.2, 1]),
-            makeCube([2, -2, 2], 1.3, 50, [0.2, 0.8, 0.2, 1]),
-            makeCube([-2, 2, 2], 1.1, 140, [0.2, 0.2, 0.8, 1]),
-            makeCube([2, 2, 2], 0.9, 210, [0.8, 0.8, 0.2, 1]),
-            makeMesh(mat4.identity, [1, 1, 1, 1], planeBuf, planeSlice, false)
+        const planeVertices = [
+            Vertex(fvec(-7, -7,  0), fvec(0,  0,  1)),
+            Vertex(fvec( 7, -7,  0), fvec(0,  0,  1)),
+            Vertex(fvec( 7,  7,  0), fvec(0,  0,  1)),
+            Vertex(fvec(-7,  7,  0), fvec(0,  0,  1)),
         ];
-    }
 
-    void dispose() {
-        foreach(ref l; lights) {
-            l.shadow.unload();
-            l.encoder = Encoder.init;
-        }
-        foreach(ref m; meshes) {
-            m.shadowData = ShadowPipeline.Data.init;
-            m.meshData = MeshPipeline.Data.init;
-            m.slice = VertexBufferSlice.init;
-        }
-        lightBlk.unload();
-    }
+        const ushort[] planeIndices = [ 0,  1,  2,  0,  2,  3 ];
 
-    void tick() {
-        import std.algorithm : filter, each;
-        immutable axis = vec3(0, 0, 1);
-        immutable angle = 0.3 * PI / 180;
-        immutable r = quat.axis_rotation(angle, axis).to_matrix!(4, 4);
-        meshes.filter!(m => m.dynamic).each!((ref Mesh m) {
-            m.modelMat *= r;
-        });
-    }
-}
+        const cubeVertBytes = cast(uint)(cube.vertices.length * Vertex.sizeof);
+        const cubeIndBytes = cast(uint)(cube.indices.length * ushort.sizeof);
 
-struct FPSProbe {
-    import std.datetime : StopWatch;
+        const cubeVertOffset = 0;
+        const cubeIndOffset = 0;
+        const cubeNumIndices = cast(uint)cube.indices.length;
+        const planeVertOffset = cubeVertBytes;
+        const planeIndOffset = cubeIndBytes;
+        const planeNumIndices = cast(uint)planeIndices.length;
 
-    private size_t frameCount;
-    private StopWatch sw;
-
-    void start() { sw.start(); }
-    void tick() { frameCount += 1; }
-    @property float fps() const {
-        auto msecs = sw.peek().msecs();
-        return 1000f * frameCount / msecs;
-    }
-}
-
-
-void main() {
-    enum winW = 800; enum winH = 520;
-    enum aspect = float(winW) / float(winH);
-
-	auto window = gfxGlfwWindow!(Rgba8, Depth)("gfx-d - Shadow example", winW, winH, 4).rc;
-    auto winRtv = window.colorSurface.viewAsRenderTarget().rc;
-    auto winDsv = window.depthStencilSurface.viewAsDepthStencil().rc;
-
-    auto shadowProg = makeRc!Program(ShaderSet.vertexPixel(
-        import("330-shadow.v.glsl"), import("330-shadow.f.glsl")
-    ));
-    auto shadowPso = makeRc!ShadowPipeline(shadowProg.obj, Primitive.triangles,
-            Rasterizer.fill .withSamples()
-                            .withCullBack()
-                            .withOffset(2.0, 1)
-    );
-
-    auto meshProg = makeRc!Program(ShaderSet.vertexPixel(
-        import("330-mesh.v.glsl"), import("330-mesh.f.glsl")
-    ));
-    auto meshPso = makeRc!MeshPipeline(meshProg.obj, Primitive.triangles,
-            Rasterizer.fill .withSamples()
-                            .withCullBack()
-    );
-
-    auto sc = new Scene(window.device, winRtv, winDsv).rc;
-    immutable bool parallelLightCmds = true;
-
-    auto encoder = Encoder(window.device.makeCommandBuffer());
-
-    immutable projMat = mat4.perspective(winW, winH, 45, 1f, 20f);
-    immutable viewProjMat = projMat * mat4.look_at(vec3(3, -10, 6), vec3(0, 0, 0), vec3(0, 0, 1));
-
-
-    float[4][4] columnMajor(in mat4 m) { return m.transposed().matrix; }
-
-    import std.algorithm : map;
-    import std.array : array;
-
-    LightParam[] lights = sc.lights.map!(
-        l => LightParam(l.position.vector, l.color.vector, columnMajor(l.projMat*l.viewMat))
-    ).array();
-    encoder.updateConstBuffer(sc.lightBlk, lights);
-
-    encoder.flush(window.device);
-
-    // will quit on any key hit (as well as on close by 'x' click)
-    window.onKey = (int, int, int, int) { window.shouldClose = true; };
-
-    FPSProbe fps;
-    fps.start();
-
-    while (!window.shouldClose) {
-
-
-        encoder.setViewport(0, 0, 1024, 1024);
-
-        if (parallelLightCmds) {
-
-
-            // Only GfxRefCounted.refCount has to be thread safe because resources are shared between lights.
-            // All other data access is unsynchronized.
-            // To achieve parallelism, we only populate the light encoder
-
-            import std.parallelism : parallel;
-
-            foreach (light; parallel(sc.lights)) {
-
-                light.encoder.clearDepth(light.shadow, 1);
-
-                foreach (m; sc.meshes) {
-
-                    // We modify a local copy of the mesh's shadowData (m is not a ref).
-                    m.shadowData.output = light.shadow;
-
-                    immutable locals = ShadowVsLocals (
-                        columnMajor(light.projMat * light.viewMat * m.modelMat)
-                    );
-                    light.encoder.updateConstBuffer(m.shadowData.locals, locals);
-                    light.encoder.draw!ShadowPipeMeta(m.slice, shadowPso, m.shadowData);
-                }
-
-            }
-
-            encoder.flush(window.device);
-            foreach (light; sc.lights) {
-                light.encoder.flush(window.device);
-            }
-        }
-        else {
-            foreach (i, light; sc.lights) {
-                encoder.clearDepth(light.shadow, 1);
-                foreach (m; sc.meshes) {
-                    m.shadowData.output = light.shadow;
-
-                    immutable locals = ShadowVsLocals (
-                        columnMajor(light.projMat * light.viewMat * m.modelMat)
-                    );
-                    encoder.updateConstBuffer(m.shadowData.locals, locals);
-                    encoder.draw!ShadowPipeMeta(m.slice, shadowPso, m.shadowData);
-                }
-            }
+        auto makeMesh(in uint vertOffset, in uint indOffset, in uint numVertices, in float rpm,
+                      in FMat4 model, in FVec4 color) {
+            return Mesh(vertOffset, indOffset, numVertices, rpm*2*PI/3600f, color, model);
         }
 
-        encoder.setViewport(0, 0, winW, winH);
-        encoder.clear!Rgba8(winRtv, background);
-        encoder.clearDepth(winDsv, 1f);
+        auto makeCube(in float rpm, in FVec3 pos, in float scale, in float angle, in FVec4 color) {
+            const r = rotation(angle*PI/180f, normalize(pos));
+            const t = translation(pos);
+            const s = gfx.math.scale(scale, scale, scale);
+            const model = t * s * r;
+            return makeMesh(cubeVertOffset, cubeIndOffset, cubeNumIndices, rpm, model, color);
+        }
 
-        foreach (m; sc.meshes) {
-            immutable vsLocals = MeshVsLocals (
-                columnMajor(viewProjMat * m.modelMat),
-                columnMajor(m.modelMat),
+        auto makePlane(in FMat4 model, in FVec4 color) {
+            return makeMesh(planeVertOffset, planeIndOffset, planeNumIndices, 0, model, color);
+        }
+
+        meshes = [
+            makeCube(3, fvec(-2, -2, 2), 0.7, 10, fvec(0.8, 0.2, 0.2, 1)),
+            makeCube(7, fvec(2, -2, 2), 1.3, 50, fvec(0.2, 0.8, 0.2, 1)),
+            makeCube(10, fvec(-2, 2, 2), 1.1, 140, fvec(0.2, 0.2, 0.8, 1)),
+            makeCube(5, fvec(2, 2, 2), 0.9, 210, fvec(0.8, 0.8, 0.2, 1)),
+            makePlane(FMat4.identity, fvec(1, 1, 1, 1)),
+        ];
+
+        {
+            auto verts = cube.vertices ~ planeVertices;
+            vertBuf = createStaticBuffer(verts, BufferUsage.vertex);
+        }
+        {
+            auto inds = cube.indices ~ planeIndices;
+            indBuf = createStaticBuffer(inds, BufferUsage.index);
+        }
+        meshUniformBuf = createDynamicBuffer(
+            ShadowVsLocals.sizeof * meshes.length * lights.length +
+            MeshVsLocals.sizeof * meshes.length +
+            MeshFsMaterial.sizeof * meshes.length,
+            BufferUsage.uniform
+        );
+    }
+
+    void prepareShadowRenderPass() {
+        const attachments = [
+            AttachmentDescription(
+                Format.d32_sFloat, 1,
+                AttachmentOps(LoadOp.clear, StoreOp.store),
+                AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
+                trans(ImageLayout.depthStencilAttachmentOptimal, ImageLayout.depthStencilAttachmentOptimal),
+                No.mayAlias
+            ),
+        ];
+        const subpasses = [
+            SubpassDescription(
+                [], [], some(AttachmentRef(0, ImageLayout.depthStencilAttachmentOptimal)), []
+            ),
+        ];
+        shadowRenderPass = device.createRenderPass(attachments, subpasses, []);
+        shadowFinishedSem = device.createSemaphore();
+    }
+
+    void prepareMeshRenderPass() {
+        const attachments = [
+            AttachmentDescription(swapchain.format, 1,
+                AttachmentOps(LoadOp.clear, StoreOp.store),
+                AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
+                trans(ImageLayout.presentSrc, ImageLayout.presentSrc),
+                No.mayAlias
+            ),
+            AttachmentDescription(findDepthFormat(), 1,
+                AttachmentOps(LoadOp.clear, StoreOp.dontCare),
+                AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
+                trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
+                No.mayAlias
+            )
+        ];
+        const subpasses = [
+            SubpassDescription(
+                [], [ AttachmentRef(0, ImageLayout.colorAttachmentOptimal) ],
+                some(AttachmentRef(1, ImageLayout.depthStencilAttachmentOptimal)),
+                []
+            )
+        ];
+        meshRenderPass = device.createRenderPass(attachments, subpasses, []);
+    }
+
+    void prepareFramebuffers() {
+        foreach (ref l; lights) {
+            l.shadowFb = device.createFramebuffer(
+                shadowRenderPass, [ l.shadowPlane.obj ], shadowSize, shadowSize, 1
             );
-            immutable psLocals = MeshPsLocals(
-                m.color.vector, cast(int)lights.length
+        }
+
+        auto b = autoCmdBuf().rc;
+
+        foreach (img; scImages) {
+
+            auto pi = new PerImage;
+            pi.color = img;
+            pi.colorView = img.createView(
+                ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
+            );
+            pi.depth = createDepthImage(surfaceSize[0], surfaceSize[1]);
+            pi.depthView = pi.depth.createView(
+                ImageType.d2, ImageSubresourceRange(ImageAspect.depth), Swizzle.identity
+            );
+            pi.meshFramebuffer = device.createFramebuffer(meshRenderPass, [
+                pi.colorView.obj, pi.depthView.obj
+            ], surfaceSize[0], surfaceSize[1], 1);
+
+            b.cmdBuf.pipelineBarrier(
+                trans(PipelineStage.colorAttachment, PipelineStage.colorAttachment), [], [
+                    ImageMemoryBarrier(
+                        trans(Access.none, Access.colorAttachmentWrite),
+                        trans(ImageLayout.undefined, ImageLayout.presentSrc),
+                        trans(queueFamilyIgnored, queueFamilyIgnored),
+                        img, ImageSubresourceRange(ImageAspect.color)
+                    )
+                ]
             );
 
-            encoder.updateConstBuffer(m.meshData.vsLocals, vsLocals);
-            encoder.updateConstBuffer(m.meshData.psLocals, psLocals);
-            encoder.draw!MeshPipeMeta(m.slice, meshPso, m.meshData);
+            b.cmdBuf.pipelineBarrier(
+                trans(PipelineStage.topOfPipe, PipelineStage.earlyFragmentTests), [], [
+                    ImageMemoryBarrier(
+                        trans(Access.none, Access.depthStencilAttachmentRead | Access.depthStencilAttachmentWrite),
+                        trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
+                        trans(queueFamilyIgnored, queueFamilyIgnored),
+                        pi.depth, ImageSubresourceRange(ImageAspect.depth)
+                    )
+                ]
+            );
+
+            framebuffers ~= pi;
         }
-
-        encoder.flush(window.device);
-
-        window.swapBuffers();
-        window.pollEvents();
-
-        sc.tick();
-        fps.tick();
     }
 
-    writeln("FPS: ", fps.fps);
+    void prepareDescriptors() {
+
+        shadowDSLayout = device.createDescriptorSetLayout(
+            [
+                PipelineLayoutBinding(0, DescriptorType.uniformBufferDynamic, 1, ShaderStage.vertex),
+            ]
+        );
+        shadowLayout = device.createPipelineLayout(
+            [ shadowDSLayout ], []
+        );
+
+        meshDSLayout = device.createDescriptorSetLayout(
+            [
+                PipelineLayoutBinding(0, DescriptorType.uniformBufferDynamic, 1, ShaderStage.vertex),
+                PipelineLayoutBinding(1, DescriptorType.uniformBufferDynamic, 1, ShaderStage.fragment),
+                PipelineLayoutBinding(2, DescriptorType.uniformBuffer, 1, ShaderStage.fragment),
+                PipelineLayoutBinding(3, DescriptorType.combinedImageSampler, 1, ShaderStage.fragment),
+            ]
+        );
+        meshLayout = device.createPipelineLayout(
+            [ meshDSLayout ], []
+        );
+
+        descPool = device.createDescriptorPool( 2,
+            [
+                DescriptorPoolSize(DescriptorType.uniformBufferDynamic, 3),
+                DescriptorPoolSize(DescriptorType.uniformBuffer, 1),
+                DescriptorPoolSize(DescriptorType.combinedImageSampler, 1)
+            ]
+        );
+
+        auto dss = descPool.allocate( [ shadowDSLayout, meshDSLayout ] );
+        shadowDS = dss[0];
+        meshDS = dss[1];
+
+        const shadowVsLen = cast(uint)(ShadowVsLocals.sizeof * lights.length * meshes.length);
+        const meshVsLen = cast(uint)(MeshVsLocals.sizeof * meshes.length);
+        const ligFsLen = cast(uint)MeshFsLights.sizeof;
+
+        import std.algorithm : map;
+        import std.array : array;
+
+        auto writes = [
+            WriteDescriptorSet(shadowDS, 0, 0, new UniformBufferDynamicDescWrites(
+                [ BufferRange(meshUniformBuf, 0, ShadowVsLocals.sizeof) ]
+            )),
+            WriteDescriptorSet(meshDS, 0, 0, new UniformBufferDynamicDescWrites(
+                [ BufferRange(meshUniformBuf, shadowVsLen, MeshVsLocals.sizeof) ]
+            )),
+            WriteDescriptorSet(meshDS, 1, 0, new UniformBufferDynamicDescWrites(
+                [ BufferRange(meshUniformBuf, shadowVsLen+meshVsLen, MeshFsMaterial.sizeof) ]
+            )),
+            WriteDescriptorSet(meshDS, 2, 0, new UniformBufferDescWrites(
+                [ BufferRange(ligUniformBuf, 0, ligFsLen) ]
+            )),
+            WriteDescriptorSet(meshDS, 3, 0, new CombinedImageSamplerDescWrites(
+                [ CombinedImageSampler(shadowSampler, meshShadowView, ImageLayout.depthStencilReadOnlyOptimal) ]
+            ))
+        ];
+        device.updateDescriptorSets(writes, []);
+    }
+
+    PipelineInfo prepareShadowPipeline()
+    {
+        PipelineInfo info;
+        info.shaders.vertex = device.createShaderModule(
+            cast(immutable(uint)[])import("shadow.vert.spv"), "main"
+        );
+        info.shaders.fragment = device.createShaderModule(
+            cast(immutable(uint)[])import("shadow.frag.spv"), "main"
+        );
+        info.shaders.vertex.retain();
+        info.shaders.fragment.retain();
+
+        info.inputBindings = [
+            VertexInputBinding(0, Vertex.sizeof, No.instanced)
+        ];
+        info.inputAttribs = [
+            VertexInputAttrib(0, 0, Format.rgb32_sFloat, 0),
+            VertexInputAttrib(1, 0, Format.rgb32_sFloat, Vertex.normal.offsetof),
+        ];
+        info.assembly = InputAssembly(Primitive.triangleList, No.primitiveRestart);
+        info.rasterizer = Rasterizer(
+            PolygonMode.fill, Cull.back, FrontFace.ccw, No.depthClamp,
+            some(DepthBias(1f, 0f, 2f)), 1f
+        );
+        info.viewports = [
+            ViewportConfig(
+                Viewport(0, 0, cast(float)shadowSize, cast(float)shadowSize),
+                Rect(0, 0, shadowSize, shadowSize)
+            )
+        ];
+        info.depthInfo = DepthInfo(
+            Yes.enabled, Yes.write, CompareOp.lessOrEqual, No.boundsTest, 0f, 1f
+        );
+        info.blendInfo = ColorBlendInfo(
+            none!LogicOp, [], [ 0f, 0f, 0f, 0f ]
+        );
+        info.layout = shadowLayout;
+        info.renderPass = shadowRenderPass;
+        info.subpassIndex = 0;
+
+        return info;
+    }
+
+    PipelineInfo prepareMeshPipeline()
+    {
+        PipelineInfo info;
+        info.shaders.vertex = device.createShaderModule(
+            cast(immutable(uint)[])import("mesh.vert.spv"), "main"
+        );
+        info.shaders.fragment = device.createShaderModule(
+            cast(immutable(uint)[])import("mesh.frag.spv"), "main"
+        );
+        info.shaders.vertex.retain();
+        info.shaders.fragment.retain();
+
+        info.inputBindings = [
+            VertexInputBinding(0, Vertex.sizeof, No.instanced)
+        ];
+        info.inputAttribs = [
+            VertexInputAttrib(0, 0, Format.rgb32_sFloat, 0),
+            VertexInputAttrib(1, 0, Format.rgb32_sFloat, Vertex.normal.offsetof),
+        ];
+        info.assembly = InputAssembly(Primitive.triangleList, No.primitiveRestart);
+        info.rasterizer = Rasterizer(
+            PolygonMode.fill, Cull.back, FrontFace.ccw, No.depthClamp,
+            none!DepthBias, 1f
+        );
+        info.viewports = [
+            ViewportConfig(
+                Viewport(0, 0, cast(float)surfaceSize[0], cast(float)surfaceSize[1]),
+                Rect(0, 0, surfaceSize[0], surfaceSize[1])
+            )
+        ];
+        info.depthInfo = DepthInfo(
+            Yes.enabled, Yes.write, CompareOp.lessOrEqual, No.boundsTest, 0f, 1f
+        );
+        info.blendInfo = ColorBlendInfo(
+            none!LogicOp, [ ColorBlendAttachment.solid() ], [ 0f, 0f, 0f, 0f ]
+        );
+        info.layout = meshLayout;
+        info.renderPass = meshRenderPass;
+        info.subpassIndex = 0;
+
+        return info;
+    }
+
+    void preparePipelines() {
+        auto infos = [
+            prepareShadowPipeline(), prepareMeshPipeline()
+        ];
+        auto pls = device.createPipelines(infos);
+        shadowPipeline = pls[0];
+        meshPipeline = pls[1];
+
+        foreach (ref i; infos) {
+            i.shaders.vertex.release();
+            i.shaders.fragment.release();
+        }
+    }
+
+    void updateBuffers(in FMat4 viewProj) {
+
+        const axis = fvec(0, 0, 1);
+        foreach (ref m; meshes) {
+            const r = rotation(m.pulse, axis);
+            m.model *= r;
+        }
+
+        const shadowVsLen = cast(uint)(ShadowVsLocals.sizeof * lights.length * meshes.length);
+        const meshVsLen = cast(uint)(MeshVsLocals.sizeof * meshes.length);
+
+        import gfx.graal.device : MappedMemorySet;
+
+        auto mm = meshUniformBuf.boundMemory.map();
+
+        {
+            auto v = mm.view!(ShadowVsLocals[])(0, lights.length*meshes.length);
+            foreach (il, ref l; lights) {
+                foreach (im, ref m; meshes) {
+                    const mat = ShadowVsLocals(transpose(l.proj * l.view * m.model));
+                    v[il*meshes.length + im] = mat;
+                }
+            }
+        }
+        {
+            auto v = mm.view!(MeshVsLocals[])(shadowVsLen, meshes.length);
+            foreach (im, ref m; meshes) {
+                v[im] = MeshVsLocals(
+                    transpose(viewProj * m.model),
+                    transpose(m.model),
+                );
+            }
+        }
+        {
+            auto v = mm.view!(MeshFsMaterial[])(shadowVsLen+meshVsLen, meshes.length);
+            foreach (im, ref m; meshes) {
+                v[im] = MeshFsMaterial( m.color );
+            }
+        }
+        MappedMemorySet mms;
+        mm.addToSet(mms);
+        device.flushMappedMemory(mms);
+    }
+
+    override void render()
+    {
+        import core.time : dur;
+        import gfx.graal.queue : PresentRequest, StageWait, Submission;
+        import std.algorithm : map;
+        import std.array : array;
+
+        bool needReconstruction;
+        const imgInd = swapchain.acquireNextImage(dur!"seconds"(-1), imageAvailableSem, needReconstruction);
+        const cmdBufInd = nextCmdBuf();
+
+        // we have cmdbufs for each light that must be used on every frame
+        // therefore, we must sync with the same fence on every frame
+        fences[0].wait();
+        fences[0].reset();
+
+        recordCmds(cmdBufInd, imgInd);
+
+        auto shadowSubmission = Submission(
+            [],
+            [ shadowFinishedSem.obj ],
+            lights.map!((ref Light l) { return l.cmdBuf; }).array
+        );
+        auto meshSubmission = Submission(
+            [
+                StageWait(shadowFinishedSem, PipelineStage.fragmentShader),
+                StageWait(imageAvailableSem, PipelineStage.transfer)
+            ],
+            [ renderingFinishSem.obj ], [ cmdBufs[cmdBufInd] ]
+        );
+
+        graphicsQueue.submit(
+            [
+                shadowSubmission,
+                meshSubmission
+            ],
+            fences[0]
+        );
+
+        presentQueue.present(
+            [ renderingFinishSem.obj ],
+            [ PresentRequest(swapchain, imgInd) ]
+        );
+
+        // if (needReconstruction) {
+        //     prepareSwapchain(swapchain);
+        //     presentPool.reset();
+        // }
+    }
+
+
+    override void recordCmds(ulong cmdBufInd, ulong imgInd)
+    {
+        void recordLight(uint il, ref Light l) {
+            auto buf = l.cmdBuf;
+            buf.begin(No.persistent);
+
+            buf.beginRenderPass(
+                shadowRenderPass, l.shadowFb, Rect(0, 0, shadowSize, shadowSize),
+                [ ClearValues.depthStencil(1f, 0) ]
+            );
+
+            buf.bindPipeline(shadowPipeline);
+            foreach (c, m; meshes) {
+                buf.bindIndexBuffer(indBuf, m.indOffset, IndexType.u16);
+                buf.bindVertexBuffers(0, [ VertexBinding(vertBuf, m.vertOffset) ]);
+                buf.bindDescriptorSets(
+                    PipelineBindPoint.graphics, shadowLayout, 0, [ shadowDS ],
+                    [
+                        (il*meshes.length + c) * ShadowVsLocals.sizeof
+                    ]
+                );
+                buf.drawIndexed(m.numVertices, 1, 0, 0, 0);
+            }
+
+            buf.endRenderPass();
+
+            buf.end();
+        }
+
+        void recordMeshes() {
+            auto buf = cmdBufs[cmdBufInd];
+            auto fb = framebuffers[imgInd];
+
+            buf.begin(No.persistent);
+            buf.beginRenderPass(
+                meshRenderPass, fb.meshFramebuffer, Rect(0, 0, surfaceSize[0], surfaceSize[1]),
+                [
+                    ClearValues.color(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f),
+                    ClearValues.depthStencil(1f, 0)
+                ]
+            );
+
+            buf.bindPipeline(meshPipeline);
+            foreach (c, m; meshes) {
+                buf.bindIndexBuffer(indBuf, m.indOffset, IndexType.u16);
+                buf.bindVertexBuffers(0, [ VertexBinding(vertBuf, m.vertOffset) ]);
+                buf.bindDescriptorSets(
+                    PipelineBindPoint.graphics, meshLayout, 0, [ meshDS ],
+                    [
+                        c * MeshVsLocals.sizeof, c * MeshFsMaterial.sizeof
+                    ]
+                );
+                buf.drawIndexed(m.numVertices, 1, 0, 0, 0);
+            }
+
+            buf.endRenderPass();
+            buf.end();
+        }
+
+        foreach (uint il, ref l; lights) {
+            recordLight(il, l);
+        }
+        recordMeshes();
+    }
+
+}
+
+int main(string[] args) {
+
+    try {
+        auto example = new ShadowExample(args);
+        example.prepare();
+        scope(exit) example.dispose();
+
+        example.window.onMouseOn = (uint, uint) {
+            example.window.closeFlag = true;
+        };
+
+        const winSize = example.surfaceSize;
+        const proj = perspective(45, winSize[0]/(cast(float)winSize[1]), 1f, 20f);
+        const viewProj = proj * lookAt(fvec(3, -10, 6), fvec(0, 0, 0), fvec(0, 0, 1));
+
+        FPSProbe fpsProbe;
+        fpsProbe.start();
+
+        enum reportFreq = 60;
+
+        while (!example.window.closeFlag) {
+
+            example.updateBuffers(viewProj);
+            example.render();
+            example.display.pollAndDispatch();
+
+            fpsProbe.tick();
+            if ((fpsProbe.frameCount % reportFreq) == 0) {
+                writeln("FPS: ", fpsProbe.fps);
+            }
+        }
+
+        return 0;
+    }
+    catch(Exception ex) {
+        stderr.writeln("error occured: ", ex.msg);
+        return 1;
+    }
 }

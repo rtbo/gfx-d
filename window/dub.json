@@ -1,0 +1,31 @@
+{
+    "name": "window",
+    "authors": [
+        "Remi Thebault"
+    ],
+    "description": "Window utility for Gfx-d",
+    "copyright": "Copyright © 2018, Remi Thebault",
+    "license": "MIT",
+    "dependencies": {
+        "gfx": { "path": ".." }
+    },
+    "configurations": [
+        {
+            "name": "linux",
+            "platforms": ["linux"],
+            "dependencies": {
+                "wayland:client": "~>0.1.0",
+                "xcb-d": "~>2.1.0",
+                "xlib-d": "~>0.1.1"
+            },
+            "preGenerateCommands": [
+                "sh $PACKAGE_DIR/resources/gen_wld_protocol.sh $PACKAGE_DIR"
+            ]
+        },
+        {
+            "name": "windows",
+            "platforms": [ "windows" ],
+            "libs": [ "user32", "gdi32", "dwmapi" ]
+        }
+    ]
+}

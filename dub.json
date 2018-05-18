@@ -1,20 +1,31 @@
 {
-	"name": "gfx-d",
-	"authors": [
-		"Rémi Thebault"
-	],
-	"description": "D graphics rendering library",
-	"copyright": "Copyright © 2016, Rémi Thebault",
-	"license": "MIT",
-	"dependencies": {
-		"derelict-gl3" : "1.0.19",
-		"derelict-glfw3" : "3.1.0"
-	},
-	"subPackages": [
-		"./examples/triangle",
-		"./examples/crate",
-		"./examples/stencil",
-		"./examples/lense",
-		"./examples/shadow"
-	]
+    "name": "gfx",
+    "authors": [
+        "Rémi Thebault"
+    ],
+    "description": "D graphics rendering library",
+    "copyright": "Copyright © 2016-2018, Rémi Thebault",
+    "license": "MIT",
+
+    "subPackages": [
+        "bindings",
+        "genmesh",
+        "math",
+        "window",
+
+        "examples/swapchain",
+        "examples/triangle",
+        "examples/texture",
+        "examples/depth",
+        "examples/stencil",
+        "examples/shadow",
+        "examples/declapi"
+    ],
+    "dependencies": {
+        "gfx:bindings": "*",
+        "sdlang-d": "~>0.10.2",
+        "spirv_cross": { "path": "3rdparty/spirv_cross-d" }
+    },
+
+    "-ddoxFilterArgs": ["--min-protection=Protected"]
 }

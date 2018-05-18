@@ -1,0 +1,84 @@
+graal:DescriptorSetLayout {
+    // A store (or local-store) key can be any string with the only restriction
+    // that it cannot start by __ (2 underscores ; these are reserved).
+    // It uniquely identifies this object in the store.
+    // This can be used to be referenced in other objects (see graal:PipelineLayout hereunder)
+    // and to be retrieved in D code from the DeclarativeEngine.store member.
+    store "dsl"
+    bindings {
+        0 descriptorType="uniformBufferDynamic" descriptorCount=1 stages="vertex"
+        1 descriptorType="uniformBuffer" descriptorCount=1 stages="fragment"
+    }
+}
+graal:PipelineLayout {
+    store "layout"
+    layouts {
+        "store:dsl"
+    }
+    // this is optional
+    ranges {
+    }
+}
+// having top-level shader module is useful if several pipelines share the same shader
+graal:ShaderModule {
+    // local-store does the same as store but is cleaned up right after parsing is done.
+    // It can be reference later in the same document but cannot be retrieved from D code.
+    // Note that store is allowed everywhere local-store is and vice-versa.
+    local-store "vertSh"
+    // source can also be asset or binary base64 (although that is discouraged)
+    source "view:shader.vert.spv"
+    entryPoint "main" // this is the default and can be omitted
+}
+graal:Pipeline {
+    store "pl"
+    shaders {
+        // shaders can be attached from the store
+        vertex "store:vertSh"
+        // or created inline
+        fragment source="view:shader.frag.spv" entryPoint="main" store="fragSh"
+        // another possibility would be
+        // fragment {
+        //     source "view:shader.frag.spv"
+        //     entryPoint="main"
+        //     store="fragSh"
+        // }
+    }
+    inputBindings {
+        0 stride="sizeof:Vertex" instanced=off
+    }
+    inputAttribs {
+        // three ways to specify input attribs
+        0 binding=0 format="rgb32_sFloat" offset=0
+        1 binding=0 format="formatof:Vertex.normal" offset="offsetof:Vertex.normal"
+        2 binding=0 member="Vertex.color" // shortcut to formatof and offsetof
+    }
+    assembly primitive="triangleList" primitiveRestart=off
+    // if depthBias needed, specify it in a children of rasterizer
+    rasterizer polygonMode="fill" cull="back" front="ccw" lineWidth=1 depthClamp=off {
+        depthBias slope=2f const=1f
+    }
+    /*  examples of static viewport specification, not used here because of dynamicStates
+        win_width and win_height must be set in the store before parsing
+    viewports {
+        viewport x=0 y=0 width="store:win_width" height="store:win_height" minDepth=0 maxDepth=1
+        // if scissors not specified default to the following
+        scissors x=0 y=0 width="store:win_width" height="store:win_height"
+        // if specified there must be the same number of viewport and scissors
+        // (building array of ViewportConfig)
+    }
+    // the same can be shortcut like this
+    viewport x=0 y=0 width="store:win_width" height="store:win_height" minDepth=0 maxDepth=1
+    */
+    // if depthBounds needed, specify it in a children of depthInfo
+    depthInfo on write=on compareOp="less"
+    blendInfo {
+        logicOp off  // default value (optional)
+        attachments {
+            solid colorMask="rgba"
+        }
+        blendConstants 0f 0f 0f 0f // can be omitted if not used in blending
+    }
+    dynamicStates "viewport" "scissor"
+    layout "store:layout"
+    renderPass "store:rp" subpass=0
+}
