@@ -273,8 +273,9 @@ class DeclAPIExample : Example
     }
 
     void updateMatrices(in Matrices[] mat) {
-        auto mm = mapMemory!Matrices(matBuf.boundMemory, 0, mat.length);
-        mm[] = mat;
+        auto mm = matBuf.boundMemory.map();
+        auto v = mm.view!(Matrices[])(0, mat.length);
+        v[] = mat;
         MappedMemorySet mms;
         mm.addToSet(mms);
         device.flushMappedMemory(mms);

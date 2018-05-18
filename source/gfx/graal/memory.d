@@ -40,17 +40,22 @@ struct MemoryRequirements {
     size_t memTypeMask;
 }
 
-struct MemoryMap(T)
+/// Holds a memory mapping to host visible memory.
+/// Memory is unmapped when object goes out of scope.
+/// It also acts as a void[], and allows to get a typed slice view on the data.
+struct MemoryMap
 {
+    import std.traits : isDynamicArray;
+
     private DeviceMemory dm;
     private size_t offset;
-    private T[] data;
+    private void[] data;
 
-    private this(DeviceMemory dm, in size_t offset, T[] data)
+    private this(DeviceMemory dm, in size_t offset, in size_t size)
     {
         this.dm = dm;
         this.offset = offset;
-        this.data = data;
+        this.data = dm.mapRaw(offset, size)[0 .. size];
     }
 
     @disable this(this);
@@ -58,13 +63,55 @@ struct MemoryMap(T)
     ~this()
     {
         // should handle dtor of MemoryMap.init
-        if (dm) dm.unmap();
+        if (dm) dm.unmapRaw();
     }
 
     void addToSet(ref MappedMemorySet set)
     {
-        set.addMM(MappedMemorySet.MM(dm, offset, data.length*T.sizeof));
+        set.addMM(MappedMemorySet.MM(dm, offset, data.length));
     }
+
+    /// Get a typed view on the memory map that support slice and indexing operations.
+    /// Params:
+    ///     offset =   the offset to the requested memory in bytes
+    ///     count =    the number of elements of type T.init[0] to be mapped
+    /// Warning: offset and count are not in the same units.
+    /// This is necessary in order to allow a memory block to hold several arrays
+    /// of different element types.
+    auto view(T)(in size_t offset=0, in size_t count=size_t.max)
+    if (isDynamicArray!T)
+    {
+        alias Elem = typeof(T.init[0]);
+        const len = count == size_t.max ? data.length : count*Elem.sizeof;
+        return MemoryMapArrayView!Elem(cast(T)(data[offset .. offset+len]));
+    }
+
+    size_t opDollar() {
+        return data.length;
+    }
+
+    size_t[2] opSlice(size_t beg, size_t end) {
+        return [beg, end];
+    }
+
+    void[] opIndex() {
+        return data;
+    }
+    void[] opIndex(in size_t[2] slice) {
+        return data[ slice[0] .. slice[1] ];
+    }
+
+    void opIndexAssign(in void[] vals) {
+        data[] = vals;
+    }
+    void opIndexAssign(in void[] vals, size_t[2] slice) {
+        data[slice[0] .. slice[1]] = vals;
+    }
+}
+
+private struct MemoryMapArrayView(T)
+{
+    private T[] data;
 
     size_t opDollar() {
         return data.length;
@@ -102,30 +149,31 @@ struct MemoryMap(T)
 }
 
 
-
-/// Map device memory to host visible memory.
-/// Params:
-///     dm =       the device memory to be mapped
-///     offset =   the offset to the requested memory in bytes
-///     count =    the number of elements of type T to be mapped
-/// Warning: offset and count are not in the same units.
-/// This is necessary in order to allow a memory block to hold several arrays
-/// of different element types.
-auto mapMemory(T)(DeviceMemory dm, in size_t offset, in size_t count)
-{
-    const size = count * T.sizeof;
-    auto slice = dm.map(offset, size)[0 .. size];
-    return MemoryMap!T(dm, offset, retypeSlice!T(slice));
-}
-
 interface DeviceMemory : AtomicRefCounted
 {
     @property uint typeIndex();
     @property MemProps props();
     @property size_t size();
 
-    void* map(in size_t offset, in size_t size);
-    void unmap();
+    /// Map device memory to host visible memory.
+    /// Params:
+    ///     offset =   the offset to the requested memory in bytes
+    ///     size =     the size of the mapping in bytes.
+    void* mapRaw(in size_t offset, in size_t size);
+    void unmapRaw();
+
+    /// Produce a scoped memory map.
+    /// The the memory will be unmapped when the object goes out of scope.
+    /// The is an untyped memory holder. In order to access the memory, call
+    /// view with the right type parameter.
+    /// Params:
+    ///     offset =   the offset to the requested memory in bytes
+    ///     count =    the number of bytes to be mapped
+    final auto map(in size_t offset=0, in size_t sz=size_t.max)
+    {
+        const len = sz==size_t.max ? this.size : sz;
+        return MemoryMap(this, offset, sz);
+    }
 }
 
 

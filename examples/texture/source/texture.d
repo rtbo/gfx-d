@@ -273,8 +273,9 @@ class TextureExample : Example
     }
 
     void updateMatrices(in Matrices mat) {
-        auto mm = mapMemory!Matrices(matBuf.boundMemory, 0, 1);
-        mm[0] = mat;
+        auto mm = matBuf.boundMemory.map();
+        auto v = mm.view!(Matrices[])(0, 1);
+        v[0] = mat;
         MappedMemorySet mms;
         mm.addToSet(mms);
         device.flushMappedMemory(mms);

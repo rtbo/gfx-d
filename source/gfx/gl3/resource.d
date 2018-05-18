@@ -108,13 +108,13 @@ final class GlDeviceMemory : DeviceMemory
         return _size;
     }
 
-    override void* map(in size_t offset, in size_t size) {
+    override void* mapRaw(in size_t offset, in size_t size) {
         import std.exception : enforce;
         enforce(_buffer, "GL backend does not support mapping without bound buffer");
         return _buffer.map(offset, size);
     }
 
-    override void unmap() {
+    override void unmapRaw() {
         import std.exception : enforce;
         enforce(_buffer, "GL backend does not support mapping without bound buffer");
         _buffer.unmap();

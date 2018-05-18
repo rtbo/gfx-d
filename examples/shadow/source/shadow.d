@@ -604,43 +604,36 @@ final class ShadowExample : Example
         const meshVsLen = cast(uint)(MeshVsLocals.sizeof * meshes.length);
 
         import gfx.graal.device : MappedMemorySet;
-        import gfx.graal.memory : mapMemory;
 
-        auto mem = meshUniformBuf.boundMemory;
+        auto mm = meshUniformBuf.boundMemory.map();
 
         {
-            auto mm = mem.mapMemory!ShadowVsLocals(0, lights.length*meshes.length);
+            auto v = mm.view!(ShadowVsLocals[])(0, lights.length*meshes.length);
             foreach (il, ref l; lights) {
                 foreach (im, ref m; meshes) {
                     const mat = ShadowVsLocals(transpose(l.proj * l.view * m.model));
-                    mm[il*meshes.length + im] = mat;
+                    v[il*meshes.length + im] = mat;
                 }
             }
-            MappedMemorySet mms;
-            mm.addToSet(mms);
-            device.flushMappedMemory(mms);
         }
         {
-            auto mm = mem.mapMemory!MeshVsLocals(shadowVsLen, meshes.length);
+            auto v = mm.view!(MeshVsLocals[])(shadowVsLen, meshes.length);
             foreach (im, ref m; meshes) {
-                mm[im] = MeshVsLocals(
+                v[im] = MeshVsLocals(
                     transpose(viewProj * m.model),
                     transpose(m.model),
                 );
             }
-            MappedMemorySet mms;
-            mm.addToSet(mms);
-            device.flushMappedMemory(mms);
         }
         {
-            auto mm = mem.mapMemory!MeshFsMaterial(shadowVsLen+meshVsLen, meshes.length);
+            auto v = mm.view!(MeshFsMaterial[])(shadowVsLen+meshVsLen, meshes.length);
             foreach (im, ref m; meshes) {
-                mm[im] = MeshFsMaterial( m.color );
+                v[im] = MeshFsMaterial( m.color );
             }
-            MappedMemorySet mms;
-            mm.addToSet(mms);
-            device.flushMappedMemory(mms);
         }
+        MappedMemorySet mms;
+        mm.addToSet(mms);
+        device.flushMappedMemory(mms);
     }
 
     override void render()

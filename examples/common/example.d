@@ -336,7 +336,7 @@ class Example : Disposable
                 MemProps.hostVisible | MemProps.hostCoherent | MemProps.deviceLocal
             ).rc;
             if (buf) {
-                auto mm = mapMemory!void(buf.boundMemory, 0, data.length);
+                auto mm = buf.boundMemory.map(0, dataSize);
                 mm[] = data;
                 return buf.giveAway();
             }
@@ -352,7 +352,7 @@ class Example : Disposable
 
         // populate data
         {
-            auto mm = mapMemory!void(stagingBuf.boundMemory, 0, data.length);
+            auto mm = stagingBuf.boundMemory.map(0, dataSize);
             mm[] = data;
         }
 
@@ -409,7 +409,7 @@ class Example : Disposable
 
         // populate data to buffer
         {
-            auto mm = mapMemory!void(stagingBuf.boundMemory, 0, data.length);
+            auto mm = stagingBuf.boundMemory.map(0, data.length);
             mm[] = data;
         }
 

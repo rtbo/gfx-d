@@ -33,7 +33,7 @@ class VulkanDeviceMemory : VulkanDevObj!(VkDeviceMemory, "FreeMemory"), DeviceMe
         return _typeIndex;
     }
 
-    void* map(in size_t offset, in size_t size) {
+    void* mapRaw(in size_t offset, in size_t size) {
         void *data;
         vulkanEnforce(
             vk.MapMemory(vkDev, vkObj, offset, size, 0, &data),
@@ -42,7 +42,7 @@ class VulkanDeviceMemory : VulkanDevObj!(VkDeviceMemory, "FreeMemory"), DeviceMe
         return data;
     }
 
-    void unmap() {
+    void unmapRaw() {
         vk.UnmapMemory(vkDev, vkObj);
     }
 
