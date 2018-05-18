@@ -399,6 +399,13 @@ struct SamplerInfo {
         si.compare = some(op);
         return si;
     }
+
+    /// Set the wrap mode for the 3 axis
+    SamplerInfo withWrapMode(in WrapMode mode) const {
+        SamplerInfo si = this;
+        si.wrapMode = [ mode, mode, mode ];
+        return si;
+    }
 }
 
 interface Sampler : AtomicRefCounted
