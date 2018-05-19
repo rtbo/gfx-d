@@ -14,7 +14,7 @@ class GfxSDLErrorException : Exception
         import std.format : format;
         this.msg = msg;
         this.location = location;
-        super(format("%s:(%s,%s): Gfx-SDL error: %s", location.file, location.line, location.col, msg));
+        super(format("%s:(%s,%s): Gfx-SDL error: %s", location.file, location.line+1, location.col+1, msg));
     }
 }
 
@@ -85,11 +85,14 @@ class UnknownFieldFormatException : GfxSDLErrorException
 class DeclarativeEngine : Disposable
 {
     import gfx.core.rc : Rc;
+    import gfx.core.typecons;
     import gfx.core.types;
     import gfx.decl.store : DeclarativeStore;
+    import gfx.graal.cmd : Access, PipelineStage;
     import gfx.graal.device : Device;
+    import gfx.graal.image : ImageLayout;
     import gfx.graal.pipeline;
-    import gfx.graal.renderpass : RenderPass;
+    import gfx.graal.renderpass;
     import std.exception : enforce;
     import std.format : format;
 
@@ -155,7 +158,12 @@ class DeclarativeEngine : Disposable
         string[] plKeys;
 
         foreach (t; root.namespaces["graal"].tags) {
-            if (t.name == "DescriptorSetLayout") {
+            if (t.name == "RenderPass") {
+                RenderPass rp;
+                const key = parseRenderPass(t, rp);
+                _store.store!RenderPass(key, rp);
+            }
+            else if (t.name == "DescriptorSetLayout") {
                 DescriptorSetLayout dsl;
                 const key = parseDescriptorSetLayout(t, dsl);
                 _store.store!DescriptorSetLayout(key, dsl);
@@ -190,6 +198,142 @@ class DeclarativeEngine : Disposable
         }
 
         foreach (k; _localKeys) _store.remove(k);
+    }
+
+    private string parseRenderPass(Tag tag, out RenderPass rp)
+    {
+        auto attachments = parseAttachmentDescriptions(tag.getTag("attachments"));
+        auto subpasses = parseSubpassDescriptions(tag);
+        auto dependencies = parseSubpassDependencies(tag);
+
+        rp = _device.createRenderPass(attachments, subpasses, dependencies);
+
+        return getStoreKey(tag);
+    }
+
+    private AttachmentDescription[] parseAttachmentDescriptions(Tag tag)
+    {
+        import std.conv : to;
+        import std.typecons : Flag;
+        if(!tag) return [];
+
+        AttachmentDescription[] res;
+
+        foreach (adt; tag.tags) {
+            AttachmentDescription ad;
+            ad.samples = cast(uint)adt.getAttribute!int("samples", ad.samples);
+            ad.mayAlias = cast(Flag!"mayAlias")adt.getAttribute!bool("mayAlias", cast(bool)ad.mayAlias);
+            foreach (c; adt.tags) {
+                if (c.name == "format") {
+                    ad.format = expectLiteralOrStoreValValue!Format(c);
+                }
+                else if (c.name == "layout") {
+                    ad.layoutTrans.from = c.expectAttribute!string("from").to!ImageLayout;
+                    ad.layoutTrans.to = c.expectAttribute!string("to").to!ImageLayout;
+                }
+            }
+            if (adt.name == "color" || adt.name == "depth") {
+                ad.colorDepthOps = parseAttachmentOps(adt.expectTag("ops"));
+            }
+            else if (adt.name == "stencil") {
+                ad.stencilOps = parseAttachmentOps(adt.expectTag("ops"));
+            }
+            else if (adt.name == "depthStencil") {
+                ad.colorDepthOps = parseAttachmentOps(adt.expectTag("depthOps"));
+                ad.stencilOps = parseAttachmentOps(adt.expectTag("stencilOps"));
+            }
+            else {
+                throw new GfxSDLErrorException("unexpected attachment type: "~adt.name, adt.location);
+            }
+            res ~= ad;
+        }
+        return res;
+    }
+
+    AttachmentOps parseAttachmentOps(Tag tag)
+    {
+        import std.conv : to;
+        AttachmentOps ops;
+        ops.load = tag.expectAttribute!string("load").to!LoadOp;
+        ops.store = tag.expectAttribute!string("store").to!StoreOp;
+        return ops;
+    }
+
+    SubpassDescription[] parseSubpassDescriptions(Tag tag)
+    {
+        import std.algorithm : filter;
+
+        SubpassDescription[] res;
+        foreach(sdt; tag.tags.filter!(t => t.name == "subpass")) {
+            SubpassDescription sd;
+            foreach (t; sdt.tags) {
+                if (t.name == "input") {
+                    sd.inputs ~= parseAttachmentRef(t);
+                }
+                else if (t.name == "color") {
+                    sd.colors ~= parseAttachmentRef(t);
+                }
+                else if (t.name == "depthStencil") {
+                    sd.depthStencil = parseAttachmentRef(t);
+                }
+                else if (t.name == "preserves") {
+                    import std.algorithm : map;
+                    import std.array : array;
+                    sd.preserves = t.values.map!(v => cast(uint)v.get!int()).array();
+                }
+            }
+            res ~= sd;
+        }
+        return res;
+    }
+
+    AttachmentRef parseAttachmentRef(Tag tag)
+    {
+        import std.conv : to;
+        AttachmentRef res=void;
+        res.attachment = cast(uint)tag.expectAttribute!int("attachment");
+        res.layout = tag.expectAttribute!string("layout").to!ImageLayout;
+        return res;
+    }
+
+    SubpassDependency[] parseSubpassDependencies(Tag tag)
+    {
+        import std.algorithm : filter;
+        import std.conv : to;
+
+        SubpassDependency[] res;
+        foreach(sdt; tag.tags.filter!(t => t.name == "dependency")) {
+            SubpassDependency sd=void;
+            auto t = sdt.expectTag("subpass");
+            sd.subpass.from = parseSubpassRef(t, "from");
+            sd.subpass.to = parseSubpassRef(t, "to");
+            t = sdt.expectTag("stage");
+            sd.stageMask.from = t.expectAttribute!string("from").to!PipelineStage;
+            sd.stageMask.to = t.expectAttribute!string("to").to!PipelineStage;
+            t = sdt.expectTag("access");
+            sd.accessMask.from = t.expectAttribute!string("from").to!Access;
+            sd.accessMask.to = t.expectAttribute!string("to").to!Access;
+            res ~= sd;
+        }
+        return res;
+    }
+
+    uint parseSubpassRef(Tag tag, string attrName)
+    {
+        import std.conv : to;
+        int val;
+        string str;
+        if (tryGetAttr!int(tag, attrName, val)) {
+            return cast(uint)val;
+        }
+        if (tryGetAttr!string(tag, attrName, str)) {
+            if (str == "external") {
+                return subpassExternal;
+            }
+        }
+        throw new GfxSDLErrorException(
+            "could not resolve subpass", tag.location
+        );
     }
 
     private string parseDescriptorSetLayout(Tag tag, out DescriptorSetLayout dsl)
@@ -756,6 +900,53 @@ class DeclarativeEngine : Disposable
         return enforce(res);
     }
 
+    private T getLiteralOrStoreValValue(T)(Tag tag, T def=T.init)
+    {
+        T res;
+        if (!literalOrStoreValValue!T(tag, res)) {
+            res = def;
+        }
+        return res;
+    }
+
+    private T expectLiteralOrStoreValValue(T)(Tag tag)
+    {
+        T res;
+        if (!literalOrStoreValValue!T(tag, res)) {
+            throw new GfxSDLErrorException(
+                format("Could not resolve %s value", T.stringof),
+                tag.location
+            );
+        }
+        return res;
+    }
+
+    private bool literalOrStoreValValue(T)(Tag tag, out T res)
+    {
+        import std.algorithm : startsWith;
+
+        static if (!is(T == enum)) {
+            if (tryGetValue(tag, res)) {
+                return true;
+            }
+        }
+
+        string str;
+        if (tryGetValue(tag, str)) {
+            if (str.startsWith("store:")) {
+                const key = str["store:".length .. $];
+                res = _store.expect!T(key);
+                return true;
+            }
+            static if (is(T == enum)) {
+                import std.conv : to;
+                res = str.to!T;
+                return true;
+            }
+        }
+        return false;
+    }
+
     private T getLiteralOrStoreValAttr(T)(Tag tag, in string attrName, T def=T.init)
     {
         T res;
@@ -781,20 +972,73 @@ class DeclarativeEngine : Disposable
     {
         import std.algorithm : startsWith;
 
-        if (tag.tryGetAttr!T(attrName, res)) {
-            return true;
-        }
-        else {
-            string str;
-            if (tryGetAttr(tag, attrName, str)) {
-                if (str.startsWith("store:")) {
-                    const key = str["store:".length .. $];
-                    res = _store.expect!T(key);
-                    return true;
-                }
+        static if (!is(T == enum)) {
+            if (tag.tryGetAttr!T(attrName, res)) {
+                return true;
             }
-            return false;
         }
+
+        string str;
+        if (tryGetAttr(tag, attrName, str)) {
+            if (str.startsWith("store:")) {
+                const key = str["store:".length .. $];
+                res = _store.expect!T(key);
+                return true;
+            }
+            static if (is(T == enum)) {
+                import std.conv : to;
+                return str.to!T;
+            }
+        }
+        return false;
+    }
+
+    private T getLiteralOrStoreValTagValue(T)(Tag tag, in string tagName, T def=T.init)
+    {
+        T res;
+        if (!literalOrStoreValTagValue!T(tag, tagName, res)) {
+            res = def;
+        }
+        return res;
+    }
+
+    private T expectLiteralOrStoreValTagValue(T)(Tag tag, in string tagName)
+    {
+        T res;
+        if (!literalOrStoreValTagValue!T(tag, tagName, res)) {
+            throw new GfxSDLErrorException(
+                format("Could not resolveValue %s value from tag \"%s\"", T.stringof, tagName),
+                tag.location
+            );
+        }
+        return res;
+    }
+
+
+    private bool literalOrStoreValTagValue(T)(Tag tag, in string tagName, out T res)
+    {
+        import std.algorithm : startsWith;
+
+        static if (!is(T == enum)) {
+            if (tag.tryGetTagValue!T(tagName, res)) {
+                return true;
+            }
+        }
+
+        string str;
+        if (tryGetTagValue(tag, tagName, str)) {
+            if (str.startsWith("store:")) {
+                const key = str["store:".length .. $];
+                res = _store.expect!T(key);
+                return true;
+            }
+            static if (is(T == enum)) {
+                import std.conv : to;
+                res = str.to!T;
+                return true;
+            }
+        }
+        return false;
     }
 
     private uint expectSizeOffsetAttr(Tag tag, in string attrName)
@@ -909,6 +1153,21 @@ bool tryGetAttr(T)(Tag tag, in string name, out T val)
             if (attr.value.convertsTo!T) {
                 val = attr.value.get!T();
                 return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool tryGetTagValue(T)(Tag tag, in string name, out T val)
+{
+    foreach (t; tag.tags) {
+        if (t.name == name) {
+            foreach (v; t.values) {
+                if (v.convertsTo!T) {
+                    val = v.get!T();
+                    return true;
+                }
             }
         }
     }

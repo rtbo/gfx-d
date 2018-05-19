@@ -24,9 +24,9 @@ struct AttachmentOps {
 struct AttachmentDescription
 {
     Format format;
-    uint samples;
-    AttachmentOps colorDepthOps;
-    AttachmentOps stencilOps;
+    uint samples=1;
+    AttachmentOps colorDepthOps = AttachmentOps(LoadOp.dontCare, StoreOp.dontCare);
+    AttachmentOps stencilOps = AttachmentOps(LoadOp.dontCare, StoreOp.dontCare);
     Trans!ImageLayout layoutTrans;
     Flag!"mayAlias" mayAlias;
 }
@@ -43,6 +43,8 @@ struct SubpassDescription
     Option!AttachmentRef depthStencil;
     uint[] preserves;
 }
+
+enum subpassExternal = uint.max;
 
 struct SubpassDependency
 {

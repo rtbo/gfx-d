@@ -112,14 +112,16 @@ class Example : Disposable
         window = display.createWindow();
         window.show(640, 480);
 
-        // instance.setDebugCallback((Severity sev, string msg) {
-        //     import std.stdio : writefln;
-        //     writefln("Gfx backend %s message: %s", sev, msg);
-        //     if (sev == Severity.error) {
-        //         // debug break;
-        //         asm { int 0x03; }
-        //     }
-        // });
+        instance.setDebugCallback((Severity sev, string msg) {
+            import std.stdio : writefln;
+            if (sev == Severity.warning) {
+                writefln("Gfx backend %s message: %s", sev, msg);
+            }
+            if (sev == Severity.error) {
+                // debug break;
+                asm { int 0x03; }
+            }
+        });
 
         // The rest of the preparation.
         prepareDevice();

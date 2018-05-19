@@ -112,17 +112,18 @@ class DeclAPIExample : Example
     override void prepare() {
         super.prepare();
 
-        prepareBuffers();
-        prepareRenderPass();
-        prepareFramebuffers();
-
         declEng = new DeclarativeEngine(device);
         declEng.declareStruct!Vertex();
         declEng.addView!"shader.vert.spv"();
         declEng.addView!"shader.frag.spv"();
-        declEng.store.store("rp", renderPass);
+        declEng.store.store("sc_format", swapchain.format);
+        declEng.store.store("depth_format", findDepthFormat());
+        //declEng.store.store("rp", renderPass);
         declEng.parseSDLView!"pipeline.sdl"();
 
+        prepareBuffers();
+        prepareRenderPass();
+        prepareFramebuffers();
         preparePipeline();
         prepareDescriptorSet();
     }
@@ -176,29 +177,7 @@ class DeclAPIExample : Example
     }
 
     void prepareRenderPass() {
-        const attachments = [
-            AttachmentDescription(swapchain.format, 1,
-                AttachmentOps(LoadOp.clear, StoreOp.store),
-                AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
-                trans(ImageLayout.presentSrc, ImageLayout.presentSrc),
-                No.mayAlias
-            ),
-            AttachmentDescription(findDepthFormat(), 1,
-                AttachmentOps(LoadOp.clear, StoreOp.dontCare),
-                AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
-                trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
-                No.mayAlias
-            )
-        ];
-        const subpasses = [
-            SubpassDescription(
-                [], [ AttachmentRef(0, ImageLayout.colorAttachmentOptimal) ],
-                some(AttachmentRef(1, ImageLayout.depthStencilAttachmentOptimal)),
-                []
-            )
-        ];
-
-        renderPass = device.createRenderPass(attachments, subpasses, []);
+        renderPass = declEng.store.expect!RenderPass("rp");
     }
 
     void prepareFramebuffers()

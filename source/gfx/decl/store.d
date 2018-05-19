@@ -1,6 +1,7 @@
 module gfx.decl.store;
 
 import gfx.core.rc : AtomicRefCounted, Disposable;
+import gfx.graal.format : Format;
 import std.variant : Algebraic;
 
 class NoSuchKeyException : Exception
@@ -156,7 +157,7 @@ class DeclarativeStore : Disposable
 
 private:
 
-alias Variant = Algebraic!(int, uint, long, ulong, float, double);
+alias Variant = Algebraic!(int, uint, long, ulong, float, double, Format);
 
 enum fitsVariant(T) = Variant.allowed!T;
 

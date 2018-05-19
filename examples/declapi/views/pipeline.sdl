@@ -1,9 +1,41 @@
-graal:DescriptorSetLayout {
+graal:RenderPass {
     // A store (or local-store) key can be any string with the only restriction
     // that it cannot start by __ (2 underscores ; these are reserved).
     // It uniquely identifies this object in the store.
     // This can be used to be referenced in other objects (see graal:PipelineLayout hereunder)
     // and to be retrieved in D code from the DeclarativeEngine.store member.
+    store "rp"
+
+    attachments {
+        // possible tags are color, depth, depthStencil and stencil
+        // they all take same subtags except depthStencil which has
+        // depthOps and stencilOps instead of ops
+
+        // samples and mayAlias are optional
+        color samples=1 mayAlias=false {
+            format "store:sc_format"
+            ops load="clear" store="store"
+            layout from="presentSrc" to="presentSrc"
+        }
+        depth {
+            format "store:depth_format"
+            ops load="clear" store="dontCare"
+            layout from="undefined" to="depthStencilAttachmentOptimal"
+        }
+    }
+    // can be several subpasses like this one
+    subpass {
+        color attachment=0 layout="colorAttachmentOptimal"
+        depthStencil attachment=1 layout="depthStencilAttachmentOptimal"
+    }
+    // possible dependency:
+    // dependency {
+    //     subpass from=0 to=1 // can also specify "external" here
+    //     stageMask from="lateFragmentTests" to="earlyFragmentTests"
+    //     accessMask from="depthStencilAttachmentWrite" to="depthStencilAttachmentRead"
+    // }
+}
+graal:DescriptorSetLayout {
     store "dsl"
     bindings {
         0 descriptorType="uniformBufferDynamic" descriptorCount=1 stages="vertex"
