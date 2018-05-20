@@ -1,5 +1,7 @@
 module gfx.core.typecons;
 
+import std.range.primitives : isInputRange;
+
 /// A transition from one state to another
 struct Trans(T) {
     /// state before
@@ -64,6 +66,7 @@ unittest {
 
 auto option(R)(R input) if (isInputRange!R)
 {
+    import std.range.primitives : ElementType;
     alias T = ElementType!R;
     Option!T res;
 
