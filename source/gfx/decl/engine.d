@@ -732,8 +732,16 @@ class DeclarativeEngine : Disposable
             if (t.name == "blend") {
                 import std.typecons : Yes;
                 attachment.enabled = Yes.enabled;
-                attachment.colorBlend = parseBlendState(t.expectTag("color"));
-                attachment.alphaBlend = parseBlendState(t.expectTag("alpha"));
+                auto stateT = t.getTag("state");
+                if (stateT) {
+                    const state = parseBlendState(stateT);
+                    attachment.colorBlend = state;
+                    attachment.alphaBlend = state;
+                }
+                else {
+                    attachment.colorBlend = parseBlendState(t.expectTag("color"));
+                    attachment.alphaBlend = parseBlendState(t.expectTag("alpha"));
+                }
             }
             else if (t.name != "solid") {
                 throw new GfxSDLErrorException(format(
