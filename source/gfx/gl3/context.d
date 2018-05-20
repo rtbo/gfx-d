@@ -35,6 +35,7 @@ struct GlAttribs
     }
 }
 
+/// The list of OpenGL versions that gfx-d is compatible with.
 immutable uint[] glVersions = [
     46, 45, 44, 43, 42, 41, 40,
     33, 32, 31, // 30
@@ -42,6 +43,7 @@ immutable uint[] glVersions = [
     // 15, 14, 13, 12, 11, 10,
 ];
 
+/// The GLSL version for the passed OpenGL version.
 uint glslVersion(in uint glVersion) pure {
     if (glVersion >= 33) return 10*glVersion;
     switch(glVersion) {

@@ -114,22 +114,27 @@ class GlShare : AtomicRefCounted
     mixin(atomicRcCode);
 
     private Rc!GlContext _ctx;
-    private size_t _dummyWin;
     private Gl _gl;
     private GlInfo _info;
     private DebugCallback _callback;
 
     this(GlContext ctx) {
         _ctx = ctx;
-        _dummyWin = _ctx.createDummy();
-        _ctx.makeCurrent(_dummyWin);
+        size_t dummyWin=0;
+        if (!_ctx.current) {
+            dummyWin = _ctx.createDummy();
+            _ctx.makeCurrent(dummyWin);
+        }
         _gl = ctx.gl;
         _info = GlInfo.fetchAndCheck(_gl, ctx.attribs.decimalVersion);
+        if (dummyWin) {
+            _ctx.doneCurrent();
+            _ctx.releaseDummy(dummyWin);
+        }
     }
 
     override void dispose() {
         _ctx.doneCurrent();
-        _ctx.releaseDummy(_dummyWin);
         _ctx.unload();
     }
 
@@ -141,9 +146,6 @@ class GlShare : AtomicRefCounted
     }
     @property GlInfo info() const {
         return _info;
-    }
-    package @property size_t dummyWin() const {
-        return _dummyWin;
     }
 }
 
