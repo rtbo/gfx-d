@@ -12,20 +12,45 @@ import std.typecons : Flag;
 
 interface ShaderModule : AtomicRefCounted
 {
+    import gfx.graal.device : Device;
+
+    /// Get the parent device
+    @property Device device();
+
     @property string entryPoint();
 }
 
 interface PipelineLayout : AtomicRefCounted
-{}
+{
+    import gfx.graal.device : Device;
+
+    /// Get the parent device
+    @property Device device();
+}
 
 interface Pipeline : AtomicRefCounted
-{}
+{
+    import gfx.graal.device : Device;
+
+    /// Get the parent device
+    @property Device device();
+}
 
 interface DescriptorSetLayout : AtomicRefCounted
-{}
+{
+    import gfx.graal.device : Device;
+
+    /// Get the parent device
+    @property Device device();
+}
 
 interface DescriptorPool : AtomicRefCounted
 {
+    import gfx.graal.device : Device;
+
+    /// Get the parent device
+    @property Device device();
+
     /// Allocate a descriptor set per descriptor layout passed as argument
     DescriptorSet[] allocate(DescriptorSetLayout[] layouts);
 

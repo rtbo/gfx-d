@@ -151,6 +151,9 @@ private struct MemoryMapArrayView(T)
 
 interface DeviceMemory : AtomicRefCounted
 {
+    /// Get the parent device
+    @property Device device();
+
     @property uint typeIndex();
     @property MemProps props();
     @property size_t size();
@@ -172,7 +175,7 @@ interface DeviceMemory : AtomicRefCounted
     final auto map(in size_t offset=0, in size_t sz=size_t.max)
     {
         const len = sz==size_t.max ? this.size : sz;
-        return MemoryMap(this, offset, sz);
+        return MemoryMap(this, offset, len);
     }
 }
 

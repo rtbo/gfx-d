@@ -752,7 +752,7 @@ final class VulkanPhysicalDevice : PhysicalDevice
         vulkanEnforce(vk.CreateDevice(_vkObj, &ci, null, &vkDev),
                 "Vulkan device creation failed");
 
-        return new VulkanDevice(vkDev, this);
+        return new VulkanDevice(vkDev, this, _inst);
     }
 
     private VkPhysicalDevice _vkObj;

@@ -12,6 +12,7 @@ class GlDevice : Device
     import gfx.core.rc :            atomicRcCode, Rc;
     import gfx.gl3 :                GlPhysicalDevice, GlShare;
     import gfx.gl3.queue :          GlQueue;
+    import gfx.graal :              Instance;
     import gfx.graal.buffer :       Buffer, BufferUsage;
     import gfx.graal.device :       MappedMemorySet;
     import gfx.graal.format :       Format;
@@ -35,19 +36,32 @@ class GlDevice : Device
     mixin(atomicRcCode);
 
     private Rc!GlShare _share;
+    private Rc!GlPhysicalDevice _phd;
+    private Rc!Instance _inst;
     private MemoryProperties _memProps;
     private GlQueue _queue;
 
 
-    this (GlPhysicalDevice phd, GlShare share) {
+    this (GlPhysicalDevice phd, GlShare share, Instance inst) {
         _share = share;
+        _phd = phd;
+        _inst = inst;
         _memProps = phd.memoryProperties;
         _queue = new GlQueue(_share, this);
     }
 
     override void dispose() {
         _queue.dispose();
+        _phd.unload();
         _share.unload();
+    }
+
+    override GlPhysicalDevice physicalDevice() {
+        return _phd;
+    }
+
+    override Instance instance() {
+        return _inst;
     }
 
     override void waitIdle() {}
@@ -63,7 +77,7 @@ class GlDevice : Device
 
     DeviceMemory allocateMemory(uint memPropIndex, size_t size) {
         import gfx.gl3.resource : GlDeviceMemory;
-        return new GlDeviceMemory(memPropIndex, _memProps.types[memPropIndex].props, size);
+        return new GlDeviceMemory(this, memPropIndex, _memProps.types[memPropIndex].props, size);
     }
 
     void flushMappedMemory(MappedMemorySet set) {}
@@ -71,25 +85,25 @@ class GlDevice : Device
 
     Buffer createBuffer(BufferUsage usage, size_t size) {
         import gfx.gl3.resource : GlBuffer;
-        return new GlBuffer(_share, usage, size);
+        return new GlBuffer(this, _share, usage, size);
     }
 
     Image createImage(in ImageInfo info) {
         import gfx.gl3.resource : GlImage;
-        return new GlImage(_share, info);
+        return new GlImage(this, _share, info);
     }
 
     Sampler createSampler(in SamplerInfo info) {
         import gfx.gl3.resource : GlSampler;
-        return new GlSampler(_share, info);
+        return new GlSampler(this, _share, info);
     }
 
     Semaphore createSemaphore() {
-        return new GlSemaphore;
+        return new GlSemaphore(this);
     }
 
     Fence createFence(Flag!"signaled" signaled) {
-        return new GlFence(signaled);
+        return new GlFence(this, signaled);
     }
 
     void resetFences(Fence[] fences) {}
@@ -99,14 +113,14 @@ class GlDevice : Device
                               Format format, uint[2] size, ImageUsage usage,
                               CompositeAlpha alpha, Swapchain former=null) {
         import gfx.gl3.swapchain : GlSwapchain;
-        return new GlSwapchain(_share, this, surface, pm, numImages, format, size, usage, alpha, former);
+        return new GlSwapchain(this, _share, surface, pm, numImages, format, size, usage, alpha, former);
     }
 
     RenderPass createRenderPass(in AttachmentDescription[] attachments,
                                 in SubpassDescription[] subpasses,
                                 in SubpassDependency[] dependencies) {
         import gfx.gl3.pipeline : GlRenderPass;
-        return new GlRenderPass(attachments, subpasses, dependencies);
+        return new GlRenderPass(this, attachments, subpasses, dependencies);
     }
 
     Framebuffer createFramebuffer(RenderPass rp, ImageView[] attachments,
@@ -126,22 +140,22 @@ class GlDevice : Device
         import std.exception : enforce;
 
         enforce(entryPoint == "main");
-        return new GlShaderModule(_share, code);
+        return new GlShaderModule(this, _share, code);
     }
 
     DescriptorSetLayout createDescriptorSetLayout(in PipelineLayoutBinding[] bindings) {
         import gfx.gl3.pipeline : GlDescriptorSetLayout;
-        return new GlDescriptorSetLayout(bindings);
+        return new GlDescriptorSetLayout(this, bindings);
     }
 
     PipelineLayout createPipelineLayout(DescriptorSetLayout[] layouts, PushConstantRange[] ranges) {
         import gfx.gl3.pipeline : GlPipelineLayout;
-        return new GlPipelineLayout(layouts, ranges);
+        return new GlPipelineLayout(this, layouts, ranges);
     }
 
     DescriptorPool createDescriptorPool(in uint maxSets, in DescriptorPoolSize[] sizes) {
         import gfx.gl3.pipeline : GlDescriptorPool;
-        return new GlDescriptorPool(maxSets, sizes);
+        return new GlDescriptorPool(this, maxSets, sizes);
     }
 
     void updateDescriptorSets(WriteDescriptorSet[] writeOps, CopyDescritporSet[] copyOps) {
@@ -156,26 +170,45 @@ class GlDevice : Device
         import gfx.gl3.pipeline : GlPipeline;
         import std.algorithm : map;
         import std.array : array;
-        return infos.map!(pi => cast(Pipeline)new GlPipeline(_share, pi)).array;
+        return infos.map!(pi => cast(Pipeline)new GlPipeline(this, _share, pi)).array;
     }
 }
 
 private final class GlSemaphore : Semaphore {
-    import gfx.core.rc : atomicRcCode;
+    import gfx.core.rc : atomicRcCode, Rc;
     mixin(atomicRcCode);
-    this() {}
-    override void dispose() {}
+
+    private Rc!GlDevice _dev;
+
+    this(GlDevice dev) {
+        _dev = dev;
+    }
+    override void dispose() {
+        _dev.unload();
+    }
+    override @property GlDevice device() {
+        return _dev;
+    }
 }
 
 private final class GlFence : Fence {
     import core.time : Duration;
-    import gfx.core.rc : atomicRcCode;
+    import gfx.core.rc : atomicRcCode, Rc;
     mixin(atomicRcCode);
+
+    private Rc!GlDevice _dev;
     private bool _signaled;
-    this(bool signaled) {
+
+    this(GlDevice dev, bool signaled) {
+        _dev = dev;
         _signaled = signaled;
     }
-    override void dispose() {}
+    override void dispose() {
+        _dev.unload();
+    }
+    override @property GlDevice device() {
+        return _dev;
+    }
     override @property bool signaled() { return _signaled; }
     override void reset() {}
     override void wait(Duration timeout) {}

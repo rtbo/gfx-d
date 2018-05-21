@@ -110,6 +110,11 @@ struct MappedMemorySet
 /// Handle to a logical device
 interface Device : AtomicRefCounted
 {
+    import gfx.graal : Instance;
+
+    @property PhysicalDevice physicalDevice();
+    @property Instance instance();
+
     /// Wait that device finishes all operations in progress
     void waitIdle();
 

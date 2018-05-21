@@ -19,7 +19,7 @@ class GlInstance : Instance
     this(GlContext ctx) {
         _ctx = ctx;
         _share = new GlShare(_ctx);
-        _phd = new GlPhysicalDevice(_share);
+        _phd = new GlPhysicalDevice(_share, this);
     }
 
     override void dispose() {
@@ -159,10 +159,12 @@ class GlPhysicalDevice : PhysicalDevice
     mixin(atomicRcCode);
 
     private Rc!GlShare _share;
+    private Instance _inst;
     private string _name;
 
-    this(GlShare share) {
+    this(GlShare share, Instance instance) {
         _share = share;
+        _inst = instance;
 
         import gfx.bindings.opengl.gl : GL_RENDERER;
         import std.string : fromStringz;
@@ -276,6 +278,6 @@ class GlPhysicalDevice : PhysicalDevice
     override Device open(in QueueRequest[], in DeviceFeatures)
     {
         import gfx.gl3.device : GlDevice;
-        return new GlDevice(this, _share);
+        return new GlDevice(this, _share, _inst);
     }
 }

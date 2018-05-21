@@ -54,7 +54,15 @@ struct SubpassDependency
 }
 
 interface RenderPass : AtomicRefCounted
-{}
+{
+    import gfx.graal.device : Device;
+    /// Get the parent device
+    @property Device device();
+}
 
 interface Framebuffer : AtomicRefCounted
-{}
+{
+    import gfx.graal.device : Device;
+    /// Get the parent device
+    @property Device device();
+}

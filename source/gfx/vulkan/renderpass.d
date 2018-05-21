@@ -17,6 +17,10 @@ class VulkanRenderPass : VulkanDevObj!(VkRenderPass, "DestroyRenderPass"), Rende
     this(VkRenderPass vkObj, VulkanDevice dev) {
         super(vkObj, dev);
     }
+
+    override @property Device device() {
+        return dev;
+    }
 }
 
 class VulkanFramebuffer : VulkanDevObj!(VkFramebuffer, "DestroyFramebuffer"), Framebuffer
@@ -33,6 +37,10 @@ class VulkanFramebuffer : VulkanDevObj!(VkFramebuffer, "DestroyFramebuffer"), Fr
         releaseArray(_views);
         _views = [];
         super.dispose();
+    }
+
+    override @property Device device() {
+        return dev;
     }
 
     ImageView[] _views;

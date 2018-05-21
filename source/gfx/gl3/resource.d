@@ -4,98 +4,37 @@ package:
 
 import gfx.bindings.opengl.gl : Gl, GLenum, GLuint;
 import gfx.graal.buffer : Buffer;
+import gfx.graal.device : Device;
 import gfx.graal.image : Image, ImageView, Sampler, SamplerInfo;
 import gfx.graal.memory : DeviceMemory;
 
 final class GlDeviceMemory : DeviceMemory
 {
-    import gfx.core.rc : atomicRcCode;
+    import gfx.core.rc : atomicRcCode, Rc;
     import gfx.graal.memory : MemProps;
 
-    //mixin(atomicRcCode);
-    private size_t _refCount=0;
-    import std.typecons : Flag, Yes;
+    mixin(atomicRcCode);
 
-    public final shared override @property size_t refCountShared() const
-    {
-        import core.atomic : atomicLoad;
-        return atomicLoad(_refCount);
-    }
-
-    public final shared override shared(typeof(this)) retainShared()
-    {
-        import core.atomic : atomicOp;
-        immutable rc = atomicOp!"+="(_refCount, 1);
-        debug(rc) {
-            import std.experimental.logger : logf;
-            logf("retain %s: %s -> %s", typeof(this).stringof, rc-1, rc);
-        }
-        return this;
-    }
-
-    public final shared override shared(typeof(this)) releaseShared(in Flag!"disposeOnZero" disposeOnZero = Yes.disposeOnZero)
-    {
-        import core.atomic : atomicOp;
-        immutable rc = atomicOp!"-="(_refCount, 1);
-
-        debug(rc) {
-            import std.experimental.logger : logf;
-            logf("release %s: %s -> %s", typeof(this).stringof, rc+1, rc);
-        }
-        if (rc == 0 && disposeOnZero) {
-            debug(rc) {
-                import std.experimental.logger : logf;
-                logf("dispose %s", typeof(this).stringof);
-            }
-            synchronized(this) {
-                // cast shared away
-                import gfx.core.rc : Disposable;
-                auto obj = cast(Disposable)this;
-                obj.dispose();
-            }
-            return null;
-        }
-        else {
-            return this;
-        }
-    }
-
-    public final shared override shared(typeof(this)) rcLockShared()
-    {
-        import core.atomic : atomicLoad, cas;
-        while (1) {
-            immutable c = atomicLoad(_refCount);
-
-            if (c == 0) {
-                debug(rc) {
-                    import std.experimental.logger : logf;
-                    logf("rcLock %s: %s", typeof(this).stringof, c);
-                }
-                return null;
-            }
-            if (cas(&_refCount, c, c+1)) {
-                debug(rc) {
-                    import std.experimental.logger : logf;
-                    logf("rcLock %s: %s", typeof(this).stringof, c+1);
-                }
-                return this;
-            }
-        }
-    }
-
+    private Rc!Device _dev;
     private uint _typeIndex;
     private MemProps _props;
     private size_t _size;
     private GlBuffer _buffer;
 
 
-    this (in uint typeIndex, in MemProps props, in size_t size) {
+    this (Device dev, in uint typeIndex, in MemProps props, in size_t size) {
+        _dev = dev;
         _typeIndex = typeIndex;
         _props = props;
         _size = size;
     }
 
     override void dispose() {
+        _dev.unload();
+    }
+
+    override @property Device device() {
+        return _dev;
     }
 
     override @property uint typeIndex() {
@@ -133,6 +72,7 @@ final class GlBuffer : Buffer
 
     mixin(atomicRcCode);
 
+    private Rc!Device _dev;
     private GlInfo glInfo;
     private Gl gl;
     private BufferUsage _usage;
@@ -141,8 +81,9 @@ final class GlBuffer : Buffer
     private GLbitfield _accessFlags;
     private Rc!GlDeviceMemory _mem;
 
-    this(GlShare share, in BufferUsage usage, in size_t size) {
+    this(Device dev, GlShare share, in BufferUsage usage, in size_t size) {
         import gfx.gl3.conv : toGl;
+        _dev = dev;
         gl = share.gl;
         glInfo = share.info;
         _usage = usage;
@@ -157,6 +98,11 @@ final class GlBuffer : Buffer
         gl.DeleteBuffers(1, &_name);
         _name = 0;
         _mem.unload();
+        _dev.unload();
+    }
+
+    override @property Device device() {
+        return _dev;
     }
 
     @property GLuint name() const {
@@ -254,6 +200,7 @@ final class GlImage : Image
 
     mixin(atomicRcCode);
 
+    private Rc!Device _dev;
     private ImageInfo _info;
     private NumFormat _numFormat;
 
@@ -265,10 +212,11 @@ final class GlImage : Image
     private GlInfo glInfo;
     private Rc!GlDeviceMemory _mem;
 
-    this(GlShare share, ImageInfo info)
+    this(Device dev, GlShare share, ImageInfo info)
     {
         import gfx.graal.format : formatDesc;
         import std.exception : enforce;
+        _dev = dev;
         _info = info;
         _numFormat = formatDesc(info.format).numFormat;
 
@@ -294,6 +242,23 @@ final class GlImage : Image
         _glTexTarget = toGlTexTarget(_info.type, _info.samples > 1);
     }
 
+    override void dispose() {
+        final switch(_glType) {
+        case GlImgType.tex:
+            gl.DeleteTextures(1, &_name);
+            break;
+        case GlImgType.renderBuf:
+            gl.DeleteRenderbuffers(1, &_name);
+            break;
+        }
+        _mem.unload();
+        _dev.unload();
+    }
+
+    override @property Device device() {
+        return _dev;
+    }
+
     @property GLuint name() {
         return _name;
     }
@@ -308,18 +273,6 @@ final class GlImage : Image
 
     @property NumFormat numFormat() {
         return _numFormat;
-    }
-
-    override void dispose() {
-        final switch(_glType) {
-        case GlImgType.tex:
-            gl.DeleteTextures(1, &_name);
-            break;
-        case GlImgType.renderBuf:
-            gl.DeleteRenderbuffers(1, &_name);
-            break;
-        }
-        _mem.unload();
     }
 
     override @property ImageInfo info() {
@@ -472,76 +425,7 @@ final class GlImageView : ImageView
     import gfx.graal.image : ImageBase, ImageDims, ImageSubresourceRange,
                              ImageType, Swizzle;
 
-    //mixin(atomicRcCode);
-    private size_t _refCount=0;
-    import std.typecons : Flag, Yes;
-
-    public final shared override @property size_t refCountShared() const
-    {
-        import core.atomic : atomicLoad;
-        return atomicLoad(_refCount);
-    }
-
-    public final shared override shared(typeof(this)) retainShared()
-    {
-        import core.atomic : atomicOp;
-        immutable rc = atomicOp!"+="(_refCount, 1);
-        debug(rc) {
-            import std.experimental.logger : logf;
-            logf("retain %s: %s -> %s", typeof(this).stringof, rc-1, rc);
-        }
-        return this;
-    }
-
-    public final shared override shared(typeof(this)) releaseShared(in Flag!"disposeOnZero" disposeOnZero = Yes.disposeOnZero)
-    {
-        import core.atomic : atomicOp;
-        immutable rc = atomicOp!"-="(_refCount, 1);
-
-        debug(rc) {
-            import std.experimental.logger : logf;
-            logf("release %s: %s -> %s", typeof(this).stringof, rc+1, rc);
-        }
-        if (rc == 0 && disposeOnZero) {
-            debug(rc) {
-                import std.experimental.logger : logf;
-                logf("dispose %s", typeof(this).stringof);
-            }
-            synchronized(this) {
-                // cast shared away
-                import gfx.core.rc : Disposable;
-                auto obj = cast(Disposable)this;
-                obj.dispose();
-            }
-            return null;
-        }
-        else {
-            return this;
-        }
-    }
-
-    public final shared override shared(typeof(this)) rcLockShared()
-    {
-        import core.atomic : atomicLoad, cas;
-        while (1) {
-            immutable c = atomicLoad(_refCount);
-
-            if (c == 0) {
-                debug(rc) {
-                    import std.experimental.logger : logf;
-                    logf("rcLock %s: %s", typeof(this).stringof, c);
-                }
-                return null;
-            }
-            if (cas(&_refCount, c, c+1)) {
-                debug(rc) {
-                    import std.experimental.logger : logf;
-                    logf("rcLock %s: %s", typeof(this).stringof, c+1);
-                }
-                return this;
-            }
-        }
-    }
+    mixin(atomicRcCode);
 
     private Gl gl;
     private GlInfo glInfo;
@@ -661,7 +545,7 @@ final class GlImageView : ImageView
 final class GlSampler : Sampler
 {
     import gfx.bindings.opengl.gl : Gl, GLenum, GLint, GLfloat, GLuint;
-    import gfx.core.rc : atomicRcCode;
+    import gfx.core.rc : atomicRcCode, Rc;
     import gfx.graal.image : BorderColor, isInt, SamplerInfo;
     import gfx.graal.pipeline : CompareOp;
     import gfx.gl3 : GlInfo, GlShare;
@@ -669,13 +553,15 @@ final class GlSampler : Sampler
 
     mixin(atomicRcCode);
 
+    private Rc!Device _dev;
     private Gl gl;
     private GlInfo glInfo;
     private SamplerInfo _info;
     private GLuint _name;
 
-    this(GlShare share, in SamplerInfo info)
+    this(Device dev, GlShare share, in SamplerInfo info)
     {
+        _dev = dev;
         gl = share.gl;
         glInfo = share.info;
         _info = info;
@@ -696,6 +582,11 @@ final class GlSampler : Sampler
         if (glInfo.samplerObject) {
             gl.DeleteSamplers(1, &_name);
         }
+        _dev.unload();
+    }
+
+    override @property Device device() {
+        return _dev;
     }
 
     void bind (GLuint target, GLuint unit) {

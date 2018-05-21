@@ -139,11 +139,25 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "DestroySwapchainKHR"), Sw
 {
     mixin(atomicRcCode);
 
-    this(VkSwapchainKHR vkObj, VulkanDevice dev, uint[2] size, Format format)
+    this(VkSwapchainKHR vkObj, VulkanDevice dev, Surface surf, uint[2] size, Format format)
     {
         super(vkObj, dev);
+        _surf = surf;
         _size = size;
         _format = format;
+    }
+
+    override void dispose() {
+        super.dispose();
+        _surf.unload();
+    }
+
+    override @property Device device() {
+        return dev;
+    }
+
+    override @property Surface surface() {
+        return _surf;
     }
 
     override @property Format format() {
@@ -206,6 +220,7 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "DestroySwapchainKHR"), Sw
         return img;
     }
 
+    private Rc!Surface _surf;
     private ImageBase[] _images;
     private uint[2] _size;
     private Format _format;

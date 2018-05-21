@@ -8,6 +8,7 @@ import core.time : Duration;
 import gfx.bindings.vulkan;
 
 import gfx.core.rc;
+import gfx.graal;
 import gfx.graal.cmd;
 import gfx.graal.device;
 import gfx.graal.image;
@@ -72,11 +73,13 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 {
     mixin(atomicRcCode);
 
-    this (VkDevice vkObj, VulkanPhysicalDevice pd)
+    this (VkDevice vkObj, VulkanPhysicalDevice pd, Instance inst)
     {
         super(vkObj);
         _pd = pd;
         _pd.retain();
+        _inst = inst;
+        _inst.retain();
         _vk = new VkDeviceCmds(vkObj, pd.vk);
     }
 
@@ -84,6 +87,16 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         vk.DestroyDevice(vkObj, null);
         _pd.release();
         _pd = null;
+        _inst.release();
+        _inst = null;
+    }
+
+    override @property Instance instance() {
+        return _inst;
+    }
+
+    override @property PhysicalDevice physicalDevice() {
+        return _pd;
     }
 
     @property VulkanPhysicalDevice pd() {
@@ -343,7 +356,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
             "Could not create a Vulkan Swap chain"
         );
 
-        return new VulkanSwapchain(vkSc, this, size, format);
+        return new VulkanSwapchain(vkSc, this, graalSurface, size, format);
     }
 
     override RenderPass createRenderPass(in AttachmentDescription[] attachments,
@@ -838,6 +851,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
         return pls;
     }
 
+    private Instance _inst;
     private VulkanPhysicalDevice _pd;
     private VkDeviceCmds _vk;
     private VulkanQueue[] _queues;

@@ -11,7 +11,7 @@ import gfx.vulkan.device;
 import gfx.vulkan.error;
 import gfx.vulkan.memory;
 
-class VulkanBuffer : VulkanDevObj!(VkBuffer, "DestroyBuffer"), Buffer
+final class VulkanBuffer : VulkanDevObj!(VkBuffer, "DestroyBuffer"), Buffer
 {
     mixin(atomicRcCode);
 
@@ -26,6 +26,10 @@ class VulkanBuffer : VulkanDevObj!(VkBuffer, "DestroyBuffer"), Buffer
         vk.DestroyBuffer(vkDev, vkObj, null);
         if (_vdm) _vdm.release();
         dev.release();
+    }
+
+    override Device device() {
+        return dev;
     }
 
     @property BufferUsage usage() {

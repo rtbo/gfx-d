@@ -21,6 +21,10 @@ class VulkanDeviceMemory : VulkanDevObj!(VkDeviceMemory, "FreeMemory"), DeviceMe
         _typeIndex = typeIndex;
     }
 
+    override @property Device device() {
+        return dev;
+    }
+
     override @property MemProps props() {
         return _props;
     }

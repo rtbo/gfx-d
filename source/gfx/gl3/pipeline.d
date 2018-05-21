@@ -3,24 +3,27 @@ module gfx.gl3.pipeline;
 package:
 
 import gfx.bindings.opengl.gl : Gl, GLenum, GLint, GLuint;
+import gfx.graal.device : Device;
 import gfx.graal.pipeline;
 import gfx.graal.renderpass;
 
 final class GlShaderModule : ShaderModule
 {
     import gfx.bindings.opengl.gl : GLuint;
-    import gfx.core.rc : atomicRcCode;
+    import gfx.core.rc : atomicRcCode, Rc;
     import gfx.gl3 : GlShare;
 
     mixin(atomicRcCode);
 
+    private Rc!Device _dev;
     private Gl gl;
     private GLuint _name;
     private string _code;
     private ShaderStage _stage;
 
-    this (GlShare share, in const(uint)[] code) {
+    this (Device dev, GlShare share, in const(uint)[] code) {
         import spirv_cross : SpvCompilerGlsl;
+        _dev = dev;
         gl = share.gl;
         auto cl = new SpvCompilerGlsl(code);
         scope(exit) cl.dispose();
@@ -37,6 +40,11 @@ final class GlShaderModule : ShaderModule
         if (_name != 0) {
             gl.DeleteShader(_name);
         }
+        _dev.unload();
+    }
+
+    override @property Device device() {
+        return _dev;
     }
 
     override @property string entryPoint() {
@@ -98,37 +106,48 @@ private SubpassDescription[] clone(in SubpassDescription[] descs) {
 
 final class GlRenderPass : RenderPass
 {
-    import gfx.core.rc : atomicRcCode;
+    import gfx.core.rc : atomicRcCode, Rc;
 
     mixin(atomicRcCode);
 
+    private Rc!Device _dev;
     package AttachmentDescription[] attachments;
     package SubpassDescription[]    subpasses;
     package SubpassDependency[]     deps;
 
-    this(   in AttachmentDescription[] attachments,
+    this(   Device device,
+            in AttachmentDescription[] attachments,
             in SubpassDescription[] subpasses,
             in SubpassDependency[] dependencies)
     {
+        _dev = device;
         this.attachments = attachments.dup;
         this.subpasses = subpasses.clone();
         this.deps = dependencies.dup;
     }
 
-    override void dispose() {}
+    override void dispose() {
+        _dev.unload();
+    }
+
+    override @property Device device() {
+        return _dev;
+    }
 }
 
 final class GlPipelineLayout : PipelineLayout
 {
-    import gfx.core.rc : atomicRcCode;
+    import gfx.core.rc : atomicRcCode, Rc;
 
     mixin(atomicRcCode);
 
+    private Rc!Device _dev;
     private DescriptorSetLayout[] _layouts;
     private PushConstantRange[] _push;
 
-    this (DescriptorSetLayout[] layouts, PushConstantRange[] push) {
+    this (Device device, DescriptorSetLayout[] layouts, PushConstantRange[] push) {
         import gfx.core.rc : retainArray;
+        _dev = device;
         _layouts = layouts;
         retainArray(_layouts);
         _push = push;
@@ -137,6 +156,11 @@ final class GlPipelineLayout : PipelineLayout
     override void dispose() {
         import gfx.core.rc : releaseArray;
         releaseArray(_layouts);
+        _dev.unload();
+    }
+
+    override @property Device device() {
+        return _dev;
     }
 }
 
@@ -144,12 +168,13 @@ final class GlPipelineLayout : PipelineLayout
 final class GlFramebuffer : Framebuffer
 {
     import gfx.bindings.opengl.gl : Gl, GLuint;
-    import gfx.core.rc : atomicRcCode;
+    import gfx.core.rc : atomicRcCode, Rc;
     import gfx.gl3 : GlShare;
     import gfx.gl3.resource : GlImageView;
 
     mixin (atomicRcCode);
 
+    private Rc!Device _dev;
     private GlRenderPass rp;
     private GlImageView[] attachments;
     private uint width;
@@ -169,6 +194,7 @@ final class GlFramebuffer : Framebuffer
             "Render pass do not fit with attachments in Framebuffer creation"
         );
 
+        _dev = rp.device;
         this.rp = rp;
         this.attachments = attachments;
         this.width = width;
@@ -214,22 +240,29 @@ final class GlFramebuffer : Framebuffer
 
         releaseArray(attachments);
         rp.release();
+        _dev.unload();
+    }
+
+    override @property Device device() {
+        return _dev;
     }
 }
 
 final class GlPipeline : Pipeline
 {
     import gfx.bindings.opengl.gl : GLuint;
-    import gfx.core.rc : atomicRcCode;
+    import gfx.core.rc : atomicRcCode, Rc;
     import gfx.gl3 : GlShare;
 
     mixin(atomicRcCode);
 
+    private Rc!Device _dev;
     private Gl gl;
     package GLuint prog;
     package PipelineInfo info;
 
-    this(GlShare share, PipelineInfo info) {
+    this(Device dev, GlShare share, PipelineInfo info) {
+        _dev = dev;
         this.gl = share.gl;
         this.info = info;
 
@@ -268,33 +301,56 @@ final class GlPipeline : Pipeline
     override void dispose() {
         gl.DeleteProgram(prog);
         prog = 0;
+        _dev.unload();
+    }
+
+    override @property Device device() {
+        return _dev;
     }
 }
 
 final class GlDescriptorSetLayout : DescriptorSetLayout
 {
-    import gfx.core.rc : atomicRcCode;
+    import gfx.core.rc : atomicRcCode, Rc;
     mixin(atomicRcCode);
+
+    private Rc!Device _dev;
     const(PipelineLayoutBinding[]) bindings;
-    this(in PipelineLayoutBinding[] bindings) {
+
+    this(Device dev, in PipelineLayoutBinding[] bindings) {
+        _dev = dev;
         this.bindings = bindings;
     }
-    override void dispose() {}
+    override void dispose() {
+        _dev.unload();
+    }
+
+    override @property Device device() {
+        return _dev;
+    }
 }
 
 final class GlDescriptorPool : DescriptorPool
 {
-    import gfx.core.rc : atomicRcCode;
+    import gfx.core.rc : atomicRcCode, Rc;
     mixin(atomicRcCode);
 
+    private Rc!Device _dev;
     private uint maxSets;
     private const(DescriptorPoolSize[]) sizes;
 
-    this(in uint maxSets, in DescriptorPoolSize[] bindings) {
+    this(Device dev, in uint maxSets, in DescriptorPoolSize[] bindings) {
+        this._dev = dev;
         this.maxSets = maxSets;
         this.sizes = sizes;
     }
-    override void dispose() {}
+    override void dispose() {
+        _dev.unload();
+    }
+
+    override @property Device device() {
+        return _dev;
+    }
 
     override DescriptorSet[] allocate(DescriptorSetLayout[] layouts) {
         import std.algorithm : map;

@@ -17,6 +17,10 @@ class VulkanSemaphore : VulkanDevObj!(VkSemaphore, "DestroySemaphore"), Semaphor
     this(VkSemaphore vkObj, VulkanDevice dev) {
         super(vkObj, dev);
     }
+
+    override @property Device device() {
+        return dev;
+    }
 }
 
 class VulkanFence : VulkanDevObj!(VkFence, "DestroyFence"), Fence
@@ -25,6 +29,10 @@ class VulkanFence : VulkanDevObj!(VkFence, "DestroyFence"), Fence
 
     this (VkFence vkObj, VulkanDevice dev) {
         super(vkObj, dev);
+    }
+
+    override @property Device device() {
+        return dev;
     }
 
     override @property bool signaled() {

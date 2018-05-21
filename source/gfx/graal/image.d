@@ -294,6 +294,11 @@ interface ImageBase
 
 interface Image : ImageBase, AtomicRefCounted
 {
+    import gfx.graal.device : Device;
+
+    /// Get the parent device
+    @property Device device();
+
     @property MemoryRequirements memoryRequirements();
     /// The image keeps a reference of the device memory
     void bindMemory(DeviceMemory mem, in size_t offset);
@@ -409,4 +414,9 @@ struct SamplerInfo {
 }
 
 interface Sampler : AtomicRefCounted
-{}
+{
+    import gfx.graal.device : Device;
+
+    /// Get the parent device
+    @property Device device();
+}

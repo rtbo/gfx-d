@@ -1,5 +1,6 @@
 module gfx.gl3.swapchain;
 
+import gfx.graal.device : Device;
 import gfx.graal.presentation : Surface, Swapchain;
 
 final class GlSurface : Surface
@@ -34,6 +35,7 @@ package final class GlSwapchain : Swapchain
 
     mixin(atomicRcCode);
 
+    Rc!Device _dev;
     Rc!GlShare _share;
     GlSurface _surface;
     GlImage[] _imgs;
@@ -43,10 +45,11 @@ package final class GlSwapchain : Swapchain
     uint _nextImg;
 
 
-    this (GlShare share, GlDevice device, Surface surface, PresentMode pm, uint numImages,
+    this (GlDevice device, GlShare share, Surface surface, PresentMode pm, uint numImages,
           Format format, uint[2] size, ImageUsage usage, CompositeAlpha alpha,
           Swapchain former=null)
     {
+        _dev = device;
         _share = share;
         _surface = cast(GlSurface)surface;
         _format = format;
@@ -58,7 +61,7 @@ package final class GlSwapchain : Swapchain
         mem.retain();
         foreach (i; 0 .. numImages) {
             auto img = new GlImage(
-                _share, ImageInfo.d2(size[0], size[1]).withFormat(format).withUsage(usage)
+                _dev.obj, _share, ImageInfo.d2(size[0], size[1]).withFormat(format).withUsage(usage)
             );
             img.bindMemory(mem, 0);
 
@@ -75,6 +78,11 @@ package final class GlSwapchain : Swapchain
         import gfx.core.rc : releaseArray;
         releaseArray(_imgs);
         _share.unload();
+        _dev.unload();
+    }
+
+    override @property Device device() {
+        return _dev;
     }
 
     override @property Format format() {

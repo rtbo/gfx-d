@@ -73,7 +73,7 @@ class VulkanImageBase : ImageBase
     private ImageInfo _info;
 }
 
-class VulkanImage : VulkanImageBase, Image
+final class VulkanImage : VulkanImageBase, Image
 {
     mixin(atomicRcCode);
 
@@ -87,6 +87,10 @@ class VulkanImage : VulkanImageBase, Image
         vk.DestroyImage(vkDev, vkObj, null);
         if (_vdm) _vdm.release();
         dev.release();
+    }
+
+    override Device device() {
+        return dev;
     }
 
     override @property MemoryRequirements memoryRequirements() {
@@ -144,10 +148,13 @@ class VulkanImageView : VulkanDevObj!(VkImageView, "DestroyImageView"), ImageVie
     private Swizzle _swizzle;
 }
 
-class VulkanSampler : VulkanDevObj!(VkSampler, "DestroySampler"), Sampler
+final class VulkanSampler : VulkanDevObj!(VkSampler, "DestroySampler"), Sampler
 {
     mixin(atomicRcCode);
     this(VkSampler sampler, VulkanDevice dev) {
         super(sampler, dev);
+    }
+    override @property Device device() {
+        return dev;
     }
 }

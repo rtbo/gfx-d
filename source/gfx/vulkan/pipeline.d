@@ -18,6 +18,10 @@ class VulkanShaderModule : VulkanDevObj!(VkShaderModule, "DestroyShaderModule"),
         _entryPoint = entryPoint;
     }
 
+    override @property Device device() {
+        return dev;
+    }
+
     override @property string entryPoint() {
         return _entryPoint;
     }
@@ -31,6 +35,10 @@ class VulkanPipelineLayout : VulkanDevObj!(VkPipelineLayout, "DestroyPipelineLay
     this(VkPipelineLayout vkObj, VulkanDevice dev)
     {
         super(vkObj, dev);
+    }
+
+    override @property Device device() {
+        return dev;
     }
 }
 
@@ -48,6 +56,10 @@ class VulkanPipeline : VulkanDevObj!(VkPipeline, "DestroyPipeline"), Pipeline
         super.dispose();
     }
 
+    override @property Device device() {
+        return dev;
+    }
+
     private Rc!PipelineLayout pl;
 }
 
@@ -58,6 +70,10 @@ class VulkanDescriptorSetLayout : VulkanDevObj!(VkDescriptorSetLayout, "DestroyD
     {
         super(vkObj, dev);
     }
+
+    override @property Device device() {
+        return dev;
+    }
 }
 
 class VulkanDescriptorPool : VulkanDevObj!(VkDescriptorPool, "DestroyDescriptorPool"), DescriptorPool
@@ -66,6 +82,10 @@ class VulkanDescriptorPool : VulkanDevObj!(VkDescriptorPool, "DestroyDescriptorP
     this(VkDescriptorPool vkObj, VulkanDevice dev)
     {
         super(vkObj, dev);
+    }
+
+    override @property Device device() {
+        return dev;
     }
 
     override DescriptorSet[] allocate(DescriptorSetLayout[] layouts)
