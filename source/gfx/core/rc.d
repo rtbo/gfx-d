@@ -159,6 +159,15 @@ void disposeArray(T, K)(ref T[K] arr) if (is(T : Disposable) && !isAtomicRefCoun
     arr = null;
 }
 
+/// Dispose and nullify a single object, that might be null
+void disposeObject(T)(ref T obj) if (is(T : Disposable) && !isAtomicRefCounted!T)
+{
+    if (obj) {
+        obj.dispose();
+        obj = null;
+    }
+}
+
 /// Retain GC allocated array of ref-counted resources
 void retainArray(T)(ref T[] arr) if (isAtomicRefCounted!T)
 {
