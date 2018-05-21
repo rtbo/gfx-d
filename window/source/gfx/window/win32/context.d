@@ -83,18 +83,14 @@ public class Win32GlContext : GlContext
     private GlAttribs _attribs;
     private HGLRC _ctx;
     private int _pixelFormat;
-    private DummyWindow[size_t] dummies;
-    private size_t hiddenDummy;
 
-    this(in GlAttribs attribs) {
+    this(in GlAttribs attribs, HWND window) {
         _attribs = attribs;
 
         registerWindowClass();
 
-        hiddenDummy = Win32GlContext.createDummy();
-
-        auto dc = GetDC(cast(HWND)hiddenDummy);
-        scope(exit) ReleaseDC(cast(HWND)hiddenDummy, dc);
+        auto dc = GetDC(window);
+        scope(exit) ReleaseDC(window, dc);
 
         PIXELFORMATDESCRIPTOR pfd;
         setupPFD(_attribs, &pfd);
@@ -156,15 +152,11 @@ public class Win32GlContext : GlContext
         enforce(_ctx, "Failed creating Wgl context");
         tracef("created OpenGL %s.%s context", attrs.majorVersion, attrs.minorVersion);
         _attribs = attrs;
-        Win32GlContext.makeCurrent(hiddenDummy);
+        Win32GlContext.makeCurrent(window);
         _gl = new Gl(&loader);
     }
 
     override void dispose() {
-        import gfx.core.rc : disposeArray;
-
-        disposeArray(dummies);
-
         _wgl.DeleteContext(_ctx);
         tracef("destroyed GL/WGL context");
     }
@@ -227,27 +219,6 @@ public class Win32GlContext : GlContext
         }
     }
 
-    override size_t createDummy() {
-        if (hiddenDummy) {
-            const d = hiddenDummy;
-            hiddenDummy = 0;
-            return d;
-        }
-        auto dummy = new DummyWindow();
-        const hdl = cast(size_t)dummy.hWnd;
-        dummies[hdl] = dummy;
-        return hdl;
-    }
-
-    override void releaseDummy(size_t dummy) {
-        auto d = dummy in dummies;
-        if (d) {
-            auto win = *d;
-            win.dispose();
-            dummies.remove(dummy);
-        }
-    }
-
     private void printLastError() {
         import std.experimental.logger : errorf;
         const err = GetLastError();
@@ -258,35 +229,6 @@ public class Win32GlContext : GlContext
         buf[] = messageBuffer[0 .. size];
         errorf(buf.idup);
         LocalFree(messageBuffer);
-    }
-
-    private static class DummyWindow : Disposable
-    {
-        HWND hWnd;
-
-        this () {
-            import std.utf : toUTF16z;
-
-            hWnd = enforce(
-                CreateWindowEx(
-                    WS_EX_CLIENTEDGE,
-                    wndClassName.toUTF16z,
-                    null,
-                    WS_OVERLAPPEDWINDOW,
-                    CW_USEDEFAULT,
-                    CW_USEDEFAULT,
-                    CW_USEDEFAULT,
-                    CW_USEDEFAULT,
-                    null, null, GetModuleHandle(null), null
-                ),
-                "could not create win32 dummy window"
-            );
-        }
-
-        override void dispose() {
-            DestroyWindow(hWnd);
-        }
-
     }
 
 }

@@ -45,12 +45,15 @@ class Win32Display : Display
                 break;
             case Backend.gl3:
                 try {
-                    trace("Attempting to instantiate OpenGL");
                     import gfx.core.rc : makeRc;
                     import gfx.gl3 : GlInstance;
                     import gfx.gl3.context : GlAttribs;
                     import gfx.window.win32.context : Win32GlContext;
-                    auto ctx = makeRc!Win32GlContext(GlAttribs.init);
+
+                    trace("Attempting to instantiate OpenGL");
+                    auto w = new Win32Window(this, true);
+                    scope(exit) w.close();
+                    auto ctx = makeRc!Win32GlContext(GlAttribs.init, w.hWnd);
                     trace("Creating an OpenGL instance");
                     _instance = new GlInstance(ctx);
                 }
@@ -82,7 +85,7 @@ class Win32Display : Display
         return _iwindows;
     }
     override Window createWindow() {
-        return new Win32Window(this);
+        return new Win32Window(this, false);
     }
     override void pollAndDispatch() {
         MSG msg;
@@ -169,10 +172,14 @@ class Win32Window : Window
     private CloseHandler closeHandler;
     private bool mouseOut;
     private bool _closeFlag;
+    private bool dummy;
 
-    this(Win32Display dpy) {
-        this.dpy = dpy;
+    this(Win32Display dpy, bool dummy=false)
+    {
         import std.utf : toUTF16z;
+
+        this.dpy = dpy;
+        this.dummy = dummy;
 
         HINSTANCE hInstance = GetModuleHandle(null);
 
@@ -190,6 +197,8 @@ class Win32Window : Window
             ),
             "could not create win32 window"
         );
+
+        if (dummy) return;
 
         // What follow is a non-portable way to have alpha value of framebuffer used in desktop composition
         // (by default composition makes window completely opaque)
@@ -226,7 +235,9 @@ class Win32Window : Window
         dpy.registerWindow(hWnd, this);
     }
 
-    override void show(uint width, uint height) {
+    override void show(uint width, uint height)
+    {
+        if (dummy) return;
         RECT r;
         r.right = width;
         r.bottom = height;
@@ -236,6 +247,7 @@ class Win32Window : Window
 
     override void close() {
 		DestroyWindow(hWnd);
+        if (dummy) return;
         gfxSurface.unload();
         dpy.unregisterWindow(hWnd);
     }

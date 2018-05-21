@@ -118,23 +118,17 @@ class GlShare : AtomicRefCounted
     private GlInfo _info;
     private DebugCallback _callback;
 
-    this(GlContext ctx) {
+    this(GlContext ctx)
+    {
+        import std.exception : enforce;
+
         _ctx = ctx;
-        size_t dummyWin=0;
-        if (!_ctx.current) {
-            dummyWin = _ctx.createDummy();
-            _ctx.makeCurrent(dummyWin);
-        }
+        enforce(_ctx.current, "The OpenGL context must be made current before initializing instance");
         _gl = ctx.gl;
         _info = GlInfo.fetchAndCheck(_gl, ctx.attribs.decimalVersion);
-        if (dummyWin) {
-            _ctx.doneCurrent();
-            _ctx.releaseDummy(dummyWin);
-        }
     }
 
     override void dispose() {
-        _ctx.doneCurrent();
         _ctx.unload();
     }
 

@@ -23,8 +23,6 @@ class XcbGlContext : GlContext
     private Gl _gl;
     private string[] _glxAvailExts;
     private string[] _glAvailExts;
-    private DummyWindow[size_t] dummies;
-    private size_t hiddenDummy;
     private GLXContext _ctx;
     private bool ARB_create_context;
     private bool MESA_query_renderer;
@@ -32,8 +30,9 @@ class XcbGlContext : GlContext
     private bool EXT_swap_control;
 
     /// Contruct an OpenGL context for the given display and screen.
-    /// It internally creates a dummy window
-    this (XDisplay* dpy, in int mainScreenNum, in GlAttribs attribs)
+    /// The window is necessary to make the context current on and loading GL symbols.
+    /// It can be a dummy window destroyed right initialization.
+    this (XDisplay* dpy, in int mainScreenNum, in GlAttribs attribs, in size_t window)
     {
         import gfx.bindings.core : openSharedLib, loadSharedSym, SharedLib;
         import gfx.bindings.opengl : splitExtString;
@@ -66,7 +65,6 @@ class XcbGlContext : GlContext
         enforce( ARB_create_context && ( MESA_swap_control || EXT_swap_control ));
 
         auto fbc = getGlxFBConfig(attribs);
-        hiddenDummy = XcbGlContext.createDummy();
         GlAttribs attrs = attribs;
 
         auto oldHandler = XSetErrorHandler(&createCtxErrorHandler);
@@ -93,7 +91,7 @@ class XcbGlContext : GlContext
 
         tracef("created OpenGL %s.%s context", attrs.majorVersion, attrs.minorVersion);
 
-        XcbGlContext.makeCurrent(hiddenDummy);
+        XcbGlContext.makeCurrent(window);
         _gl = new Gl(&loadSymbol);
 
         trace("done loading GL/GLX");
@@ -103,8 +101,6 @@ class XcbGlContext : GlContext
         import gfx.bindings.core : closeSharedLib;
         import gfx.core.rc : disposeArray;
         import std.experimental.logger : trace;
-
-        disposeArray(dummies);
 
         _glx.DestroyContext(_dpy, _ctx);
         trace("destroyed GL/GLX context");
@@ -206,64 +202,6 @@ class XcbGlContext : GlContext
         return fbConfigs[0];
     }
 
-    override size_t createDummy() {
-        if (hiddenDummy) {
-            const d = hiddenDummy;
-            hiddenDummy = 0;
-            return d;
-        }
-        auto dummy = new DummyWindow(_dpy, _glx, getGlxFBConfig(_attribs));
-        size_t hdl = dummy.win;
-        dummies[hdl] = dummy;
-        return hdl;
-    }
-
-    override void releaseDummy(size_t dummy) {
-        auto d = dummy in dummies;
-        if (d) {
-            auto win = *d;
-            win.dispose();
-            dummies.remove(dummy);
-        }
-    }
-
-    private static class DummyWindow : Disposable
-    {
-        import X11.Xlib : XWindow = Window, XColormap = Colormap;
-        import X11.Xlib;
-
-        XWindow win;
-        XColormap cmap;
-        XDisplay* dpy;
-
-        this (XDisplay* dpy, Glx glx, GLXFBConfig fbc)
-        {
-            this.dpy = dpy;
-            auto vi = glx.GetVisualFromFBConfig( dpy, fbc );
-            scope(exit) {
-                XFree(vi);
-            }
-
-            cmap = XCreateColormap(dpy, XRootWindow(dpy, XDefaultScreen(dpy)),
-                                                vi.visual, AllocNone );
-
-            XSetWindowAttributes swa;
-            swa.colormap = cmap;
-            swa.background_pixmap = None ;
-            swa.border_pixel      = 0;
-            swa.event_mask        = StructureNotifyMask;
-
-            win = XCreateWindow(dpy, XRootWindow(dpy, vi.screen),
-                    0, 0, 100, 100, 0, vi.depth, InputOutput, vi.visual,
-                    CWBorderPixel|CWColormap|CWEventMask, &swa);
-        }
-
-        override void dispose()
-        {
-            XDestroyWindow(dpy, win);
-            XFreeColormap(dpy, cmap);
-        }
-    }
 }
 
 

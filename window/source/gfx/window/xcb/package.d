@@ -162,12 +162,15 @@ class XcbDisplay : Display
                 break;
             case Backend.gl3:
                 try {
-                    trace("Attempting to instantiate OpenGL");
                     import gfx.core.rc : makeRc;
                     import gfx.gl3 : GlInstance;
                     import gfx.gl3.context : GlAttribs;
                     import gfx.window.xcb.context : XcbGlContext;
-                    auto ctx = makeRc!XcbGlContext(_dpy, _mainScreenNum, GlAttribs.init);
+                    trace("Attempting to instantiate OpenGL");
+                    auto w = new XcbWindow(this, null, true);
+                    w.show(10, 10);
+                    scope(exit) w.close();
+                    auto ctx = makeRc!XcbGlContext(_dpy, _mainScreenNum, GlAttribs.init, w._win);
                     trace("Creating an OpenGL instance");
                     _instance = new GlInstance(ctx);
                 }
@@ -195,7 +198,7 @@ class XcbDisplay : Display
 
     override Window createWindow()
     {
-        return new XcbWindow(this, _instance);
+        return new XcbWindow(this, _instance, false);
     }
 
     override void pollAndDispatch()
@@ -316,11 +319,14 @@ class XcbWindow : Window
     private KeyHandler _onKeyOffHandler;
     private CloseHandler _onCloseHandler;
     private bool _closeFlag;
+    private bool _dummy;
 
-    this(XcbDisplay dpy, Instance instance)
+    this(XcbDisplay dpy, Instance instance, bool dummy)
     {
+        assert(dpy && (dummy || instance));
         _dpy = dpy;
         _instance = instance;
+        _dummy = dummy;
     }
 
     override @property void onMouseMove(MouseHandler handler) {
@@ -398,6 +404,11 @@ class XcbWindow : Window
                     atom(Atom.WM_PROTOCOLS), XCB_ATOM_ATOM, 32, 1, &props[0]);
         }
 
+        if (_dummy) {
+            xcb_flush(_dpy._conn);
+            return;
+        }
+
         _dpy.registerWindow(this);
 
         xcb_map_window(_dpy._conn, _win);
@@ -422,13 +433,21 @@ class XcbWindow : Window
 
     override void close()
     {
-        if (_win != 0) {
-            xcb_unmap_window(_dpy._conn, _win);
-            xcb_destroy_window(_dpy._conn, _win);
-            xcb_flush(_dpy._conn);
-            _win = 0;
+        if (_dummy) {
+            if (_win) {
+                xcb_destroy_window(_dpy._conn, _win);
+                _win = 0;
+            }
         }
-        _dpy.unregisterWindow(this);
+        else {
+            if (_win) {
+                xcb_unmap_window(_dpy._conn, _win);
+                xcb_destroy_window(_dpy._conn, _win);
+                xcb_flush(_dpy._conn);
+                _win = 0;
+            }
+            _dpy.unregisterWindow(this);
+        }
     }
 
     private xcb_atom_t atom(Atom atom) const
