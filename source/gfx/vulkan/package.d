@@ -161,8 +161,9 @@ VulkanInstance createVulkanInstance(in string[] layers, in string[] extensions,
         ai.pApplicationName = toStringz(appName);
     }
     ai.applicationVersion = appVersion.toUint();
-    ai.pEngineName = "gfx-d\n".ptr;
+    ai.pEngineName = "gfx-d\0".ptr;
     ai.engineVersion = VK_MAKE_VERSION(gfxVersionMaj, gfxVersionMin, gfxVersionMic);
+    ai.apiVersion = VK_API_VERSION_1_0;
 
     auto vkLayers = layers.map!toStringz.array;
     auto vkExts = extensions.map!toStringz.array;
