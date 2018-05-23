@@ -99,7 +99,7 @@ class DeclAPIExample : Example
         indBuf.unload();
         matBuf.unload();
         ligBuf.unload();
-        disposeArray(framebuffers);
+        disposeArr(framebuffers);
         setLayout.unload();
         descPool.unload();
         layout.unload();

@@ -30,7 +30,7 @@ final class VulkanQueue : Queue
     }
 
     @property Device device() {
-        return cast(Device)_dev.rcLock();
+        return lockObj(_dev);
     }
 
     void waitIdle() {

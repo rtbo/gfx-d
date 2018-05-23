@@ -89,7 +89,7 @@ class TextureExample : Example
         layout.unload();
         pipeline.unload();
         renderPass.unload();
-        releaseArray(framebuffers);
+        releaseArr(framebuffers);
         super.dispose();
     }
 
@@ -189,7 +189,7 @@ class TextureExample : Example
                 )
             ], surfaceSize[0], surfaceSize[1], 1);
         }
-        retainArray(framebuffers);
+        retainArr(framebuffers);
     }
 
     void preparePipeline()

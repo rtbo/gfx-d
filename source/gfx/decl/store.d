@@ -147,8 +147,8 @@ class DeclarativeStore : Disposable
     }
 
     override void dispose() {
-        import gfx.core.rc : releaseArray;
-        releaseArray(_rcStore);
+        import gfx.core.rc : releaseAA;
+        releaseAA(_rcStore);
         _valueStore.clear();
         _objStore.clear();
     }

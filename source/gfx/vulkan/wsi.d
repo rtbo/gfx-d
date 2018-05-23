@@ -38,7 +38,7 @@ version(linux) {
     import xcb.xcb : xcb_connection_t, xcb_window_t;
 
     // TODO: fall back from wayland to XCB
-    enum surfaceInstanceExtensions = [
+    immutable string[] surfaceInstanceExtensions = [
         surfaceExtension, waylandSurfaceExtension, xcbSurfaceExtension
     ];
 
@@ -89,7 +89,7 @@ version(Windows) {
 
     import core.sys.windows.windef : HINSTANCE, HWND;
 
-    enum surfaceInstanceExtensions = [
+    immutable string[] surfaceInstanceExtensions = [
         surfaceExtension, win32SurfaceExtension
     ];
 
@@ -114,7 +114,7 @@ version(Windows) {
     }
 }
 version(GfxOffscreen) {
-    enum surfaceInstanceExtensions = [];
+    immutable string[] surfaceInstanceExtensions = [];
 }
 
 

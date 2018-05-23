@@ -90,7 +90,7 @@ class StencilExample : Example
             device.waitIdle();
         }
         renderPass.unload();
-        disposeArray(framebuffers);
+        disposeArr(framebuffers);
         stencilWritePipeline.unload();
         stencilWriteDSL.unload();
         stencilWriteLayout.unload();

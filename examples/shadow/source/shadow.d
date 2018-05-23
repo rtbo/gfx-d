@@ -154,12 +154,12 @@ final class ShadowExample : Example
 
         meshRenderPass.unload();
         meshPipeline.unload();
-        disposeArray(framebuffers);
+        disposeArr(framebuffers);
         meshShadowView.unload();
         meshDSLayout.unload();
         meshLayout.unload();
 
-        reinitArray(lights);
+        reinitArr(lights);
 
         super.dispose();
     }

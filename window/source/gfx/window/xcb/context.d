@@ -99,7 +99,6 @@ class XcbGlContext : GlContext
 
     override void dispose() {
         import gfx.bindings.core : closeSharedLib;
-        import gfx.core.rc : disposeArray;
         import std.experimental.logger : trace;
 
         _glx.DestroyContext(_dpy, _ctx);

@@ -70,7 +70,7 @@ class Example : Disposable
         if (device) {
             device.waitIdle();
         }
-        releaseArray(fences);
+        releaseArr(fences);
         if (cmdPool && cmdBufs.length) {
             cmdPool.free(cmdBufs);
             cmdPool.unload();
@@ -204,7 +204,7 @@ class Example : Disposable
         foreach (i; 0 .. numCmdBufs) {
             fences[i] = device.createFence(Yes.signaled);
         }
-        retainArray(fences);
+        retainArr(fences);
     }
 
     void prepareCmds() {

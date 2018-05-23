@@ -146,16 +146,16 @@ final class GlPipelineLayout : PipelineLayout
     private PushConstantRange[] _push;
 
     this (Device device, DescriptorSetLayout[] layouts, PushConstantRange[] push) {
-        import gfx.core.rc : retainArray;
+        import gfx.core.rc : retainArr;
         _dev = device;
         _layouts = layouts;
-        retainArray(_layouts);
+        retainArr(_layouts);
         _push = push;
     }
 
     override void dispose() {
-        import gfx.core.rc : releaseArray;
-        releaseArray(_layouts);
+        import gfx.core.rc : releaseArr;
+        releaseArr(_layouts);
         _dev.unload();
     }
 
@@ -186,7 +186,7 @@ final class GlFramebuffer : Framebuffer
 
     this (GlShare share, GlRenderPass rp, GlImageView[] attachments, uint width, uint height, uint layers)
     {
-        import gfx.core.rc : retainArray;
+        import gfx.core.rc : retainArr;
         import std.exception : enforce;
 
         enforce(
@@ -202,7 +202,7 @@ final class GlFramebuffer : Framebuffer
         this.layers = layers;
 
         rp.retain();
-        retainArray(this.attachments);
+        retainArr(this.attachments);
 
         this.gl = share.gl;
 
@@ -234,11 +234,11 @@ final class GlFramebuffer : Framebuffer
 
     override void dispose()
     {
-        import gfx.core.rc : releaseArray;
+        import gfx.core.rc : releaseArr;
 
         gl.DeleteFramebuffers(1, &_name);
 
-        releaseArray(attachments);
+        releaseArr(attachments);
         rp.release();
         _dev.unload();
     }

@@ -70,13 +70,13 @@ package final class GlSwapchain : Swapchain
         }
         mem.release();
 
-        import gfx.core.rc : retainArray;
-        retainArray(_imgs);
+        import gfx.core.rc : retainArr;
+        retainArr(_imgs);
     }
 
     override void dispose() {
-        import gfx.core.rc : releaseArray;
-        releaseArray(_imgs);
+        import gfx.core.rc : releaseArr;
+        releaseArr(_imgs);
         _share.unload();
         _dev.unload();
     }

@@ -30,11 +30,11 @@ class VulkanFramebuffer : VulkanDevObj!(VkFramebuffer, "DestroyFramebuffer"), Fr
     this(VkFramebuffer vkObj, VulkanDevice dev, ImageView[] views) {
         super(vkObj, dev);
         _views = views;
-        retainArray(_views);
+        retainArr(_views);
     }
 
     override void dispose() {
-        releaseArray(_views);
+        releaseArr(_views);
         _views = [];
         super.dispose();
     }

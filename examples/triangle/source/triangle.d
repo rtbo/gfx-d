@@ -48,7 +48,7 @@ class TriangleExample : Example
         vertBuf.unload();
         pipeline.unload();
         renderPass.unload();
-        releaseArray(framebuffers);
+        releaseArr(framebuffers);
         super.dispose();
     }
 
@@ -97,7 +97,7 @@ class TriangleExample : Example
                 )
             ], surfaceSize[0], surfaceSize[1], 1);
         }
-        retainArray(framebuffers);
+        retainArr(framebuffers);
     }
 
     void preparePipeline()
