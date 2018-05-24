@@ -452,18 +452,22 @@ final class VulkanInstance : VulkanObj!(VkInstance), Instance
 
     override PhysicalDevice[] devices()
     {
-        import std.array : array, uninitializedArray;
-        uint count;
-        vulkanEnforce(vk.EnumeratePhysicalDevices(vkObj, &count, null),
-                "Could not enumerate Vulkan devices");
-        auto devices = uninitializedArray!(VkPhysicalDevice[])(count);
-        vulkanEnforce(vk.EnumeratePhysicalDevices(vkObj, &count, devices.ptr),
-                "Could not enumerate Vulkan devices");
-
         import std.algorithm : map;
-        return devices
-            .map!(d => cast(PhysicalDevice)(new VulkanPhysicalDevice(d, this)))
-            .array;
+        import std.array : array, uninitializedArray;
+
+        if (!_phDs.length) {
+            uint count;
+            vulkanEnforce(vk.EnumeratePhysicalDevices(vkObj, &count, null),
+                    "Could not enumerate Vulkan devices");
+            auto devices = uninitializedArray!(VkPhysicalDevice[])(count);
+            vulkanEnforce(vk.EnumeratePhysicalDevices(vkObj, &count, devices.ptr),
+                    "Could not enumerate Vulkan devices");
+
+            _phDs = devices
+                .map!(vkD => cast(PhysicalDevice)new VulkanPhysicalDevice(vkD, this))
+                .array();
+        }
+        return _phDs;
     }
 
     override void setDebugCallback(DebugCallback callback) {
@@ -478,6 +482,7 @@ final class VulkanInstance : VulkanObj!(VkInstance), Instance
     }
 
     VkInstanceCmds _vk;
+    PhysicalDevice[] _phDs;
     VkDebugReportCallbackEXT _vkCb;
     DebugCallback _callback;
 }
@@ -514,12 +519,9 @@ extern(C) nothrow {
 
 final class VulkanPhysicalDevice : PhysicalDevice
 {
-    mixin(atomicRcCode);
-
     this(VkPhysicalDevice vkObj, VulkanInstance inst) {
         _vkObj = vkObj;
         _inst = inst;
-        _inst.retain();
         _vk = _inst.vk;
 
         vk.GetPhysicalDeviceProperties(_vkObj, &_vkProps);
@@ -544,18 +546,16 @@ final class VulkanPhysicalDevice : PhysicalDevice
         }
     }
 
-    override void dispose() {
-        _inst.release();
-        _inst = null;
-    }
-
-
     @property VkPhysicalDevice vkObj() {
         return _vkObj;
     }
 
     @property VkInstanceCmds vk() {
         return _vk;
+    }
+
+    override @property Instance instance() {
+        return lockObj(_inst);
     }
 
     override @property string name() {

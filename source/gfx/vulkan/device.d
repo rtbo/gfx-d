@@ -77,7 +77,6 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
     {
         super(vkObj);
         _pd = pd;
-        _pd.retain();
         _inst = inst;
         _inst.retain();
         _vk = new VkDeviceCmds(vkObj, pd.vk);
@@ -85,7 +84,6 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
 
     override void dispose() {
         vk.DestroyDevice(vkObj, null);
-        _pd.release();
         _pd = null;
         _inst.release();
         _inst = null;

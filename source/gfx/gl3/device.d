@@ -10,7 +10,7 @@ class GlDevice : Device
 {
     import core.time :              Duration;
     import gfx.core.rc :            atomicRcCode, Rc;
-    import gfx.gl3 :                GlPhysicalDevice, GlShare;
+    import gfx.gl3 :                GlInstance, GlPhysicalDevice, GlShare;
     import gfx.gl3.queue :          GlQueue;
     import gfx.graal :              Instance;
     import gfx.graal.buffer :       Buffer, BufferUsage;
@@ -35,25 +35,25 @@ class GlDevice : Device
 
     mixin(atomicRcCode);
 
-    private Rc!GlShare _share;
-    private Rc!GlPhysicalDevice _phd;
+    private GlPhysicalDevice _phd;
     private Rc!Instance _inst;
+    private Rc!GlShare _share;
     private MemoryProperties _memProps;
     private GlQueue _queue;
 
 
-    this (GlPhysicalDevice phd, GlShare share, Instance inst) {
-        _share = share;
+    this (GlPhysicalDevice phd, GlInstance inst) {
         _phd = phd;
         _inst = inst;
+        _share = inst.share;
         _memProps = phd.memoryProperties;
         _queue = new GlQueue(_share, this);
     }
 
     override void dispose() {
         _queue.dispose();
-        _phd.unload();
         _share.unload();
+        _inst.unload();
     }
 
     override GlPhysicalDevice physicalDevice() {

@@ -53,8 +53,12 @@ struct QueueRequest
 
 /// Represent a physical device. This interface is meant to describe a graphics
 /// device and open a logical device out of it.
-interface PhysicalDevice : AtomicRefCounted
+interface PhysicalDevice
 {
+    import gfx.graal : Instance;
+
+    /// The instance this physical device is issued from
+    @property Instance instance();
     @property string name();
 
     @property DeviceType type();

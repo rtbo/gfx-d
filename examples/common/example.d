@@ -43,7 +43,7 @@ class Example : Disposable
     Rc!Instance instance;
     uint graphicsQueueIndex;
     uint presentQueueIndex;
-    Rc!PhysicalDevice physicalDevice;
+    PhysicalDevice physicalDevice;
     Rc!Device device;
     Queue graphicsQueue;
     Queue presentQueue;
@@ -81,7 +81,6 @@ class Example : Disposable
         renderingFinishSem.unload();
         swapchain.unload();
         device.unload();
-        physicalDevice.unload();
         if (window) {
             //window.close();
         }

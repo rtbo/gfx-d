@@ -4,7 +4,7 @@ import gfx.core.rc : AtomicRefCounted;
 import gfx.graal : DebugCallback, Instance;
 import gfx.graal.device : PhysicalDevice;
 
-class GlInstance : Instance
+final class GlInstance : Instance
 {
     import gfx.core.rc : atomicRcCode, Rc;
     import gfx.gl3.context : GlContext;
@@ -14,16 +14,15 @@ class GlInstance : Instance
 
     private Rc!GlContext _ctx;
     private Rc!GlShare _share;
-    private Rc!PhysicalDevice _phd;
+    private PhysicalDevice _phd;
 
     this(GlContext ctx) {
         _ctx = ctx;
         _share = new GlShare(_ctx);
-        _phd = new GlPhysicalDevice(_share, this);
+        _phd = new GlPhysicalDevice(this);
     }
 
     override void dispose() {
-        _phd.unload();
         _share.unload();
         _ctx.unload();
     }
@@ -39,13 +38,16 @@ class GlInstance : Instance
     }
 
     override PhysicalDevice[] devices() {
-        return [ _phd.obj ];
+        return [ _phd ];
     }
 
     override void setDebugCallback(DebugCallback callback) {
         _share._callback = callback;
     }
 
+    @property GlShare share() {
+        return _share.obj;
+    }
     @property GlContext ctx() {
         return _ctx.obj;
     }
@@ -106,7 +108,7 @@ struct GlInfo
 }
 
 
-class GlShare : AtomicRefCounted
+final class GlShare : AtomicRefCounted
 {
     import gfx.core.rc : atomicRcCode, Rc;
     import gfx.gl3.context : GlContext;
@@ -144,10 +146,9 @@ class GlShare : AtomicRefCounted
 }
 
 
-class GlPhysicalDevice : PhysicalDevice
+final class GlPhysicalDevice : PhysicalDevice
 {
     import gfx.bindings.opengl.gl : Gl;
-    import gfx.core.rc : atomicRcCode, Rc;
     import gfx.gl3.context : GlContext;
     import gfx.graal.device : Device, DeviceFeatures, DeviceLimits, DeviceType,
                               QueueRequest;
@@ -156,23 +157,21 @@ class GlPhysicalDevice : PhysicalDevice
     import gfx.graal.queue : QueueFamily;
     import gfx.graal.presentation : PresentMode, Surface, SurfaceCaps;
 
-    mixin(atomicRcCode);
-
-    private Rc!GlShare _share;
-    private Instance _inst;
+    private GlInstance _inst;
     private string _name;
 
-    this(GlShare share, Instance instance) {
-        _share = share;
+    this(GlInstance instance) {
         _inst = instance;
 
         import gfx.bindings.opengl.gl : GL_RENDERER;
         import std.string : fromStringz;
-        _name = fromStringz(cast(const(char)*)share.gl.GetString(GL_RENDERER)).idup;
+        _name = fromStringz(cast(const(char)*)_inst.share.gl.GetString(GL_RENDERER)).idup;
     }
 
-    override void dispose() {
-        _share.unload();
+    override @property Instance instance()
+    {
+        import gfx.core.rc : lockObj;
+        return lockObj(_inst);
     }
 
     override @property string name() {
@@ -277,7 +276,10 @@ class GlPhysicalDevice : PhysicalDevice
     /// Returns: null if it can't meet all requested queues, the opened device otherwise.
     override Device open(in QueueRequest[], in DeviceFeatures)
     {
+        import gfx.core.rc : lockObj;
         import gfx.gl3.device : GlDevice;
-        return new GlDevice(this, _share, _inst);
+        auto inst = lockObj(_inst);
+        if (!inst) return null;
+        else return new GlDevice(this, inst);
     }
 }
