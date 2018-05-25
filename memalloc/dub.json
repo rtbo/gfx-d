@@ -1,0 +1,12 @@
+{
+    "name": "memalloc",
+    "authors": [
+        "Remi Thebault"
+    ],
+    "description": "Memory allocator for Gfx-d",
+    "copyright": "Copyright © 2018, Remi Thebault",
+    "license": "MIT",
+    "dependencies": {
+        "gfx": { "path": ".." }
+    }
+}

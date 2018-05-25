@@ -11,6 +11,7 @@
         "bindings",
         "genmesh",
         "math",
+        "memalloc",
         "window",
 
         "examples/swapchain",
