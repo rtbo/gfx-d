@@ -28,5 +28,6 @@
         "spirv_cross": { "path": "3rdparty/spirv_cross-d" }
     },
 
-    "-ddoxFilterArgs": ["--min-protection=Protected"]
+    "-ddoxFilterArgs": ["--min-protection=Protected"],
+    "-ddoxTool": "scod"
 }
