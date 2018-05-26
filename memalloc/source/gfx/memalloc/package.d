@@ -1,8 +1,8 @@
-module gfx.memalloc.allocator;
+module gfx.memalloc;
 
 import gfx.core.rc : AtomicRefCounted;
 import gfx.graal.device : Device;
-import gfx.graal.memory : DeviceMemory;
+import gfx.graal.memory : DeviceMemory, MemoryRequirements;
 
 /// Option flags for creating an Allocator
 enum AllocatorFlags
@@ -23,10 +23,10 @@ struct HeapOptions
 {
     /// How many bytes may be use on the heap.
     /// set to 0 to forbid use of a specific heap and to size_t.max to allow entire use
-    size_t maxUsage;
+    size_t maxUsage = size_t.max;
     /// Size of a single DeviceMemory on this heap.
     /// set to 0 to use default behavior for this heap
-    size_t blockSize;
+    size_t blockSize = 0;
 }
 
 /// Options for the creation of an Allocator
@@ -37,14 +37,21 @@ struct AllocatorOptions
     /// One HeapOption per heap in the device, or empty to use default behavior.
     /// Default behavior is to allow use of entire heap. Default block size is
     /// 256Mb for heaps > 1Gb, and heapSize/8 for smaller ones.
-    HeapOptions[] options;
+    HeapOptions[] heapOptions;
 }
 
 /// Create an Allocator for device and options
 Allocator createAllocator(Device device, AllocatorOptions options)
 {
-    import gfx.memalloc.dedicated : DedicatedAllocator;
-    return new DedicatedAllocator(device, options);
+    import gfx.graal : Backend;
+    if ((options.flags & AllocatorFlags.dedicatedOnly) || device.instance.backend == Backend.gl3) {
+        import gfx.memalloc.dedicated : DedicatedAllocator;
+        return new DedicatedAllocator(device, options);
+    }
+    else {
+        import gfx.memalloc.pool : PoolAllocator;
+        return new PoolAllocator(device, options);
+    }
 }
 
 /// Memory allocator for a device
@@ -53,8 +60,8 @@ interface Allocator : AtomicRefCounted
     /// Device this allocator is bound to.
     @property Device device();
 
-    /// Allocate memory of the given type
-    Allocation allocate(uint memTypeIndex, size_t size);
+    /// Allocate memory for the given requirements
+    Allocation allocate(MemoryRequirements requirements);
 }
 
 
@@ -68,28 +75,28 @@ final class Allocation : AtomicRefCounted
     private size_t _offset;
     private size_t _size;
     private Rc!DeviceMemory _mem;
-    private Rc!Allocator _alloc;
+    private Rc!MemReturn _return;
 
-    package this(size_t offset, size_t size, DeviceMemory mem, Allocator alloc)
+    package this(size_t offset, size_t size, DeviceMemory mem, MemReturn return_)
     {
         _offset = offset;
         _size = size;
         _mem = mem;
-        _alloc = alloc;
+        _return = return_;
     }
 
     override void dispose()
     {
+        _return.free(_offset, _size);
         _mem.unload();
-        _alloc.unload();
+        _return.unload();
     }
 }
-
 
 package:
 
 /// A pool of memory associated to one memory type
-interface MemoryPool {
-    Allocation allocate(size_t size);
+interface MemReturn : AtomicRefCounted
+{
+    void free(size_t offset, size_t size);
 }
-
