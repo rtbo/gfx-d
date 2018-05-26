@@ -2,7 +2,7 @@ module gfx.memalloc;
 
 import gfx.core.rc : AtomicRefCounted;
 import gfx.graal.device : Device;
-import gfx.graal.memory : DeviceMemory, MemoryRequirements;
+import gfx.graal.memory : DeviceMemory, MemoryProperties, MemoryRequirements;
 
 /// Option flags for creating an Allocator
 enum AllocatorFlags
@@ -55,13 +55,38 @@ Allocator createAllocator(Device device, AllocatorOptions options)
 }
 
 /// Memory allocator for a device
-interface Allocator : AtomicRefCounted
+abstract class Allocator : AtomicRefCounted
 {
+    import gfx.core.rc : atomicRcCode, Rc;
+
+    mixin(atomicRcCode);
+
+    package Rc!Device _device;
+    package AllocatorOptions _options;
+    package MemoryProperties _memProps;
+
+    package this(Device device, AllocatorOptions options)
+    {
+        _device = device;
+        _options = options;
+        _memProps = device.physicalDevice.memoryProperties;
+
+        import std.algorithm : all;
+        import std.exception : enforce;
+        enforce(_memProps.types.all!(mt => mt.heapIndex < _memProps.heaps.length));
+    }
+
+    override void dispose() {
+        _device.unload();
+    }
+
     /// Device this allocator is bound to.
-    @property Device device();
+    final @property Device device() {
+        return _device.obj;
+    }
 
     /// Allocate memory for the given requirements
-    Allocation allocate(MemoryRequirements requirements);
+    abstract Allocation allocate(MemoryRequirements requirements);
 }
 
 

@@ -9,20 +9,11 @@ import gfx.memalloc;
 
 final class PoolAllocator : Allocator
 {
-    import gfx.core.rc : atomicRcCode, Rc;
-
-    mixin(atomicRcCode);
-
-    Rc!Device _device;
-    AllocatorOptions _options;
-    MemoryProperties _memProps;
     MemoryPool[] _pools;
 
     this(Device device, AllocatorOptions options)
     {
-        _device = device;
-        _options = options;
-        _memProps = device.physicalDevice.memoryProperties;
+        super(device, options);
 
         foreach (uint i, mh; _memProps.heaps) {
             const heapOpts = _options.heapOptions.length>i ? _options.heapOptions[i] : HeapOptions.init;
@@ -30,19 +21,10 @@ final class PoolAllocator : Allocator
         }
     }
 
-    override void dispose()
-    {
-        _device.unload();
-    }
-
-    override @property Device device() {
-        return _device.obj;
-    }
-
     override @property Allocation allocate(MemoryRequirements requirements)
     {
         foreach (i; 0 .. cast(uint)_memProps.types.length) {
-            if ((requirements.memTypeMask >> i) & 1) {
+            if (((uint(1) << i) & requirements.memTypeMask) != 0) {
                 auto pool = _pools[_memProps.types[i].heapIndex];
                 auto alloc = pool.allocate(i, requirements.alignment, requirements.size);
                 if (alloc) return alloc;
@@ -78,8 +60,8 @@ class MemoryPool
     MemoryHeap _heap;
     MemoryType[] _types;
 
-    size_t _blockSize;
     size_t _maxUsage;
+    size_t _blockSize;
     size_t _used;
 
     MemoryBlock[] _blocks;
@@ -89,8 +71,8 @@ class MemoryPool
         _memTypeIndex = memTypeIndex;
         _heap = heap;
         _types = types;
-        _blockSize = options.blockSize;
         _maxUsage = options.maxUsage;
+        _blockSize = options.blockSize;
 
         if (_maxUsage == size_t.max) {
             _maxUsage = heap.size;
