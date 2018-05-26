@@ -1,8 +1,10 @@
+/// A memory allocator for Gfx-d
 module gfx.memalloc;
 
-import gfx.core.rc : AtomicRefCounted;
-import gfx.graal.device : Device;
-import gfx.graal.memory : DeviceMemory, MemoryProperties, MemoryRequirements;
+import gfx.core.rc :        AtomicRefCounted;
+import gfx.graal.device :   Device;
+import gfx.graal.memory :   DeviceMemory, MemoryProperties, MemoryRequirements,
+                            MemoryType, MemProps;
 
 /// Option flags for creating an Allocator
 enum AllocatorFlags
@@ -13,9 +15,6 @@ enum AllocatorFlags
     /// Even if not set, some backends (i.e. OpenGL) require a dedicated DeviceMemory
     /// per allocation and will do so regardless of this flag.
     dedicatedOnly = 1,
-    /// The default behavior when an allocation cannot be granted is to throw
-    /// an exception. Set this flag if you prefer the allocator to return null.
-    returnNull = 2,
 }
 
 /// Option to define allocation behavior for each heap of the device
@@ -39,6 +38,72 @@ struct AllocatorOptions
     /// 256Mb for heaps > 1Gb, and heapSize/8 for smaller ones.
     HeapOptions[] heapOptions;
 }
+
+/// Flags controlling an allocation of memory
+enum AllocationFlags {
+    /// default behavior, no flags.
+    none            = 0,
+    /// Set to force the creation of a new DeviceMemory, that will be dedicated for the allocation.
+    dedicated       = 1,
+    /// Set to prohib the creation of a new DeviceMemory. This forces the use of an existing chunk, and fails if it cannot find one.
+    neverAllocate   = 2,
+}
+
+/// Describes the usage of a memory allocation
+enum MemoryUsage {
+    /// No intended usage. The type of memory will not be influenced by the usage.
+    unknown,
+    /// Memory will be used on device only (MemProps.deviceLocal) and having it mappable
+    /// on host is not requested (although it is possible on some devices).
+    /// Usage:
+    /// $(UL
+    ///   $(LI Resources written and read by device, e.g. images used as attachments. )
+    ///   $(LI Resources transferred from host once or infrequently and read by device multiple times,
+    ///        e.g. textures, vertex bufers, uniforms etc. )
+    /// )
+    gpuOnly,
+    /// Memory will be mappable on host. It usually means CPU (system) memory.
+    /// Resources created for this usage may still be accessible to the device,
+    /// but access to them can be slower. Guarantees to be MemProps.hostVisible and MemProps.hostCoherent.
+    /// Usage:
+    /// $(UL $(LI Staging copy of resources used as transfer source.))
+    cpuOnly,
+    /// Memory that is both mappable on host (guarantees to be MemProps.hostVisible)
+    /// and preferably fast to access by GPU. CPU reads may be uncached and very slow.
+    /// Usage:
+    /// $(UL $(LI Resources written frequently by host (dynamic), read by device.
+    /// E.g. textures, vertex buffers, uniform buffers updated every frame or every draw call.))
+    cpuToGpu,
+    /// Memory mappable on host (guarantees to be MemProps.hostVisible) and cached.
+    /// Usage:
+    /// $(UL
+    ///     $(LI Resources written by device, read by host - results of some computations,
+    ///          e.g. screen capture, average scene luminance for HDR tone mapping.)
+    ///     $(LI Any resources read or accessed randomly on host, e.g. CPU-side copy of
+    ///          vertex buffer used as source of transfer, but also used for collision detection.)
+    /// )
+    gpuToCpu,
+}
+
+/// Structure controlling an allocation of memory
+struct AllocationInfo {
+    /// Control flags
+    AllocationFlags flags;
+    /// Intended usage. Will affect preferredBits and requiredBits;
+    MemoryUsage usage;
+    /// MemProps bits that are optional but are preferred to be present.
+    /// Allocation will favor memory types with these bits if available, but may
+    /// fallback to other memory types.
+    MemProps preferredProps;
+    /// MemProps bits that must be set.
+    /// Allocation will fail if it can't allocate a memory type satisfies all bits.
+    MemProps requiredProps;
+    /// mask of memory type indices (0b0101 means indices 0 and 2) that, if not
+    /// zero, will constrain MemoryRequirement.memTypeMask
+    uint memTypeIndexMask;
+}
+
+
 
 /// Create an Allocator for device and options
 Allocator createAllocator(Device device, AllocatorOptions options)
@@ -86,7 +151,38 @@ abstract class Allocator : AtomicRefCounted
     }
 
     /// Allocate memory for the given requirements
-    abstract Allocation allocate(MemoryRequirements requirements);
+    final Allocation allocate(in MemoryRequirements requirements,
+                              in AllocationInfo info=AllocationInfo.init)
+    {
+        uint allowedMask = requirements.memTypeMask;
+        uint index = findMemoryTypeIndex(_memProps.types, allowedMask, info);
+        if (index != uint.max) {
+            auto alloc = allocate(requirements, index);
+            if (alloc) return alloc;
+
+            while (allowedMask != 0) {
+                // retrieve former index from possible choices
+                allowedMask &= ~(1 << index);
+                index = findMemoryTypeIndex(_memProps.types, allowedMask, info);
+                if (index == uint.max) continue;
+                alloc = allocate(requirements, index);
+                if (alloc) return alloc;
+            }
+        }
+
+        return null;
+    }
+
+    /// Allocate memory for the given index and for given requirements
+    abstract Allocation allocate(MemoryRequirements requirements,
+                                 uint memoryTypeIndex)
+    in {
+        assert(memoryTypeIndex < _memProps.types.length);
+        assert(
+            ((1 << memoryTypeIndex) & requirements.memTypeMask) != 0,
+            "memoryTypeIndex is not compatible with requirements"
+        );
+    }
 }
 
 
@@ -118,6 +214,68 @@ final class Allocation : AtomicRefCounted
         _mem.unload();
         _return.unload();
     }
+}
+
+/// Find a memory type index suitable for the given allowedIndexMask and info.
+/// Params:
+///     types               = the memory types obtained from a device
+///     allowedIndexMask    = the mask obtained from MemoryRequirements.memTypeMask
+///     info                = an optional AllocationInfo that will constraint the
+///                           choice
+/// Returns: the found index of memory type, or uint.max if none could satisfy requirements
+uint findMemoryTypeIndex(in MemoryType[] types,
+                         in uint allowedIndexMask,
+                         in AllocationInfo info=AllocationInfo.init)
+{
+    const allowedMask = info.memTypeIndexMask != 0 ?
+            allowedIndexMask & info.memTypeIndexMask :
+            allowedIndexMask;
+
+    MemProps preferred = info.preferredProps;
+    MemProps required = info.requiredProps;
+
+    switch (info.usage) {
+    case MemoryUsage.gpuOnly:
+        preferred |= MemProps.deviceLocal;
+        break;
+    case MemoryUsage.cpuOnly:
+        required |= MemProps.hostVisible | MemProps.hostCoherent;
+        break;
+    case MemoryUsage.cpuToGpu:
+        required |= MemProps.hostVisible;
+        preferred |= MemProps.deviceLocal;
+        break;
+    case MemoryUsage.gpuToCpu:
+        required |= MemProps.hostVisible;
+        preferred |= MemProps.hostCoherent | MemProps.hostCached;
+        break;
+    case MemoryUsage.unknown:
+    default:
+        break;
+    }
+
+    uint maxValue = uint.max;
+    uint index = uint.max;
+
+    foreach (i; 0 .. cast(uint)types.length) {
+        const mask = 1 << i;
+        // is this type allowed?
+        if ((allowedMask & mask) != 0) {
+            const props = types[i].props;
+            // does it have the required properties?
+            if ((props & required) == required) {
+                // it is a valid candidate. calcaulate its value as number of
+                // preferred flags present
+                import core.bitop : popcnt;
+                const value = popcnt(cast(uint)(props & preferred));
+                if (maxValue == uint.max || value > maxValue) {
+                    index = i;
+                    maxValue = value;
+                }
+            }
+        }
+    }
+    return index;
 }
 
 package:

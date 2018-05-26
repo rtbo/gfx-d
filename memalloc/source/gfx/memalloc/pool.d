@@ -21,25 +21,11 @@ final class PoolAllocator : Allocator
         }
     }
 
-    override @property Allocation allocate(MemoryRequirements requirements)
+    override @property Allocation allocate(MemoryRequirements requirements,
+                                           uint memTypeIndex)
     {
-        foreach (i; 0 .. cast(uint)_memProps.types.length) {
-            if (((uint(1) << i) & requirements.memTypeMask) != 0) {
-                auto pool = _pools[_memProps.types[i].heapIndex];
-                auto alloc = pool.allocate(i, requirements.alignment, requirements.size);
-                if (alloc) return alloc;
-            }
-        }
-
-        if (_options.flags & AllocatorFlags.returnNull) {
-            return null;
-        }
-        else {
-            import std.format : format;
-            throw new Exception(format(
-                "Could not allocate memory for requirements %s", requirements
-            ));
-        }
+        auto pool = _pools[_memProps.types[memTypeIndex].heapIndex];
+        return pool.allocate(memTypeIndex, requirements.alignment, requirements.size);
     }
 
 }
