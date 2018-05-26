@@ -5,9 +5,14 @@ import gfx.graal.device;
 
 /// Properties of memory allocated by the device
 enum MemProps {
+    none            = 0x00,
+    /// Memory resides on the device.
     deviceLocal     = 0x01,
+    /// Memory is visible from cpu and therefore mappable.
     hostVisible     = 0x02,
+    /// Memory seen from cpu is coherent with device memory.
     hostCoherent    = 0x04,
+    /// Memory is cached on host. read/write is very fast, but flush operation is necessary after writing.
     hostCached      = 0x08,
     lazilyAllocated = 0x10,
 }
@@ -37,7 +42,7 @@ struct MemoryRequirements {
     /// mask where each bit is set if the corresponding memory type is supported.
     /// For example if the resource supports types 0 and 2 from MemoryProperties,
     /// memTypeMask will be 00000101
-    size_t memTypeMask;
+    uint memTypeMask;
 }
 
 /// Holds a memory mapping to host visible memory.
