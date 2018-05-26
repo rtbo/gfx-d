@@ -76,18 +76,20 @@ final class Allocation : AtomicRefCounted
     private size_t _size;
     private Rc!DeviceMemory _mem;
     private Rc!MemReturn _return;
+    private Object _returnData;
 
-    package this(size_t offset, size_t size, DeviceMemory mem, MemReturn return_)
+    package this(size_t offset, size_t size, DeviceMemory mem, MemReturn return_, Object returnData)
     {
         _offset = offset;
         _size = size;
         _mem = mem;
         _return = return_;
+        _returnData = returnData;
     }
 
     override void dispose()
     {
-        _return.free(_offset, _size);
+        _return.free(_returnData);
         _mem.unload();
         _return.unload();
     }
@@ -98,5 +100,5 @@ package:
 /// A pool of memory associated to one memory type
 interface MemReturn : AtomicRefCounted
 {
-    void free(size_t offset, size_t size);
+    void free(Object returnData);
 }

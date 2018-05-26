@@ -37,7 +37,7 @@ class DedicatedAllocator : Allocator, MemReturn
         foreach (i; 0 .. cast(uint)_memProps.types.length) {
             if ((requirements.memTypeMask >> i) & 1) {
                 auto dm = _device.allocateMemory(i, requirements.size).rc;
-                if (dm) return new Allocation(0, requirements.size, dm, this);
+                if (dm) return new Allocation(0, requirements.size, dm, this, null);
             }
         }
 
@@ -53,6 +53,6 @@ class DedicatedAllocator : Allocator, MemReturn
     }
 
     // nothing to do here
-    override void free(size_t, size_t) {}
+    override void free(Object returnData) {}
 
 }
