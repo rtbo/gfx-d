@@ -313,12 +313,11 @@ interface ImageView : AtomicRefCounted
 
 /// Type of filter for texture sampling
 enum Filter {
-    ///
+    /// nearest sample is used
     nearest,
-    ///
+    /// sample is interpolated with neighboors
     linear,
 }
-
 
 /// Specifies how texture coordinates outside the range `[0, 1]` are handled.
 enum WrapMode {
@@ -379,6 +378,11 @@ struct SamplerInfo {
     BorderColor borderColor;
     /// If set, lookup is done in texel space rather than normalized coordinates.
     Flag!"unnormalizeCoords" unnormalizeCoords;
+
+    /// Initializes a non-filtering SamplerInfo
+    static @property SamplerInfo nearest() {
+        return SamplerInfo.init;
+    }
 
     /// Initializes a bilinear filtering SamplerInfo
     static @property SamplerInfo bilinear() {

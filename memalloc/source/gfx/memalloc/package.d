@@ -101,6 +101,33 @@ struct AllocationInfo {
     /// mask of memory type indices (0b0101 means indices 0 and 2) that, if not
     /// zero, will constrain MemoryRequirement.memTypeMask
     uint memTypeIndexMask;
+
+    /// Initializes an AllocationInfo with usage
+    static @property AllocationInfo forUsage(MemoryUsage usage) {
+        AllocationInfo info;
+        info.usage = usage;
+        return info;
+    }
+    /// set flags to info
+    AllocationInfo withFlags(AllocationFlags flags) {
+        this.flags = flags;
+        return this;
+    }
+    /// set preferredProps to info
+    AllocationInfo withPreferredProps(MemProps props) {
+        this.preferredProps = props;
+        return this;
+    }
+    /// set requiredProps to info
+    AllocationInfo withRequiredBits(MemProps props) {
+        this.requiredProps = props;
+        return this;
+    }
+    /// set type index mask to info
+    AllocationInfo withTypeIndexMask(uint indexMask) {
+        this.memTypeIndexMask = indexMask;
+        return this;
+    }
 }
 
 
@@ -213,6 +240,18 @@ final class Allocation : AtomicRefCounted
         _return.free(_returnData);
         _mem.unload();
         _return.unload();
+    }
+
+    @property size_t offset() const {
+        return _offset;
+    }
+
+    @property size_t size() const {
+        return _size;
+    }
+
+    @property DeviceMemory mem() {
+        return _mem;
     }
 }
 
