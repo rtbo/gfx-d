@@ -149,6 +149,7 @@ final class MemoryChunk {
 
 size_t nextAligned(in size_t address, in size_t alignment) pure nothrow @nogc
 {
+    if (alignment == 0) return address;
     return ((address + alignment - 1) / alignment) * alignment;
 }
 
