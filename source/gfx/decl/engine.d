@@ -779,7 +779,7 @@ class DeclarativeEngine : Disposable
 
         BlendState state;
         state.factor.from = tag.expectAttribute!string("srcFactor").to!BlendFactor;
-        state.factor.to = tag.expectAttribute!string("destFactor").to!BlendFactor;
+        state.factor.to = tag.expectAttribute!string("dstFactor").to!BlendFactor;
         state.op = tag.expectAttribute!string("op").to!BlendOp;
         return state;
     }
