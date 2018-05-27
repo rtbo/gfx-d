@@ -166,7 +166,7 @@ class TriangleExample : Example
 
         if (perImages[imgInd].undefinedLayout) {
             buf.pipelineBarrier(
-                trans(PipelineStage.colorAttachment, PipelineStage.colorAttachment), [],
+                trans(PipelineStage.colorAttachmentOutput, PipelineStage.colorAttachmentOutput), [],
                 [ ImageMemoryBarrier(
                     trans(Access.none, Access.colorAttachmentWrite),
                     trans(ImageLayout.undefined, ImageLayout.presentSrc),

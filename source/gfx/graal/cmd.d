@@ -74,7 +74,7 @@ enum PipelineStage {
     fragmentShader              = 0x00000080,
     earlyFragmentTests          = 0x00000100,
     lateFragmentTests           = 0x00000200,
-    colorAttachment             = 0x00000400,
+    colorAttachmentOutput       = 0x00000400,
     computeShader               = 0x00000800,
     transfer                    = 0x00001000,
     bottomOfPipe                = 0x00002000,

@@ -405,7 +405,7 @@ final class ShadowExample : Example
             ], surfaceSize[0], surfaceSize[1], 1);
 
             b.cmdBuf.pipelineBarrier(
-                trans(PipelineStage.colorAttachment, PipelineStage.colorAttachment), [], [
+                trans(PipelineStage.colorAttachmentOutput, PipelineStage.colorAttachmentOutput), [], [
                     ImageMemoryBarrier(
                         trans(Access.none, Access.colorAttachmentWrite),
                         trans(ImageLayout.undefined, ImageLayout.presentSrc),
