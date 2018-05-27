@@ -119,14 +119,13 @@ T retainObj(T)(T obj) if (isAtomicRefCounted!T)
     return obj;
 }
 
-/// Releases and nullify a single object.
-/// Returns: whether the object was disposed
+/// Releases and nullify a single object. The object may be null.
+/// Returns: whether the object was disposed.
 bool releaseObj(T)(ref T obj, in Flag!"disposeOnZero" disposeOnZero = Yes.disposeOnZero)
 if (isAtomicRefCounted!T)
-in {
-    assert(obj, "releasing null object");
-}
-body {
+{
+    if (!obj) return false;
+
     static if (is(T == shared)) {
         const res = obj.releaseShared(disposeOnZero);
         obj = null;
