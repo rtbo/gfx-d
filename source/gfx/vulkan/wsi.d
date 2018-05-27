@@ -198,7 +198,7 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "DestroySwapchainKHR"), Sw
     {
         auto sem = enforce(
             cast(VulkanSemaphore)graalSemaphore,
-            "a non vulkan semaphore was passed"
+            "a non vulkan semaphore was passed acquireNextImage"
         );
 
         ulong vkTimeout = timeout.total!"nsecs";

@@ -50,7 +50,7 @@ final class VulkanQueue : Queue
             foreach (i, sw; s.stageWaits) {
                 vkWaitSems[i] = enforce(
                     cast(VulkanSemaphore)sw.sem,
-                    "Did not pass a vulkan semaphore"
+                    "Did not pass a valid vulkan wait semaphore to VulkanQueue.submit()"
                 ).vkObj;
                 vkWaitDstStage[i] = pipelineStageToVk(sw.stages);
             }
@@ -58,7 +58,7 @@ final class VulkanQueue : Queue
             auto vkSigSems = s.sigSems.map!(
                 s => enforce(
                     cast(VulkanSemaphore)s,
-                    "Did not pass a vulkan semaphore"
+                    "Did not pass a valid vulkan signal semaphore to VulkanQueue.submit()"
                 ).vkObj
             ).array;
             auto vkCmdBufs = s.cmdBufs.map!(
@@ -100,7 +100,7 @@ final class VulkanQueue : Queue
         auto vkSems = waitSems.map!(
             s => enforce(
                 cast(VulkanSemaphore)s,
-                "Did not pass a vulkan semaphore"
+                "Did not pass a valid vulkan wait semaphore to VulkanQueue.present()"
             ).vkObj
         ).array;
 
