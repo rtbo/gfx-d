@@ -307,12 +307,12 @@ class DeclarativeEngine : Disposable
             auto t = sdt.expectTag("subpass");
             sd.subpass.from = parseSubpassRef(t, "from");
             sd.subpass.to = parseSubpassRef(t, "to");
-            t = sdt.expectTag("stage");
-            sd.stageMask.from = t.expectAttribute!string("from").to!PipelineStage;
-            sd.stageMask.to = t.expectAttribute!string("to").to!PipelineStage;
-            t = sdt.expectTag("access");
-            sd.accessMask.from = t.expectAttribute!string("from").to!Access;
-            sd.accessMask.to = t.expectAttribute!string("to").to!Access;
+            t = sdt.expectTag("stageMask");
+            sd.stageMask.from = t.expectAttribute!string("from").parseFlags!PipelineStage();
+            sd.stageMask.to = t.expectAttribute!string("to").parseFlags!PipelineStage();
+            t = sdt.expectTag("accessMask");
+            sd.accessMask.from = t.expectAttribute!string("from").parseFlags!Access();
+            sd.accessMask.to = t.expectAttribute!string("to").parseFlags!Access();
             res ~= sd;
         }
         return res;
