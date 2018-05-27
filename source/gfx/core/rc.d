@@ -358,7 +358,7 @@ struct Rc(T) if (isAtomicRefCounted!T)
 }
 
 /// Helper struct that keeps a weak reference to a Resource.
-struct Weak(T) if (is(T : Disposable))
+struct Weak(T) if (is(T : AtomicRefCounted))
 {
     private T _obj;
 
