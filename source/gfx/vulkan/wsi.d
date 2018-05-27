@@ -214,7 +214,7 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "DestroySwapchainKHR"), Sw
             suboptimal = true;
         }
         else {
-            enforce(res == VK_SUCCESS, "Could not acquire next vulkan image");
+            vulkanEnforce(res, "Could not acquire next vulkan image");
         }
 
         return img;
