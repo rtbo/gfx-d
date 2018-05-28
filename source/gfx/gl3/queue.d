@@ -226,6 +226,16 @@ final class GlCommandBuffer : CommandBuffer
         _cmds ~= new ClearDepthStencilCmd(clearValues, true, true);
     }
 
+    override void fillBuffer(Buffer dst, in size_t offset, in size_t size, uint value)
+    {
+        warningf("unimplemented GL command");
+    }
+
+    override void updateBuffer(Buffer dst, in size_t offset, in uint[] data)
+    {
+        warningf("unimplemented GL command");
+    }
+
     override void copyBuffer(Trans!Buffer buffers, CopyRegion[] regions)
     {
         import gfx.gl3.resource : GlBuffer;

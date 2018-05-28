@@ -176,6 +176,18 @@ final class VulkanCommandBuffer : CommandBuffer
         vk.CmdClearDepthStencilImage(vkObj, vkImg, vkLayout, &vkClear, cast(uint)vkRanges.length, &vkRanges[0]);
     }
 
+    override void fillBuffer(Buffer dst, in size_t offset, in size_t size, uint value)
+    {
+        auto vkBuf = enforce(cast(VulkanBuffer)dst, "Did not pass a valid vulkan buffer to fillBuffer").vkObj;
+        vk.CmdFillBuffer(vkObj, vkBuf, offset, size, value);
+    }
+
+    override void updateBuffer(Buffer dst, in size_t offset, in uint[] data)
+    {
+        auto vkBuf = enforce(cast(VulkanBuffer)dst, "Did not pass a valid vulkan buffer to updateBuffer").vkObj;
+        vk.CmdUpdateBuffer(vkObj, vkBuf, offset, 4*data.length, cast(void*)data.ptr);
+    }
+
     override void copyBuffer(Trans!Buffer buffers, CopyRegion[] regions)
     {
         import std.algorithm : map;

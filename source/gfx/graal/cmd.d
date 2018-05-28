@@ -194,6 +194,8 @@ enum StencilFace
     frontAndBack = 3,
 }
 
+enum wholeSize = uint.max;
+
 interface CommandBuffer
 {
     @property CommandPool pool();
@@ -215,6 +217,30 @@ interface CommandBuffer
                                 in ClearDepthStencilValues clearValues,
                                 ImageSubresourceRange[] ranges);
 
+    /// Fills buffer from offset to offset+size with value
+    /// Params:
+    ///     dst     = the buffer to fill.
+    ///     offset  = Byte offset from where to fill the buffer.
+    ///               Must be a multiple of 4.
+    ///     size    = Number of bytes to fill. Must be a multiple of 4 or
+    ///               wholeSize to fill until the end of the buffer.
+    ///     value   = Value to copy into the buffer, in host endianess.
+    /// Can only be used outside of a render pass.
+    void fillBuffer(Buffer dst, in size_t offset, in size_t size, uint value)
+    in {
+        assert(offset % 4 == 0);
+        assert(size == wholeSize || size % 4 == 0);
+    }
+    /// Update buffer with the data passed as argument
+    /// Params:
+    ///     dst     = the buffer to update.
+    ///     offset  = Byte offset from where to update the buffer.
+    ///               Must be a multiple of 4.
+    ///     data    = The data to copy into the buffer.
+    /// The data is duplicated into the command buffer, so it is legal to pass a slice
+    /// to local on-stack data, or to let GC collect the data right after the call.
+    /// Can only be used outside of a render pass.
+    void updateBuffer(Buffer dst, in size_t offset, in uint[] data);
     void copyBuffer(Trans!Buffer buffers, CopyRegion[] regions);
     void copyBufferToImage(Buffer srcBuffer, ImageBase dstImage,
                            in ImageLayout dstLayout, in BufferImageCopy[] regions);
