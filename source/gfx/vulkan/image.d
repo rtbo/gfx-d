@@ -110,6 +110,10 @@ final class VulkanImage : VulkanImageBase, Image
         _vdm.retain();
     }
 
+    override @property DeviceMemory boundMemory() {
+        return _vdm;
+    }
+
     VulkanDeviceMemory _vdm;
 }
 

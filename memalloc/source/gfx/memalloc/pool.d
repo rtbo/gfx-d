@@ -21,11 +21,11 @@ final class PoolAllocator : Allocator
         }
     }
 
-    override @property Allocation allocate(MemoryRequirements requirements,
-                                           uint memTypeIndex)
+    override bool tryAllocate(in MemoryRequirements requirements,
+                              in uint memTypeIndex, ref AllocResult result)
     {
         auto pool = _pools[_memProps.types[memTypeIndex].heapIndex];
-        return pool.allocate(memTypeIndex, requirements.alignment, requirements.size);
+        return pool.allocate(memTypeIndex, requirements.alignment, requirements.size, result);
     }
 
 }
@@ -80,16 +80,14 @@ class MemoryPool
         }
     }
 
-    // Return null if allocation cannot be satisfied
-    Allocation allocate(uint memTypeIndex, size_t alignment, size_t size)
+    bool allocate(uint memTypeIndex, size_t alignment, size_t size, ref AllocResult result)
     {
         import std.algorithm : filter;
         foreach (b; _blocks.filter!(b => (b._typeIndex == memTypeIndex && !b._dedicated))) {
-            auto alloc = b.allocate(alignment, size);
-            if (alloc) return alloc;
+            if (b.allocate(alignment, size, result)) return true;
         }
-        if (size > (_maxUsage-_used)) return null;
-        return newBlockAllocation(memTypeIndex, size);
+        if (size > (_maxUsage-_used)) return false;
+        return newBlockAllocation(memTypeIndex, size, result);
     }
 
     void free(MemoryBlock block) {
@@ -98,19 +96,19 @@ class MemoryPool
         _blocks = _blocks.remove!(b => b is block);
     }
 
-    Allocation newBlockAllocation(uint memTypeIndex, size_t size) {
+    bool newBlockAllocation(uint memTypeIndex, size_t size, ref AllocResult result) {
         Device dev = _allocator._device;
         DeviceMemory dm;
         try {
             dm = dev.allocateMemory(memTypeIndex, size);
         }
         catch (Exception ex) {
-            return null;
+            return false;
         }
         auto b = new MemoryBlock(_allocator, this, dm, size>=_blockSize);
         _used -= size;
         _blocks ~= b;
-        return b.allocate(0, size);
+        return b.allocate(0, size, result);
     }
 
 }
@@ -122,7 +120,7 @@ final class MemoryChunk {
     size_t offset;
     size_t size;
 
-    Allocation alloc; // null if chunk is free space
+    bool occupied;
 
     MemoryChunk prev;
     MemoryChunk next;
@@ -132,18 +130,6 @@ final class MemoryChunk {
         this.size = size;
         this.prev = prev;
         this.next = next;
-    }
-
-    this (size_t offset, size_t size, Allocation alloc, MemoryChunk prev=null, MemoryChunk next=null) {
-        this.offset = offset;
-        this.size = size;
-        this.alloc = alloc;
-        this.prev = prev;
-        this.next = next;
-    }
-
-    @property bool free() {
-        return alloc is null;
     }
 }
 
@@ -188,33 +174,34 @@ class MemoryBlock : MemReturn
         _allocator.unload();
     }
 
-    Allocation allocate(size_t alignment, size_t size) {
+    bool allocate(size_t alignment, size_t size, ref AllocResult result)
+    {
         for (auto chunk=_chunk0; chunk !is null; chunk=chunk.next) {
 
-            if (!chunk.free) continue;
+            if (chunk.occupied) continue;
 
             const offset = nextAligned(chunk.offset, alignment);
             if (offset+size > chunk.offset+chunk.size) continue;
 
-            return allocateHere(chunk, offset, size);
+            return allocateHere(chunk, offset, size, result);
         }
 
-        return null;
+        return false;
     }
 
     override void free(Object returnData) {
         import gfx.core.util : unsafeCast;
         auto chunk = unsafeCast!MemoryChunk(returnData);
-        chunk.alloc = null;
+        chunk.occupied = false;
         // merge this chunk with previous and next one if they are free
-        if (chunk.prev && chunk.prev.free) {
+        if (chunk.prev && !chunk.prev.occupied) {
             auto cp = chunk.prev;
             cp.next = chunk.next;
             if (cp.next) cp.next.prev = cp;
             cp.size = chunk.size+chunk.offset - cp.offset;
             chunk = cp;
         }
-        if (chunk.next && chunk.next.free) {
+        if (chunk.next && !chunk.next.occupied) {
             auto cn = chunk.next;
             chunk.next = cn.next;
             if (chunk.next) chunk.next.prev = chunk;
@@ -222,9 +209,9 @@ class MemoryBlock : MemReturn
         }
     }
 
-    Allocation allocateHere(MemoryChunk chunk, in size_t offset, in size_t size) {
+    bool allocateHere(MemoryChunk chunk, in size_t offset, in size_t size, ref AllocResult result) {
         assert(chunk);
-        assert(chunk.free);
+        assert(!chunk.occupied);
         assert(chunk.offset <= offset);
         const shift = offset - chunk.offset;
         assert(chunk.size >= shift+size);
@@ -243,8 +230,12 @@ class MemoryBlock : MemReturn
             chunk.size = size;
         }
 
-        chunk.alloc = new Allocation(offset, size, _memory.obj, this, chunk);
-        return chunk.alloc;
+        chunk.occupied = true;
+        result.mem = _memory.obj;
+        result.offset = offset;
+        result.ret = this;
+        result.retData = chunk;
+        return true;
     }
 
     invariant {

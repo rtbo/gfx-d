@@ -12,18 +12,18 @@ class DedicatedAllocator : Allocator, MemReturn
         super(device, options);
     }
 
-    override @property Allocation allocate(MemoryRequirements requirements,
-                                           uint memTypeIndex)
+    override bool tryAllocate(in MemoryRequirements requirements,
+                              in uint memTypeIndex, ref AllocResult result)
     {
         try {
-            return new Allocation(
-                0, requirements.size,
-                _device.allocateMemory(memTypeIndex, requirements.size),
-                this, null
-            );
+            result.mem = _device.allocateMemory(memTypeIndex, requirements.size);
+            result.offset = 0;
+            result.ret = this;
+            result.retData = null;
+            return true;
         }
         catch (Exception ex) {
-            return null;
+            return false;
         }
     }
 

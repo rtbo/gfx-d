@@ -298,7 +298,7 @@ final class GlImage : Image
         return mr;
     }
 
-    void bindMemory(DeviceMemory mem, in size_t offset)
+    override void bindMemory(DeviceMemory mem, in size_t offset)
     {
         import gfx.bindings.opengl.gl : GL_RENDERBUFFER, GL_TRUE, GLsizei;
 
@@ -406,6 +406,10 @@ final class GlImage : Image
 
         import gfx.gl3.error : glCheck;
         glCheck(gl, "bind image memory");
+    }
+
+    override @property DeviceMemory boundMemory() {
+        return _mem.obj;
     }
 
     void texSubImage(BufferImageCopy region) {

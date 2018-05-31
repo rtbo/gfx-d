@@ -302,6 +302,8 @@ interface Image : ImageBase, AtomicRefCounted
     @property MemoryRequirements memoryRequirements();
     /// The image keeps a reference of the device memory
     void bindMemory(DeviceMemory mem, in size_t offset);
+    /// The memory bound to this image
+    @property DeviceMemory boundMemory();
 }
 
 interface ImageView : AtomicRefCounted

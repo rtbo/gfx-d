@@ -40,7 +40,7 @@ struct AllocatorOptions
 }
 
 /// Flags controlling an allocation of memory
-enum AllocationFlags {
+enum AllocFlags {
     /// default behavior, no flags.
     none            = 0,
     /// Set to force the creation of a new DeviceMemory, that will be dedicated for the allocation.
@@ -86,9 +86,9 @@ enum MemoryUsage {
 }
 
 /// Structure controlling an allocation of memory
-struct AllocationInfo {
+struct AllocOptions {
     /// Control flags
-    AllocationFlags flags;
+    AllocFlags flags;
     /// Intended usage. Will affect preferredBits and requiredBits;
     MemoryUsage usage;
     /// MemProps bits that are optional but are preferred to be present.
@@ -102,29 +102,29 @@ struct AllocationInfo {
     /// zero, will constrain MemoryRequirement.memTypeMask
     uint memTypeIndexMask;
 
-    /// Initializes an AllocationInfo with usage
-    static @property AllocationInfo forUsage(MemoryUsage usage) {
-        AllocationInfo info;
-        info.usage = usage;
-        return info;
+    /// Initializes an AllocOptions with usage
+    static @property AllocOptions forUsage(MemoryUsage usage) {
+        AllocOptions options;
+        options.usage = usage;
+        return options;
     }
-    /// set flags to info
-    AllocationInfo withFlags(AllocationFlags flags) {
+    /// set flags to options
+    AllocOptions withFlags(AllocFlags flags) {
         this.flags = flags;
         return this;
     }
-    /// set preferredProps to info
-    AllocationInfo withPreferredProps(MemProps props) {
+    /// set preferredProps to options
+    AllocOptions withPreferredProps(MemProps props) {
         this.preferredProps = props;
         return this;
     }
-    /// set requiredProps to info
-    AllocationInfo withRequiredBits(MemProps props) {
+    /// set requiredProps to options
+    AllocOptions withRequiredBits(MemProps props) {
         this.requiredProps = props;
         return this;
     }
-    /// set type index mask to info
-    AllocationInfo withTypeIndexMask(uint indexMask) {
+    /// set type index mask to options
+    AllocOptions withTypeIndexMask(uint indexMask) {
         this.memTypeIndexMask = indexMask;
         return this;
     }
@@ -150,16 +150,20 @@ Allocator createAllocator(Device device, AllocatorOptions options)
 abstract class Allocator : AtomicRefCounted
 {
     import gfx.core.rc : atomicRcCode, Rc;
+    import gfx.graal.buffer : BufferUsage;
+    import gfx.graal.image : ImageInfo;
 
     mixin(atomicRcCode);
 
-    package Rc!Device _device;
+    package Device _device;
     package AllocatorOptions _options;
     package MemoryProperties _memProps;
 
     package this(Device device, AllocatorOptions options)
     {
-        _device = device;
+        import gfx.core.rc : retainObj;
+
+        _device = retainObj(device);
         _options = options;
         _memProps = device.physicalDevice.memoryProperties;
 
@@ -168,41 +172,87 @@ abstract class Allocator : AtomicRefCounted
         enforce(_memProps.types.all!(mt => mt.heapIndex < _memProps.heaps.length));
     }
 
-    override void dispose() {
-        _device.unload();
+    override void dispose()
+    {
+        import gfx.core.rc : releaseObj;
+
+        releaseObj(_device);
     }
 
     /// Device this allocator is bound to.
     final @property Device device() {
-        return _device.obj;
+        return _device;
     }
 
     /// Allocate memory for the given requirements
-    final Allocation allocate(in MemoryRequirements requirements,
-                              in AllocationInfo info=AllocationInfo.init)
+    /// Returns: A MemAlloc object
+    /// Throws: An Exception if memory could not be allocated
+    final MemAlloc allocate (in MemoryRequirements requirements,
+                             in AllocOptions options=AllocOptions.init)
     {
-        uint allowedMask = requirements.memTypeMask;
-        uint index = findMemoryTypeIndex(_memProps.types, allowedMask, info);
-        if (index != uint.max) {
-            auto alloc = allocate(requirements, index);
-            if (alloc) return alloc;
-
-            while (allowedMask != 0) {
-                // retrieve former index from possible choices
-                allowedMask &= ~(1 << index);
-                index = findMemoryTypeIndex(_memProps.types, allowedMask, info);
-                if (index == uint.max) continue;
-                alloc = allocate(requirements, index);
-                if (alloc) return alloc;
-            }
+        AllocResult res;
+        if (allocateRaw(requirements, options, res)) {
+            return new MemAlloc(
+                res.mem, res.offset, requirements.size, res.ret, res.retData
+            );
         }
-
-        return null;
+        else {
+            import std.format : format;
+            throw new Exception(format(
+                "Could not allocate memory for requirements: %s", requirements
+            ));
+        }
     }
 
-    /// Allocate memory for the given index and for given requirements
-    abstract Allocation allocate(MemoryRequirements requirements,
-                                 uint memoryTypeIndex)
+    /// Create a buffer, then allocate and bind memory for its requirements
+    final BufferAlloc allocateBuffer (in BufferUsage usage, in size_t size,
+                                      in AllocOptions options=AllocOptions.init)
+    {
+        auto buf = _device.createBuffer(usage, size);
+        const requirements = buf.memoryRequirements;
+        AllocResult res;
+        if (allocateRaw(requirements, options, res)) {
+            buf.bindMemory(res.mem, res.offset);
+            return new BufferAlloc(
+                buf, res.offset, requirements.size, res.ret, res.retData
+            );
+        }
+        else {
+            import std.format : format;
+            throw new Exception(format(
+                "Could not allocate memory for buffer with usage %s and size %s",
+                usage, size
+            ));
+        }
+    }
+
+    /// Create an image, then allocate and bind memory for its requirements
+    final ImageAlloc allocateImage (in ImageInfo info,
+                                    in AllocOptions options=AllocOptions.init)
+    {
+        auto img = _device.createImage(info);
+        const requirements = img.memoryRequirements;
+        AllocResult res;
+        if (allocateRaw(requirements, options, res)) {
+            img.bindMemory(res.mem, res.offset);
+            return new ImageAlloc(
+                img, res.offset, requirements.size, res.ret, res.retData
+            );
+        }
+        else {
+            import std.format : format;
+            throw new Exception(format(
+                "Could not allocate memory for image with info %s", info
+            ));
+        }
+    }
+
+    /// Attempt to allocate memory for the given index and for given requirements.
+    /// If successful, result is filled with necessary data.
+    /// Returns: true if successful, false otherwise.
+    abstract protected bool tryAllocate (in MemoryRequirements requirements,
+                                         in uint memoryTypeIndex,
+                                         ref AllocResult result)
     in {
         assert(memoryTypeIndex < _memProps.types.length);
         assert(
@@ -210,70 +260,159 @@ abstract class Allocator : AtomicRefCounted
             "memoryTypeIndex is not compatible with requirements"
         );
     }
+
+    private final bool allocateRaw (in MemoryRequirements requirements,
+                                    in AllocOptions options,
+                                    ref AllocResult result)
+    {
+        uint allowedMask = requirements.memTypeMask;
+        uint index = findMemoryTypeIndex(_memProps.types, allowedMask, options);
+        if (index != uint.max) {
+            if (tryAllocate(requirements, index, result)) return true;
+
+            while (allowedMask != 0) {
+                // retrieve former index from possible choices
+                allowedMask &= ~(1 << index);
+                index = findMemoryTypeIndex(_memProps.types, allowedMask, options);
+                if (index == uint.max) continue;
+                if (tryAllocate(requirements, index, result)) return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 
 /// Represent a single allocation within a DeviceMemory
-final class Allocation : AtomicRefCounted
+class MemAlloc : AtomicRefCounted
 {
     import gfx.core.rc : atomicRcCode, Rc;
 
     mixin(atomicRcCode);
 
+    private DeviceMemory _mem;
     private size_t _offset;
     private size_t _size;
-    private Rc!DeviceMemory _mem;
-    private Rc!MemReturn _return;
+    private MemReturn _return;
     private Object _returnData;
 
-    package this(size_t offset, size_t size, DeviceMemory mem, MemReturn return_, Object returnData)
+    package this(DeviceMemory mem, size_t offset, size_t size, MemReturn return_, Object returnData)
     {
+        import gfx.core.rc : retainObj;
+
+        _mem = retainObj(mem);
         _offset = offset;
         _size = size;
-        _mem = mem;
-        _return = return_;
+        _return = retainObj(return_);
         _returnData = returnData;
     }
 
     override void dispose()
     {
+        import gfx.core.rc : releaseObj;
+
         _return.free(_returnData);
-        _mem.unload();
-        _return.unload();
+        releaseObj(_mem);
+        releaseObj(_return);
     }
 
-    @property size_t offset() const {
+    final @property size_t offset() const {
         return _offset;
     }
 
-    @property size_t size() const {
+    final @property size_t size() const {
         return _size;
     }
 
-    @property DeviceMemory mem() {
+    final @property DeviceMemory mem() {
         return _mem;
     }
+
+    final auto map(in size_t offset=0, in size_t size=size_t.max)
+    {
+        import std.algorithm : min;
+
+        const off = this.offset + offset;
+        const sz = min(this.size, size);
+        return _mem.map(off, sz);
+    }
 }
+
+final class BufferAlloc : MemAlloc
+{
+    import gfx.graal.buffer : Buffer;
+
+    private Buffer _buffer;
+
+    package this (Buffer buffer, size_t offset, size_t size, MemReturn return_, Object returnData)
+    {
+        import gfx.core.rc : retainObj;
+
+        super(buffer.boundMemory, offset, size, return_, returnData);
+        _buffer = retainObj(buffer);
+    }
+
+    override void dispose()
+    {
+        import gfx.core.rc : releaseObj;
+
+        releaseObj(_buffer);
+        super.dispose();
+    }
+
+    final @property Buffer buffer() {
+        return _buffer;
+    }
+}
+
+final class ImageAlloc : MemAlloc
+{
+    import gfx.graal.image : Image;
+
+    private Image _image;
+
+    package this (Image image, size_t offset, size_t size, MemReturn return_, Object returnData)
+    {
+        import gfx.core.rc : retainObj;
+
+        super(image.boundMemory, offset, size, return_, returnData);
+        _image = retainObj(image);
+    }
+
+    override void dispose()
+    {
+        import gfx.core.rc : releaseObj;
+
+        releaseObj(_image);
+        super.dispose();
+    }
+
+    final @property Image image() {
+        return _image;
+    }
+}
+
 
 /// Find a memory type index suitable for the given allowedIndexMask and info.
 /// Params:
 ///     types               = the memory types obtained from a device
 ///     allowedIndexMask    = the mask obtained from MemoryRequirements.memTypeMask
-///     info                = an optional AllocationInfo that will constraint the
+///     info                = an optional AllocOptions that will constraint the
 ///                           choice
 /// Returns: the found index of memory type, or uint.max if none could satisfy requirements
 uint findMemoryTypeIndex(in MemoryType[] types,
                          in uint allowedIndexMask,
-                         in AllocationInfo info=AllocationInfo.init)
+                         in AllocOptions options=AllocOptions.init)
 {
-    const allowedMask = info.memTypeIndexMask != 0 ?
-            allowedIndexMask & info.memTypeIndexMask :
+    const allowedMask = options.memTypeIndexMask != 0 ?
+            allowedIndexMask & options.memTypeIndexMask :
             allowedIndexMask;
 
-    MemProps preferred = info.preferredProps;
-    MemProps required = info.requiredProps;
+    MemProps preferred = options.preferredProps;
+    MemProps required = options.requiredProps;
 
-    switch (info.usage) {
+    switch (options.usage) {
     case MemoryUsage.gpuOnly:
         preferred |= MemProps.deviceLocal;
         break;
@@ -323,4 +462,13 @@ package:
 interface MemReturn : AtomicRefCounted
 {
     void free(Object returnData);
+}
+
+/// The result of allocation request
+struct AllocResult
+{
+    DeviceMemory mem;
+    size_t offset;
+    MemReturn ret;
+    Object retData;
 }
