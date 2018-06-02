@@ -158,6 +158,7 @@ abstract class Allocator : AtomicRefCounted
     package Device _device;
     package AllocatorOptions _options;
     package MemoryProperties _memProps;
+    package size_t _linearOptimalGranularity;
 
     package this(Device device, AllocatorOptions options)
     {
@@ -166,6 +167,7 @@ abstract class Allocator : AtomicRefCounted
         _device = retainObj(device);
         _options = options;
         _memProps = device.physicalDevice.memoryProperties;
+        _linearOptimalGranularity = device.physicalDevice.limits.linearOptimalGranularity;
 
         import std.algorithm : all;
         import std.exception : enforce;
@@ -191,9 +193,9 @@ abstract class Allocator : AtomicRefCounted
                              in AllocOptions options=AllocOptions.init)
     {
         AllocResult res;
-        if (allocateRaw(requirements, options, res)) {
+        if (allocateRaw(requirements, options, ResourceLayout.unknown, res)) {
             return new MemAlloc(
-                res.mem, res.offset, requirements.size, res.ret, res.retData
+                res.mem, res.offset, requirements.size, res.block, res.blockData
             );
         }
         else {
@@ -211,10 +213,10 @@ abstract class Allocator : AtomicRefCounted
         auto buf = _device.createBuffer(usage, size);
         const requirements = buf.memoryRequirements;
         AllocResult res;
-        if (allocateRaw(requirements, options, res)) {
+        if (allocateRaw(requirements, options, ResourceLayout.linear, res)) {
             buf.bindMemory(res.mem, res.offset);
             return new BufferAlloc(
-                buf, res.offset, requirements.size, res.ret, res.retData
+                buf, res.offset, requirements.size, res.block, res.blockData
             );
         }
         else {
@@ -230,13 +232,16 @@ abstract class Allocator : AtomicRefCounted
     final ImageAlloc allocateImage (in ImageInfo info,
                                     in AllocOptions options=AllocOptions.init)
     {
+        import gfx.graal.image : ImageTiling;
+
         auto img = _device.createImage(info);
         const requirements = img.memoryRequirements;
+        const layout = info.tiling == ImageTiling.optimal ? ResourceLayout.optimal : ResourceLayout.linear;
         AllocResult res;
-        if (allocateRaw(requirements, options, res)) {
+        if (allocateRaw(requirements, options, layout, res)) {
             img.bindMemory(res.mem, res.offset);
             return new ImageAlloc(
-                img, res.offset, requirements.size, res.ret, res.retData
+                img, res.offset, requirements.size, res.block, res.blockData
             );
         }
         else {
@@ -247,11 +252,17 @@ abstract class Allocator : AtomicRefCounted
         }
     }
 
+    AllocStats collectStats() {
+        return AllocStats.init;
+    }
+
     /// Attempt to allocate memory for the given index and for given requirements.
     /// If successful, result is filled with necessary data.
     /// Returns: true if successful, false otherwise.
     abstract protected bool tryAllocate (in MemoryRequirements requirements,
                                          in uint memoryTypeIndex,
+                                         in AllocOptions options,
+                                         in ResourceLayout layout,
                                          ref AllocResult result)
     in {
         assert(memoryTypeIndex < _memProps.types.length);
@@ -263,19 +274,20 @@ abstract class Allocator : AtomicRefCounted
 
     private final bool allocateRaw (in MemoryRequirements requirements,
                                     in AllocOptions options,
+                                    in ResourceLayout layout,
                                     ref AllocResult result)
     {
         uint allowedMask = requirements.memTypeMask;
         uint index = findMemoryTypeIndex(_memProps.types, allowedMask, options);
         if (index != uint.max) {
-            if (tryAllocate(requirements, index, result)) return true;
+            if (tryAllocate(requirements, index, options, layout, result)) return true;
 
             while (allowedMask != 0) {
                 // retrieve former index from possible choices
                 allowedMask &= ~(1 << index);
                 index = findMemoryTypeIndex(_memProps.types, allowedMask, options);
                 if (index == uint.max) continue;
-                if (tryAllocate(requirements, index, result)) return true;
+                if (tryAllocate(requirements, index, options, layout, result)) return true;
             }
         }
 
@@ -288,33 +300,39 @@ abstract class Allocator : AtomicRefCounted
 class MemAlloc : AtomicRefCounted
 {
     import gfx.core.rc : atomicRcCode, Rc;
+    import gfx.graal.memory : MemoryMap;
 
     mixin(atomicRcCode);
 
     private DeviceMemory _mem;
     private size_t _offset;
     private size_t _size;
-    private MemReturn _return;
-    private Object _returnData;
+    private MemBlock _block;
+    private Object _blockData;
+    private size_t _mapCount;
+    private void* _mapPtr;
+    private bool _dedicated;
 
-    package this(DeviceMemory mem, size_t offset, size_t size, MemReturn return_, Object returnData)
+    package this(DeviceMemory mem, size_t offset, size_t size,
+                 MemBlock block, Object blockData)
     {
         import gfx.core.rc : retainObj;
 
         _mem = retainObj(mem);
         _offset = offset;
         _size = size;
-        _return = retainObj(return_);
-        _returnData = returnData;
+        _block = retainObj(block);
+        _blockData = blockData;
+        _dedicated = mem.size == size;
     }
 
     override void dispose()
     {
         import gfx.core.rc : releaseObj;
 
-        _return.free(_returnData);
+        _block.free(_blockData);
         releaseObj(_mem);
-        releaseObj(_return);
+        releaseObj(_block);
     }
 
     final @property size_t offset() const {
@@ -329,13 +347,60 @@ class MemAlloc : AtomicRefCounted
         return _mem;
     }
 
-    final auto map(in size_t offset=0, in size_t size=size_t.max)
+    /// Artificially increment the mapping reference count in order
+    /// to keep the memory mapped even if no MemoryMap is alive
+    final void retainMap() {
+        if (_dedicated) {
+            dedicatedMap();
+        }
+        else {
+            _block.map();
+        }
+    }
+
+    final void releaseMap() {
+        if (_dedicated) {
+            dedicatedUnmap();
+        }
+        else {
+            _block.unmap();
+        }
+    }
+
+    final MemoryMap map(in size_t offset=0, in size_t size=size_t.max)
     {
         import std.algorithm : min;
 
         const off = this.offset + offset;
         const sz = min(this.size-offset, size);
-        return _mem.map(off, sz);
+        void* ptr;
+        void delegate() unmap;
+
+        if (_dedicated) {
+            dedicatedMap();
+            ptr = _mapPtr;
+            unmap = &dedicatedUnmap;
+        }
+        else {
+            ptr = _block.map();
+            unmap = &_block.unmap;
+        }
+
+        auto data = ptr[off .. off+sz];
+        return MemoryMap (_mem, off, data, unmap);
+    }
+
+    private void dedicatedMap() {
+        if (!_mapCount) _mapPtr = _mem.mapRaw(0, _mem.size);
+        ++_mapCount;
+    }
+
+    private void dedicatedUnmap() {
+        --_mapCount;
+        if (!_mapCount) {
+            _mem.unmapRaw();
+            _mapPtr = null;
+        }
     }
 }
 
@@ -345,11 +410,11 @@ final class BufferAlloc : MemAlloc
 
     private Buffer _buffer;
 
-    package this (Buffer buffer, size_t offset, size_t size, MemReturn return_, Object returnData)
+    package this (Buffer buffer, size_t offset, size_t size, MemBlock block, Object blockData)
     {
         import gfx.core.rc : retainObj;
 
-        super(buffer.boundMemory, offset, size, return_, returnData);
+        super(buffer.boundMemory, offset, size, block, blockData);
         _buffer = retainObj(buffer);
     }
 
@@ -372,11 +437,11 @@ final class ImageAlloc : MemAlloc
 
     private Image _image;
 
-    package this (Image image, size_t offset, size_t size, MemReturn return_, Object returnData)
+    package this (Image image, size_t offset, size_t size, MemBlock block, Object blockData)
     {
         import gfx.core.rc : retainObj;
 
-        super(image.boundMemory, offset, size, return_, returnData);
+        super(image.boundMemory, offset, size, block, blockData);
         _image = retainObj(image);
     }
 
@@ -456,12 +521,88 @@ uint findMemoryTypeIndex(in MemoryType[] types,
     return index;
 }
 
+/// Layout of a resource
+/// This is important to determined whether a page alignment or simple alignemnt
+/// is necessary between two consecutive resources
+enum ResourceLayout {
+    /// layout is unknown
+    unknown,
+    /// layout of buffers and linear images
+    linear,
+    /// layout of optimal images
+    optimal,
+}
+
+/// Some stats of an allocator that can be collected with Allocator.collectStats
+struct AllocStats
+{
+    /// A chunk is a suballocation from a block
+    static struct Chunk
+    {
+        size_t start;
+        size_t end;
+        bool occupied;
+        ResourceLayout layout;
+    }
+
+    /// A block is a one to one mapping on a DeviceMemory
+    static struct Block
+    {
+        size_t size;
+        Chunk[] chunks;
+    }
+
+    size_t totalReserved;
+    size_t totalUsed;
+    size_t totalFrag;
+    size_t linearOptimalGranularity;
+    Block[] blocks;
+
+    string toString()
+    {
+        import std.format : format;
+        string res = "AllocStats (\n";
+
+        res ~= format("  total reserved: %s\n", totalReserved);
+        res ~= format("  total used    : %s\n", totalUsed);
+        res ~= format("  total frag    : %s\n", totalFrag);
+        res ~= format("  granularity   : %s\n", linearOptimalGranularity);
+
+        foreach (b; blocks) {
+            res ~= "  DeviceMemory (\n";
+            res ~= format("    size: %s\n", b.size);
+            foreach (c; b.chunks) {
+                res ~= "    Resource (\n";
+
+                res ~= format("      start   : %s\n", c.start);
+                res ~= format("      end     : %s\n", c.end);
+                res ~= format("      occupied: %s\n", c.occupied);
+                res ~= format("      layout  : %s\n", c.layout);
+
+                res ~= "    )\n";
+            }
+
+            res ~= "  )\n";
+        }
+
+        res ~= ")\n";
+        return res;
+    }
+}
+
+
 package:
 
-/// A pool of memory associated to one memory type
-interface MemReturn : AtomicRefCounted
+/// A block of memory associated to one DeviceMemory
+interface MemBlock : AtomicRefCounted
 {
-    void free(Object returnData);
+    /// increase map count and return cached pointer
+    /// if map count was zero, it maps the memory to the cached pointer before
+    void* map();
+    /// decrease map count and unmap memory if it reaches zero
+    void unmap();
+    /// called by MemAlloc when it is disposed to notify its memory block
+    void free(Object blockData);
 }
 
 /// The result of allocation request
@@ -469,6 +610,20 @@ struct AllocResult
 {
     DeviceMemory mem;
     size_t offset;
-    MemReturn ret;
-    Object retData;
+    MemBlock block;
+    Object blockData;
+}
+
+/// whether two adjacent block should check for granularity alignment
+bool granularityMatters(in ResourceLayout l1, in ResourceLayout l2) pure
+{
+    if (l1 == ResourceLayout.unknown || l2 == ResourceLayout.unknown) return true;
+    return l1 != l2;
+}
+
+unittest {
+    assert(!granularityMatters(ResourceLayout.linear, ResourceLayout.linear));
+    assert(!granularityMatters(ResourceLayout.optimal, ResourceLayout.optimal));
+    assert( granularityMatters(ResourceLayout.linear, ResourceLayout.optimal));
+    assert( granularityMatters(ResourceLayout.optimal, ResourceLayout.linear));
 }

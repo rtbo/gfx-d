@@ -21,11 +21,21 @@ final class PoolAllocator : Allocator
         }
     }
 
+    override AllocStats collectStats() {
+        AllocStats stats;
+        stats.linearOptimalGranularity = _linearOptimalGranularity;
+        foreach (p; _pools) {
+            p.feedStats(stats);
+        }
+        return stats;
+    }
+
     override bool tryAllocate(in MemoryRequirements requirements,
-                              in uint memTypeIndex, ref AllocResult result)
+                              in uint memTypeIndex, in AllocOptions options,
+                              in ResourceLayout layout, ref AllocResult result)
     {
         auto pool = _pools[_memProps.types[memTypeIndex].heapIndex];
-        return pool.allocate(memTypeIndex, requirements.alignment, requirements.size, result);
+        return pool.allocate(memTypeIndex, requirements.alignment, requirements.size, options, layout, result);
     }
 
 }
@@ -39,7 +49,7 @@ enum size_t largeHeapBlockSize =  256*1024*1024;
 /// Represent an entire heap of memory.
 /// It is made of several MemoryBlock, each of which is associated to a single
 /// DeviceMemory object.
-class MemoryPool
+final class MemoryPool
 {
     PoolAllocator _allocator;
     uint _memTypeIndex;
@@ -80,14 +90,19 @@ class MemoryPool
         }
     }
 
-    bool allocate(uint memTypeIndex, size_t alignment, size_t size, ref AllocResult result)
+    bool allocate(uint memTypeIndex, size_t alignment, size_t size,
+                  in AllocOptions options, in ResourceLayout layout,
+                  ref AllocResult result)
     {
         import std.algorithm : filter;
-        foreach (b; _blocks.filter!(b => (b._typeIndex == memTypeIndex && !b._dedicated))) {
-            if (b.allocate(alignment, size, result)) return true;
+        if (!(options.flags & AllocFlags.dedicated)) {
+            foreach (b; _blocks.filter!(b => (b._typeIndex == memTypeIndex && !b._dedicated))) {
+                if (b.allocate(alignment, size, layout, result)) return true;
+            }
         }
+        if (options.flags & AllocFlags.neverAllocate) return false;
         if (size > (_maxUsage-_used)) return false;
-        return newBlockAllocation(memTypeIndex, size, result);
+        return newBlockAllocation(memTypeIndex, size, options, layout, result);
     }
 
     void free(MemoryBlock block) {
@@ -96,21 +111,33 @@ class MemoryPool
         _blocks = _blocks.remove!(b => b is block);
     }
 
-    bool newBlockAllocation(uint memTypeIndex, size_t size, ref AllocResult result) {
+    void feedStats(ref AllocStats stats) {
+        foreach (b; _blocks) {
+            b.feedStats(stats);
+        }
+    }
+
+    private bool newBlockAllocation(in uint memTypeIndex, in size_t size,
+                                    in AllocOptions options,
+                                    in ResourceLayout layout,
+                                    ref AllocResult result) {
         Device dev = _allocator._device;
         DeviceMemory dm;
         try {
             import std.algorithm : max;
-            const sz = max(_blockSize, size);
+            auto sz = max(_blockSize, size);
+            if (options.flags & AllocFlags.dedicated) {
+                sz = size;
+            }
             dm = dev.allocateMemory(memTypeIndex, sz);
         }
         catch (Exception ex) {
             return false;
         }
-        auto b = new MemoryBlock(_allocator, this, dm, size>=_blockSize);
+        auto b = new MemoryBlock(_allocator, this, dm, dm.size == size);
         _used -= size;
         _blocks ~= b;
-        return b.allocate(0, size, result);
+        return b.allocate(0, size, layout, result);
     }
 
 }
@@ -122,6 +149,7 @@ final class MemoryChunk {
     size_t offset;
     size_t size;
 
+    ResourceLayout layout;
     bool occupied;
 
     MemoryChunk prev;
@@ -133,17 +161,36 @@ final class MemoryChunk {
         this.prev = prev;
         this.next = next;
     }
+
+    size_t pageBeg(in size_t granularity) {
+        return page(offset, granularity);
+    }
+
+    size_t pageEnd(in size_t granularity) {
+        return page(offset+size-1, granularity);
+    }
 }
 
-size_t nextAligned(in size_t address, in size_t alignment) pure nothrow @nogc
+size_t alignUp(in size_t address, in size_t alignment) pure nothrow @nogc
 {
     if (alignment == 0) return address;
     return ((address + alignment - 1) / alignment) * alignment;
 }
 
+size_t page(in size_t addr, in size_t granularity) pure nothrow @nogc
+{
+    return addr & ~(granularity-1);
+}
+
+bool onSamePage(in size_t prevOffset, in size_t prevSize, in size_t nextOffset, in size_t granularity)
+{
+    const prevPage = page(prevOffset+prevSize-1, granularity);
+    const nextPage = page(nextOffset, granularity);
+    return prevPage == nextPage;
+}
 
 /// Represent a single DeviceMemory
-class MemoryBlock : MemReturn
+class MemoryBlock : MemBlock
 {
     import gfx.core.rc : atomicRcCode, Rc;
 
@@ -154,7 +201,10 @@ class MemoryBlock : MemReturn
     Rc!DeviceMemory _memory;
     bool _dedicated;
     size_t _size;
+    size_t _mapCount;
+    void* _mapPtr;
     uint _typeIndex;
+    size_t _granularity;
 
     MemoryChunk _chunk0;
 
@@ -165,6 +215,7 @@ class MemoryBlock : MemReturn
         _dedicated = dedicated;
         _size = memory.size;
         _typeIndex = memory.typeIndex;
+        _granularity = allocator._linearOptimalGranularity;
 
         // start with a single free chunk that occupies the whole block
         _chunk0 = new MemoryChunk(0, _size);
@@ -176,25 +227,89 @@ class MemoryBlock : MemReturn
         _allocator.unload();
     }
 
-    bool allocate(size_t alignment, size_t size, ref AllocResult result)
+    bool allocate(size_t alignment, size_t size, ResourceLayout layout, ref AllocResult result)
     {
         for (auto chunk=_chunk0; chunk !is null; chunk=chunk.next) {
 
             if (chunk.occupied) continue;
 
-            const offset = nextAligned(chunk.offset, alignment);
+            size_t offset = alignUp(chunk.offset, alignment);
+
+            // align up if page conflict in previous chunks
+            if (_granularity > 1) {
+                bool pageConflict;
+                const thisPage = page(offset, _granularity);
+                auto prev = chunk.prev;
+                while (prev) {
+                    if (prev.pageEnd(_granularity) == thisPage) {
+                        if (prev.occupied && granularityMatters(prev.layout, layout)) {
+                            pageConflict = true;
+                            break;
+                        }
+                    }
+                    else {
+                        break;
+                    }
+                    prev = prev.prev;
+                }
+                if (pageConflict) {
+                    offset = alignUp(offset, _granularity);
+                }
+            }
+
             if (offset+size > chunk.offset+chunk.size) continue;
 
-            return allocateHere(chunk, offset, size, result);
+            // discard this chunk if page conflict in next chunks
+            if (_granularity > 1) {
+                bool pageConflict;
+                const thisPage = page(offset+size-1, _granularity);
+                auto next = chunk.next;
+                while (next) {
+                    if (next.pageBeg(_granularity) == thisPage) {
+                        if (next.occupied && granularityMatters(next.layout, layout)) {
+                            pageConflict = true;
+                            break;
+                        }
+                    }
+                    else {
+                        break;
+                    }
+                    next = next.next;
+                }
+                if (pageConflict) {
+                    continue;
+                }
+            }
+
+            return allocateHere(chunk, offset, size, layout, result);
         }
 
         return false;
+    }
+
+    override void *map()
+    {
+        if (!_mapCount) {
+            _mapPtr = _memory.mapRaw(0, _size);
+        }
+        _mapCount++;
+        return _mapPtr;
+    }
+
+    override void unmap()
+    {
+        _mapCount--;
+        if (!_mapCount) {
+            _memory.unmapRaw();
+            _mapPtr = null;
+        }
     }
 
     override void free(Object returnData) {
         import gfx.core.util : unsafeCast;
         auto chunk = unsafeCast!MemoryChunk(returnData);
         chunk.occupied = false;
+        chunk.layout = ResourceLayout.unknown;
         // merge this chunk with previous and next one if they are free
         if (chunk.prev && !chunk.prev.occupied) {
             auto cp = chunk.prev;
@@ -211,7 +326,8 @@ class MemoryBlock : MemReturn
         }
     }
 
-    bool allocateHere(MemoryChunk chunk, in size_t offset, in size_t size, ref AllocResult result) {
+    bool allocateHere(MemoryChunk chunk, in size_t offset, in size_t size,
+                      in ResourceLayout layout, ref AllocResult result) {
         assert(chunk);
         assert(!chunk.occupied);
         assert(chunk.offset <= offset);
@@ -233,11 +349,37 @@ class MemoryBlock : MemReturn
         }
 
         chunk.occupied = true;
+        chunk.layout = layout;
         result.mem = _memory.obj;
         result.offset = offset;
-        result.ret = this;
-        result.retData = chunk;
+        result.block = this;
+        result.blockData = chunk;
         return true;
+    }
+
+    void feedStats(ref AllocStats stats) {
+        stats.totalReserved += _size;
+        AllocStats.Block sb;
+        sb.size = _size;
+        size_t lastEnd;
+        bool lastOccupied;
+        for (auto chunk=_chunk0; chunk !is null; chunk = chunk.next) {
+            AllocStats.Chunk sc;
+            sc.start = chunk.offset;
+            sc.end = chunk.offset+chunk.size;
+            sc.layout = chunk.layout;
+            sc.occupied = chunk.occupied;
+            sb.chunks ~= sc;
+            if (chunk.occupied) {
+                stats.totalUsed += chunk.size;
+                if (lastOccupied) {
+                    stats.totalFrag += chunk.offset-lastEnd;
+                }
+            }
+            lastOccupied = chunk.occupied;
+            lastEnd = sc.end;
+        }
+        stats.blocks ~= sb;
     }
 
     invariant {
