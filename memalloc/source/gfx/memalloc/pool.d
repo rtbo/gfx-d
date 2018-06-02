@@ -100,7 +100,9 @@ class MemoryPool
         Device dev = _allocator._device;
         DeviceMemory dm;
         try {
-            dm = dev.allocateMemory(memTypeIndex, size);
+            import std.algorithm : max;
+            const sz = max(_blockSize, size);
+            dm = dev.allocateMemory(memTypeIndex, sz);
         }
         catch (Exception ex) {
             return false;
