@@ -32,7 +32,10 @@ struct DeviceFeatures {
     }
 }
 
-struct DeviceLimits {}
+struct DeviceLimits
+{
+    size_t linearOptimalGranularity=1;
+}
 
 enum DeviceType {
     other,
@@ -98,7 +101,7 @@ private bool isConsistentWith(in QueueRequest[] requests, in QueueFamily[] famil
 
 struct MappedMemorySet
 {
-    package(gfx) struct MM {
+    package(gfx) static struct MM {
         DeviceMemory dm;
         size_t offset;
         size_t size;

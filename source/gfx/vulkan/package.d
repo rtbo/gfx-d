@@ -579,8 +579,12 @@ final class VulkanPhysicalDevice : PhysicalDevice
                 .canFind(swapChainExtension);
         return features;
     }
-    override @property DeviceLimits limits() {
-        return DeviceLimits.init;
+    override @property DeviceLimits limits()
+    {
+        DeviceLimits limits;
+        limits.linearOptimalGranularity =
+                cast(size_t)_vkProps.limits.bufferImageGranularity;
+        return limits;
     }
 
     override @property MemoryProperties memoryProperties()
