@@ -87,7 +87,7 @@ struct MemoryMap
     if (isDynamicArray!T)
     {
         alias Elem = typeof(T.init[0]);
-        const len = count == size_t.max ? data.length : count*Elem.sizeof;
+        const len = count == size_t.max ? data.length-offset : count*Elem.sizeof;
         return MemoryMapArrayView!Elem(cast(T)(data[offset .. offset+len]));
     }
 
@@ -118,11 +118,11 @@ private struct MemoryMapArrayView(T)
 {
     private T[] data;
 
-    size_t opDollar() {
+    @property size_t opDollar(size_t dim : 0)() {
         return data.length;
     }
 
-    size_t[2] opSlice(size_t beg, size_t end) {
+    @property size_t[2] opSlice(size_t dim : 0)(size_t beg, size_t end) {
         return [beg, end];
     }
 

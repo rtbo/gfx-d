@@ -334,7 +334,7 @@ class MemAlloc : AtomicRefCounted
         import std.algorithm : min;
 
         const off = this.offset + offset;
-        const sz = min(this.size, size);
+        const sz = min(this.size-offset, size);
         return _mem.map(off, sz);
     }
 }
