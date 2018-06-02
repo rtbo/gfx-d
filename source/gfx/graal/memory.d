@@ -55,12 +55,14 @@ struct MemoryMap
     private DeviceMemory dm;
     private size_t offset;
     private void[] data;
+    private void delegate() unmap;
 
-    private this(DeviceMemory dm, in size_t offset, in size_t size)
+    package(gfx) this(DeviceMemory dm, in size_t offset, void[] data, void delegate() unmap)
     {
         this.dm = dm;
         this.offset = offset;
-        this.data = dm.mapRaw(offset, size)[0 .. size];
+        this.data = data;
+        this.unmap = unmap;
     }
 
     @disable this(this);
@@ -68,7 +70,7 @@ struct MemoryMap
     ~this()
     {
         // should handle dtor of MemoryMap.init
-        if (dm) dm.unmapRaw();
+        if (unmap) unmap();
     }
 
     void addToSet(ref MappedMemorySet set)
@@ -179,8 +181,9 @@ interface DeviceMemory : AtomicRefCounted
     ///     count =    the number of bytes to be mapped
     final auto map(in size_t offset=0, in size_t sz=size_t.max)
     {
-        const len = sz==size_t.max ? this.size : sz;
-        return MemoryMap(this, offset, len);
+        const size = sz==size_t.max ? this.size : sz;
+        auto data = mapRaw(offset, size)[0 .. size];
+        return MemoryMap(this, offset, data, &unmapRaw);
     }
 }
 
