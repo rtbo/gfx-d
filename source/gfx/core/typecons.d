@@ -11,8 +11,11 @@ struct Trans(T) {
 }
 
 /// Transition build helper
-auto trans(T)(T from, T to) {
-    return Trans!T(from, to);
+auto trans(T)(T from, T to)
+if (!is(T : Object))
+{
+    import std.traits : Unqual;
+    return Trans!(Unqual!T)(from, to);
 }
 
 /// template that resolves to true if an object of type T can be assigned to null
