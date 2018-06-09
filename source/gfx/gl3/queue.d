@@ -236,7 +236,7 @@ final class GlCommandBuffer : CommandBuffer
         warningf("unimplemented GL command");
     }
 
-    override void copyBuffer(Trans!Buffer buffers, CopyRegion[] regions)
+    override void copyBuffer(Trans!Buffer buffers, in CopyRegion[] regions)
     {
         import gfx.gl3.resource : GlBuffer;
         foreach (r; regions) {

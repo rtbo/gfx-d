@@ -241,7 +241,7 @@ interface CommandBuffer
     /// to local on-stack data, or to let GC collect the data right after the call.
     /// Can only be used outside of a render pass.
     void updateBuffer(Buffer dst, in size_t offset, in uint[] data);
-    void copyBuffer(Trans!Buffer buffers, CopyRegion[] regions);
+    void copyBuffer(Trans!Buffer buffers, in CopyRegion[] regions);
     void copyBufferToImage(Buffer srcBuffer, ImageBase dstImage,
                            in ImageLayout dstLayout, in BufferImageCopy[] regions);
 

@@ -188,7 +188,7 @@ final class VulkanCommandBuffer : CommandBuffer
         vk.CmdUpdateBuffer(vkObj, vkBuf, offset, 4*data.length, cast(void*)data.ptr);
     }
 
-    override void copyBuffer(Trans!Buffer buffers, CopyRegion[] regions)
+    override void copyBuffer(Trans!Buffer buffers, in CopyRegion[] regions)
     {
         import std.algorithm : map;
         import std.array : array;
