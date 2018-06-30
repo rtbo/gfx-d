@@ -6,8 +6,8 @@ import gfx.bindings.opengl.gl;
 import gfx.graal.buffer : BufferUsage, IndexType;
 import gfx.graal.format : Format;
 import gfx.graal.image : Filter, ImageType, WrapMode;
-import gfx.graal.pipeline : CompareOp, FrontFace, PolygonMode, Primitive,
-                            ShaderStage, StencilOp;
+import gfx.graal.pipeline : BlendOp, BlendFactor, CompareOp, FrontFace,
+                            PolygonMode, Primitive, ShaderStage, StencilOp;
 
 GLenum toGl(in BufferUsage usage) pure {
     switch (usage) {
@@ -236,6 +236,40 @@ GLenum toGl(in PolygonMode pm) pure {
     case PolygonMode.point: return GL_POINT;
     case PolygonMode.line:  return GL_LINE;
     case PolygonMode.fill:  return GL_FILL;
+    }
+}
+
+GLenum toGl(in BlendOp op) {
+    final switch(op) {
+        case BlendOp.add:               return GL_FUNC_ADD;
+        case BlendOp.subtract:          return GL_FUNC_SUBTRACT;
+        case BlendOp.reverseSubtract:   return GL_FUNC_REVERSE_SUBTRACT;
+        case BlendOp.min:               return GL_MIN;
+        case BlendOp.max:               return GL_MAX;
+    }
+}
+
+GLenum toGl(in BlendFactor f) {
+    final switch (f) {
+        case BlendFactor.zero:                  return GL_ZERO;
+        case BlendFactor.one:                   return GL_ONE;
+        case BlendFactor.srcColor:              return GL_SRC_COLOR;
+        case BlendFactor.oneMinusSrcColor:      return GL_ONE_MINUS_SRC_COLOR;
+        case BlendFactor.dstColor:              return GL_DST_COLOR;
+        case BlendFactor.oneMinusDstColor:      return GL_ONE_MINUS_DST_COLOR;
+        case BlendFactor.srcAlpha:              return GL_SRC_ALPHA;
+        case BlendFactor.oneMinusSrcAlpha:      return GL_ONE_MINUS_SRC_ALPHA;
+        case BlendFactor.dstAlpha:              return GL_DST_ALPHA;
+        case BlendFactor.oneMinusDstAlpha:      return GL_ONE_MINUS_DST_ALPHA;
+        case BlendFactor.constantColor:         return GL_CONSTANT_COLOR;
+        case BlendFactor.oneMinusConstantColor: return GL_ONE_MINUS_CONSTANT_COLOR;
+        case BlendFactor.constantAlpha:         return GL_CONSTANT_ALPHA;
+        case BlendFactor.oneMinusConstantAlpha: return GL_ONE_MINUS_CONSTANT_ALPHA;
+        case BlendFactor.srcAlphaSaturate:      return GL_SRC_ALPHA_SATURATE;
+        case BlendFactor.src1Color:             return GL_SRC1_COLOR;
+        case BlendFactor.oneMinusSrc1Color:     return GL_ONE_MINUS_SRC1_COLOR;
+        case BlendFactor.src1Alpha:             return GL_SRC1_ALPHA;
+        case BlendFactor.oneMinusSrc1Alpha:     return GL_ONE_MINUS_SRC1_ALPHA;
     }
 }
 

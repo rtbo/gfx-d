@@ -1162,14 +1162,26 @@ final class BindBlendSlotsCmd : GlCommand
         this.attachments = attachments;
     }
 
-    override void execute(GlQueue queue, Gl gl) {
+    override void execute(GlQueue queue, Gl gl)
+    {
+        import gfx.gl3.conv : toGl;
+
         foreach (GLuint slot, a; attachments) {
             if (a.enabled) {
                 // TODO logicOp
                 if (a.attachment.enabled) {
                     // TODO
-                    import std.experimental.logger : warning;
-                    warning("Gl blending not implemented");
+                    gl.Enablei(GL_BLEND, slot);
+                    gl.BlendEquationSeparatei(slot,
+                        toGl(a.attachment.colorBlend.op),
+                        toGl(a.attachment.alphaBlend.op),
+                    );
+                    gl.BlendFuncSeparatei(slot,
+                        toGl(a.attachment.colorBlend.factor.from),
+                        toGl(a.attachment.colorBlend.factor.to),
+                        toGl(a.attachment.alphaBlend.factor.from),
+                        toGl(a.attachment.alphaBlend.factor.to),
+                    );
                 }
                 else {
                     gl.Disablei(GL_BLEND, slot);
