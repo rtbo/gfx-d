@@ -1136,7 +1136,9 @@ final class BindSamplerImageCmd : GlCommand
 
     mixin(allFieldsCtor!(typeof(this)));
 
-    override void execute(GlQueue queue, Gl gl) {
+    override void execute(GlQueue queue, Gl gl)
+    {
+        import gfx.gl3.conv : toGl;
         import gfx.gl3.error : glCheck;
         import gfx.gl3.resource : GlImageView, GlSampler;
 
@@ -1149,6 +1151,9 @@ final class BindSamplerImageCmd : GlCommand
 
         sampler.bind(view.target, binding);
         glCheck(gl, "bind sampler");
+
+        const swizzle = toGl(view.swizzle);
+        gl.TexParameteriv(view.target, GL_TEXTURE_SWIZZLE_RGBA, &swizzle[0]);
     }
 }
 

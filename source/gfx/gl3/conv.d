@@ -5,7 +5,7 @@ package:
 import gfx.bindings.opengl.gl;
 import gfx.graal.buffer : BufferUsage, IndexType;
 import gfx.graal.format : Format;
-import gfx.graal.image : Filter, ImageType, WrapMode;
+import gfx.graal.image : CompSwizzle, Filter, ImageType, Swizzle, WrapMode;
 import gfx.graal.pipeline : BlendOp, BlendFactor, CompareOp, FrontFace,
                             PolygonMode, Primitive, ShaderStage, StencilOp;
 
@@ -271,6 +271,31 @@ GLenum toGl(in BlendFactor f) {
         case BlendFactor.src1Alpha:             return GL_SRC1_ALPHA;
         case BlendFactor.oneMinusSrc1Alpha:     return GL_ONE_MINUS_SRC1_ALPHA;
     }
+}
+
+GLint toGl(in CompSwizzle cs)
+{
+    switch (cs)
+    {
+    case CompSwizzle.zero:  return GL_ZERO;
+    case CompSwizzle.one:   return GL_ONE;
+    case CompSwizzle.r:     return GL_RED;
+    case CompSwizzle.g:     return GL_GREEN;
+    case CompSwizzle.b:     return GL_BLUE;
+    case CompSwizzle.a:     return GL_ALPHA;
+    default: assert(false);
+    }
+}
+
+GLint[4] toGl(in Swizzle swizzle)
+{
+    const GLint[4] glSw = [
+        swizzle[0] == CompSwizzle.identity ? GL_RED : toGl(swizzle[0]),
+        swizzle[1] == CompSwizzle.identity ? GL_GREEN : toGl(swizzle[1]),
+        swizzle[2] == CompSwizzle.identity ? GL_BLUE : toGl(swizzle[2]),
+        swizzle[3] == CompSwizzle.identity ? GL_ALPHA : toGl(swizzle[3]),
+    ];
+    return glSw;
 }
 
 bool vertexFormatSupported(in Format f) pure {

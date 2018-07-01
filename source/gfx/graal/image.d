@@ -195,7 +195,8 @@ enum CompSwizzle : ubyte
     r, g, b, a,
 }
 
-struct Swizzle {
+struct Swizzle
+{
     private CompSwizzle[4] rep;
 
     this(in CompSwizzle r, in CompSwizzle g, in CompSwizzle b, in CompSwizzle a)
