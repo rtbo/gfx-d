@@ -311,6 +311,8 @@ struct Rc(T) if (isAtomicRefCounted!T)
     /// Assign another resource. Release the previously held ref and retain the new one.
     void opAssign(T obj)
     {
+        if (obj is _obj) return;
+
         if(_obj) releaseObj(_obj, Yes.disposeOnZero);
         _obj = obj;
         if(_obj) retainObj(_obj);
