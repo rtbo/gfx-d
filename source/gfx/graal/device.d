@@ -129,11 +129,17 @@ interface Device : AtomicRefCounted
 
     CommandPool createCommandPool(uint queueFamilyIndex);
 
-    DeviceMemory allocateMemory(uint memPropIndex, size_t size);
+    DeviceMemory allocateMemory(uint memPropIndex, size_t size)
+    in {
+        assert(size > 0, "cannot allocate memory of null size");
+    }
     void flushMappedMemory(MappedMemorySet set);
     void invalidateMappedMemory(MappedMemorySet set);
 
-    Buffer createBuffer(BufferUsage usage, size_t size);
+    Buffer createBuffer(BufferUsage usage, size_t size)
+    in {
+        assert(size > 0, "cannot create a buffer of null size");
+    }
 
     Image createImage(in ImageInfo info);
 
