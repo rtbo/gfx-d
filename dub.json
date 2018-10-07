@@ -24,7 +24,6 @@
     ],
     "dependencies": {
         "gfx:bindings": "*",
-        "sdlang-d": "~>0.10.2",
         "spirv_cross": { "path": "3rdparty/spirv_cross-d" }
     },
 

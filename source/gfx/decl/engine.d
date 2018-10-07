@@ -3,7 +3,7 @@ module gfx.decl.engine;
 import gfx.core.rc : Disposable;
 import gfx.core.typecons : Option;
 import gfx.graal.format : Format;
-import sdlang;
+import gfx.decl.sdlang;
 
 class GfxSDLErrorException : Exception
 {
