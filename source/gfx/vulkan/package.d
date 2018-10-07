@@ -139,6 +139,7 @@ VulkanInstance createVulkanInstance(in string[] layers, in string[] extensions,
     import std.array : array;
     import std.exception : enforce;
     import std.string : toStringz;
+    import std.experimental.logger : infof;
 
     // throw if some requested layers or extensions are not available
     // TODO: specific exception
@@ -167,6 +168,18 @@ VulkanInstance createVulkanInstance(in string[] layers, in string[] extensions,
 
     auto vkLayers = layers.map!toStringz.array;
     auto vkExts = extensions.map!toStringz.array;
+
+    infof("Opening Vulkan instance.");
+    infof("Vulan layers:%s", layers.length?"":" none");
+    foreach (l; layers) {
+        infof("    %s", l);
+    }
+    infof("Vulan extensions:%s", extensions.length?"":" none");
+    foreach (e; extensions) {
+        infof("    %s", e);
+    }
+
+
 
     VkInstanceCreateInfo ici;
     ici.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -747,9 +760,9 @@ final class VulkanPhysicalDevice : PhysicalDevice
         ci.queueCreateInfoCount = cast(uint)qcis.length;
         ci.pQueueCreateInfos = qcis.ptr;
         ci.enabledLayerCount = cast(uint)layers.length;
-        ci.ppEnabledLayerNames = &layers[0];
+        ci.ppEnabledLayerNames = layers.ptr;
         ci.enabledExtensionCount = cast(uint)extensions.length;
-        ci.ppEnabledExtensionNames = &extensions[0];
+        ci.ppEnabledExtensionNames = extensions.ptr;
         ci.pEnabledFeatures = &vkFeats;
 
         VkDevice vkDev;
