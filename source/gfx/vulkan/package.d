@@ -172,9 +172,9 @@ VulkanInstance createVulkanInstance(in string[] layers, in string[] extensions,
     ici.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     ici.pApplicationInfo = &ai;
     ici.enabledLayerCount = cast(uint)vkLayers.length;
-    ici.ppEnabledLayerNames = &vkLayers[0];
+    ici.ppEnabledLayerNames = vkLayers.ptr;
     ici.enabledExtensionCount = cast(uint)vkExts.length;
-    ici.ppEnabledExtensionNames = &vkExts[0];
+    ici.ppEnabledExtensionNames = vkExts.ptr;
 
     auto vk = _globCmds;
     VkInstance vkInst;
