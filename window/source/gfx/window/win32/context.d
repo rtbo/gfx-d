@@ -7,6 +7,7 @@ import gfx.bindings.core;
 import gfx.bindings.opengl.gl : Gl, GL_TRUE;
 import gfx.bindings.opengl.wgl;
 import gfx.gl3.context : GlAttribs, GlContext, GlProfile, glVersions;
+import gfx.window.win32 : gfxW32WndTag;
 
 /// Helper to get an attrib list to pass to wglChoosePixelFormatARB
 public int[] getAttribList(in GlAttribs attribs) {
@@ -71,10 +72,10 @@ public void setupPFD(in GlAttribs attribs, PIXELFORMATDESCRIPTOR* pfd)
 public class Win32GlContext : GlContext
 {
     import core.sys.windows.windows;
+    import gfx.core.log : tracef;
     import gfx.core.rc : atomicRcCode, Disposable;
     import gfx.window.win32 : registerWindowClass, wndClassName;
     import std.exception : enforce;
-    import std.experimental.logger : tracef;
 
     mixin(atomicRcCode);
 
@@ -142,7 +143,7 @@ public class Win32GlContext : GlContext
             if (attrs.decimalVersion < attribs.decimalVersion) break;
 
             const ctxAttribs = getCtxAttribs(attrs);
-            tracef("attempting to create OpenGL %s.%s context", attrs.majorVersion, attrs.minorVersion);
+            tracef(gfxW32WndTag, "attempting to create OpenGL %s.%s context", attrs.majorVersion, attrs.minorVersion);
 
             _ctx = _wgl.CreateContextAttribsARB(dc, null, &ctxAttribs[0]);
 
@@ -150,7 +151,7 @@ public class Win32GlContext : GlContext
         }
 
         enforce(_ctx, "Failed creating Wgl context");
-        tracef("created OpenGL %s.%s context", attrs.majorVersion, attrs.minorVersion);
+        tracef(gfxW32WndTag, "created OpenGL %s.%s context", attrs.majorVersion, attrs.minorVersion);
         _attribs = attrs;
         Win32GlContext.makeCurrent(window);
         _gl = new Gl(&loader);
@@ -158,7 +159,7 @@ public class Win32GlContext : GlContext
 
     override void dispose() {
         _wgl.DeleteContext(_ctx);
-        tracef("destroyed GL/WGL context");
+        tracef(gfxW32WndTag, "destroyed GL/WGL context");
     }
 
     override @property Gl gl() {
@@ -220,14 +221,14 @@ public class Win32GlContext : GlContext
     }
 
     private void printLastError() {
-        import std.experimental.logger : errorf;
+        import gfx.core.log : errorf;
         const err = GetLastError();
         LPSTR messageBuffer = null;
         size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                                     null, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), cast(LPSTR)&messageBuffer, 0, null);
         auto buf = new char[size];
         buf[] = messageBuffer[0 .. size];
-        errorf(buf.idup);
+        errorf(gfxW32WndTag, buf.idup);
         LocalFree(messageBuffer);
     }
 
@@ -259,8 +260,8 @@ private SharedLib loadGlLib()
     foreach (ln; glLibNames) {
         auto lib = openSharedLib(ln);
         if (lib) {
-            import std.experimental.logger : tracef;
-            tracef("opening shared library %s", ln);
+            import gfx.core.log : tracef;
+            tracef(gfxW32WndTag, "opening shared library %s", ln);
             return lib;
         }
     }

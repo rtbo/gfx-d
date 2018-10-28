@@ -4,6 +4,8 @@ module gfx.window;
 import gfx.core.rc : AtomicRefCounted;
 import gfx.graal : Backend, Instance;
 
+package immutable string gfxWndTag = "GFX-WND";
+
 alias MouseHandler = void delegate(uint x, uint y);
 alias KeyHandler = void delegate(uint key);
 alias CloseHandler = bool delegate();

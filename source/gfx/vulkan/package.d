@@ -4,6 +4,7 @@ module gfx.vulkan;
 import gfx.bindings.vulkan;
 import gfx.graal;
 
+package immutable string gfxVkTag = "GFX-VK";
 
 // some standard layers
 
@@ -135,11 +136,11 @@ VulkanInstance createVulkanInstance(in string[] layers, in string[] extensions,
                                     in VulkanVersion appVersion=VulkanVersion(0, 0, 0))
 {
     import gfx : gfxVersionMaj, gfxVersionMin, gfxVersionMic;
+    import gfx.core.log : infof;
     import std.algorithm : all, canFind, map;
     import std.array : array;
     import std.exception : enforce;
     import std.string : toStringz;
-    import std.experimental.logger : infof;
 
     // throw if some requested layers or extensions are not available
     // TODO: specific exception
@@ -169,14 +170,14 @@ VulkanInstance createVulkanInstance(in string[] layers, in string[] extensions,
     auto vkLayers = layers.map!toStringz.array;
     auto vkExts = extensions.map!toStringz.array;
 
-    infof("Opening Vulkan instance.");
-    infof("Vulan layers:%s", layers.length?"":" none");
+    infof(gfxVkTag, "Opening Vulkan instance.");
+    infof(gfxVkTag, "Vulan layers:%s", layers.length?"":" none");
     foreach (l; layers) {
-        infof("    %s", l);
+        infof(gfxVkTag, "    %s", l);
     }
-    infof("Vulan extensions:%s", extensions.length?"":" none");
+    infof(gfxVkTag, "Vulan extensions:%s", extensions.length?"":" none");
     foreach (e; extensions) {
-        infof("    %s", e);
+        infof(gfxVkTag, "    %s", e);
     }
 
 

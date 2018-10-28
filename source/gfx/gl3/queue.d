@@ -4,6 +4,7 @@ package:
 
 import gfx.bindings.opengl.gl;
 import gfx.core.rc : Disposable;
+import gfx.gl3 : gfxGlTag;
 import gfx.graal.cmd;
 import gfx.graal.queue;
 
@@ -133,6 +134,7 @@ final class GlCommandPool : CommandPool
 
 final class GlCommandBuffer : CommandBuffer
 {
+    import gfx.core.log : warningf;
     import gfx.core.typecons : Trans;
     import gfx.core.types : Rect, Viewport;
     import gfx.gl3 : GlShare, GlInfo;
@@ -145,7 +147,6 @@ final class GlCommandBuffer : CommandBuffer
                                 ShaderStage, VertexInputBinding,
                                 VertexInputAttrib, ViewportConfig;
     import gfx.graal.renderpass : Framebuffer, RenderPass;
-    import std.experimental.logger;
     import std.typecons : Flag;
 
     private enum Dirty {
@@ -205,7 +206,7 @@ final class GlCommandBuffer : CommandBuffer
                                   BufferMemoryBarrier[] bufMbs,
                                   ImageMemoryBarrier[] imgMbs)
     {
-        warningf("unimplemented GL command");
+        warningf(gfxGlTag, "unimplemented GL command");
     }
 
     override void clearColorImage(ImageBase image, ImageLayout layout,
@@ -228,12 +229,12 @@ final class GlCommandBuffer : CommandBuffer
 
     override void fillBuffer(Buffer dst, in size_t offset, in size_t size, uint value)
     {
-        warningf("unimplemented GL command");
+        warningf(gfxGlTag, "unimplemented GL command");
     }
 
     override void updateBuffer(Buffer dst, in size_t offset, in uint[] data)
     {
-        warningf("unimplemented GL command");
+        warningf(gfxGlTag, "unimplemented GL command");
     }
 
     override void copyBuffer(Trans!Buffer buffers, in CopyRegion[] regions)
@@ -270,7 +271,7 @@ final class GlCommandBuffer : CommandBuffer
 
     override void setDepthBounds(in float minDepth, in float maxDepth)
     {
-        warningf("unimplemented GL command");
+        warningf(gfxGlTag, "unimplemented GL command");
     }
 
     void setLineWidth(in float lineWidth)
@@ -285,17 +286,17 @@ final class GlCommandBuffer : CommandBuffer
 
     override void setStencilCompareMask(in StencilFace faceMask, in uint compareMask)
     {
-        warningf("unimplemented GL command");
+        warningf(gfxGlTag, "unimplemented GL command");
     }
 
     override void setStencilWriteMask(in StencilFace faceMask, in uint writeMask)
     {
-        warningf("unimplemented GL command");
+        warningf(gfxGlTag, "unimplemented GL command");
     }
 
     override void setStencilReference(in StencilFace faceMask, in uint reference)
     {
-        warningf("unimplemented GL command");
+        warningf(gfxGlTag, "unimplemented GL command");
     }
 
     override void setBlendConstants(in float[4] blendConstants)
@@ -415,7 +416,7 @@ final class GlCommandBuffer : CommandBuffer
                         );
                         break;
                     default:
-                        warningf("unhandled descriptor set");
+                        warningf(gfxGlTag, "unhandled descriptor set");
                         break;
                     }
                 }
@@ -426,7 +427,7 @@ final class GlCommandBuffer : CommandBuffer
     override void pushConstants(PipelineLayout layout, ShaderStage stages,
                                 size_t offset, size_t size, const(void)* data)
     {
-        warningf("unimplemented GL command");
+        warningf(gfxGlTag, "unimplemented GL command");
     }
 
     override void draw(uint vertexCount, uint instanceCount, uint firstVertex,
@@ -664,8 +665,8 @@ final class SetViewportConfigsCmd : GlCommand
         if (queue.state.vcs == viewports) return;
 
         if (viewports.length > 1 && !queue.info.viewportArray) {
-            import std.experimental.logger : error;
-            error("ARB_viewport_array not supported");
+            import gfx.core.log : error;
+            error(gfxGlTag, "ARB_viewport_array not supported");
             viewports = viewports[0..1];
         }
 
@@ -721,8 +722,8 @@ final class SetViewportsCmd : GlCommand
         bool useArray = viewports.length > 1 || firstViewport > 0;
 
         if (useArray && !queue.info.viewportArray) {
-            import std.experimental.logger : error;
-            error("ARB_viewport_array not supported");
+            import gfx.core.log : error;
+            error(gfxGlTag, "ARB_viewport_array not supported");
             viewports = viewports[0..1];
             firstViewport = 0;
             useArray = false;
@@ -767,8 +768,8 @@ final class SetScissorsCmd : GlCommand
 
         bool useArray = scissors.length > 1 || firstScissor > 0;
         if (useArray && !queue.info.viewportArray) {
-            import std.experimental.logger : error;
-            error("ARB_viewport_array not supported");
+            import gfx.core.log : error;
+            error(gfxGlTag, "ARB_viewport_array not supported");
             scissors = scissors[0..1];
             firstScissor = 0;
             useArray = false;
@@ -988,8 +989,8 @@ final class SetDepthInfoCmd : GlCommand
             gl.DepthFunc(toGl(info.compareOp));
             gl.DepthMask(cast(GLboolean)info.write);
             if (info.boundsTest) {
-                import std.experimental.logger : warningf;
-                warningf("no support for depth bounds test");
+                import gfx.core.log : warningf;
+                warningf(gfxGlTag, "no support for depth bounds test");
             }
         }
         else {
@@ -1230,8 +1231,8 @@ final class DrawCmd : GlCommand
 
     override void execute(GlQueue queue, Gl gl) {
         if (baseInstance != 0 && !queue.info.baseInstance) {
-            import std.experimental.logger : errorf;
-            errorf("No support for ARB_base_instance");
+            import gfx.core.log : error;
+            error(gfxGlTag, "No support for ARB_base_instance");
             return;
         }
         if (instanceCount <= 1) {
@@ -1273,16 +1274,16 @@ final class DrawIndexedCmd : GlCommand
     }
 
     override void execute(GlQueue queue, Gl gl) {
-        import std.experimental.logger : errorf;
+        import gfx.core.log : error;
 
         const offset = cast(const(void*))indexBufOffset;
 
         if (baseVertex != 0 && !queue.info.drawElementsBaseVertex) {
-            errorf("No support for ARB_draw_elements_base_vertex");
+            error(gfxGlTag, "No support for ARB_draw_elements_base_vertex");
             return;
         }
         if (baseInstance != 0 && !queue.info.baseInstance) {
-            errorf("No support for ARB_base_instance");
+            error(gfxGlTag, "No support for ARB_base_instance");
             return;
         }
 

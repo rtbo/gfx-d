@@ -4,6 +4,8 @@ import gfx.core.rc : AtomicRefCounted;
 import gfx.graal : DebugCallback, Instance;
 import gfx.graal.device : PhysicalDevice;
 
+package immutable string gfxGlTag = "GFX-GL";
+
 final class GlInstance : Instance
 {
     import gfx.core.rc : atomicRcCode, Rc;

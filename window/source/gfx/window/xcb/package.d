@@ -6,6 +6,8 @@ import gfx.graal : Instance;
 import gfx.window;
 import xcb.xcb;
 
+package immutable string gfxXcbWndTag = "GFX-WND-XCB";
+
 /// List of X atoms that are fetched automatically
 enum Atom
 {
@@ -61,11 +63,11 @@ class XcbDisplay : Display
     this(in Backend[] loadOrder)
     {
         import std.exception : enforce;
-        import std.experimental.logger : trace;
+        import gfx.core.log : trace;
         import X11.Xlib : XCloseDisplay, XDefaultScreen, XOpenDisplay;
         import X11.Xlib_xcb : XGetXCBConnection, XSetEventQueueOwner, XCBOwnsEventQueue;
 
-        trace("opening X display");
+        trace(gfxXcbWndTag, "opening X display");
         _dpy = enforce(XOpenDisplay(null));
         scope(failure) {
             XCloseDisplay(_dpy);
@@ -81,7 +83,7 @@ class XcbDisplay : Display
 
     override void dispose()
     {
-        import std.experimental.logger : trace;
+        import gfx.core.log : trace;
         import X11.Xlib : XCloseDisplay;
 
         if (_windows.length) {
@@ -91,7 +93,7 @@ class XcbDisplay : Display
         assert(!_windows.length);
 
         _instance.unload();
-        trace("closing X display");
+        trace(gfxXcbWndTag, "closing X display");
         XCloseDisplay(_dpy);
     }
 
@@ -143,18 +145,18 @@ class XcbDisplay : Display
 
     private void initializeInstance(in Backend[] loadOrder)
     {
-        import std.experimental.logger : info, trace, warningf;
+        import gfx.core.log : info, trace, warningf;
         assert(!_instance);
 
         foreach (b; loadOrder) {
             final switch (b) {
             case Backend.vulkan:
                 try {
-                    trace("Attempting to instantiate Vulkan");
+                    trace(gfxXcbWndTag, "Attempting to instantiate Vulkan");
                     import gfx.vulkan : createVulkanInstance, vulkanInit;
                     vulkanInit();
                     _instance = createVulkanInstance();
-                    info("Creating a Vulkan instance");
+                    info(gfxXcbWndTag, "Creating a Vulkan instance");
                 }
                 catch (Exception ex) {
                     warningf("Vulkan is not available. %s", ex.msg);
@@ -166,16 +168,16 @@ class XcbDisplay : Display
                     import gfx.gl3 : GlInstance;
                     import gfx.gl3.context : GlAttribs;
                     import gfx.window.xcb.context : XcbGlContext;
-                    trace("Attempting to instantiate OpenGL");
+                    trace(gfxXcbWndTag, "Attempting to instantiate OpenGL");
                     auto w = new XcbWindow(this, null, true);
                     w.show(10, 10);
                     scope(exit) w.close();
                     auto ctx = makeRc!XcbGlContext(_dpy, _mainScreenNum, GlAttribs.init, w._win);
-                    trace("Creating an OpenGL instance");
+                    trace(gfxXcbWndTag, "Creating an OpenGL instance");
                     _instance = new GlInstance(ctx);
                 }
                 catch (Exception ex) {
-                    warningf("OpenGL is not available. %s", ex.msg);
+                    warningf(gfxXcbWndTag, "OpenGL is not available. %s", ex.msg);
                 }
                 break;
             }

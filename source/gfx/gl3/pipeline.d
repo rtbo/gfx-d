@@ -78,8 +78,9 @@ final class GlShaderModule : ShaderModule
         }
         else if (log.length) {
             import std.conv : to;
-            import std.experimental.logger : logf;
-            logf("%s shader compile message: %s", stage.to!string, log);
+            import gfx.core.log : infof;
+            import gfx.gl3 : gfxGlTag;
+            infof(gfxGlTag, "%s shader compile message: %s", stage.to!string, log);
         }
         _stage = stage;
         return _name;
@@ -293,8 +294,9 @@ final class GlPipeline : Pipeline
         }
 
         if (log.length) {
-            import std.experimental.logger : logf;
-            logf("Gfx-Gl: Program link message: %s", log);
+            import gfx.core.log : infof;
+            import gfx.gl3 : gfxGlTag;
+            infof(gfxGlTag, "Program link message: %s", log);
         }
     }
 

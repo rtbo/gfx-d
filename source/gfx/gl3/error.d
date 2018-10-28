@@ -84,7 +84,6 @@ void glCheck(Gl gl, in string operation) {
                                     GL_OUT_OF_MEMORY,
                                     GL_INVALID_FRAMEBUFFER_OPERATION,
                                     GL_CONTEXT_LOST;
-    import std.experimental.logger : errorf;
     const code = gl.GetError();
     if (code != GL_NO_ERROR) {
         string glErr;
@@ -117,6 +116,10 @@ void glCheck(Gl gl, in string operation) {
             glErr = "(unknown error)";
             break;
         }
-        errorf("OpenGL error %s during %s", glErr, operation);
+
+        import gfx.core.log : errorf;
+        import gfx.gl3 : gfxGlTag;
+
+        errorf(gfxGlTag, "OpenGL error %s during %s", glErr, operation);
     }
 }

@@ -407,8 +407,8 @@ private enum sharedAtomicMethods = q{
         import core.atomic : atomicOp;
         const rc = atomicOp!"+="(_refCount, 1);
         debug(rc) {
-            import std.experimental.logger : logf;
-            logf("retain %s: %s -> %s", typeof(this).stringof, rc-1, rc);
+            import gfx.core.log : debugf;
+            debugf("RC", "retain %s: %s -> %s", typeof(this).stringof, rc-1, rc);
         }
     }
 
@@ -418,13 +418,13 @@ private enum sharedAtomicMethods = q{
         const rc = atomicOp!"-="(_refCount, 1);
 
         debug(rc) {
-            import std.experimental.logger : logf;
-            logf("release %s: %s -> %s", typeof(this).stringof, rc+1, rc);
+            import gfx.core.log : debugf;
+            debugf("RC", "release %s: %s -> %s", typeof(this).stringof, rc+1, rc);
         }
         if (rc == 0 && disposeOnZero) {
             debug(rc) {
-                import std.experimental.logger : logf;
-                logf("dispose %s", typeof(this).stringof);
+                import gfx.core.log : debugf;
+                debugf("RC", "dispose %s", typeof(this).stringof);
             }
             synchronized(this) {
                 // cast shared away
@@ -447,15 +447,15 @@ private enum sharedAtomicMethods = q{
 
             if (c == 0) {
                 debug(rc) {
-                    import std.experimental.logger : logf;
-                    logf("rcLock %s: %s", typeof(this).stringof, c);
+                    import gfx.core.log : debugf;
+                    debugf("RC", "rcLock %s: %s", typeof(this).stringof, c);
                 }
                 return false;
             }
             if (cas(&_refCount, c, c+1)) {
                 debug(rc) {
-                    import std.experimental.logger : logf;
-                    logf("rcLock %s: %s", typeof(this).stringof, c+1);
+                    import gfx.core.log : debugf;
+                    debugf("RC", "rcLock %s: %s", typeof(this).stringof, c+1);
                 }
                 return true;
             }
