@@ -568,8 +568,11 @@ final class VulkanPhysicalDevice : PhysicalDevice
         return _vk;
     }
 
-    override @property Instance instance() {
-        return lockObj(_inst);
+    override @property Instance instance()
+    {
+        auto inst = lockObj(_inst);
+        if (!inst) return null;
+        return giveAwayObj(inst);
     }
 
     override @property string name() {

@@ -29,8 +29,11 @@ final class VulkanQueue : Queue
         return _vk;
     }
 
-    @property Device device() {
-        return lockObj(_dev);
+    @property Device device()
+    {
+        auto dev = lockObj(_dev);
+        if (!dev) return null;
+        return giveAwayObj(dev);
     }
 
     void waitIdle() {
