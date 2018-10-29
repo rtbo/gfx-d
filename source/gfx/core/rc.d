@@ -391,10 +391,43 @@ struct Weak(T) if (is(T : AtomicRefCounted))
     }
 }
 
+debug(rc) {
+    __gshared string rcTypeRegex = ".";
+    __gshared bool rcPrintStack = false;
+}
 
 private enum sharedAtomicMethods = q{
 
     import std.typecons : Flag, Yes;
+
+    debug(rc) {
+        private final shared @property string rcTypeName()
+        {
+            import std.traits : Unqual;
+
+            return Unqual!(typeof(this)).stringof;
+        }
+
+        private final shared void rcDebug(Args...)(string fmt, Args args)
+        {
+            import gfx.core.log : debugf;
+            import gfx.core.rc : rcPrintStack, rcTypeRegex;
+            import gfx.core.util : StackTrace;
+            import std.algorithm : min;
+            import std.regex : matchFirst;
+
+            if (!matchFirst(rcTypeName, rcTypeRegex)) return;
+
+            debugf("RC", fmt, args);
+            if (rcPrintStack) {
+                const st = StackTrace.obtain(13, StackTrace.Options.all);
+                const frames = st.frames.length > 2 ? st.frames[2 .. $] : [];
+                foreach (i, f; frames) {
+                    debugf("RC", "  %02d %s", i, f.symbol);
+                }
+            }
+        }
+    }
 
     public final shared override @property size_t refCountShared() const
     {
@@ -407,8 +440,7 @@ private enum sharedAtomicMethods = q{
         import core.atomic : atomicOp;
         const rc = atomicOp!"+="(_refCount, 1);
         debug(rc) {
-            import gfx.core.log : debugf;
-            debugf("RC", "retain %s: %s -> %s", typeof(this).stringof, rc-1, rc);
+            rcDebug("retain %s: %s -> %s", rcTypeName, rc-1, rc);
         }
     }
 
@@ -418,13 +450,11 @@ private enum sharedAtomicMethods = q{
         const rc = atomicOp!"-="(_refCount, 1);
 
         debug(rc) {
-            import gfx.core.log : debugf;
-            debugf("RC", "release %s: %s -> %s", typeof(this).stringof, rc+1, rc);
+            rcDebug("release %s: %s -> %s", rcTypeName, rc+1, rc);
         }
         if (rc == 0 && disposeOnZero) {
             debug(rc) {
-                import gfx.core.log : debugf;
-                debugf("RC", "dispose %s", typeof(this).stringof);
+                rcDebug("dispose %s", rcTypeName);
             }
             synchronized(this) {
                 // cast shared away
@@ -447,15 +477,13 @@ private enum sharedAtomicMethods = q{
 
             if (c == 0) {
                 debug(rc) {
-                    import gfx.core.log : debugf;
-                    debugf("RC", "rcLock %s: %s", typeof(this).stringof, c);
+                    rcDebug("rcLock %s: %s", rcTypeName, c);
                 }
                 return false;
             }
             if (cas(&_refCount, c, c+1)) {
                 debug(rc) {
-                    import gfx.core.log : debugf;
-                    debugf("RC", "rcLock %s: %s", typeof(this).stringof, c+1);
+                    rcDebug("rcLock %s: %s", rcTypeName, c+1);
                 }
                 return true;
             }
