@@ -172,8 +172,11 @@ final class GlPhysicalDevice : PhysicalDevice
 
     override @property Instance instance()
     {
-        import gfx.core.rc : lockObj;
-        return lockObj(_inst);
+        import gfx.core.rc : lockObj, giveAwayObj;
+
+        auto inst = lockObj(_inst);
+        if (!inst) return null;
+        return giveAwayObj(inst);
     }
 
     override @property string name() {
@@ -278,9 +281,10 @@ final class GlPhysicalDevice : PhysicalDevice
     /// Returns: null if it can't meet all requested queues, the opened device otherwise.
     override Device open(in QueueRequest[], in DeviceFeatures)
     {
-        import gfx.core.rc : lockObj;
+        import gfx.core.rc : lockObj, releaseObj;
         import gfx.gl3.device : GlDevice;
         auto inst = lockObj(_inst);
+        scope(exit) releaseObj(inst);
         if (!inst) return null;
         else return new GlDevice(this, inst);
     }
