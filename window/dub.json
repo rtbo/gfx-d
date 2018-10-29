@@ -15,7 +15,7 @@
             "platforms": ["linux"],
             "dependencies": {
                 "wayland:client": "~>0.1.0",
-                "xcb-d": "~>2.1.0",
+                "xcb-d": "~>2.1.1",
                 "xlib-d": "~>0.1.1"
             },
             "preGenerateCommands": [
