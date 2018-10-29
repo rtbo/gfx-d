@@ -399,15 +399,21 @@ debug(rc) {
 private enum sharedAtomicMethods = q{
 
     import std.typecons : Flag, Yes;
+    import std.traits : Unqual;
+
+    debug {
+        ~this() {
+            import std.stdio : stderr;
+            enum phrase = rcTypeName ~ " was not propery disposed\n";
+            if (refCount != 0) {
+                stderr.write(phrase);
+                stderr.flush();
+            }
+        }
+        enum rcTypeName = Unqual!(typeof(this)).stringof;
+    }
 
     debug(rc) {
-        private final shared @property string rcTypeName()
-        {
-            import std.traits : Unqual;
-
-            return Unqual!(typeof(this)).stringof;
-        }
-
         private final shared void rcDebug(Args...)(string fmt, Args args)
         {
             import gfx.core.log : debugf;
@@ -428,6 +434,7 @@ private enum sharedAtomicMethods = q{
             }
         }
     }
+
 
     public final shared override @property size_t refCountShared() const
     {
@@ -458,7 +465,6 @@ private enum sharedAtomicMethods = q{
             }
             synchronized(this) {
                 // cast shared away
-                import std.traits : Unqual;
                 auto obj = cast(Unqual!(typeof(this)))this;
                 obj.dispose();
             }
