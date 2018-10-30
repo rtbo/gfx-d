@@ -395,6 +395,13 @@ debug(rc) {
     __gshared string rcTypeRegex = ".";
     __gshared bool rcPrintStack = false;
 }
+debug {
+    shared static ~this() {
+        // ensure we trigger AtomicRefCounted dtors
+        import core.memory : GC;
+        GC.collect();
+    }
+}
 
 private enum sharedAtomicMethods = q{
 
@@ -403,6 +410,7 @@ private enum sharedAtomicMethods = q{
 
     debug {
         ~this() {
+            // no gc operation allowed during gc pass
             import std.stdio : stderr;
             enum phrase = rcTypeName ~ " was not propery disposed\n";
             if (refCount != 0) {
