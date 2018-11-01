@@ -19,11 +19,8 @@
         {
             "name": "windows",
             "platforms": ["windows"],
-            "buildTypes": {
-                "debug": {
-                    "buildOptions": []
-                }
-            }
+            "buildRequirements": [ "noDefaultFlags" ],
+            "buildOptions": [ "releaseMode", "inline", "optimize" ]
         }
     ]
 }
