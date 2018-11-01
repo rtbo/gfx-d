@@ -446,7 +446,7 @@ final class VulkanInstance : VulkanObj!(VkInstance), Instance
     override void dispose() {
         if (_vkCb) {
             vk.DestroyDebugReportCallbackEXT(vkObj, _vkCb, null);
-            _vkCb = null;
+            _vkCb = VK_NULL_ND_HANDLE;
             _callback = null;
         }
         vk.DestroyInstance(vkObj, null);

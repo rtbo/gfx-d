@@ -350,7 +350,7 @@ private {
 			}
 			if (pieces[$-1].type == 1) {
 				padRight = pieces[$-1].dtext[$-1];
-				ulong pos;
+				size_t pos;
 				for (pos = pieces[$-1].dtext.length - 1;
 				  pos > 0 && pieces[$-1].dtext[pos - 1] == padRight;
 				  pos--) {}
@@ -630,7 +630,7 @@ private {
 
 			case "f":
 				lastNumber = dt.fracSecs().total!"msecs" / 100;
-				return DIGITS12[lastNumber+2..lastNumber+3];
+				return DIGITS12[cast(size_t)(lastNumber+2) .. cast(size_t)(lastNumber+3)];
 
 			case "ff":
 				lastNumber = dt.fracSecs().total!"msecs" / 10;
