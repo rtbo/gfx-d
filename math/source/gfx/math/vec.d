@@ -160,6 +160,12 @@ struct Vec(T, size_t N) if(N > 0 && isNumeric!T)
 
     package T[N] _rep = 0;
 
+    static if (isFloatingPoint!T)
+    {
+        /// A vector with each component set as NaN (not a number)
+        enum nan = Vec!(T, N)(T.nan);
+    }
+
     /// The number of components in the vector
     enum length = N;
 
