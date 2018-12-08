@@ -30,6 +30,28 @@ auto translation(V)(in V v) if (isVec2!V)
 }
 
 /// ditto
+auto affineTranslation(X, Y)(in X x, in Y y)
+{
+    alias ResMat = Mat2x3!(CommonType!(X, Y));
+
+    return ResMat(
+        1, 0, x,
+        0, 1, y
+    );
+}
+
+/// ditto
+auto affineTranslation(V)(in V v) if (isVec2!V)
+{
+    alias ResMat = Mat2x3!(V.Component);
+
+    return ResMat(
+        1, 0, v.x,
+        0, 1, v.y
+    );
+}
+
+/// ditto
 auto translation(X, Y, Z)(in X x, in Y y, in Z z)
 {
     alias ResMat = Mat4x4!(CommonType!(X, Y, Z));
@@ -231,6 +253,17 @@ Mat3x3!T rotation(T) (in T angle) if (isFloatingPoint!T)
     );
 }
 
+Mat2x3!T affineRotation(T) (in T angle) if (isFloatingPoint!T)
+{
+    import std.math : cos, sin;
+    const c = cast(T) cos(angle);
+    const s = cast(T) sin(angle);
+    return Mat2x3!T (
+        c, -s, 0,
+        s, c, 0,
+    );
+}
+
 /// ditto
 auto rotation(T, V) (in T angle, in V axis)
 if (isVec!(3, V) && isFloatingPoint!T)
@@ -411,6 +444,25 @@ auto scale(V) (in V v) if (isVec2!V)
         v.x, 0, 0,
         0, v.y, 0,
         0, 0, 1,
+    );
+}
+
+/// ditto
+Mat2x3!(CommonType!(X, Y)) affineScale(X, Y) (in X x, in Y y)
+if (allSatisfy!(isNumeric, X, Y))
+{
+    return Mat2x3!(CommonType!(X, Y))(
+        x, 0, 0,
+        0, y, 0,
+    );
+}
+
+/// ditto
+auto affineScale(V) (in V v) if (isVec2!V)
+{
+    return Mat2x3!(V.Component) (
+        v.x, 0, 0,
+        0, v.y, 0,
     );
 }
 
