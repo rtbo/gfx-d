@@ -9,6 +9,7 @@
 
     "subPackages": [
         "bindings",
+        "core",
         "genmesh",
         "math",
         "memalloc",
@@ -24,6 +25,7 @@
     ],
     "dependencies": {
         "gfx:bindings": "*",
+        "gfx:core": "*",
         "spirv_cross": { "path": "3rdparty/spirv_cross-d" }
     },
 

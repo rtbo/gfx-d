@@ -1,0 +1,10 @@
+{
+	"name": "core",
+	"authors": [
+		"Remi Thebault"
+	],
+	"description": "Gfx-d core package",
+	"copyright": "Copyright © 2018, Remi Thebault",
+	"license": "MIT",
+	"targetType": "library"
+}
