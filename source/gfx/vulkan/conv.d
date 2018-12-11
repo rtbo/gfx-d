@@ -5,7 +5,6 @@ package:
 
 import gfx.bindings.vulkan;
 
-import gfx.core.types;
 import gfx.graal : Severity;
 import gfx.graal.buffer;
 import gfx.graal.cmd;
@@ -16,6 +15,7 @@ import gfx.graal.pipeline;
 import gfx.graal.presentation;
 import gfx.graal.queue;
 import gfx.graal.renderpass;
+import gfx.graal.types;
 
 import std.typecons : Flag;
 

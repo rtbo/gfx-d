@@ -4,7 +4,6 @@ import example;
 
 import gfx.core.rc;
 import gfx.core.typecons;
-import gfx.core.types;
 import gfx.decl.engine;
 import gfx.graal.buffer;
 import gfx.graal.cmd;
@@ -16,6 +15,7 @@ import gfx.graal.pipeline;
 import gfx.graal.presentation;
 import gfx.graal.queue;
 import gfx.graal.renderpass;
+import gfx.graal.types;
 
 import gfx.math;
 

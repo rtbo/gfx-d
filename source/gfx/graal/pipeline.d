@@ -2,11 +2,11 @@ module gfx.graal.pipeline;
 
 import gfx.core.rc;
 import gfx.core.typecons;
-import gfx.core.types;
 import gfx.graal.buffer;
 import gfx.graal.format;
 import gfx.graal.image;
 import gfx.graal.renderpass;
+import gfx.graal.types;
 
 import std.typecons : Flag;
 

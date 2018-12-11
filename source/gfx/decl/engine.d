@@ -86,13 +86,13 @@ class DeclarativeEngine : Disposable
 {
     import gfx.core.rc : Rc;
     import gfx.core.typecons;
-    import gfx.core.types;
     import gfx.decl.store : DeclarativeStore;
     import gfx.graal.cmd : Access, PipelineStage;
     import gfx.graal.device : Device;
     import gfx.graal.image : ImageLayout;
     import gfx.graal.pipeline;
     import gfx.graal.renderpass;
+    import gfx.graal.types;
     import std.exception : enforce;
     import std.format : format;
 

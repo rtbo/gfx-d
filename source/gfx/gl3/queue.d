@@ -136,7 +136,6 @@ final class GlCommandBuffer : CommandBuffer
 {
     import gfx.core.log : warningf;
     import gfx.core.typecons : Trans;
-    import gfx.core.types : Rect, Viewport;
     import gfx.gl3 : GlShare, GlInfo;
     import gfx.gl3.conv : toGl;
     import gfx.gl3.pipeline : GlPipeline, GlRenderPass;
@@ -147,6 +146,7 @@ final class GlCommandBuffer : CommandBuffer
                                 ShaderStage, VertexInputBinding,
                                 VertexInputAttrib, ViewportConfig;
     import gfx.graal.renderpass : Framebuffer, RenderPass;
+    import gfx.graal.types : Rect, Viewport;
     import std.typecons : Flag;
 
     private enum Dirty {
@@ -524,8 +524,8 @@ final class GlCommandBuffer : CommandBuffer
 private:
 
 struct GlState {
-    import gfx.core.types : Rect, Viewport;
     import gfx.graal.pipeline : DepthInfo, Rasterizer, StencilInfo, ViewportConfig;
+    import gfx.graal.types : Rect, Viewport;
 
     GLuint prog;
     const(ViewportConfig)[] vcs;
@@ -705,7 +705,7 @@ final class SetViewportConfigsCmd : GlCommand
 
 final class SetViewportsCmd : GlCommand
 {
-    import gfx.core.types : Viewport;
+    import gfx.graal.types : Viewport;
 
     uint firstViewport;
     const(Viewport)[] viewports;
@@ -750,7 +750,7 @@ final class SetViewportsCmd : GlCommand
 
 final class SetScissorsCmd : GlCommand
 {
-    import gfx.core.types : Rect;
+    import gfx.graal.types : Rect;
 
     uint firstScissor;
     const(Rect)[] scissors;

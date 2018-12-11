@@ -1,4 +1,4 @@
-module gfx.core.types;
+module gfx.graal.types;
 
 
 struct Offset2D {
