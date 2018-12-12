@@ -1,23 +1,24 @@
 {
-	"name": "declapi",
-	"authors": [
-		"Remi Thebault"
-	],
-	"description": "gfx-d declapi example",
-	"copyright": "Copyright © 2016, Remi Thebault",
-	"license": "MIT",
-	"targetType": "executable",
-	"sourcePaths": [
-		"source", "../common"
-	],
+    "name": "declapi",
+    "authors": [
+        "Remi Thebault"
+    ],
+    "description": "gfx-d declapi example",
+    "copyright": "Copyright © 2016, Remi Thebault",
+    "license": "MIT",
+    "targetType": "executable",
+    "sourcePaths": [
+        "source", "../common"
+    ],
     "dependencies": {
-        "gfx" : { "path": "../../"  },
-        "gfx:math" : { "path": "../../math"  },
-		"gfx:window" : { "path": "../../window" },
-		"gfx:genmesh" : { "path": "../../genmesh" },
-		"img" : { "path": "../../3rdparty/img-d" }
-	},
-	"preGenerateCommands-linux": [
-		"bash $PACKAGE_DIR/../gen_example_spirv.sh $PACKAGE_DIR"
-	]
+        "gfx":         { "path": "../.."  },
+        "gfx:decl":    { "path": "../../decl"  },
+        "gfx:math":    { "path": "../../math"  },
+        "gfx:window":  { "path": "../../window" },
+        "gfx:genmesh": { "path": "../../genmesh" },
+        "img":         { "path": "../../3rdparty/img-d" }
+    },
+    "preGenerateCommands-linux": [
+        "bash $PACKAGE_DIR/../gen_example_spirv.sh $PACKAGE_DIR"
+    ]
 }

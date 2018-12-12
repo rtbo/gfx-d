@@ -127,7 +127,7 @@ class StencilExample : Example
             }
         }
         chessboard = createTextureImage(
-            cast(const(void)[])data, ImageType.d2, ImageDims.d2(32, 32), Format.r8_uNorm
+            cast(const(void)[])data, ImageInfo.d2(32, 32).withFormat(Format.r8_uNorm)
         );
         chessboardView = chessboard.createView(
             ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
