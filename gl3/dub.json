@@ -1,0 +1,31 @@
+{
+    "name": "gl3",
+    "authors": [
+        "Remi Thebault"
+    ],
+    "description": "OpenGL backend and bindings for Gfx-d",
+    "copyright": "Copyright © 2018, Remi Thebault",
+    "license": "MIT",
+    "dependencies": {
+        "gfx:bindings": "*",
+        "gfx": { "path": ".." }
+    },
+
+    "-ddoxFilterArgs": ["--min-protection=Protected"],
+    "-ddoxTool": "scod",
+    "configurations": [
+        {
+            "name": "linux",
+            "platforms": ["linux"],
+            "dependencies": {
+                "xlib-d": "~>0.1.1"
+            }
+        },
+        {
+            "name": "windows",
+            "platforms": ["windows"],
+            "buildRequirements": [ "noDefaultFlags" ],
+            "buildOptions": [ "releaseMode", "inline", "optimize" ]
+        }
+    ]
+}

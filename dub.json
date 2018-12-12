@@ -11,9 +11,11 @@
         "bindings",
         "core",
         "genmesh",
+        "gl3",
         "math",
         "memalloc",
         "window",
+        "vulkan",
 
         "examples/swapchain",
         "examples/triangle",
@@ -24,7 +26,6 @@
         "examples/declapi"
     ],
     "dependencies": {
-        "gfx:bindings": "*",
         "gfx:core": "*",
         "spirv_cross": { "path": "3rdparty/spirv_cross-d" }
     },

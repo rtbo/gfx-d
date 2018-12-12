@@ -5,22 +5,5 @@
     ],
     "description": "Raw bindings to Gfx APIs",
     "copyright": "Copyright © 2016, Rémi Thebault",
-    "license": "MIT",
-    "configurations": [
-        {
-            "name": "linux",
-            "platforms": ["linux"],
-            "dependencies": {
-                "wayland:client": "~>0.1.0",
-                "xlib-d": "~>0.1.1",
-                "xcb-d": "~>2.1.1"
-            }
-        },
-        {
-            "name": "windows",
-            "platforms": ["windows"],
-            "buildRequirements": [ "noDefaultFlags" ],
-            "buildOptions": [ "releaseMode", "inline", "optimize" ]
-        }
-    ]
+    "license": "MIT"
 }
