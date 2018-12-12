@@ -412,7 +412,7 @@ private enum sharedAtomicMethods = q{
         ~this() {
             // no gc operation allowed during gc pass
             import std.stdio : stderr;
-            enum phrase = rcTypeName ~ " was not propery disposed\n";
+            enum phrase = rcTypeName ~ " was not properly disposed\n";
             if (refCount != 0) {
                 stderr.write(phrase);
                 stderr.flush();
