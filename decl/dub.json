@@ -1,0 +1,14 @@
+{
+    "name": "decl",
+    "authors": [
+        "Remi Thebault"
+    ],
+    "description": "Declarative engine for Gfx-d",
+    "copyright": "Copyright © 2018, Remi Thebault",
+    "license": "MIT",
+    "dependencies": {
+        "gfx": { "path": ".." }
+    },
+    "-ddoxFilterArgs": ["--min-protection=Protected"],
+    "-ddoxTool": "scod"
+}
