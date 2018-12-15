@@ -77,7 +77,8 @@ class Gl3ProgramLinkException : Exception {
     }
 }
 
-void glCheck(Gl gl, in string operation) {
+void glCheck(Gl gl, in string operation)
+{
     import gfx.bindings.opengl.gl : GL_NO_ERROR, GL_INVALID_ENUM,
                                     GL_INVALID_VALUE, GL_INVALID_OPERATION,
                                     GL_STACK_OVERFLOW, GL_STACK_UNDERFLOW,
@@ -117,9 +118,8 @@ void glCheck(Gl gl, in string operation) {
             break;
         }
 
-        import gfx.core.log : errorf;
-        import gfx.gl3 : gfxGlTag;
+        import gfx.gl3 : gfxGlLog;
 
-        errorf(gfxGlTag, "OpenGL error %s during %s", glErr, operation);
+        gfxGlLog.errorf("OpenGL error %s during %s", glErr, operation);
     }
 }

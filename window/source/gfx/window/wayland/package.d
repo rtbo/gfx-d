@@ -3,6 +3,7 @@ module gfx.window.wayland;
 
 version(linux):
 
+import gfx.core.log : LogTag;
 import gfx.graal : Instance;
 import gfx.graal.presentation;
 import gfx.vulkan.wsi;
@@ -13,8 +14,10 @@ import wayland.client;
 import wayland.native.util;
 import wayland.util;
 
-// FIXME: multithreading
+enum gfxWlLogMask = 0x0800_0000;
+package immutable gfxWlLog = LogTag("GFX-WL", gfxWlLogMask);
 
+// FIXME: multithreading
 
 class WaylandDisplay : Display
 {

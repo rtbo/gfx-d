@@ -1,10 +1,14 @@
 /// A memory allocator for Gfx-d
 module gfx.memalloc;
 
+import gfx.core.log :       LogTag;
 import gfx.core.rc :        AtomicRefCounted;
 import gfx.graal.device :   Device;
 import gfx.graal.memory :   DeviceMemory, MemoryProperties, MemoryRequirements,
                             MemoryType, MemProps;
+
+enum gfxMemallocLogMask = 0x1000_0000;
+package immutable gfxMemallocLog = LogTag("GFX-MEMALLOC", gfxMemallocLogMask);
 
 /// Option flags for creating an Allocator
 enum AllocatorFlags

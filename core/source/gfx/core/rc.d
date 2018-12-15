@@ -1,7 +1,11 @@
 /// Reference counting module
 module gfx.core.rc;
 
+import gfx.core.log : LogTag;
 import std.typecons : Flag, No, Yes;
+
+enum gfxRcMask = 0x4000_0000;
+immutable gfxRcLog = LogTag("GFX-RC", gfxRcMask);
 
 /// A resource that can be disposed
 interface Disposable
@@ -424,20 +428,19 @@ private enum sharedAtomicMethods = q{
     debug(rc) {
         private final shared void rcDebug(Args...)(string fmt, Args args)
         {
-            import gfx.core.log : debugf;
-            import gfx.core.rc : rcPrintStack, rcTypeRegex;
+            import gfx.core.rc : gfxRcLog, rcPrintStack, rcTypeRegex;
             import gfx.core.util : StackTrace;
             import std.algorithm : min;
             import std.regex : matchFirst;
 
             if (!matchFirst(rcTypeName, rcTypeRegex)) return;
 
-            debugf("RC", fmt, args);
+            gfxRcLog.debugf(fmt, args);
             if (rcPrintStack) {
                 const st = StackTrace.obtain(13, StackTrace.Options.all);
                 const frames = st.frames.length > 2 ? st.frames[2 .. $] : [];
                 foreach (i, f; frames) {
-                    debugf("RC", "  %02d %s", i, f.symbol);
+                    gfxRcLog.debugf("  %02d %s", i, f.symbol);
                 }
             }
         }

@@ -8,9 +8,10 @@ import gfx.graal.presentation;
 import gfx.window;
 
 import std.exception;
-import gfx.core.log;
+import gfx.core.log : LogTag;
 
-package immutable string gfxW32WndTag = "GFX-WND-W32";
+enum gfxW32Tag = 0x0800_0000;
+immutable gfxW32Log = LogTag("GFX-W32", gfxW32Tag);
 
 class Win32Display : Display
 {
@@ -28,21 +29,20 @@ class Win32Display : Display
         g_dpy = this;
 
         registerWindowClass();
-        import gfx.core.log : info, trace, warningf;
         assert(!_instance);
 
         foreach (b; loadOrder) {
             final switch (b) {
             case Backend.vulkan:
                 try {
-                    trace(gfxW32WndTag, "Attempting to instantiate Vulkan");
+                    gfxW32WndLog.trace("Attempting to instantiate Vulkan");
                     import gfx.vulkan : createVulkanInstance, vulkanInit;
                     vulkanInit();
                     _instance = createVulkanInstance();
-                    info(gfxW32WndTag, "Creating a Vulkan instance");
+                    gfxW32WndLog.info("Creating a Vulkan instance");
                 }
                 catch (Exception ex) {
-                    warningf(gfxW32WndTag, "Vulkan is not available. %s", ex.msg);
+                    gfxW32WndLog.warningf("Vulkan is not available. %s", ex.msg);
                 }
                 break;
             case Backend.gl3:
@@ -52,15 +52,15 @@ class Win32Display : Display
                     import gfx.gl3.context : GlAttribs;
                     import gfx.window.win32.context : Win32GlContext;
 
-                    trace(gfxW32WndTag, "Attempting to instantiate OpenGL");
+                    gfxW32WndLog.trace("Attempting to instantiate OpenGL");
                     auto w = new Win32Window(this, true);
                     scope(exit) w.close();
                     auto ctx = makeRc!Win32GlContext(GlAttribs.init, w.hWnd);
-                    trace(gfxW32WndTag, "Creating an OpenGL instance");
+                    gfxW32WndLog.trace("Creating an OpenGL instance");
                     _instance = new GlInstance(ctx);
                 }
                 catch (Exception ex) {
-                    warningf(gfxW32WndTag, "OpenGL is not available. %s", ex.msg);
+                    gfxW32WndLog.warningf("OpenGL is not available. %s", ex.msg);
                 }
                 break;
             }
@@ -405,8 +405,7 @@ private LRESULT win32WndProc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
     catch(Exception ex)
     {
-        import gfx.core.log : errorf;
-        try { errorf(gfxW32WndTag, "Win32 Proc exception: %s", ex.msg); }
+        try { gfxW32WndLog.errorf("Win32 Proc exception: %s", ex.msg); }
         catch(Exception) {}
     }
     return res;

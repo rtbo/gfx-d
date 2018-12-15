@@ -6,7 +6,7 @@ import gfx.bindings.core : SharedLib;
 import gfx.gl3.context : GlAttribs, GlContext, glVersions;
 import X11.Xlib : XDisplay = Display, XErrorEvent;
 
-import gfx.window.xcb : gfxXcbWndTag;
+import gfx.window.xcb : gfxXcbWndLog;
 
 /// GlX backed OpenGL context
 class XcbGlContext : GlContext
@@ -42,7 +42,6 @@ class XcbGlContext : GlContext
         import gfx.bindings.opengl.glx : PFN_glXGetProcAddressARB;
         import std.algorithm : canFind;
         import std.exception : enforce;
-        import gfx.core.log : trace, tracef;
         import X11.Xlib : XSetErrorHandler, XSync;
 
         _dpy = dpy;
@@ -77,7 +76,7 @@ class XcbGlContext : GlContext
             if (attrs.decimalVersion < attribs.decimalVersion) break;
 
             const ctxAttribs = getCtxAttribs(attrs);
-            tracef(gfxXcbWndTag, "attempting to create OpenGL %s.%s context", attrs.majorVersion, attrs.minorVersion);
+            gfxXcbWndLog.tracef("attempting to create OpenGL %s.%s context", attrs.majorVersion, attrs.minorVersion);
 
             createContextErrorFlag = false;
             _ctx = _glx.CreateContextAttribsARB(_dpy, fbc, null, 1, &ctxAttribs[0]);
@@ -91,20 +90,19 @@ class XcbGlContext : GlContext
         XSync(_dpy, 0);
         _attribs = attrs;
 
-        tracef(gfxXcbWndTag, "created OpenGL %s.%s context", attrs.majorVersion, attrs.minorVersion);
+        gfxXcbWndLog.tracef("created OpenGL %s.%s context", attrs.majorVersion, attrs.minorVersion);
 
         XcbGlContext.makeCurrent(window);
         _gl = new Gl(&loadSymbol);
 
-        trace(gfxXcbWndTag, "done loading GL/GLX");
+        gfxXcbWndLog.trace("done loading GL/GLX");
     }
 
     override void dispose() {
         import gfx.bindings.core : closeSharedLib;
-        import gfx.core.log : trace;
 
         _glx.DestroyContext(_dpy, _ctx);
-        trace(gfxXcbWndTag, "destroyed GL/GLX context");
+        gfxXcbWndLog.trace("destroyed GL/GLX context");
     }
 
 
@@ -148,8 +146,7 @@ class XcbGlContext : GlContext
                 return swap;
             }
             else {
-                import gfx.core.log : warningf;
-                warningf(gfxXcbWndTag, "could not get glx drawable to get swap interval");
+                gfxXcbWndLog.warning("could not get glx drawable to get swap interval");
                 return -1;
             }
 
@@ -171,8 +168,7 @@ class XcbGlContext : GlContext
                 _glx.SwapIntervalEXT(_dpy, drawable, interval);
             }
             else {
-                import gfx.core.log : warningf;
-                warningf(gfxXcbWndTag,"could not get glx drawable to set swap interval");
+                gfxXcbWndLog.warning("could not get glx drawable to set swap interval");
             }
         }
     }
@@ -194,8 +190,7 @@ class XcbGlContext : GlContext
 
         if (!fbConfigs || !numConfigs)
         {
-            import gfx.core.log : error;
-            error(gfxXcbWndTag, "GFX-GLX: could not get fb config");
+            gfxXcbWndLog.error("GFX-GLX: could not get fb config");
             return null;
         }
         scope (exit) XFree(fbConfigs);
@@ -215,8 +210,7 @@ private SharedLib loadGlLib()
     foreach (ln; glLibNames) {
         auto lib = openSharedLib(ln);
         if (lib) {
-            import gfx.core.log : tracef;
-            tracef(gfxXcbWndTag, "opening shared library %s", ln);
+            gfxXcbWndLog.tracef("opening shared library %s", ln);
             return lib;
         }
     }

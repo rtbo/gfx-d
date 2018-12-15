@@ -2,9 +2,11 @@
 module gfx.vulkan;
 
 import gfx.bindings.vulkan;
+import gfx.core.log : LogTag;
 import gfx.graal;
 
-package immutable string gfxVkTag = "GFX-VK";
+enum gfxVkLogMask = 0x2000_0000;
+package(gfx) immutable gfxVkLog = LogTag("GFX-VK", gfxVkLogMask);
 
 // some standard layers
 
@@ -136,7 +138,6 @@ VulkanInstance createVulkanInstance(in string[] layers, in string[] extensions,
                                     in VulkanVersion appVersion=VulkanVersion(0, 0, 0))
 {
     import gfx : gfxVersionMaj, gfxVersionMin, gfxVersionMic;
-    import gfx.core.log : infof;
     import std.algorithm : all, canFind, map;
     import std.array : array;
     import std.exception : enforce;
@@ -170,14 +171,14 @@ VulkanInstance createVulkanInstance(in string[] layers, in string[] extensions,
     auto vkLayers = layers.map!toStringz.array;
     auto vkExts = extensions.map!toStringz.array;
 
-    infof(gfxVkTag, "Opening Vulkan instance.");
-    infof(gfxVkTag, "Vulan layers:%s", layers.length?"":" none");
+    gfxVkLog.info("Opening Vulkan instance.");
+    gfxVkLog.infof("Vulan layers:%s", layers.length?"":" none");
     foreach (l; layers) {
-        infof(gfxVkTag, "    %s", l);
+        gfxVkLog.infof("    %s", l);
     }
-    infof(gfxVkTag, "Vulan extensions:%s", extensions.length?"":" none");
+    gfxVkLog.infof("Vulan extensions:%s", extensions.length?"":" none");
     foreach (e; extensions) {
-        infof(gfxVkTag, "    %s", e);
+        gfxVkLog.infof("    %s", e);
     }
 
 

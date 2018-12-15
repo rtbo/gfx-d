@@ -3,7 +3,83 @@ module gfx.core.log;
 import core.sync.mutex : Mutex;
 import std.datetime : SysTime;
 
-package(gfx) immutable string gfxTag = "GFX";
+struct LogTag
+{
+    string tag;
+    uint mask = 0xffff_ffff;
+
+    /// add a log entry with this tag
+    void log (in Severity sev, scope lazy string msg) const
+    {
+        .log (sev, mask, tag, msg);
+    }
+
+    /// add a formatted log entry with this tag
+    void logf (Args...)(in Severity sev, in string fmt, Args args) const
+    {
+        .logf (sev, mask, tag, fmt, args);
+    }
+
+    /// add a trace log entry with this tag
+    void trace (scope lazy string msg) const
+    {
+        .log (Severity.trace, mask, tag, msg);
+    }
+
+    /// add a formatted trace log entry with this tag
+    void tracef (Args...)(in string fmt, Args args) const
+    {
+        .logf (Severity.trace, mask, tag, fmt, args);
+    }
+
+    /// add a debug log entry with this tag
+    void debug_ (scope lazy string msg) const
+    {
+        .log (Severity.debug_, mask, tag, msg);
+    }
+
+    /// add a formatted debug log entry with this tag
+    void debugf (Args...)(in string fmt, Args args) const
+    {
+        .logf (Severity.debug_, mask, tag, fmt, args);
+    }
+
+    /// add a info log entry with this tag
+    void info (scope lazy string msg) const
+    {
+        .log (Severity.info, mask, tag, msg);
+    }
+
+    /// add a formatted info log entry with this tag
+    void infof (Args...)(in string fmt, Args args) const
+    {
+        .logf (Severity.info, mask, tag, fmt, args);
+    }
+
+    /// add a warning log entry with this tag
+    void warning (scope lazy string msg) const
+    {
+        .log (Severity.warning, mask, tag, msg);
+    }
+
+    /// add a formatted warning log entry with this tag
+    void warningf (Args...)(in string fmt, Args args) const
+    {
+        .logf (Severity.warning, mask, tag, fmt, args);
+    }
+
+    /// add a error log entry with this tag
+    void error (scope lazy string msg) const
+    {
+        .log (Severity.error, mask, tag, msg);
+    }
+
+    /// add a formatted error log entry with this tag
+    void errorf (Args...)(in string fmt, Args args) const
+    {
+        .logf (Severity.error, mask, tag, fmt, args);
+    }
+}
 
 /// Log messages severity
 enum Severity

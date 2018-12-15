@@ -4,7 +4,8 @@ module gfx.window;
 import gfx.core.rc : AtomicRefCounted;
 import gfx.graal : Backend, Instance;
 
-package immutable string gfxWndTag = "GFX-WND";
+enum gfxWindowLogMask = 0x0800_0000;
+package immutable gfxWindowLog = LogTag("GFX-WINDOW", gfxWindowLogMask);
 
 alias MouseHandler = void delegate(uint x, uint y);
 alias KeyHandler = void delegate(uint key);

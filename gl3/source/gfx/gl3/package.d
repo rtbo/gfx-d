@@ -1,10 +1,12 @@
 module gfx.gl3;
 
+import gfx.core.log : LogTag;
 import gfx.core.rc : AtomicRefCounted;
 import gfx.graal : DebugCallback, Instance;
 import gfx.graal.device : PhysicalDevice;
 
-package immutable string gfxGlTag = "GFX-GL";
+enum gfxGlLogMask = 0x2000_0000;
+package immutable gfxGlLog = LogTag("GFX-GL", gfxGlLogMask);
 
 final class GlInstance : Instance
 {
