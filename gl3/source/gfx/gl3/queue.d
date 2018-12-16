@@ -134,7 +134,6 @@ final class GlCommandPool : CommandPool
 
 final class GlCommandBuffer : CommandBuffer
 {
-    import gfx.core.typecons : Trans;
     import gfx.gl3 : GlShare, GlInfo;
     import gfx.gl3.conv : toGl;
     import gfx.gl3.pipeline : GlPipeline, GlRenderPass;
@@ -145,7 +144,7 @@ final class GlCommandBuffer : CommandBuffer
                                 ShaderStage, VertexInputBinding,
                                 VertexInputAttrib, ViewportConfig;
     import gfx.graal.renderpass : Framebuffer, RenderPass;
-    import gfx.graal.types : Rect, Viewport;
+    import gfx.graal.types : Rect, Trans, Viewport;
     import std.typecons : Flag;
 
     private enum Dirty {

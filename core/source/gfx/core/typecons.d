@@ -1,47 +1,6 @@
 module gfx.core.typecons;
 
 import std.range.primitives : isInputRange;
-import std.traits : isIntegral;
-
-/// An integer interval from a start until an end.
-/// end is one past last, such as end-start = length
-struct Interval(T)
-if (isIntegral!T)
-{
-    /// start of interval
-    T start;
-    /// one past last
-    T end;
-
-    /// end-start
-    @property T length() const {
-        return end - start;
-    }
-}
-
-/// Interval build helper
-auto interval(T)(T start, T end)
-if (isIntegral!T)
-{
-    import std.traits : Unqual;
-    return Interval!(Unqual!T)(start, end);
-}
-
-/// A transition from one state to another
-struct Trans(T) {
-    /// state before
-    T from;
-    /// state after
-    T to;
-}
-
-/// Transition build helper
-auto trans(T)(T from, T to)
-if (!is(T : Object))
-{
-    import std.traits : Unqual;
-    return Trans!(Unqual!T)(from, to);
-}
 
 /// template that resolves to true if an object of type T can be assigned to null
 template isNullAssignable(T) {

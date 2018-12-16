@@ -1,10 +1,11 @@
 module gfx.graal.renderpass;
 
 import gfx.core.rc;
-import gfx.core.typecons;
+import gfx.core.typecons : Option;
 import gfx.graal.cmd : Access, PipelineStage;
 import gfx.graal.format;
 import gfx.graal.image;
+import gfx.graal.types;
 
 import std.typecons : Flag;
 
