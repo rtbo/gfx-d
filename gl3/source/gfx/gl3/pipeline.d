@@ -22,15 +22,15 @@ final class GlShaderModule : ShaderModule
     private ShaderStage _stage;
 
     this (Device dev, GlShare share, in const(uint)[] code) {
-        import spirv_cross : SpvCompilerGlsl;
+        import spirv_cross : ScCompilerGlsl;
         _dev = dev;
         gl = share.gl;
-        auto cl = new SpvCompilerGlsl(code);
+        auto cl = new ScCompilerGlsl(code);
         scope(exit) cl.dispose();
         auto opts = cl.options;
         opts.ver = share.info.glslVer;
-        opts.enable_420pack = false;
-        opts.vertex_invert_y = true;
+        opts.enable420PackExtension = false;
+        opts.vertFlipY = true;
         // opts.vertex_transform_clip_space = true;
         cl.options = opts;
         _code = cl.compile();
