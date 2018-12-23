@@ -2,7 +2,7 @@
 module gfx.memalloc;
 
 import gfx.core.log :       LogTag;
-import gfx.core.rc :        IAtomicRefCounted;
+import gfx.core.rc :        AtomicRefCounted, IAtomicRefCounted;
 import gfx.graal.device :   Device;
 import gfx.graal.memory :   DeviceMemory, MemoryProperties, MemoryRequirements,
                             MemoryType, MemProps;
@@ -151,13 +151,11 @@ Allocator createAllocator(Device device, AllocatorOptions options)
 }
 
 /// Memory allocator for a device
-abstract class Allocator : IAtomicRefCounted
+abstract class Allocator : AtomicRefCounted
 {
-    import gfx.core.rc : atomicRcCode, Rc;
+    import gfx.core.rc : Rc;
     import gfx.graal.buffer : BufferUsage;
     import gfx.graal.image : ImageInfo;
-
-    mixin(atomicRcCode);
 
     package Device _device;
     package AllocatorOptions _options;
@@ -301,12 +299,10 @@ abstract class Allocator : IAtomicRefCounted
 
 
 /// Represent a single allocation within a DeviceMemory
-class MemAlloc : IAtomicRefCounted
+class MemAlloc : AtomicRefCounted
 {
-    import gfx.core.rc : atomicRcCode, Rc;
+    import gfx.core.rc : Rc;
     import gfx.graal.memory : MemoryMap;
-
-    mixin(atomicRcCode);
 
     private DeviceMemory _mem;
     private size_t _offset;
