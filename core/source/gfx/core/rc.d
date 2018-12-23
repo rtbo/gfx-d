@@ -16,6 +16,7 @@ interface Disposable
 
 /// A atomic reference counted resource.
 /// Objects implementing this interface can be safely manipulated as shared.
+/// Implementing class should mixin atomicRcCode to use the provided implementation.
 interface IAtomicRefCounted
 {
     /// Atomically loads the number of active references.
@@ -86,6 +87,16 @@ interface IAtomicRefCounted
     /// Dispose the underlying resource
     void dispose()
     in { assert(refCount == 0); }
+}
+
+/// Abstract class that implements IAtomicRefCounted.
+/// Should be used over IAtomicRefCounted when practicable to avoid code
+/// duplication in the final executable.
+abstract class AtomicRefCounted : IAtomicRefCounted
+{
+    mixin(atomicRcCode);
+
+    abstract override void dispose();
 }
 
 /// compile time check that T can be ref counted atomically.
