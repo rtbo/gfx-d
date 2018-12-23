@@ -27,8 +27,7 @@
         "examples/declapi"
     ],
     "dependencies": {
-        "gfx:core": "*",
-        "spirv_cross": { "path": "3rdparty/spirv_cross-d" }
+        "gfx:core": "*"
     },
 
     "-ddoxFilterArgs": ["--min-protection=Protected"],

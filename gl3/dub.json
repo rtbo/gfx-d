@@ -8,7 +8,8 @@
     "license": "MIT",
     "dependencies": {
         "gfx:bindings": "*",
-        "gfx": { "path": ".." }
+        "gfx":          { "path": ".." },
+        "spirv_cross":  "~>0.3.0"
     },
 
     "-ddoxFilterArgs": ["--min-protection=Protected"],
