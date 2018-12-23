@@ -34,10 +34,10 @@ enum PresentMode {
     mailbox,
 }
 
-interface Surface : AtomicRefCounted
+interface Surface : IAtomicRefCounted
 {}
 
-interface Swapchain : AtomicRefCounted
+interface Swapchain : IAtomicRefCounted
 {
     import gfx.graal.device : Device;
 

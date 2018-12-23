@@ -2,7 +2,7 @@
 module gfx.memalloc;
 
 import gfx.core.log :       LogTag;
-import gfx.core.rc :        AtomicRefCounted;
+import gfx.core.rc :        IAtomicRefCounted;
 import gfx.graal.device :   Device;
 import gfx.graal.memory :   DeviceMemory, MemoryProperties, MemoryRequirements,
                             MemoryType, MemProps;
@@ -151,7 +151,7 @@ Allocator createAllocator(Device device, AllocatorOptions options)
 }
 
 /// Memory allocator for a device
-abstract class Allocator : AtomicRefCounted
+abstract class Allocator : IAtomicRefCounted
 {
     import gfx.core.rc : atomicRcCode, Rc;
     import gfx.graal.buffer : BufferUsage;
@@ -301,7 +301,7 @@ abstract class Allocator : AtomicRefCounted
 
 
 /// Represent a single allocation within a DeviceMemory
-class MemAlloc : AtomicRefCounted
+class MemAlloc : IAtomicRefCounted
 {
     import gfx.core.rc : atomicRcCode, Rc;
     import gfx.graal.memory : MemoryMap;
@@ -598,7 +598,7 @@ struct AllocStats
 package:
 
 /// A block of memory associated to one DeviceMemory
-interface MemBlock : AtomicRefCounted
+interface MemBlock : IAtomicRefCounted
 {
     /// increase map count and return cached pointer
     /// if map count was zero, it maps the memory to the cached pointer before

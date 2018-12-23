@@ -11,7 +11,7 @@ import gfx.graal.types;
 
 import std.typecons : Flag, No;
 
-interface CommandPool : AtomicRefCounted
+interface CommandPool : IAtomicRefCounted
 {
     void reset();
 

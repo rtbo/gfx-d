@@ -156,7 +156,7 @@ private struct MemoryMapArrayView(T)
 }
 
 
-interface DeviceMemory : AtomicRefCounted
+interface DeviceMemory : IAtomicRefCounted
 {
     /// Get the parent device
     @property Device device();

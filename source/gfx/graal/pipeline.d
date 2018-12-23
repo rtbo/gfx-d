@@ -10,7 +10,7 @@ import gfx.graal.types;
 
 import std.typecons : Flag;
 
-interface ShaderModule : AtomicRefCounted
+interface ShaderModule : IAtomicRefCounted
 {
     import gfx.graal.device : Device;
 
@@ -20,7 +20,7 @@ interface ShaderModule : AtomicRefCounted
     @property string entryPoint();
 }
 
-interface PipelineLayout : AtomicRefCounted
+interface PipelineLayout : IAtomicRefCounted
 {
     import gfx.graal.device : Device;
 
@@ -28,7 +28,7 @@ interface PipelineLayout : AtomicRefCounted
     @property Device device();
 }
 
-interface Pipeline : AtomicRefCounted
+interface Pipeline : IAtomicRefCounted
 {
     import gfx.graal.device : Device;
 
@@ -36,7 +36,7 @@ interface Pipeline : AtomicRefCounted
     @property Device device();
 }
 
-interface DescriptorSetLayout : AtomicRefCounted
+interface DescriptorSetLayout : IAtomicRefCounted
 {
     import gfx.graal.device : Device;
 
@@ -44,7 +44,7 @@ interface DescriptorSetLayout : AtomicRefCounted
     @property Device device();
 }
 
-interface DescriptorPool : AtomicRefCounted
+interface DescriptorPool : IAtomicRefCounted
 {
     import gfx.graal.device : Device;
 

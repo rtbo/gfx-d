@@ -1,7 +1,7 @@
 module gfx.gl3;
 
 import gfx.core.log : LogTag;
-import gfx.core.rc : AtomicRefCounted;
+import gfx.core.rc : IAtomicRefCounted;
 import gfx.graal : DebugCallback, Instance;
 import gfx.graal.device : PhysicalDevice;
 
@@ -112,7 +112,7 @@ struct GlInfo
 }
 
 
-final class GlShare : AtomicRefCounted
+final class GlShare : IAtomicRefCounted
 {
     import gfx.core.rc : atomicRcCode, Rc;
     import gfx.gl3.context : GlContext;

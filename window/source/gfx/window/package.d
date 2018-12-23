@@ -1,7 +1,7 @@
 /// Optional window package, mainly to run gfx-d examples
 module gfx.window;
 
-import gfx.core.rc : AtomicRefCounted;
+import gfx.core.rc : IAtomicRefCounted;
 import gfx.graal : Backend, Instance;
 
 enum gfxWindowLogMask = 0x0800_0000;
@@ -11,7 +11,7 @@ alias MouseHandler = void delegate(uint x, uint y);
 alias KeyHandler = void delegate(uint key);
 alias CloseHandler = bool delegate();
 
-interface Display : AtomicRefCounted
+interface Display : IAtomicRefCounted
 {
     @property Instance instance();
     @property Window[] windows();

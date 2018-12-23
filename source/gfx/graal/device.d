@@ -115,7 +115,7 @@ struct MappedMemorySet
 }
 
 /// Handle to a logical device
-interface Device : AtomicRefCounted
+interface Device : IAtomicRefCounted
 {
     import gfx.graal : Instance;
 

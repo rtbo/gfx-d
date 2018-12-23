@@ -4,7 +4,7 @@ module gfx.graal.sync;
 import core.time : dur, Duration;
 import gfx.core.rc;
 
-interface Semaphore : AtomicRefCounted
+interface Semaphore : IAtomicRefCounted
 {
     import gfx.graal.device : Device;
 
@@ -12,7 +12,7 @@ interface Semaphore : AtomicRefCounted
     @property Device device();
 }
 
-interface Fence : AtomicRefCounted
+interface Fence : IAtomicRefCounted
 {
     import gfx.graal.device : Device;
 

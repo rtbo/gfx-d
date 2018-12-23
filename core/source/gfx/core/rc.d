@@ -16,18 +16,18 @@ interface Disposable
 
 /// A atomic reference counted resource.
 /// Objects implementing this interface can be safely manipulated as shared.
-interface AtomicRefCounted
+interface IAtomicRefCounted
 {
     /// Atomically loads the number of active references.
     final @property size_t refCount() const {
-        return (cast(shared(AtomicRefCounted))this).refCountShared;
+        return (cast(shared(IAtomicRefCounted))this).refCountShared;
     }
     /// ditto
     shared @property size_t refCountShared() const;
 
     /// Atomically increment the reference count.
     final void retain() {
-        return (cast(shared(AtomicRefCounted))this).retainShared();
+        return (cast(shared(IAtomicRefCounted))this).retainShared();
     }
     /// ditto
     void retainShared() shared;
@@ -47,7 +47,7 @@ interface AtomicRefCounted
         );
     }
     body {
-        return (cast(shared(AtomicRefCounted))this).releaseShared(disposeOnZero);
+        return (cast(shared(IAtomicRefCounted))this).releaseShared(disposeOnZero);
     }
     /// ditto
     bool releaseShared(in Flag!"disposeOnZero" disposeOnZero = Yes.disposeOnZero) shared
@@ -70,7 +70,7 @@ interface AtomicRefCounted
         );
     }
     body {
-        return (cast(shared(AtomicRefCounted))this).rcLockShared();
+        return (cast(shared(IAtomicRefCounted))this).rcLockShared();
     }
     /// ditto
     shared bool rcLockShared();
@@ -81,7 +81,7 @@ interface AtomicRefCounted
     //     );
     // }
     // this contract compiles with dmd but create a failure on ldc2:
-    // cannot implicitely convert shared(T) to const(AtomicRefCounted)
+    // cannot implicitely convert shared(T) to const(IAtomicRefCounted)
 
     /// Dispose the underlying resource
     void dispose()
@@ -89,10 +89,10 @@ interface AtomicRefCounted
 }
 
 /// compile time check that T can be ref counted atomically.
-enum isAtomicRefCounted(T) = is(T : shared(AtomicRefCounted)) || is(T : AtomicRefCounted);
+enum isAtomicRefCounted(T) = is(T : shared(IAtomicRefCounted)) || is(T : IAtomicRefCounted);
 
 
-/// A string that can be mixed-in a class declaration to implement AtomicRefCounted.
+/// A string that can be mixed-in a class declaration to implement IAtomicRefCounted.
 /// dispose is not implemented of course, but is called by release while the object is locked.
 /// Classes implementing it are free to do it in a non-thread safe manner as long
 /// as dispose does not manipulate external state.
@@ -163,7 +163,7 @@ body {
 
 /// Decreases the reference count of a single object without disposing it.
 /// Use this to move an object out of a scope (typically return at the end of a return function)
-T giveAwayObj(T)(ref T obj) if (is(T : AtomicRefCounted))
+T giveAwayObj(T)(ref T obj) if (is(T : IAtomicRefCounted))
 in {
     assert(obj, "giving away null object");
 }
@@ -363,7 +363,7 @@ struct Rc(T) if (isAtomicRefCounted!T)
 }
 
 /// Helper struct that keeps a weak reference to a Resource.
-struct Weak(T) if (is(T : AtomicRefCounted))
+struct Weak(T) if (is(T : IAtomicRefCounted))
 {
     private T _obj;
 
@@ -401,7 +401,7 @@ debug(rc) {
 }
 debug {
     shared static ~this() {
-        // ensure we trigger AtomicRefCounted dtors
+        // ensure we trigger IAtomicRefCounted dtors
         import core.memory : GC;
         GC.collect();
     }
@@ -528,7 +528,7 @@ private
     int rcCount = 0;
     int structCount = 0;
 
-    class RcClass : AtomicRefCounted
+    class RcClass : IAtomicRefCounted
     {
         mixin(atomicRcCode);
 
@@ -632,232 +632,4 @@ private
             assert(!locked.loaded);
         }
     }
-}
-
-static if(false)
-{
-    /// Creates a new instance of $(D T) and returns it under a $(D Uniq!T).
-    template makeUniq(T)
-    if (is(T : Disposable))
-    {
-        Uniq!T makeUniq(Args...)(Args args)
-        {
-            return Uniq!T(new T (args));
-        }
-    }
-
-    debug(Uniq)
-    {
-        import std.stdio;
-    }
-
-    /// A helper struct that manage the lifetime of a Disposable using RAII.
-    /// Note: dlang has capability to enforce a parameter be a lvalue (ref param)
-    /// but has no mechanism such as c++ rvalue reference which would enforce
-    /// true uniqueness by the compiler. Uniq gives additional robustness, but it is
-    /// up to the programmer to make sure that the values passed in by rvalue are
-    /// not referenced somewhere else in the code
-    struct Uniq(T)
-    if (is(T : Disposable) && !hasMemberFunc!(T, "release"))
-    {
-        private T _obj;
-        alias Resource = T;
-
-        // prevent using Uniq with Refcounted
-        // (invariant handles runtime polymorphism)
-        static assert(!is(T : RefCounted), "Use Rc helper for RefCounted objects");
-        invariant()
-        {
-            // if obj is assigned, it must not cast to a RefCounted
-            assert(!_obj || !(cast(RefCounted)_obj), "Use Rc helper for RefCounted objects");
-        }
-
-        /// Constructor taking rvalue. Uniqueness is achieve only if there is no
-        /// aliases of the passed reference.
-        this(T obj)
-        {
-            debug(Uniq)
-            {
-                writefln("build a Uniq!%s from rvalue", T.stringof);
-            }
-            _obj = obj;
-        }
-
-        /// Constructor taking lvalue. Uniqueness is achieve only if there is no
-        /// other copies of the passed reference.
-        this(ref T obj)
-        {
-            debug(Uniq)
-            {
-                writefln("build a Uniq!%s from lvalue", T.stringof);
-            }
-            _obj = obj;
-            obj = null;
-        }
-
-        /// Constructor that take a rvalue.
-        /// $(D u) can only be a rvalue because postblit is disabled.
-        this(U)(Uniq!U u)
-        if (is(U : T))
-        {
-            debug(Uniq)
-            {
-                writefln("cast building a Uniq from rvalue from %s to %s",
-                    U.stringof, T.stringof
-                );
-            }
-            _obj = u._obj;
-        }
-
-        /// Transfer ownership from a Uniq of a type that is convertible to our type.
-        /// $(D u) can only be a rvalue because postblit is disabled.
-        void opAssign(U)(Uniq!U u)
-        if (is(U : T))
-        {
-            debug(Uniq)
-            {
-                writefln("opAssign a Uniq from rvalue from %s to %s",
-                    U.stringof, T.stringof
-                );
-            }
-            if (_obj)
-            {
-                _obj.dispose();
-            }
-            _obj = u._obj;
-            u._obj = null;
-        }
-
-        /// Shortcut to assigned
-        bool opCast(U : bool)() const
-        {
-            return assigned;
-        }
-
-        /// Destructor that disposes the resource.
-        ~this()
-        {
-            debug(Uniq)
-            {
-                writefln("dtor of Uniq!%s", T.stringof);
-            }
-            dispose();
-        }
-
-        /// A view on the underlying object.
-        @property inout(T) obj() inout
-        {
-            return _obj;
-        }
-
-        /// Forwarding method calls and member access to the underlying object.
-        alias obj this;
-
-        /// Transfer the ownership.
-        Uniq release()
-        {
-            debug(Uniq)
-            {
-                writefln("release of Uniq!%s", T.stringof);
-            }
-            auto u = Uniq(_obj);
-            assert(_obj is null);
-            return u;
-        }
-
-        /// Explicitely ispose the underlying resource.
-        void dispose()
-        {
-            // Same method than Disposeable on purpose as it disables alias this.
-            // One cannot shortcut Uniq to dispose the resource.
-            if (_obj)
-            {
-                debug(Uniq)
-                {
-                    writefln("dispose of Uniq!%s", T.stringof);
-                }
-                _obj.dispose();
-                _obj = null;
-            }
-        }
-
-        /// Checks whether a resource is assigned.
-        bool assigned() const
-        {
-            return _obj !is null;
-        }
-
-        // disable copying
-        @disable this(this);
-    }
-
-    version(unittest)
-    {
-        private int disposeCount;
-
-        private class UniqTest : Disposable
-        {
-            override void dispose()
-            {
-                disposeCount += 1;
-            }
-        }
-
-        private Uniq!UniqTest produce1()
-        {
-            auto u = makeUniq!UniqTest();
-            // Returning without release is fine?
-            // It compiles and passes the test, but not recommended.
-            // return u;
-            return u.release();
-        }
-
-        private Uniq!UniqTest produce2()
-        {
-            return makeUniq!UniqTest();
-        }
-
-        private void consume(Uniq!UniqTest /+u+/)
-        {
-        }
-
-        unittest
-        {
-            disposeCount = 0;
-            auto u = makeUniq!UniqTest();
-            assert(disposeCount == 0);
-            static assert (!__traits(compiles, consume(u)));
-            consume(u.release());
-            assert(disposeCount == 1);
-
-            {
-                auto v = makeUniq!UniqTest();
-            }
-            assert(disposeCount == 2);
-
-            consume(produce1());
-            assert(disposeCount == 3);
-
-            consume(produce2());
-            assert(disposeCount == 4);
-
-            auto w = makeUniq!UniqTest();
-            w.dispose();
-            assert(disposeCount == 5);
-        }
-    }
-
-    private template hasMemberFunc(T, string fun)
-    {
-        enum bool hasMemberFunc = is(typeof(
-        (inout int = 0)
-        {
-            T t = T.init;
-            mixin("t."~fun~"();");
-        }));
-    }
-
-    static assert(hasMemberFunc!(RefCounted, "retain"));
-    static assert(hasMemberFunc!(Disposable, "dispose"));
-    static assert(!hasMemberFunc!(Disposable, "release"));
 }

@@ -1,7 +1,7 @@
 module gfx.gl3.context;
 
 import gfx.bindings.opengl.gl : Gl;
-import gfx.core.rc : AtomicRefCounted;
+import gfx.core.rc : IAtomicRefCounted;
 import gfx.graal.format : Format;
 
 enum GlProfile
@@ -56,7 +56,7 @@ uint glslVersion(in uint glVersion) pure {
     }
 }
 
-interface GlContext : AtomicRefCounted
+interface GlContext : IAtomicRefCounted
 {
     @property Gl gl();
 

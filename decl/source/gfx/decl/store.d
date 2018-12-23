@@ -1,6 +1,6 @@
 module gfx.decl.store;
 
-import gfx.core.rc : AtomicRefCounted, Disposable;
+import gfx.core.rc : IAtomicRefCounted, Disposable;
 import gfx.graal.format : Format;
 import std.variant : Algebraic;
 
@@ -32,7 +32,7 @@ class WrongTypeException : Exception
 
 class DeclarativeStore : Disposable
 {
-    private AtomicRefCounted[string] _rcStore;
+    private IAtomicRefCounted[string] _rcStore;
     private Variant[string] _valueStore;
     private Object[string] _objStore; // any class, including ObjectValue!T
 
@@ -167,7 +167,7 @@ enum Store {
 
 template storeOf(T)
 {
-    static if (is(T : AtomicRefCounted)) {
+    static if (is(T : IAtomicRefCounted)) {
         enum storeOf = Store.rc;
     }
     else static if (fitsVariant!T) {

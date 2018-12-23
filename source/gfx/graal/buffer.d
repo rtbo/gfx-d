@@ -22,7 +22,7 @@ enum IndexType {
     u16, u32
 }
 
-interface Buffer : AtomicRefCounted
+interface Buffer : IAtomicRefCounted
 {
     import gfx.graal.device : Device;
 
@@ -47,7 +47,7 @@ interface Buffer : AtomicRefCounted
     BufferView createView(Format format, size_t offset, size_t size);
 }
 
-interface BufferView : AtomicRefCounted
+interface BufferView : IAtomicRefCounted
 {
     @property Format format();
     @property Buffer buffer();

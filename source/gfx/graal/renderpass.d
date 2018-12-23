@@ -54,14 +54,14 @@ struct SubpassDependency
     Trans!Access accessMask;
 }
 
-interface RenderPass : AtomicRefCounted
+interface RenderPass : IAtomicRefCounted
 {
     import gfx.graal.device : Device;
     /// Get the parent device
     @property Device device();
 }
 
-interface Framebuffer : AtomicRefCounted
+interface Framebuffer : IAtomicRefCounted
 {
     import gfx.graal.device : Device;
     /// Get the parent device

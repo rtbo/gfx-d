@@ -510,7 +510,7 @@ class Example : Disposable
 /// Utility command buffer for a one time submission that automatically submit
 /// when disposed.
 /// Generally used for transfer operations.
-class AutoCmdBuf : AtomicRefCounted
+class AutoCmdBuf : IAtomicRefCounted
 {
     mixin(atomicRcCode);
 

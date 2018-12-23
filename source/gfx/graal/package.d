@@ -32,7 +32,7 @@ enum Severity {
 alias DebugCallback = void delegate(Severity severity, string message);
 
 /// A backend instance
-interface Instance : AtomicRefCounted {
+interface Instance : IAtomicRefCounted {
     @property Backend backend();
     @property ApiProps apiProps();
     PhysicalDevice[] devices();

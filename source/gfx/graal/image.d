@@ -293,7 +293,7 @@ interface ImageBase
     ImageView createView(ImageType viewtype, ImageSubresourceRange isr, Swizzle swizzle);
 }
 
-interface Image : ImageBase, AtomicRefCounted
+interface Image : ImageBase, IAtomicRefCounted
 {
     import gfx.graal.device : Device;
 
@@ -307,7 +307,7 @@ interface Image : ImageBase, AtomicRefCounted
     @property DeviceMemory boundMemory();
 }
 
-interface ImageView : AtomicRefCounted
+interface ImageView : IAtomicRefCounted
 {
     @property ImageBase image();
     @property ImageSubresourceRange subresourceRange();
@@ -420,7 +420,7 @@ struct SamplerInfo {
     }
 }
 
-interface Sampler : AtomicRefCounted
+interface Sampler : IAtomicRefCounted
 {
     import gfx.graal.device : Device;
 
