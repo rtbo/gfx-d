@@ -410,13 +410,6 @@ debug(rc) {
     __gshared string rcTypeRegex = ".";
     __gshared bool rcPrintStack = false;
 }
-debug {
-    shared static ~this() {
-        // ensure we trigger IAtomicRefCounted dtors
-        import core.memory : GC;
-        GC.collect();
-    }
-}
 
 private enum sharedAtomicMethods = q{
 
