@@ -59,11 +59,17 @@ class TriangleExample : Example
         preparePipeline();
     }
 
-    void prepareBuffer() {
+    void prepareBuffer()
+    {
+        import gfx.math.proj : NDC;
+
+        const high = projConfig.ndc == NDC.rightHand ? -0.7f : 0.7f;
+        const low = projConfig.ndc == NDC.rightHand ?  0.7f : -0.7f;
+
         const vertexData = [
-            Vertex([-0.7f,  0.7f, 0f, 1f], [ 0f, 1f, 0f, 1f ]),
-            Vertex([ 0.7f,  0.7f, 0f, 1f], [ 1f, 0f, 0f, 1f ]),
-            Vertex([   0f, -0.7f, 0f, 1f], [ 0f, 0f, 1f, 1f ]),
+            Vertex([-0.7f,  low, 0f, 1f], [ 0f, 1f, 0f, 1f ]),
+            Vertex([ 0.7f,  low, 0f, 1f], [ 1f, 0f, 0f, 1f ]),
+            Vertex([   0f, high, 0f, 1f], [ 0f, 0f, 1f, 1f ]),
         ];
 
         vertBuf = createStaticBuffer(vertexData, BufferUsage.vertex);
@@ -108,6 +114,7 @@ class TriangleExample : Example
         auto fragShader = device.createShaderModule(
             cast(immutable(uint)[])import("shader.frag.spv"), "main"
         ).rc;
+        auto pl = device.createPipelineLayout([], []).rc;
 
         PipelineInfo info;
         info.shaders.vertex = vtxShader;
@@ -140,7 +147,7 @@ class TriangleExample : Example
             ],
             [ 0f, 0f, 0f, 0f ]
         );
-        info.layout = device.createPipelineLayout([], []);
+        info.layout = pl;
         info.renderPass = renderPass;
         info.subpassIndex = 0;
 
@@ -150,7 +157,7 @@ class TriangleExample : Example
 
 
     override void recordCmds(size_t cmdBufInd, size_t imgInd) {
-        import gfx.core.typecons : trans;
+        import gfx.graal.types : trans;
 
         if (!perImages.length) {
             perImages = new PerImage[scImages.length];

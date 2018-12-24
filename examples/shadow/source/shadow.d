@@ -224,7 +224,7 @@ final class ShadowExample : Example
             l.position = fvec(pos, 1);
             l.color = color;
             l.view = lookAt(pos, fvec(0, 0, 0), fvec(0, 0, 1));
-            l.proj = perspective(fov, 1f, near, far);
+            l.proj = perspective(projConfig, fov, 1f, near, far);
             l.shadowPlane = shadowTex.createView(
                 ImageType.d2,
                 ImageSubresourceRange(
@@ -765,8 +765,11 @@ int main(string[] args) {
             example.window.closeFlag = true;
         };
 
+
+        const projConfig = example.projConfig;
+
         const winSize = example.surfaceSize;
-        const proj = perspective(45, winSize[0]/(cast(float)winSize[1]), 1f, 20f);
+        const proj = perspective(projConfig, 45f, winSize[0]/(cast(float)winSize[1]), 1f, 20f);
         const viewProj = proj * lookAt(fvec(3, -10, 6), fvec(0, 0, 0), fvec(0, 0, 1));
 
         FPSProbe fpsProbe;

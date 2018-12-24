@@ -282,7 +282,7 @@ class TextureExample : Example
     }
 
     override void recordCmds(size_t cmdBufInd, size_t imgInd) {
-        import gfx.core.typecons : trans;
+        import gfx.graal.types : trans;
 
         if (!perImages.length) {
             perImages = new PerImage[scImages.length];

@@ -34,13 +34,28 @@ struct FPSProbe {
     }
 }
 
+shared static this()
+{
+    debug(rc) {
+        import gfx.core.log : Severity, severity;
+        import gfx.core.rc : rcPrintStack, rcTypeRegex;
+
+        severity = Severity.trace;
+        rcPrintStack = true;
+        rcTypeRegex = "^GlDevice$";
+    }
+}
+
 class Example : Disposable
 {
+    import gfx.math.proj : ProjConfig;
+
     string title;
     string[] args;
     Rc!Display display;
     Window window;
     Rc!Instance instance;
+    ProjConfig projConfig;
     uint graphicsQueueIndex;
     uint presentQueueIndex;
     PhysicalDevice physicalDevice;
@@ -107,6 +122,7 @@ class Example : Disposable
         // depending on detected API support. (i.e. Vulkan is preferred)
         display = createDisplay(backendLoadOrder);
         instance = display.instance;
+        projConfig = instance.apiProps.projConfig;
         // Create a window. The surface is created during the call to show.
         window = display.createWindow();
         window.show(640, 480);
@@ -226,7 +242,7 @@ class Example : Disposable
         import core.time : dur;
 
         bool needReconstruction;
-        const imgInd = swapchain.acquireNextImage(dur!"seconds"(-1), imageAvailableSem, needReconstruction);
+        const imgInd = swapchain.acquireNextImage(dur!"seconds"(-1), imageAvailableSem.obj, needReconstruction);
         const cmdBufInd = nextCmdBuf();
 
         fences[cmdBufInd].wait();
@@ -237,7 +253,7 @@ class Example : Disposable
         submit(cmdBufInd);
 
         presentQueue.present(
-            [ renderingFinishSem ],
+            [ renderingFinishSem.obj ],
             [ PresentRequest(swapchain, imgInd) ]
         );
 

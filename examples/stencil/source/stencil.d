@@ -343,7 +343,7 @@ class StencilExample : Example
 
 
     override void recordCmds(size_t cmdBufInd, size_t imgInd) {
-        import gfx.core.typecons : trans;
+        import gfx.graal.types : trans;
 
         const cv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         const dsv = ClearDepthStencilValues(0f, 0);

@@ -261,7 +261,7 @@ class DeclAPIExample : Example
     }
 
     override void recordCmds(size_t cmdBufInd, size_t imgInd) {
-        import gfx.core.typecons : trans;
+        import gfx.graal.types : trans;
 
         const ccv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         const dcv = ClearDepthStencilValues(1f, 0);
@@ -314,11 +314,13 @@ int main(string[] args) {
 
         enum reportFreq = 100;
 
+        const projConfig = example.projConfig;
+
         // 6 RPM at 60 FPS
         const puls = 6 * 2*PI / 3600f;
         auto angle = 0f;
         const view = lookAt(fvec(0, -7, 2), fvec(0, 0, 0), fvec(0, 0, 1));
-        const proj = perspective!float(45, 4f/3f, 1f, 10f);
+        const proj = perspective!float(projConfig, 45, 4f/3f, 1f, 10f);
         const viewProj = proj*view;
 
         DeclAPIExample.Matrices[3] matrices;

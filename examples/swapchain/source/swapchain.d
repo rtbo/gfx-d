@@ -120,7 +120,7 @@ class SwapchainExample : Disposable
 
     void recordCmds() {
 
-        import gfx.core.typecons : trans;
+        import gfx.graal.types : trans;
 
         const clearValues = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         auto subrange = ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1);
