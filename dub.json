@@ -27,7 +27,8 @@
         "examples/declapi"
     ],
     "dependencies": {
-        "gfx:core": "*"
+        "gfx:core": "*",
+        "gfx:math": "*"
     },
 
     "-ddoxFilterArgs": ["--min-protection=Protected"],

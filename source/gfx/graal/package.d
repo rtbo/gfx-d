@@ -2,20 +2,16 @@ module gfx.graal;
 
 import gfx.core.rc;
 import gfx.graal.device;
+import gfx.math : ProjConfig;
 
 enum Backend {
     vulkan,
     gl3,
 }
 
-enum CoordSystem {
-    rightHanded,
-    leftHanded,
-}
-
 struct ApiProps {
     string name;
-    CoordSystem coordSystem;
+    ProjConfig projConfig;
 }
 
 /// Severity of debug message.

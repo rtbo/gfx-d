@@ -14,21 +14,58 @@ import gfx.math.vec;
 import std.traits : isFloatingPoint;
 
 /// Determines whether the default projection matrices will project to a clip space
-/// whose depth range is [0 .. 1] or [-1 .. 1].
-/// Default is [0 .. 1] but can be changed by setting version(GfxMathDepthMinusOneToOne)
-enum DepthClip {
-    zeroToOne,
-    minusOneToOne,
-}
-
-/// Determines whether the default projection matrices will project to a clip space
 /// where Y points upwards (left hand NDC) or downwards (right hand NDC)
 /// Default is right hand NDC, but can be changed by setting version(GfxMathLeftHandNDC)
 enum NDC {
-    rightHand,
-    leftHand,
+    rightHand       = 0,
+    leftHand        = 1,
 }
 
+/// Determines whether the default projection matrices will project to a clip space
+/// whose depth range is [0 .. 1] or [-1 .. 1].
+/// Default is [0 .. 1] but can be changed by setting version(GfxMathDepthMinusOneToOne)
+enum DepthClip {
+    zeroToOne       = 0,
+    minusOneToOne   = 1,
+}
+
+/// Projection configuration aggregates a DepthClip and a NDC.
+struct ProjConfig
+{
+    private uint rep;
+    private enum dcMask = 0x01;
+    private enum ndcMask = 0x02;
+    private enum ndcShift = 1;
+
+    private enum RH_01  = 0;
+    private enum RH_M11 = 1;
+    private enum LH_01  = 2;
+    private enum LH_M11 = 3;
+
+    this (NDC ndc, DepthClip dc) {
+        rep = cast(uint)ndc << ndcShift | cast(uint)dc;
+    }
+
+    @property NDC ndc() const
+    {
+        return cast(NDC)((rep & ndcMask) >> ndcShift);
+    }
+
+    @property void ndc(NDC ndc)
+    {
+        rep = (rep & ~ndcMask) | (cast(uint)ndc << ndcShift);
+    }
+
+    @property DepthClip depthClip() const
+    {
+        return cast(DepthClip)(rep & dcMask);
+    }
+
+    @property void depthClip(DepthClip dc)
+    {
+        rep = (rep & ~dcMask) | cast(uint)dc;
+    }
+}
 
 /// Build an orthographic projection matrix with right-hand NDC and [0 .. 1] depth clipping
 /// Params:
@@ -210,7 +247,7 @@ template orthoCT(NDC ndc, DepthClip dc)
 ///     n:      distance from origin to near plane (in Z-)
 ///     f:      distance from origin to far plane (in Z-)
 /// Returns: an affine matrix that maps from eye coordinates to NDC.
-alias ortho = orthoCT!(defNdc, defDepthClip);
+alias defOrtho = orthoCT!(defNdc, defDepthClip);
 
 /// Build an orthographic projection matrix with NDC and DepthClip selected at runtime
 /// Params:
@@ -223,24 +260,28 @@ alias ortho = orthoCT!(defNdc, defDepthClip);
 ///     n:      distance from origin to near plane (in Z-)
 ///     f:      distance from origin to far plane (in Z-)
 /// Returns: an affine matrix that maps from eye coordinates to NDC.
-Mat4!T orthoRT(T)(NDC ndc, DepthClip dc, in T l, in T r, in T b, in T t, in T n, in T f)
+Mat4!T ortho(T)(ProjConfig pc, in T l, in T r, in T b, in T t, in T n, in T f)
 {
-    if (ndc == NDC.rightHand && dc == DepthClip.zeroToOne) {
+    switch (pc.rep)
+    {
+    case ProjConfig.RH_01:
         return ortho_RH_01(l, r, b, t, n, f);
-    }
-    else if (ndc == NDC.rightHand && dc == DepthClip.minusOneToOne) {
+    case ProjConfig.RH_M11:
         return ortho_RH_M11(l, r, b, t, n, f);
-    }
-    else if (ndc == NDC.leftHand && dc == DepthClip.zeroToOne) {
+    case ProjConfig.LH_01:
         return ortho_LH_01(l, r, b, t, n, f);
-    }
-    else if (ndc == NDC.leftHand && dc == DepthClip.minusOneToOne) {
+    case ProjConfig.LH_M11:
         return ortho_LH_M11(l, r, b, t, n, f);
-    }
-    else {
-        assert(false);
+    default:
+        assert(false, "invalid ProjConfig");
     }
 }
+/// ditto
+Mat4!T ortho(T)(NDC ndc, DepthClip dc, in T l, in T r, in T b, in T t, in T n, in T f)
+{
+    return ortho(ProjConfig(ndc, dc), l, r, b, t, n, f);
+}
+
 
 /// Build a perspective projection matrix with right-hand NDC and [0 .. 1] depth clipping
 /// Params:
@@ -427,7 +468,7 @@ template frustumCT(NDC ndc, DepthClip dc)
 ///     n:      distance from origin to near plane (in Z-)
 ///     f:      distance from origin to far plane (in Z-)
 /// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
-alias frustum = frustumCT!(defNdc, defDepthClip);
+alias defFrustum = frustumCT!(defNdc, defDepthClip);
 
 /// Build an frustum perspective projection matrix with NDC and DepthClip selected at runtime
 /// Params:
@@ -440,23 +481,26 @@ alias frustum = frustumCT!(defNdc, defDepthClip);
 ///     n:      distance from origin to near plane (in Z-)
 ///     f:      distance from origin to far plane (in Z-)
 /// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
-Mat4!T frustumRT(T)(NDC ndc, DepthClip dc, in T l, in T r, in T b, in T t, in T n, in T f)
+Mat4!T frustum(T)(ProjConfig pc, in T l, in T r, in T b, in T t, in T n, in T f)
 {
-    if (ndc == NDC.rightHand && dc == DepthClip.zeroToOne) {
+    switch (pc.rep)
+    {
+    case ProjConfig.RH_01:
         return frustum_RH_01(l, r, b, t, n, f);
-    }
-    else if (ndc == NDC.rightHand && dc == DepthClip.minusOneToOne) {
+    case ProjConfig.RH_M11:
         return frustum_RH_M11(l, r, b, t, n, f);
-    }
-    else if (ndc == NDC.leftHand && dc == DepthClip.zeroToOne) {
+    case ProjConfig.LH_01:
         return frustum_LH_01(l, r, b, t, n, f);
-    }
-    else if (ndc == NDC.leftHand && dc == DepthClip.minusOneToOne) {
+    case ProjConfig.LH_M11:
         return frustum_LH_M11(l, r, b, t, n, f);
+    default:
+        assert(false, "invalid ProjConfig");
     }
-    else {
-        assert(false);
-    }
+}
+/// ditto
+Mat4!T frustum(T)(NDC ndc, DepthClip dc, in T l, in T r, in T b, in T t, in T n, in T f)
+{
+    return frustum(ProjConfig(ndc, dc), l, r, b, t, n, f);
 }
 
 /// Build a perspective projection matrix with right-hand NDC and [0 .. 1] depth clipping
@@ -632,7 +676,7 @@ template perspectiveCT(NDC ndc, DepthClip dc)
 ///     near:   position of the near plane
 ///     far:    position of the far plane
 /// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
-alias perspective = perspectiveCT!(defNdc, defDepthClip);
+alias defPerspective = perspectiveCT!(defNdc, defDepthClip);
 
 /// Build a perspective projection matrix with NDC and DepthClip selected at run-time.
 /// Params:
@@ -643,23 +687,26 @@ alias perspective = perspectiveCT!(defNdc, defDepthClip);
 ///     near:   position of the near plane
 ///     far:    position of the far plane
 /// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
-Mat4!T perspectiveRT(T)(NDC ndc, DepthClip dc, in T fovx, in T aspect, in T near, in T far)
+Mat4!T perspective(T)(ProjConfig pc, in T fovx, in T aspect, in T near, in T far)
 {
-    if (ndc == NDC.rightHand && dc == DepthClip.zeroToOne) {
+    switch (pc.rep)
+    {
+    case ProjConfig.RH_01:
         return perspective_RH_01(fovx, aspect, near, far);
-    }
-    else if (ndc == NDC.rightHand && dc == DepthClip.minusOneToOne) {
+    case ProjConfig.RH_M11:
         return perspective_RH_M11(fovx, aspect, near, far);
-    }
-    else if (ndc == NDC.leftHand && dc == DepthClip.zeroToOne) {
+    case ProjConfig.LH_01:
         return perspective_LH_01(fovx, aspect, near, far);
-    }
-    else if (ndc == NDC.leftHand && dc == DepthClip.minusOneToOne) {
+    case ProjConfig.LH_M11:
         return perspective_LH_M11(fovx, aspect, near, far);
+    default:
+        assert(false, "invalid ProjConfig");
     }
-    else {
-        assert(false);
-    }
+}
+/// ditto
+Mat4!T perspective(T)(NDC ndc, DepthClip dc, in T fovx, in T aspect, in T near, in T far)
+{
+    return perspective(ProjConfig(ndc, dc));
 }
 
 

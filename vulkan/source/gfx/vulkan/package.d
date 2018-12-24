@@ -16,9 +16,12 @@ enum lunarGValidationLayers = [
     "VK_LAYER_LUNARG_parameter_validation",
 ];
 
-@property ApiProps vulkanApiProps() {
+@property ApiProps vulkanApiProps()
+{
+    import gfx.math.proj : DepthClip, NDC, ProjConfig;
+
     return ApiProps(
-        "vulkan", CoordSystem.rightHanded
+        "vulkan", ProjConfig(NDC.rightHand, DepthClip.zeroToOne)
     );
 }
 

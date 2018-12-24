@@ -30,8 +30,6 @@ final class GlShaderModule : ShaderModule
         auto opts = cl.options;
         opts.ver = share.info.glslVer;
         opts.enable420PackExtension = false;
-        opts.vertFlipY = true;
-        // opts.vertex_transform_clip_space = true;
         cl.options = opts;
         _code = cl.compile();
     }

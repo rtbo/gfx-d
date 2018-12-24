@@ -73,9 +73,9 @@ Graal to Vulkan. This should be the preferred and natural backend when using gfx
 ## gfx:gl3 - OpenGL backend
 
 If Vulkan is not available on a target machine, `gfx:gl3` is available as backup.
-SPIRV-Cross is used to translate shaders to GLSL. SPIRV-Cross inserts Y axis inversion,
-so many shaders will be compatible for both Vulkan and OpenGL backends out of the box,
-but there are limitations:
+SPIRV-Cross is used to translate shaders to GLSL. Many shaders will be
+compatible for both Vulkan and OpenGL backends out of the box, but there are
+limitations:
  - push constants are not available
  - depth map need range adaptation
 There are probably more...

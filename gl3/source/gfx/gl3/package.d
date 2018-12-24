@@ -12,7 +12,7 @@ final class GlInstance : Instance
 {
     import gfx.core.rc : atomicRcCode, Rc;
     import gfx.gl3.context : GlContext;
-    import gfx.graal : ApiProps, Backend, CoordSystem;
+    import gfx.graal : ApiProps, Backend;
 
     mixin(atomicRcCode);
 
@@ -35,9 +35,12 @@ final class GlInstance : Instance
         return Backend.gl3;
     }
 
-    override @property ApiProps apiProps() {
+    override @property ApiProps apiProps()
+    {
+        import gfx.math.proj : DepthClip, NDC, ProjConfig;
+
         return ApiProps(
-            "gl3", CoordSystem.leftHanded
+            "gl3", ProjConfig(NDC.leftHand, DepthClip.minusOneToOne)
         );
     }
 
