@@ -2,6 +2,7 @@
 module gfx.window;
 
 import gfx.core.rc : IAtomicRefCounted;
+import gfx.core.log : LogTag;
 import gfx.graal : Backend, Instance;
 
 enum gfxWindowLogMask = 0x0800_0000;

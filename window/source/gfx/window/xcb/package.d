@@ -68,7 +68,7 @@ class XcbDisplay : Display
         import X11.Xlib : XCloseDisplay, XDefaultScreen, XOpenDisplay;
         import X11.Xlib_xcb : XGetXCBConnection, XSetEventQueueOwner, XCBOwnsEventQueue;
 
-        gfxXcbWndLog.trace("opening X display");
+        gfxXcbLog.trace("opening X display");
         _dpy = enforce(XOpenDisplay(null));
         scope(failure) {
             XCloseDisplay(_dpy);
@@ -93,7 +93,7 @@ class XcbDisplay : Display
         assert(!_windows.length);
 
         _instance.unload();
-        xXcbWndLog.trace("closing X display");
+        gfxXcbLog.trace("closing X display");
         XCloseDisplay(_dpy);
     }
 
@@ -151,14 +151,14 @@ class XcbDisplay : Display
             final switch (b) {
             case Backend.vulkan:
                 try {
-                    gfxXcbWndLog.trace("Attempting to instantiate Vulkan");
+                    gfxXcbLog.trace("Attempting to instantiate Vulkan");
                     import gfx.vulkan : createVulkanInstance, vulkanInit;
                     vulkanInit();
                     _instance = createVulkanInstance();
-                    gfxXcbWndLog.info("Creating a Vulkan instance");
+                    gfxXcbLog.info("Creating a Vulkan instance");
                 }
                 catch (Exception ex) {
-                    warningf("Vulkan is not available. %s", ex.msg);
+                    gfxXcbLog.warningf("Vulkan is not available. %s", ex.msg);
                 }
                 break;
             case Backend.gl3:
@@ -167,16 +167,16 @@ class XcbDisplay : Display
                     import gfx.gl3 : GlInstance;
                     import gfx.gl3.context : GlAttribs;
                     import gfx.window.xcb.context : XcbGlContext;
-                    gfxXcbWndLog.trace("Attempting to instantiate OpenGL");
+                    gfxXcbLog.trace("Attempting to instantiate OpenGL");
                     auto w = new XcbWindow(this, null, true);
                     w.show(10, 10);
                     scope(exit) w.close();
                     auto ctx = makeRc!XcbGlContext(_dpy, _mainScreenNum, GlAttribs.init, w._win);
-                    gfxXcbWndLog.trace("Creating an OpenGL instance");
+                    gfxXcbLog.trace("Creating an OpenGL instance");
                     _instance = new GlInstance(ctx);
                 }
                 catch (Exception ex) {
-                    gfxXcbWndLog.warningf("OpenGL is not available. %s", ex.msg);
+                    gfxXcbLog.warningf("OpenGL is not available. %s", ex.msg);
                 }
                 break;
             }
