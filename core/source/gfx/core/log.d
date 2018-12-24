@@ -1,8 +1,16 @@
+/// Logging module
+///
+/// This module provides logging functionality.
+/// Everything is thread-safe at the exception of global severity and mask
+/// getters/setters. This is done so to avoid paying for synchronization of log
+/// entries that will be filtered out.
 module gfx.core.log;
 
 import core.sync.mutex : Mutex;
 import std.datetime : SysTime;
 
+/// LogTag encapsulate a string tag and a bitmask.
+/// It a also have helpers to log entries with the given tag and mask.
 struct LogTag
 {
     string tag;
@@ -96,8 +104,14 @@ enum Severity
     error,
 }
 
-/// The default severity
-enum defaultSeverity = Severity.info;
+debug {
+    /// The default severity
+    enum defaultSeverity = Severity.debug_;
+}
+else {
+    /// The default severity
+    enum defaultSeverity = Severity.info;
+}
 
 /// The default filter mask
 enum uint defaultMask = 0xffff_ffff;
@@ -105,20 +119,20 @@ enum uint defaultMask = 0xffff_ffff;
 /// add a log entry
 void log (in Severity sev, in string tag, scope lazy string msg)
 {
-    s_mutex.lock();
-    scope(exit) s_mutex.unlock();
-
     if (cast(int)sev >= cast(int)s_sev) {
+        s_mutex.lock();
+        scope(exit) s_mutex.unlock();
+
         s_logger.print(s_msgFmt.formatMsg(sev, tag, msg));
     }
 }
 /// ditto
 void log (in Severity sev, in uint mask, in string tag, scope lazy string msg)
 {
-    s_mutex.lock();
-    scope(exit) s_mutex.unlock();
-
     if (cast(int)sev >= cast(int)s_sev && (mask & s_mask) != 0) {
+        s_mutex.lock();
+        scope(exit) s_mutex.unlock();
+
         s_logger.print(s_msgFmt.formatMsg(sev, tag, msg));
     }
 }
@@ -127,10 +141,10 @@ void logf (Args...) (in Severity sev, in string tag, in string fmt, Args args)
 {
     import std.format : format;
 
-    s_mutex.lock();
-    scope(exit) s_mutex.unlock();
-
     if (cast(int)sev >= cast(int)s_sev) {
+        s_mutex.lock();
+        scope(exit) s_mutex.unlock();
+
         s_logger.print(s_msgFmt.formatMsg(sev, tag, format(fmt, args)));
     }
 }
@@ -139,10 +153,10 @@ void logf (Args...) (in Severity sev, in uint mask, in string tag, in string fmt
 {
     import std.format : format;
 
-    s_mutex.lock();
-    scope(exit) s_mutex.unlock();
-
     if (cast(int)sev >= cast(int)s_sev && (mask & s_mask) != 0) {
+        s_mutex.lock();
+        scope(exit) s_mutex.unlock();
+
         s_logger.print(s_msgFmt.formatMsg(sev, tag, format(fmt, args)));
     }
 }
@@ -339,49 +353,37 @@ class StdErrLogger : Logger
 
 /// Minimum Severity for message filtering.
 /// All messages with lower severity are filtered out.
-/// by default Severity.info.
+/// By default Severity.info in release builds and Severity.debug_ in debug builds.
 @property Severity severity()
 {
-    s_mutex.lock();
-    scope(exit) s_mutex.unlock();
-
     return s_sev;
 }
 /// ditto
 @property void severity (in Severity sev)
 {
-    s_mutex.lock();
-    scope(exit) s_mutex.unlock();
-
     s_sev = sev;
 }
 
 /// A mask for bypassing some messages.
-/// Should only be used in debug builds.
-/// by default 0xffffffff
+/// By default 0xffffffff
 @property uint mask()
 {
-    s_mutex.lock();
-    scope(exit) s_mutex.unlock();
-
     return s_mask;
 }
 /// ditto
 @property void mask(in uint mask)
 {
-    s_mutex.lock();
-    scope(exit) s_mutex.unlock();
-
     s_mask = mask;
 }
 
 /// the default format string for log messages
-enum string defaultMsgFormat = "%d %s: %t %m";
+enum string defaultMsgFormat = "%d %p%s: %t %m";
 
 /// The format string for log messages
 /// The entries are as follow:
 ///  - %d: datetime (formatted according timeFormat)
 ///  - %s: severity
+///  - %p: padding of severity
 ///  - %t: tag
 ///  - %m: msg
 /// The default format string is defaultMsgFormat
@@ -460,7 +462,7 @@ shared static ~this()
 struct MessageFmt
 {
     enum EntryType {
-        str, datetime, sev, tag, msg,
+        str, datetime, sev, pad, tag, msg,
     }
     struct Entry {
         EntryType typ;
@@ -478,6 +480,7 @@ struct MessageFmt
                 switch (c) {
                 case 'd': entries ~= Entry(EntryType.datetime); break;
                 case 's': entries ~= Entry(EntryType.sev); break;
+                case 'p': entries ~= Entry(EntryType.pad); break;
                 case 't': entries ~= Entry(EntryType.tag); break;
                 case 'm': entries ~= Entry(EntryType.msg); break;
                 default: throw new Exception("unknown log format entry: %"~c);
@@ -513,6 +516,7 @@ struct MessageFmt
             case EntryType.str:  res ~= entry.str;                      break;
             case EntryType.datetime: res ~= formatTime(Clock.currTime); break;
             case EntryType.sev: res ~= sevString(sev);                  break;
+            case EntryType.pad: res ~= sevPadString(sev);               break;
             case EntryType.tag : res ~= tag;                            break;
             case EntryType.msg : res ~= msg;                            break;
             }
@@ -530,6 +534,18 @@ string sevString(in Severity sev) pure
     case Severity.info: return "INFO";
     case Severity.warning: return "WARN";
     case Severity.error: return "ERROR";
+    }
+}
+
+string sevPadString(in Severity sev) pure
+{
+    final switch (sev)
+    {
+    case Severity.trace: return null;
+    case Severity.debug_: return null;
+    case Severity.info: return " ";
+    case Severity.warning: return " ";
+    case Severity.error: return null;
     }
 }
 
