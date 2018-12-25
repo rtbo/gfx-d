@@ -7,7 +7,7 @@ import gfx.bindings.core;
 import gfx.bindings.opengl.gl : Gl, GL_TRUE;
 import gfx.bindings.opengl.wgl;
 import gfx.gl3.context : GlAttribs, GlContext, GlProfile, glVersions;
-import gfx.window.win32 : gfxW32WndLog;
+import gfx.window.win32 : gfxW32Log;
 
 /// Helper to get an attrib list to pass to wglChoosePixelFormatARB
 public int[] getAttribList(in GlAttribs attribs) {
@@ -142,7 +142,7 @@ public class Win32GlContext : GlContext
             if (attrs.decimalVersion < attribs.decimalVersion) break;
 
             const ctxAttribs = getCtxAttribs(attrs);
-            gfxW32WndLog.tracef("attempting to create OpenGL %s.%s context", attrs.majorVersion, attrs.minorVersion);
+            gfxW32Log.tracef("attempting to create OpenGL %s.%s context", attrs.majorVersion, attrs.minorVersion);
 
             _ctx = _wgl.CreateContextAttribsARB(dc, null, &ctxAttribs[0]);
 
@@ -150,15 +150,15 @@ public class Win32GlContext : GlContext
         }
 
         enforce(_ctx, "Failed creating Wgl context");
-        gfxW32WndLog.tracef("created OpenGL %s.%s context", attrs.majorVersion, attrs.minorVersion);
+        gfxW32Log.tracef("created OpenGL %s.%s context", attrs.majorVersion, attrs.minorVersion);
         _attribs = attrs;
-        Win32GlContext.makeCurrent(window);
+        Win32GlContext.makeCurrent(cast(size_t)window);
         _gl = new Gl(&loader);
     }
 
     override void dispose() {
         _wgl.DeleteContext(_ctx);
-        gfxW32WndLog.tracef("destroyed GL/WGL context");
+        gfxW32Log.tracef("destroyed GL/WGL context");
     }
 
     override @property Gl gl() {
@@ -226,7 +226,7 @@ public class Win32GlContext : GlContext
                                     null, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), cast(LPSTR)&messageBuffer, 0, null);
         auto buf = new char[size];
         buf[] = messageBuffer[0 .. size];
-        gfxW32WndLog.errorf(buf.idup);
+        gfxW32Log.errorf(buf.idup);
         LocalFree(messageBuffer);
     }
 
@@ -258,7 +258,7 @@ private SharedLib loadGlLib()
     foreach (ln; glLibNames) {
         auto lib = openSharedLib(ln);
         if (lib) {
-            gfxW32WndLog.tracef("opening shared library %s", ln);
+            gfxW32Log.tracef("opening shared library %s", ln);
             return lib;
         }
     }

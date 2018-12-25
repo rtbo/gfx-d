@@ -175,11 +175,11 @@ VulkanInstance createVulkanInstance(in string[] layers, in string[] extensions,
     auto vkExts = extensions.map!toStringz.array;
 
     gfxVkLog.info("Opening Vulkan instance.");
-    gfxVkLog.infof("Vulan layers:%s", layers.length?"":" none");
+    gfxVkLog.infof("Vulkan layers:%s", layers.length?"":" none");
     foreach (l; layers) {
         gfxVkLog.infof("    %s", l);
     }
-    gfxVkLog.infof("Vulan extensions:%s", extensions.length?"":" none");
+    gfxVkLog.infof("Vulkan extensions:%s", extensions.length?"":" none");
     foreach (e; extensions) {
         gfxVkLog.infof("    %s", e);
     }

@@ -35,14 +35,14 @@ class Win32Display : Display
             final switch (b) {
             case Backend.vulkan:
                 try {
-                    gfxW32WndLog.trace("Attempting to instantiate Vulkan");
+                    gfxW32Log.trace("Attempting to instantiate Vulkan");
                     import gfx.vulkan : createVulkanInstance, vulkanInit;
                     vulkanInit();
                     _instance = createVulkanInstance();
-                    gfxW32WndLog.info("Creating a Vulkan instance");
+                    gfxW32Log.info("Creating a Vulkan instance");
                 }
                 catch (Exception ex) {
-                    gfxW32WndLog.warningf("Vulkan is not available. %s", ex.msg);
+                    gfxW32Log.warningf("Vulkan is not available. %s", ex.msg);
                 }
                 break;
             case Backend.gl3:
@@ -52,15 +52,15 @@ class Win32Display : Display
                     import gfx.gl3.context : GlAttribs;
                     import gfx.window.win32.context : Win32GlContext;
 
-                    gfxW32WndLog.trace("Attempting to instantiate OpenGL");
+                    gfxW32Log.trace("Attempting to instantiate OpenGL");
                     auto w = new Win32Window(this, true);
                     scope(exit) w.close();
                     auto ctx = makeRc!Win32GlContext(GlAttribs.init, w.hWnd);
-                    gfxW32WndLog.trace("Creating an OpenGL instance");
+                    gfxW32Log.trace("Creating an OpenGL instance");
                     _instance = new GlInstance(ctx);
                 }
                 catch (Exception ex) {
-                    gfxW32WndLog.warningf("OpenGL is not available. %s", ex.msg);
+                    gfxW32Log.warningf("OpenGL is not available. %s", ex.msg);
                 }
                 break;
             }
@@ -405,7 +405,7 @@ private LRESULT win32WndProc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
     catch(Exception ex)
     {
-        try { gfxW32WndLog.errorf("Win32 Proc exception: %s", ex.msg); }
+        try { gfxW32Log.errorf("Win32 Proc exception: %s", ex.msg); }
         catch(Exception) {}
     }
     return res;
