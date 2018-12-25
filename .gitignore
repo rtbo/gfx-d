@@ -1,0 +1,13 @@
+.dub/
+.vscode/
+*.lib
+*.exe
+dub.selections.json
+examples/declapi/gfx_declapi
+examples/depth/gfx_depth
+examples/shadow/gfx_shadow
+examples/stencil/gfx_stencil
+examples/swapchain/gfx_swapchain
+examples/texture/gfx_texture
+examples/triangle/gfx_triangle
+
