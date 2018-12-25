@@ -3,7 +3,7 @@
     "authors": [
         "Rémi Thebault"
     ],
-    "description": "Raw bindings to Gfx APIs",
+    "description": "Foundation for bindings to C libraries",
     "copyright": "Copyright © 2016, Rémi Thebault",
     "license": "MIT"
 }
