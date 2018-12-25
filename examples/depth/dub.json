@@ -14,8 +14,7 @@
         "gfx" : { "path": "../../"  },
         "gfx:math" : { "path": "../../math"  },
 		"gfx:window" : { "path": "../../window" },
-		"gfx:genmesh" : { "path": "../../genmesh" },
-		"img" : { "path": "../../3rdparty/img-d" }
+		"gfx:genmesh" : { "path": "../../genmesh" }
 	},
 	"preGenerateCommands-linux": [
 		"bash $PACKAGE_DIR/../gen_example_spirv.sh $PACKAGE_DIR"
