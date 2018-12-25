@@ -32,15 +32,9 @@ interface Buffer : IAtomicRefCounted
     @property size_t size();
     @property BufferUsage usage();
     @property MemoryRequirements memoryRequirements();
+
     /// The buffer keeps a reference to the device memory
-    void bindMemory(DeviceMemory mem, in size_t offset)
-    in {
-        assert(mem);
-        assert(!boundMemory);
-    }
-    out {
-        assert(boundMemory);
-    }
+    void bindMemory(DeviceMemory mem, in size_t offset);
 
     @property DeviceMemory boundMemory();
 
