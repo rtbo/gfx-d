@@ -22,7 +22,7 @@ resource management.
 ```d
 import gfx.core.rc;
 
-class SomeResource : AtomicRefCounted
+class SomeResource : IAtomicRefCounted
 {
     mixin(atomicRcCode);
 
@@ -47,7 +47,7 @@ void fun()
     // res1 and res2 are automatically released at end of scope
 }
 ```
-The good thing here is that `AtomicRefCounted` is an interface, so it is possible
+The good thing here is that `IAtomicRefCounted` is an interface, so it is possible
 to build completely abstract API with reference counting enabled.
 The implementation is provided by a one liner mixin.
 Another useful thing is that the counter is embedded in each object,
