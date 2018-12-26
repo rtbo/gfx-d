@@ -463,7 +463,7 @@ final class ImageAlloc : MemAlloc
 /// Params:
 ///     types               = the memory types obtained from a device
 ///     allowedIndexMask    = the mask obtained from MemoryRequirements.memTypeMask
-///     info                = an optional AllocOptions that will constraint the
+///     options             = an optional AllocOptions that will constraint the
 ///                           choice
 /// Returns: the found index of memory type, or uint.max if none could satisfy requirements
 uint findMemoryTypeIndex(in MemoryType[] types,

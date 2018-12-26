@@ -75,13 +75,28 @@ interface PhysicalDevice
 
     @property MemoryProperties memoryProperties();
 
+    /// Get the queue families for the device
+    /// See_Also: QueueFamily
     @property QueueFamily[] queueFamilies();
 
+    /// Get the features supported for the given format
     FormatProperties formatProperties(in Format format);
 
+    /// Check whether the given queue family supports presentation on the
+    /// give surface.
     bool supportsSurface(uint queueFamilyIndex, Surface surface);
+
+    /// Get the capabilities of surface on this device.
     SurfaceCaps surfaceCaps(Surface surface);
+
+    /// Get the formats supported by the given surface.
+    /// Params:
+    ///     surface = the Surface to query the formats from
+    /// Returns: the formats supported by the surface. `[ Formats.undefined ]`
+    ///         can be returned to indicate that any format is supported.
     Format[] surfaceFormats(Surface surface);
+
+    /// Get the present mode supported by the given surface.
     PresentMode[] surfacePresentModes(Surface surface);
 
     /// Open a logical device with the specified queues.
