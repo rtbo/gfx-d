@@ -224,7 +224,7 @@ final class ShadowExample : Example
             l.position = fvec(pos, 1);
             l.color = color;
             l.view = lookAt(pos, fvec(0, 0, 0), fvec(0, 0, 1));
-            l.proj = perspective(projConfig, fov, 1f, near, far);
+            l.proj = perspective(ndc, fov, 1f, near, far);
             l.shadowPlane = shadowTex.createView(
                 ImageType.d2,
                 ImageSubresourceRange(
@@ -766,7 +766,7 @@ int main(string[] args) {
         };
 
 
-        const projConfig = example.projConfig;
+        const projConfig = example.ndc;
 
         const winSize = example.surfaceSize;
         const proj = perspective(projConfig, 45f, winSize[0]/(cast(float)winSize[1]), 1f, 20f);

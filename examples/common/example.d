@@ -48,14 +48,14 @@ shared static this()
 
 class Example : Disposable
 {
-    import gfx.math.proj : ProjConfig;
+    import gfx.math.proj : NDC;
 
     string title;
     string[] args;
     Rc!Display display;
     Window window;
     Rc!Instance instance;
-    ProjConfig projConfig;
+    NDC ndc;
     uint graphicsQueueIndex;
     uint presentQueueIndex;
     PhysicalDevice physicalDevice;
@@ -122,7 +122,7 @@ class Example : Disposable
         // depending on detected API support. (i.e. Vulkan is preferred)
         display = createDisplay(backendLoadOrder);
         instance = display.instance;
-        projConfig = instance.apiProps.projConfig;
+        ndc = instance.apiProps.ndc;
         // Create a window. The surface is created during the call to show.
         window = display.createWindow();
         window.show(640, 480);

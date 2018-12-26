@@ -37,10 +37,10 @@ final class GlInstance : Instance
 
     override @property ApiProps apiProps()
     {
-        import gfx.math.proj : DepthClip, NDC, ProjConfig;
+        import gfx.math.proj : ndc, XYClip, ZClip;
 
         return ApiProps(
-            "gl3", ProjConfig(NDC.leftHand, DepthClip.minusOneToOne)
+            "gl3", ndc(XYClip.leftHand, ZClip.minusOneToOne)
         );
     }
 

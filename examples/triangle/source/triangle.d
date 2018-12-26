@@ -61,10 +61,10 @@ class TriangleExample : Example
 
     void prepareBuffer()
     {
-        import gfx.math.proj : NDC;
+        import gfx.math.proj : XYClip, xyClip;
 
-        const high = projConfig.ndc == NDC.rightHand ? -0.7f : 0.7f;
-        const low = projConfig.ndc == NDC.rightHand ?  0.7f : -0.7f;
+        const high = ndc.xyClip == XYClip.rightHand ? -0.7f : 0.7f;
+        const low = ndc.xyClip == XYClip.rightHand ?  0.7f : -0.7f;
 
         const vertexData = [
             Vertex([-0.7f,  low, 0f, 1f], [ 0f, 1f, 0f, 1f ]),

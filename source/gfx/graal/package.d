@@ -2,16 +2,24 @@ module gfx.graal;
 
 import gfx.core.rc;
 import gfx.graal.device;
-import gfx.math : ProjConfig;
+import gfx.math : NDC;
 
-enum Backend {
+/// Backend identifier
+enum Backend
+{
+    /// Vulkan backend
     vulkan,
+    /// Open GL 3 backend
     gl3,
 }
 
-struct ApiProps {
+/// Property of the API used to implement a Graal instance.
+struct ApiProps
+{
+    /// name of the API
     string name;
-    ProjConfig projConfig;
+    /// Normalized Device Coordinates of the backend
+    NDC ndc;
 }
 
 /// Severity of debug message.
@@ -28,9 +36,15 @@ enum Severity {
 alias DebugCallback = void delegate(Severity severity, string message);
 
 /// A backend instance
-interface Instance : IAtomicRefCounted {
+interface Instance : IAtomicRefCounted
+{
+    /// Backend identifier
     @property Backend backend();
+
+    /// Properties of the backend API
     @property ApiProps apiProps();
+
+    /// The devices that are installed on the system.
     PhysicalDevice[] devices();
 
     /// Sets the debug callback for the instance and associated devices.

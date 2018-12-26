@@ -18,10 +18,10 @@ enum lunarGValidationLayers = [
 
 @property ApiProps vulkanApiProps()
 {
-    import gfx.math.proj : DepthClip, NDC, ProjConfig;
+    import gfx.math.proj : ndc, XYClip, ZClip;
 
     return ApiProps(
-        "vulkan", ProjConfig(NDC.rightHand, DepthClip.zeroToOne)
+        "vulkan", ndc(XYClip.rightHand, ZClip.zeroToOne)
     );
 }
 

@@ -373,13 +373,11 @@ int main(string[] args) {
 
         enum reportFreq = 100;
 
-        const projConfig = example.projConfig;
-
         // 6 RPM at 60 FPS
         const puls = 6 * 2*PI / 3600f;
         auto angle = 0f;
         const view = lookAt(fvec(0, -7, 2), fvec(0, 0, 0), fvec(0, 0, 1));
-        const proj = perspective!float(projConfig, 45, 4f/3f, 1f, 10f);
+        const proj = perspective!float(example.ndc, 45, 4f/3f, 1f, 10f);
         const viewProj = proj*view;
 
         DepthExample.Matrices[3] matrices;
