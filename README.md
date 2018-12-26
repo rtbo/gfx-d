@@ -14,6 +14,20 @@ and several backends implementing it. There are several packages:
  - `gfx:memalloc`: Optional memory allocator.
  - `gfx:window`:   Optional toy window library. Used by examples.
 
+A few examples are also available as DUB subpackages.
+To run an example right away, the following should do it.
+```sh
+$ dub fetch gfx
+$ dub run gfx:triangle
+```
+Some examples need a 3rdparty library available as a submodule. To run these,
+you have to clone the repo:
+```sh
+$ git clone --recursive https://github.com/rtbo/gfx-d.git
+$ cd gfx-d
+$ dub run gfx:texture
+```
+
 ## gfx:core - Core utilies
 
 The main utility is the reference counting, that is necessary for deterministic
