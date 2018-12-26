@@ -1,5 +1,9 @@
 # gfx-d
 
+[![Build Status](https://travis-ci.com/rtbo/gfx-d.svg?branch=master)](https://travis-ci.com/rtbo/gfx-d)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/rtbo/gfx-d?branch=master&svg=true)](https://ci.appveyor.com/project/rtbo/gfx-d)
+
+
 Graphics rendering engine for the D programming language.
 
 The main idea is to have an abstraction layer (here named Graal - Graphics API abstraction layer)
