@@ -1,0 +1,11 @@
+language: d
+d:
+  - dmd
+  - ldc
+  - gdc
+matrix:
+  allow_failures:
+    - d: gdc
+script:
+  - dub test --compiler=${DC}
+  - DC=${DC} ./tools/build_examples.sh
