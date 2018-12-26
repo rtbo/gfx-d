@@ -16,6 +16,7 @@ addons:
       # gcc-8 necessary as compatibility for spirv_cross-d
       - gcc-8
       - libwayland-dev
+      - libx11-xcb-dev
 script:
   - dub test --compiler=${DC}
   - DC=${DC} ./tools/build_examples.sh
