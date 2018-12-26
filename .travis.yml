@@ -6,6 +6,9 @@ d:
 matrix:
   allow_failures:
     - d: gdc
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -y libwayland-dev
 script:
   - dub test --compiler=${DC}
   - DC=${DC} ./tools/build_examples.sh
