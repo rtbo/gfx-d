@@ -17,6 +17,14 @@ addons:
       - gcc-8
       - libwayland-dev
       - libx11-xcb-dev
+      - libpng16-dev
+      - libjpeg-turbo8-dev
 script:
   - dub test --compiler=${DC}
-  - DC=${DC} ./tools/build_examples.sh
+  - dub build gfx:declapi --compiler=${DC}
+  - dub build gfx:depth --compiler=${DC}
+  - dub build gfx:shadow --compiler=${DC}
+  - dub build gfx:stencil --compiler=${DC}
+  - dub build gfx:swapchain --compiler=${DC}
+  - dub build gfx:texture --compiler=${DC}
+  - dub build gfx:triangle --compiler=${DC}
