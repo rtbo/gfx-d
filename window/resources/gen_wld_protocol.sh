@@ -10,7 +10,7 @@ RES_DIR=$PROJ_DIR/resources
 SRC_DIR=$PROJ_DIR/source
 
 
-function gen_protocol {
+gen_protocol () {
     module=$1
     xml=$2
     src=$3
