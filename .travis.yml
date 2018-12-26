@@ -1,0 +1,30 @@
+language: d
+dist: xenial
+d:
+  - dmd
+  - ldc
+  - gdc
+matrix:
+  allow_failures:
+    - d: gdc
+addons:
+  apt:
+    update: true
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      # gcc-8 necessary as compatibility for spirv_cross-d
+      - gcc-8
+      - libwayland-dev
+      - libx11-xcb-dev
+      - libpng16-dev
+      - libjpeg-turbo8-dev
+script:
+  - dub test --compiler=${DC}
+  - dub build gfx:declapi --compiler=${DC}
+  - dub build gfx:depth --compiler=${DC}
+  - dub build gfx:shadow --compiler=${DC}
+  - dub build gfx:stencil --compiler=${DC}
+  - dub build gfx:swapchain --compiler=${DC}
+  - dub build gfx:texture --compiler=${DC}
+  - dub build gfx:triangle --compiler=${DC}
