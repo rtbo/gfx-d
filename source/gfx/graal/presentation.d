@@ -37,6 +37,93 @@ enum PresentMode {
 interface Surface : IAtomicRefCounted
 {}
 
+/// Result of Image Acquisition from a Swapchain.
+struct ImageAcquisition
+{
+    /// An Image Acquisition can have one of the 3 following states.
+    enum State : uint
+    {
+        /// The image could be acquired in optimal condition
+        ok          = 0x00000000,
+        /// An image could be acquired but its use is suboptimal.
+        /// This is an indication that the swapchain should be re-generated.
+        suboptimal  = 0x01000000,
+        /// The swapchain could is out of date and must be re-generated.
+        /// This can happen for example during resize of the window behind
+        /// the swapchain's surface.
+        outOfDate   = 0x02000000,
+
+        /// Value used to mask out the index from the state.
+        mask        = 0xff000000,
+    }
+
+    /// Make an ImageAcquisition in OK state with the given image index.
+    static ImageAcquisition makeOk(uint index)
+    {
+        assert(indexValid(index));
+        return ImageAcquisition(index);
+    }
+
+    /// Make an ImageAcquisition in Suboptimal state with the given image index.
+    static ImageAcquisition makeSuboptimal(uint index)
+    {
+        assert(indexValid(index));
+        return ImageAcquisition(cast(uint)State.suboptimal | index);
+    }
+
+    /// Make an ImageAcquisition in out-of-date state.
+    static ImageAcquisition makeOutOfDate()
+    {
+        return ImageAcquisition(cast(uint)State.outOfDate);
+    }
+
+    /// Get the state of the acquisition
+    @property State state() const
+    {
+        return cast(State)(rep & State.mask);
+    }
+
+    /// Get the index of the acquired image
+    @property uint index() const
+    in (!outOfDate)
+    {
+        return rep & ~State.mask;
+    }
+
+    /// Whether the acquisition is in OK state
+    @property bool ok() const
+    {
+        return state == State.ok;
+    }
+
+    /// Whether the acquisition is in OK state
+    @property bool ok() const
+    {
+        return state == State.ok;
+    }
+
+    /// Whether the acquisition is in suboptimal state
+    @property bool suboptimal() const
+    {
+        return state == State.suboptimal;
+    }
+
+    /// Whether the acquisition is in out-of-date state
+    @property bool outOfDate() const
+    {
+        return state == State.outOfDate;
+    }
+
+    private uint rep;
+
+    private this (uint rep) { this.rep = rep; }
+
+    private static bool indexValid(in uint index)
+    {
+        return (index & cast(uint)State.mask) == 0;
+    }
+}
+
 interface Swapchain : IAtomicRefCounted
 {
     import gfx.graal.device : Device;
