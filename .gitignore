@@ -1,6 +1,8 @@
 # Dub
 .dub/
 dub.selections.json
+docs.json
+/docs
 
 # IDEs
 .vscode/

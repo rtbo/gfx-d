@@ -29,8 +29,5 @@
     "dependencies": {
         "gfx:core": "*",
         "gfx:math": "*"
-    },
-
-    "-ddoxFilterArgs": ["--min-protection=Protected"],
-    "-ddoxTool": "scod"
+    }
 }

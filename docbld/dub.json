@@ -1,0 +1,46 @@
+{
+	"name": "docbld",
+	"authors": [ "Remi Thebault" ],
+	"description": "Meta package to build gfx-d documentation",
+	"copyright": "Copyright © 2018, Remi Thebault",
+	"license": "MIT",
+	"targetType": "library",
+	"sourcePaths": [
+		"../source",
+		"../bindings/source",
+		"../core/source",
+		"../decl/source",
+		"../genmesh/source",
+		"../gl3/source",
+		"../math/source",
+		"../memalloc/source",
+		"../vulkan/source",
+		"../window/source"
+	],
+	"dependencies": {
+		"spirv_cross":  "~>0.3.1"
+	},
+    "configurations": [
+        {
+            "name": "linux",
+            "platforms": ["linux"],
+            "dependencies": {
+                "wayland:client": "~>0.1.0",
+                "xlib-d": "~>0.1.1",
+                "xcb-d": "~>2.1.1"
+            }
+        },
+        {
+            "name": "windows",
+            "platforms": ["windows"]
+        }
+	],
+    "-ddoxFilterArgs": [
+		"--min-protection=Protected",
+		"--ex", "gfx.priv",
+		"--ex", "gfx.decl.sdlang",
+		"--ex", "gfx.vulkan.",
+		"--ex", "gfx.gl3.", "--in", "gfx.gl3.context", "--in", "gfx.gl3.swapchain"
+	],
+    "-ddoxTool": "scod"
+}

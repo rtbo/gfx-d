@@ -70,12 +70,12 @@ NDC ndc(in XYClip xy, in ZClip z)
 
 /// Build an orthographic projection matrix with right-hand NDC and [0 .. 1] depth clipping
 /// Params:
-///     l:      X position of the left plane
-///     r:      X position of the right plane
-///     b:      Y position of the bottom plane
-///     t:      Y position of the top plane
-///     n:      distance from origin to near plane (in Z-)
-///     f:      distance from origin to far plane (in Z-)
+///     l =     X position of the left plane
+///     r =     X position of the right plane
+///     b =     Y position of the bottom plane
+///     t =     Y position of the top plane
+///     n =     distance from origin to near plane (in Z-)
+///     f =     distance from origin to far plane (in Z-)
 /// Returns: an affine matrix that maps from eye coordinates to NDC.
 Mat4!T ortho_RH_01(T) (in T l, in T r, in T b, in T t, in T n, in T f)
 {
@@ -106,12 +106,12 @@ unittest {
 
 /// Build an orthographic projection matrix with right-hand NDC and [-1 .. 1] depth clipping
 /// Params:
-///     l:      X position of the left plane
-///     r:      X position of the right plane
-///     b:      Y position of the bottom plane
-///     t:      Y position of the top plane
-///     n:      distance from origin to near plane (in Z-)
-///     f:      distance from origin to far plane (in Z-)
+///     l =     X position of the left plane
+///     r =     X position of the right plane
+///     b =     Y position of the bottom plane
+///     t =     Y position of the top plane
+///     n =     distance from origin to near plane (in Z-)
+///     f =     distance from origin to far plane (in Z-)
 /// Returns: an affine matrix that maps from eye coordinates to NDC.
 Mat4!T ortho_RH_M11(T) (in T l, in T r, in T b, in T t, in T n, in T f)
 {
@@ -142,12 +142,12 @@ unittest {
 
 /// Build an orthographic projection matrix with left-hand NDC and [0 .. 1] depth clipping
 /// Params:
-///     l:      X position of the left plane
-///     r:      X position of the right plane
-///     b:      Y position of the bottom plane
-///     t:      Y position of the top plane
-///     n:      distance from origin to near plane (in Z-)
-///     f:      distance from origin to far plane (in Z-)
+///     l =     X position of the left plane
+///     r =     X position of the right plane
+///     b =     Y position of the bottom plane
+///     t =     Y position of the top plane
+///     n =     distance from origin to near plane (in Z-)
+///     f =     distance from origin to far plane (in Z-)
 /// Returns: an affine matrix that maps from eye coordinates to NDC.
 Mat4!T ortho_LH_01(T) (in T l, in T r, in T b, in T t, in T n, in T f)
 {
@@ -178,12 +178,12 @@ unittest {
 
 /// Build an orthographic projection matrix with left-hand NDC and [-1 .. 1] depth clipping
 /// Params:
-///     l:      X position of the left plane
-///     r:      X position of the right plane
-///     b:      Y position of the bottom plane
-///     t:      Y position of the top plane
-///     n:      distance from origin to near plane (in Z-)
-///     f:      distance from origin to far plane (in Z-)
+///     l =     X position of the left plane
+///     r =     X position of the right plane
+///     b =     Y position of the bottom plane
+///     t =     Y position of the top plane
+///     n =     distance from origin to near plane (in Z-)
+///     f =     distance from origin to far plane (in Z-)
 /// Returns: an affine matrix that maps from eye coordinates to NDC.
 Mat4!T ortho_LH_M11(T) (in T l, in T r, in T b, in T t, in T n, in T f)
 {
@@ -211,15 +211,7 @@ unittest {
     assert(approxUlp( m * v0, vec(0f, 0f, 0f, 1f) ));
 }
 
-/// Build an orthographic projection matrix with NDC set with compile-time params.
-/// Params:
-///     l:      X position of the left plane
-///     r:      X position of the right plane
-///     b:      Y position of the bottom plane
-///     t:      Y position of the top plane
-///     n:      distance from origin to near plane (in Z-)
-///     f:      distance from origin to far plane (in Z-)
-/// Returns: an affine matrix that maps from eye coordinates to NDC.
+/// Build an orthographic projection matrix with NDC set at compile-time.
 template orthoCT(NDC ndc)
 {
     static if (ndc == NDC.RH_01) {
@@ -241,26 +233,26 @@ template orthoCT(NDC ndc)
 
 /// Build an orthographic projection matrix with default NDC
 /// Params:
-///     l:      X position of the left plane
-///     r:      X position of the right plane
-///     b:      Y position of the bottom plane
-///     t:      Y position of the top plane
-///     n:      distance from origin to near plane (in Z-)
-///     f:      distance from origin to far plane (in Z-)
+///     l =     X position of the left plane
+///     r =     X position of the right plane
+///     b =     Y position of the bottom plane
+///     t =     Y position of the top plane
+///     n =     distance from origin to near plane (in Z-)
+///     f =     distance from origin to far plane (in Z-)
 /// Returns: an affine matrix that maps from eye coordinates to NDC.
 alias defOrtho = orthoCT!(defNdc);
 
 /// Build an orthographic projection matrix with NDC determined at runtime
 /// Params:
-///     ndc:    the target NDC
-///     l:      X position of the left plane
-///     r:      X position of the right plane
-///     b:      Y position of the bottom plane
-///     t:      Y position of the top plane
-///     n:      distance from origin to near plane (in Z-)
-///     f:      distance from origin to far plane (in Z-)
+///     ndc =   the target NDC
+///     l =     X position of the left plane
+///     r =     X position of the right plane
+///     b =     Y position of the bottom plane
+///     t =     Y position of the top plane
+///     n =     distance from origin to near plane (in Z-)
+///     f =     distance from origin to far plane (in Z-)
 /// Returns: an affine matrix that maps from eye coordinates to NDC.
-Mat4!T ortho(T)(NDC bdc, in T l, in T r, in T b, in T t, in T n, in T f)
+Mat4!T ortho(T)(NDC ndc, in T l, in T r, in T b, in T t, in T n, in T f)
 {
     final switch (ndc)
     {
@@ -277,12 +269,12 @@ Mat4!T ortho(T)(NDC bdc, in T l, in T r, in T b, in T t, in T n, in T f)
 
 /// Build a perspective projection matrix with right-hand NDC and [0 .. 1] depth clipping
 /// Params:
-///     l:      X position of the left edge at the near plane
-///     r:      X position of the right edge at the near plane
-///     b:      Y position of the bottom edge at the near plane
-///     t:      Y position of the top edge at the near plane
-///     n:      distance from origin to near plane (in Z-)
-///     f:      distance from origin to far plane (in Z-)
+///     l =     X position of the left edge at the near plane
+///     r =     X position of the right edge at the near plane
+///     b =     Y position of the bottom edge at the near plane
+///     t =     Y position of the top edge at the near plane
+///     n =     distance from origin to near plane (in Z-)
+///     f =     distance from origin to far plane (in Z-)
 /// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
 Mat4!T frustum_RH_01(T)(in T l, in T r, in T b, in T t, in T n, in T f)
 {
@@ -319,12 +311,12 @@ unittest {
 
 /// Build a perspective projection matrix with right-hand NDC and [0 .. 1] depth clipping
 /// Params:
-///     l:      X position of the left edge at the near plane
-///     r:      X position of the right edge at the near plane
-///     b:      Y position of the bottom edge at the near plane
-///     t:      Y position of the top edge at the near plane
-///     n:      distance from origin to near plane (in Z-)
-///     f:      distance from origin to far plane (in Z-)
+///     l =     X position of the left edge at the near plane
+///     r =     X position of the right edge at the near plane
+///     b =     Y position of the bottom edge at the near plane
+///     t =     Y position of the top edge at the near plane
+///     n =     distance from origin to near plane (in Z-)
+///     f =     distance from origin to far plane (in Z-)
 /// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
 Mat4!T frustum_RH_M11(T)(in T l, in T r, in T b, in T t, in T n, in T f)
 {
@@ -360,12 +352,12 @@ unittest {
 
 /// Build a perspective projection matrix with left-hand NDC and [0 .. 1] depth clipping
 /// Params:
-///     l:      X position of the left edge at the near plane
-///     r:      X position of the right edge at the near plane
-///     b:      Y position of the bottom edge at the near plane
-///     t:      Y position of the top edge at the near plane
-///     n:      distance from origin to near plane (in Z-)
-///     f:      distance from origin to far plane (in Z-)
+///     l =     X position of the left edge at the near plane
+///     r =     X position of the right edge at the near plane
+///     b =     Y position of the bottom edge at the near plane
+///     t =     Y position of the top edge at the near plane
+///     n =     distance from origin to near plane (in Z-)
+///     f =     distance from origin to far plane (in Z-)
 /// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
 Mat4!T frustum_LH_01(T)(in T l, in T r, in T b, in T t, in T n, in T f)
 {
@@ -383,12 +375,12 @@ Mat4!T frustum_LH_01(T)(in T l, in T r, in T b, in T t, in T n, in T f)
 
 /// Build a perspective projection matrix with left-hand NDC and [-1 .. 1] depth clipping
 /// Params:
-///     l:      X position of the left edge at the near plane
-///     r:      X position of the right edge at the near plane
-///     b:      Y position of the bottom edge at the near plane
-///     t:      Y position of the top edge at the near plane
-///     n:      distance from origin to near plane (in Z-)
-///     f:      distance from origin to far plane (in Z-)
+///     l =     X position of the left edge at the near plane
+///     r =     X position of the right edge at the near plane
+///     b =     Y position of the bottom edge at the near plane
+///     t =     Y position of the top edge at the near plane
+///     n =     distance from origin to near plane (in Z-)
+///     f =     distance from origin to far plane (in Z-)
 /// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
 Mat4!T frustum_LH_M11(T)(in T l, in T r, in T b, in T t, in T n, in T f)
 {
@@ -423,15 +415,7 @@ unittest {
 }
 
 
-/// Build an frustum perspective projection matrix with NDC set with compile-time params.
-/// Params:
-///     l:      X position of the left edge at the near plane
-///     r:      X position of the right edge at the near plane
-///     b:      Y position of the bottom edge at the near plane
-///     t:      Y position of the top edge at the near plane
-///     n:      distance from origin to near plane (in Z-)
-///     f:      distance from origin to far plane (in Z-)
-/// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
+/// Build an frustum perspective projection matrix with NDC set at compile-time.
 template frustumCT(NDC ndc)
 {
     static if (ndc == NDC.RH_01) {
@@ -453,24 +437,24 @@ template frustumCT(NDC ndc)
 
 /// Build an frustum perspective projection matrix with default NDC and DepthClip
 /// Params:
-///     l:      X position of the left edge at the near plane
-///     r:      X position of the right edge at the near plane
-///     b:      Y position of the bottom edge at the near plane
-///     t:      Y position of the top edge at the near plane
-///     n:      distance from origin to near plane (in Z-)
-///     f:      distance from origin to far plane (in Z-)
+///     l =     X position of the left edge at the near plane
+///     r =     X position of the right edge at the near plane
+///     b =     Y position of the bottom edge at the near plane
+///     t =     Y position of the top edge at the near plane
+///     n =     distance from origin to near plane (in Z-)
+///     f =     distance from origin to far plane (in Z-)
 /// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
 alias defFrustum = frustumCT!(defNdc);
 
 /// Build an frustum perspective projection matrix with NDC and DepthClip selected at runtime
 /// Params:
-///     ndc:    the target NDC
-///     l:      X position of the left edge at the near plane
-///     r:      X position of the right edge at the near plane
-///     b:      Y position of the bottom edge at the near plane
-///     t:      Y position of the top edge at the near plane
-///     n:      distance from origin to near plane (in Z-)
-///     f:      distance from origin to far plane (in Z-)
+///     ndc =   the target NDC
+///     l =     X position of the left edge at the near plane
+///     r =     X position of the right edge at the near plane
+///     b =     Y position of the bottom edge at the near plane
+///     t =     Y position of the top edge at the near plane
+///     n =     distance from origin to near plane (in Z-)
+///     f =     distance from origin to far plane (in Z-)
 /// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
 Mat4!T frustum(T)(NDC ndc, in T l, in T r, in T b, in T t, in T n, in T f)
 {
@@ -489,10 +473,10 @@ Mat4!T frustum(T)(NDC ndc, in T l, in T r, in T b, in T t, in T n, in T f)
 
 /// Build a perspective projection matrix with right-hand NDC and [0 .. 1] depth clipping
 /// Params:
-///     fovx:   horizontal field of view in degrees
-///     aspect: aspect ratio (width / height)
-///     near:   position of the near plane
-///     far:    position of the far plane
+///     fovx =      horizontal field of view in degrees
+///     aspect =    aspect ratio (width / height)
+///     near =      position of the near plane
+///     far =       position of the far plane
 /// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
 Mat4!T perspective_RH_01(T)(in T fovx, in T aspect, in T near, in T far)
 if (isFloatingPoint!T)
@@ -524,10 +508,10 @@ unittest {
 
 /// Build a perspective projection matrix with right-hand NDC and [-1 .. 1] depth clipping
 /// Params:
-///     fovx:   horizontal field of view in degrees
-///     aspect: aspect ratio (width / height)
-///     near:   position of the near plane
-///     far:    position of the far plane
+///     fovx =      horizontal field of view in degrees
+///     aspect =    aspect ratio (width / height)
+///     near =      position of the near plane
+///     far =       position of the far plane
 /// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
 Mat4!T perspective_RH_M11(T)(in T fovx, in T aspect, in T near, in T far)
 if (isFloatingPoint!T)
@@ -559,10 +543,10 @@ unittest {
 
 /// Build a perspective projection matrix with left-hand NDC and [0 .. 1] depth clipping
 /// Params:
-///     fovx:   horizontal field of view in degrees
-///     aspect: aspect ratio (width / height)
-///     near:   position of the near plane
-///     far:    position of the far plane
+///     fovx =      horizontal field of view in degrees
+///     aspect =    aspect ratio (width / height)
+///     near =      position of the near plane
+///     far =       position of the far plane
 /// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
 Mat4!T perspective_LH_01(T)(in T fovx, in T aspect, in T near, in T far)
 if (isFloatingPoint!T)
@@ -594,10 +578,10 @@ unittest {
 
 /// Build a perspective projection matrix with left-hand NDC and [-1 .. 1] depth clipping
 /// Params:
-///     fovx:   horizontal field of view in degrees
-///     aspect: aspect ratio (width / height)
-///     near:   position of the near plane
-///     far:    position of the far plane
+///     fovx =      horizontal field of view in degrees
+///     aspect =    aspect ratio (width / height)
+///     near =      position of the near plane
+///     far =       position of the far plane
 /// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
 Mat4!T perspective_LH_M11(T)(in T fovx, in T aspect, in T near, in T far)
 if (isFloatingPoint!T)
@@ -627,13 +611,7 @@ unittest {
 }
 
 
-/// Build an perspectivegraphic projection matrix with NDC and DepthClip set with compile-time params.
-/// Params:
-///     fovx:   horizontal field of view in degrees
-///     aspect: aspect ratio (width / height)
-///     near:   position of the near plane
-///     far:    position of the far plane
-/// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
+/// Build an perspective projection matrix with NDC set at compile-time.
 template perspectiveCT(NDC ndc)
 {
     static if (ndc == NDC.RH_01) {
@@ -655,20 +633,20 @@ template perspectiveCT(NDC ndc)
 
 /// Build a perspective projection matrix with default NDC and DepthClip
 /// Params:
-///     fovx:   horizontal field of view in degrees
-///     aspect: aspect ratio (width / height)
-///     near:   position of the near plane
-///     far:    position of the far plane
+///     fovx =      horizontal field of view in degrees
+///     aspect =    aspect ratio (width / height)
+///     near =      position of the near plane
+///     far =       position of the far plane
 /// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
 alias defPerspective = perspectiveCT!(defNdc);
 
 /// Build a perspective projection matrix with NDC selected at run-time.
 /// Params:
-///     ndc:    the target NDC
-///     fovx:   horizontal field of view in degrees
-///     aspect: aspect ratio (width / height)
-///     near:   position of the near plane
-///     far:    position of the far plane
+///     ndc =       the target NDC
+///     fovx =      horizontal field of view in degrees
+///     aspect =    aspect ratio (width / height)
+///     near =      position of the near plane
+///     far =       position of the far plane
 /// Returns: a matrix that maps from eye space to clip space. To obtain NDC, the vector must be divided by w.
 Mat4!T perspective(T)(NDC ndc, in T fovx, in T aspect, in T near, in T far)
 {

@@ -3,7 +3,7 @@
 	"authors": [
 		"Remi Thebault"
 	],
-	"description": "Maths for Gfx-d",
+	"description": "Maths for Gfx-d (but not only...)",
 	"copyright": "Copyright © 2018, Remi Thebault",
 	"license": "MIT",
 	"targetType": "library"
