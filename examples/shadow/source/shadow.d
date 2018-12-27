@@ -643,8 +643,9 @@ final class ShadowExample : Example
         import std.algorithm : map;
         import std.array : array;
 
-        bool needReconstruction;
-        const imgInd = swapchain.acquireNextImage(dur!"seconds"(-1), imageAvailableSem, needReconstruction);
+        const acq = swapchain.acquireNextImage(imageAvailableSem.obj);
+        assert(acq.hasIndex); // TODO
+        const imgInd = acq.index;
         const cmdBufInd = nextCmdBuf();
 
         // we have cmdbufs for each light that must be used on every frame

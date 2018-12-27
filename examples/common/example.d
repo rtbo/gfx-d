@@ -241,8 +241,9 @@ class Example : Disposable
     {
         import core.time : dur;
 
-        bool needReconstruction;
-        const imgInd = swapchain.acquireNextImage(dur!"seconds"(-1), imageAvailableSem.obj, needReconstruction);
+        const acq = swapchain.acquireNextImage(imageAvailableSem.obj);
+        assert(acq.hasIndex); // TODO
+        const imgInd = acq.index;
         const cmdBufInd = nextCmdBuf();
 
         fences[cmdBufInd].wait();

@@ -89,7 +89,8 @@ class SwapchainExample : Disposable
         }
     }
 
-    void prepareSwapchain(Swapchain former) {
+    void prepareSwapchain(Swapchain former)
+    {
         const surfCaps = physicalDevice.surfaceCaps(window.surface);
         enforce(surfCaps.usage & ImageUsage.transferDst, "TransferDst not supported by surface");
         const usage = ImageUsage.transferDst | ImageUsage.colorAttachment;
@@ -160,25 +161,28 @@ class SwapchainExample : Disposable
     {
         import core.time : dur;
 
-        bool needReconstruction;
-        const imgInd = swapchain.acquireNextImage(dur!"seconds"(-1), imageAvailableSem, needReconstruction);
+        const acq = swapchain.acquireNextImage(imageAvailableSem.obj);
 
-        presentQueue.submit([
-            Submission (
-                [ StageWait(imageAvailableSem, PipelineStage.transfer) ],
-                [ renderingFinishSem.obj ], [ presentCmdBufs[imgInd] ]
-            )
-        ], null);
+        if (acq.hasIndex) {
+            const imgInd = acq.index;
 
-        presentQueue.present(
-            [ renderingFinishSem.obj ],
-            [ PresentRequest(swapchain, imgInd) ]
-        );
+            presentQueue.submit([
+                Submission (
+                    [ StageWait(imageAvailableSem, PipelineStage.transfer) ],
+                    [ renderingFinishSem.obj ], [ presentCmdBufs[imgInd] ]
+                )
+            ], null);
 
-        if (needReconstruction) {
+            presentQueue.present(
+                [ renderingFinishSem.obj ],
+                [ PresentRequest(swapchain, imgInd) ]
+            );
+        }
+
+        if (acq.swapchainNeedsRebuild) {
             writeln("need to rebuild swapchain");
             prepareSwapchain(swapchain);
-            presentPool.reset();
+            //presentPool.reset();
             recordCmds();
         }
     }

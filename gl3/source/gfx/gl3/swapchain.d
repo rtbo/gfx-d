@@ -23,15 +23,16 @@ final class GlSurface : Surface
 
 package final class GlSwapchain : Swapchain
 {
-    import core.time : Duration;
-    import gfx.core.rc : atomicRcCode, Rc;
-    import gfx.gl3 : GlShare;
-    import gfx.gl3.device : GlDevice;
-    import gfx.gl3.resource : GlImage;
-    import gfx.graal.format : Format;
-    import gfx.graal.image : ImageBase, ImageInfo, ImageUsage;
-    import gfx.graal.presentation : CompositeAlpha, PresentMode;
-    import gfx.graal.sync : Semaphore;
+    import core.time                : Duration;
+    import gfx.core.rc              : atomicRcCode, Rc;
+    import gfx.gl3                  : GlShare;
+    import gfx.gl3.device           : GlDevice;
+    import gfx.gl3.resource         : GlImage;
+    import gfx.graal.format         : Format;
+    import gfx.graal.image          : ImageBase, ImageInfo, ImageUsage;
+    import gfx.graal.presentation   : CompositeAlpha, ImageAcquisition,
+                                      PresentMode;
+    import gfx.graal.sync           : Semaphore;
 
     mixin(atomicRcCode);
 
@@ -93,11 +94,12 @@ package final class GlSwapchain : Swapchain
         return _imgsB;
     }
 
-    override uint acquireNextImage(Duration timeout, Semaphore semaphore,
-                                   out bool suboptimal) {
+    override ImageAcquisition acquireNextImage(Semaphore semaphore,
+                                               Duration timeout)
+    {
         const ni = _nextImg++;
         if (_nextImg >= _imgs.length) _nextImg = 0;
-        return ni;
+        return ImageAcquisition.makeOk(ni);
     }
 
     @property GlSurface surface() {

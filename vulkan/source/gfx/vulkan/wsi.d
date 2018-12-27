@@ -194,10 +194,11 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "DestroySwapchainKHR"), Sw
         return _images;
     }
 
-    override uint acquireNextImage(Duration timeout, Semaphore graalSemaphore, out bool suboptimal)
+    override ImageAcquisition acquireNextImage(Semaphore graalSem,
+                                               Duration timeout)
     {
         auto sem = enforce(
-            cast(VulkanSemaphore)graalSemaphore,
+            cast(VulkanSemaphore)graalSem,
             "a non vulkan semaphore was passed acquireNextImage"
         );
 
@@ -210,14 +211,21 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "DestroySwapchainKHR"), Sw
         uint img;
         const res = vk.AcquireNextImageKHR(vkDev, vkObj, vkTimeout, sem.vkObj, VK_NULL_ND_HANDLE, &img);
 
-        if (res == VK_SUBOPTIMAL_KHR) {
-            suboptimal = true;
-        }
-        else {
+        switch (res)
+        {
+        case VK_SUCCESS:
+            return ImageAcquisition.makeOk(img);
+        case VK_SUBOPTIMAL_KHR:
+            return ImageAcquisition.makeSuboptimal(img);
+        case VK_NOT_READY:
+        case VK_TIMEOUT:
+            return ImageAcquisition.makeNotReady();
+        case VK_ERROR_OUT_OF_DATE_KHR:
+            return ImageAcquisition.makeOutOfDate();
+        default:
             vulkanEnforce(res, "Could not acquire next vulkan image");
+            assert(false);
         }
-
-        return img;
     }
 
     private Rc!Surface _surf;
