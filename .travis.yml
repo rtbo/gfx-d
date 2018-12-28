@@ -28,3 +28,4 @@ script:
   - dub build gfx:swapchain --compiler=${DC}
   - dub build gfx:texture --compiler=${DC}
   - dub build gfx:triangle --compiler=${DC}
+  - dub build --build=ddox --compiler=${DC} --root=docbld
