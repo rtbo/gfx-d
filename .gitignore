@@ -13,11 +13,7 @@ docs.json
 
 # Linux
 *.a
-examples/declapi/gfx_declapi
-examples/depth/gfx_depth
-examples/shadow/gfx_shadow
-examples/stencil/gfx_stencil
-examples/swapchain/gfx_swapchain
-examples/texture/gfx_texture
-examples/triangle/gfx_triangle
 window/source/gfx/window/wayland/zxdg_shell_v6.d
+
+# example executables
+examples/**/gfx_*
