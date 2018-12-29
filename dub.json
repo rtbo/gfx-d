@@ -22,6 +22,7 @@
         "examples/declapi",
         "examples/deferred",
         "examples/depth",
+        "examples/highlevel",
         "examples/shadow",
         "examples/stencil",
         "examples/swapchain",
