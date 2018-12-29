@@ -6,6 +6,8 @@
 
 Graphics rendering engine for the D programming language.
 
+[Online API reference](https://rtbo.github.io/gfx-d/)
+
 The main idea is to have an abstraction layer (here named Graal - Graphics API abstraction layer)
 and several backends implementing it. There are several packages:
 

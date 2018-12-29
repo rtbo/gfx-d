@@ -39,7 +39,7 @@
 		"--min-protection=Protected",
 		"--ex", "gfx.priv",
 		"--ex", "gfx.decl.sdlang",
-		"--ex", "gfx.vulkan.",
+		"--ex", "gfx.vulkan.", "--in", "gfx.vulkan.wsi",
 		"--ex", "gfx.gl3.", "--in", "gfx.gl3.context", "--in", "gfx.gl3.swapchain"
 	],
     "-ddoxTool": "scod"
