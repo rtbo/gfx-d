@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<title>Class XdgPopup</title>
+		<link rel="stylesheet" href="../../../../css/style.min.css"/>
+		<script type="text/javascript" src="../../../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../../gfx.html">gfx</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">bindings
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">opengl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/gl.html">gl</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/glx.html">glx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/khrplatform.html">khrplatform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/wgl.html">wgl</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/bindings/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/vulkan/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/vulkan/vk.html">vk</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/core.html">core</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/log.html">log</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/rc.html">rc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/typecons.html">typecons</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/util.html">util</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">decl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/decl/engine.html">engine</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/decl/store.html">store</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">genmesh
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/genmesh/algorithm.html">algorithm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/genmesh/cube.html">cube</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/genmesh/poly.html">poly</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/gl3.html">gl3</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/gl3/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/gl3/swapchain.html">swapchain</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/graal.html">graal</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/buffer.html">buffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/cmd.html">cmd</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/device.html">device</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/error.html">error</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/format.html">format</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/memory.html">memory</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/pipeline.html">pipeline</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/presentation.html">presentation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/queue.html">queue</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/renderpass.html">renderpass</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/sync.html">sync</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/types.html">types</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/math.html">math</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/approx.html">approx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/inverse.html">inverse</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/mat.html">mat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/proj.html">proj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/transform.html">transform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/vec.html">vec</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/memalloc.html">memalloc</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/memalloc/dedicated.html">dedicated</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/memalloc/pool.html">pool</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/vulkan/wsi.html">wsi</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../../gfx/window.html">window</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../../gfx/window/wayland.html">wayland</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module selected">
+							<a href="../../../../gfx/window/wayland/xdg_shell.html">xdg_shell</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window/win32.html">win32</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/win32/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/win32/keymap.html">keymap</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window/xcb.html">xcb</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/xcb/context.html">context</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/keys.html">keys</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/xkeyboard.html">xkeyboard</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with
+				<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Class XdgPopup</h1><p>short-lived, popup surfaces for menus
+</p>
+				<div class="prototype">
+					<code class="lang-d">
+						<div class="single-prototype">
+				<span class="kwd">class</span> <span class="typ">XdgPopup</span>
+				<br>&nbsp;&nbsp;: <span class="pln">wayland<wbr/></span><span class="pun">.</span><span class="pln">client<wbr/></span><span class="pun">.</span><span class="pln">core<wbr/></span><span class="pun">.</span><span class="typ">WlProxy</span>
+				<span class="pun">;</span>
+						</div>
+					</code>
+				</div>
+				<section><p>A popup surface is a short-lived, temporary surface. It can be used to
+  implement for example menus, popovers, tooltips and other similar user
+  interface concepts.
+</p>
+
+<p>  A popup can be made to take an explicit grab. See xdg_popup.grab for
+  details.
+</p>
+
+<p>  When the popup is dismissed, a popup_done event will be sent out, and at
+  the same time the surface will be unmapped. See the xdg_popup.popup_done
+  event for details.
+</p>
+
+<p>  Explicitly destroying the xdg_popup object will also dismiss the popup and
+  unmap the surface. Clients that want to dismiss the popup when another
+  surface of their own is clicked should dismiss the popup using the destroy
+  request.
+</p>
+
+<p>  A newly created xdg_popup will be stacked on top of all previously created
+  xdg_popup surfaces associated with the same xdg_toplevel.
+</p>
+
+<p>  The parent of an xdg_popup must be mapped (see the xdg_surface
+  description) before the xdg_popup itself.
+</p>
+
+<p>  The x and y arguments passed when creating the popup object specify
+  where the top left of the popup should be placed, relative to the
+  local surface coordinates of the parent surface. See
+  xdg_surface.get_popup. An xdg_popup must intersect with or be at least
+  partially adjacent to its parent surface.
+</p>
+
+<p>  The client must call wl_surface.commit on the corresponding wl_surface
+  for the xdg_popup state to take effect.
+</p>
+</section>
+
+				<section><h2>Properties</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/window/wayland/xdg_shell/XdgPopup.iface.html" class="public property"><code>iface</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="kwd">immutable</span><span class="pun">(</span><span class="pln">wayland<wbr/></span><span class="pun">.</span><span class="pln">client<wbr/></span><span class="pun">.</span><span class="pln">core<wbr/></span><span class="pun">.</span><span class="typ">WlProxyInterface</span><span class="pun">)</span></code></td><td>Interface object that creates XdgPopup objects.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/window/wayland/xdg_shell/XdgPopup.onConfigure.html" class="public property"><code>onConfigure</code></a><span class="tableEntryAnnotation">[set]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><a href="../../../../gfx/window/wayland/xdg_shell/XdgPopup.html"><span class="typ">XdgPopup</span></a><span class="pun">, </span><span class="typ">int</span><span class="pun">, </span><span class="typ">int</span><span class="pun">, </span><span class="typ">int</span><span class="pun">, </span><span class="typ">int</span><span class="pun">)</span></code></td><td>configure the popup surface
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/window/wayland/xdg_shell/XdgPopup.onPopupDone.html" class="public property"><code>onPopupDone</code></a><span class="tableEntryAnnotation">[set]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><a href="../../../../gfx/window/wayland/xdg_shell/XdgPopup.html"><span class="typ">XdgPopup</span></a><span class="pun">)</span></code></td><td>popup interaction is done
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Methods</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/window/wayland/xdg_shell/XdgPopup.destroy.html" class="public">
+									<code>destroy</code>
+								</a>
+							</td>
+							<td>remove xdg_popup interface
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/window/wayland/xdg_shell/XdgPopup.grab.html" class="public">
+									<code>grab</code>
+								</a>
+							</td>
+							<td>make the popup take an explicit grab
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Enums</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/window/wayland/xdg_shell/XdgPopup.Error.html" class="public">
+									<code>Error</code>
+								</a>
+							</td>
+							<td></td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Aliases</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/window/wayland/xdg_shell/XdgPopup.OnConfigureEventDg.html" class="public">
+									<code>OnConfigureEventDg</code>
+								</a>
+							</td>
+							<td>Event delegate signature of XdgPopup.onConfigure.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/window/wayland/xdg_shell/XdgPopup.OnPopupDoneEventDg.html" class="public">
+									<code>OnPopupDoneEventDg</code>
+								</a>
+							</td>
+							<td>Event delegate signature of XdgPopup.onPopupDone.
+</td>
+						</tr>
+					</table>
+				</section>
+				
+			</div>
+			<footer>
+				<div id="license-info">
+					
+					
+					
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>

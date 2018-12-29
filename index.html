@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<title>API documentation</title>
+		<link rel="stylesheet" href="./css/style.min.css"/>
+		<script type="text/javascript" src="./js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="./symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "./";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="./gfx.html">gfx</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">bindings
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">opengl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="./gfx/bindings/opengl/gl.html">gl</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/bindings/opengl/glx.html">glx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/bindings/opengl/khrplatform.html">khrplatform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/bindings/opengl/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/bindings/opengl/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/bindings/opengl/wgl.html">wgl</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="./gfx/bindings/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="./gfx/bindings/vulkan/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/bindings/vulkan/vk.html">vk</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/bindings/core.html">core</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="./gfx/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="./gfx/core/log.html">log</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/core/rc.html">rc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/core/typecons.html">typecons</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/core/util.html">util</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">decl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="./gfx/decl/engine.html">engine</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/decl/store.html">store</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">genmesh
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="./gfx/genmesh/algorithm.html">algorithm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/genmesh/cube.html">cube</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/genmesh/poly.html">poly</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="./gfx/gl3.html">gl3</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="./gfx/gl3/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/gl3/swapchain.html">swapchain</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="./gfx/graal.html">graal</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="./gfx/graal/buffer.html">buffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/graal/cmd.html">cmd</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/graal/device.html">device</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/graal/error.html">error</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/graal/format.html">format</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/graal/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/graal/memory.html">memory</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/graal/pipeline.html">pipeline</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/graal/presentation.html">presentation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/graal/queue.html">queue</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/graal/renderpass.html">renderpass</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/graal/sync.html">sync</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/graal/types.html">types</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="./gfx/math.html">math</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="./gfx/math/approx.html">approx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/math/inverse.html">inverse</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/math/mat.html">mat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/math/proj.html">proj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/math/transform.html">transform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/math/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/math/vec.html">vec</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="./gfx/memalloc.html">memalloc</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="./gfx/memalloc/dedicated.html">dedicated</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/memalloc/pool.html">pool</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="./gfx/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="./gfx/vulkan/wsi.html">wsi</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="./gfx/window.html">window</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="./gfx/window/wayland.html">wayland</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="./gfx/window/wayland/xdg_shell.html">xdg_shell</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="./gfx/window/win32.html">win32</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="./gfx/window/win32/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/window/win32/keymap.html">keymap</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="./gfx/window/xcb.html">xcb</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="./gfx/window/xcb/context.html">context</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/window/keys.html">keys</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./gfx/window/xkeyboard.html">xkeyboard</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with
+				<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>API documentation</h1>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Module</th><th>Description</th>
+					</tr>
+				<tr>
+					<td>
+						<a href="./gfx/bindings/opengl/gl.html">gfx.bindings.opengl.gl</a>
+					</td>
+					<td>
+						OpenGL bindings for D. Generated automatically by gldgen.
+See https://github.com/rtbo/gldgen
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/bindings/opengl/glx.html">gfx.bindings.opengl.glx</a>
+					</td>
+					<td>
+						GLX bindings for D. Generated automatically by gldgen.
+See https://github.com/rtbo/gldgen
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/bindings/opengl/khrplatform.html">gfx.bindings.opengl.khrplatform</a>
+					</td>
+					<td>
+						Definitions from <code class="lang-d"><span class="pln">khrplatform<wbr/></span><span class="pun">.</span><span class="pln">h</span></code>
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/bindings/opengl/loader.html">gfx.bindings.opengl.loader</a>
+					</td>
+					<td>
+						OpenGL loader
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/bindings/opengl/util.html">gfx.bindings.opengl.util</a>
+					</td>
+					<td>
+						Some utilities for OpenGL
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/bindings/opengl/wgl.html">gfx.bindings.opengl.wgl</a>
+					</td>
+					<td>
+						WinGL bindings for D. Generated automatically by gldgen.
+See https://github.com/rtbo/gldgen
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/bindings/vulkan/loader.html">gfx.bindings.vulkan.loader</a>
+					</td>
+					<td>
+						Loader module for vkdgen.
+Loading bindings is done in 3 steps as follow:
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/bindings/vulkan/vk.html">gfx.bindings.vulkan.vk</a>
+					</td>
+					<td>
+						Vulkan D bindings generated automatically by vkdgen
+See https://github.com/rtbo/vkdgen
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/bindings/core.html">gfx.bindings.core</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/bindings/vulkan.html">gfx.bindings.vulkan</a>
+					</td>
+					<td>
+						vkdgen Vulkan bindings.
+See https://github.com/rtbo/vkdgen
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/core/log.html">gfx.core.log</a>
+					</td>
+					<td>
+						Logging module
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/core/rc.html">gfx.core.rc</a>
+					</td>
+					<td>
+						Reference counting module
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/core/typecons.html">gfx.core.typecons</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/core/util.html">gfx.core.util</a>
+					</td>
+					<td>
+						Utilities module
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/decl/engine.html">gfx.decl.engine</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/decl/store.html">gfx.decl.store</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/genmesh/algorithm.html">gfx.genmesh.algorithm</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/genmesh/cube.html">gfx.genmesh.cube</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/genmesh/poly.html">gfx.genmesh.poly</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/gl3/context.html">gfx.gl3.context</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/gl3/swapchain.html">gfx.gl3.swapchain</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/graal/buffer.html">gfx.graal.buffer</a>
+					</td>
+					<td>
+						GrAAL buffer module
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/graal/cmd.html">gfx.graal.cmd</a>
+					</td>
+					<td>
+						command buffer module
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/graal/device.html">gfx.graal.device</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/graal/error.html">gfx.graal.error</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/graal/format.html">gfx.graal.format</a>
+					</td>
+					<td>
+						Format description module
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/graal/image.html">gfx.graal.image</a>
+					</td>
+					<td>
+						ImageBase module
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/graal/memory.html">gfx.graal.memory</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/graal/pipeline.html">gfx.graal.pipeline</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/graal/presentation.html">gfx.graal.presentation</a>
+					</td>
+					<td>
+						Presentation module
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/graal/queue.html">gfx.graal.queue</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/graal/renderpass.html">gfx.graal.renderpass</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/graal/sync.html">gfx.graal.sync</a>
+					</td>
+					<td>
+						synchronization module
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/graal/types.html">gfx.graal.types</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/math/approx.html">gfx.math.approx</a>
+					</td>
+					<td>
+						This module is about comparison of floating point arithmetics.
+Supported by this very informative article:
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/math/inverse.html">gfx.math.inverse</a>
+					</td>
+					<td>
+						Matrix determinant and inverse
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/math/mat.html">gfx.math.mat</a>
+					</td>
+					<td>
+						Matrix linear algebra module
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/math/proj.html">gfx.math.proj</a>
+					</td>
+					<td>
+						NDC agnostic projection matrices.
+Each projection can be parameterized with a NDC configuration.
+NDC defines how the clip space will translate to screen coordinates.
+Note that after transformation by a projection matrix, X, Y and Z vertex
+coordinates must be divided by W to obtain coordinates in final NDC space.
+NDC has two components (XYClip and ZClip) that will affect how the
+coordinates are transformed in the final normalized clipping space.
+XYClip affects only X and Y (X always to the right, Y either upwards or downwards
+for leftHanded and rightHanded respectively), and ZClip affects Z depth range.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/math/transform.html">gfx.math.transform</a>
+					</td>
+					<td>
+						Affine transforms module
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/math/util.html">gfx.math.util</a>
+					</td>
+					<td>
+						Some transform utilities
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/math/vec.html">gfx.math.vec</a>
+					</td>
+					<td>
+						Vector linear algebra module
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/memalloc/dedicated.html">gfx.memalloc.dedicated</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/memalloc/pool.html">gfx.memalloc.pool</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/vulkan/wsi.html">gfx.vulkan.wsi</a>
+					</td>
+					<td>
+						Vulkan Window System Integration module
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/window/wayland/xdg_shell.html">gfx.window.wayland.xdg_shell</a>
+					</td>
+					<td>
+						Module generated by wayland:scanner-v0.1.0 for xdg_shell protocol
+    xml protocol:   xdg-shell.xml
+    generated code: client
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/window/win32/context.html">gfx.window.win32.context</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/window/win32/keymap.html">gfx.window.win32.keymap</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/window/xcb/context.html">gfx.window.xcb.context</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/window/keys.html">gfx.window.keys</a>
+					</td>
+					<td>
+						Key enumeration module.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/window/wayland.html">gfx.window.wayland</a>
+					</td>
+					<td>
+						wayland window impl
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/window/win32.html">gfx.window.win32</a>
+					</td>
+					<td>
+						Win32 Window interface for Gfx-d
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/window/xcb.html">gfx.window.xcb</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/window/xkeyboard.html">gfx.window.xkeyboard</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/core.html">gfx.core</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/gl3.html">gfx.gl3</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/graal.html">gfx.graal</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/math.html">gfx.math</a>
+					</td>
+					<td>
+						Gfx-d mathematics package
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/memalloc.html">gfx.memalloc</a>
+					</td>
+					<td>
+						A memory allocator for Gfx-d
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/vulkan.html">gfx.vulkan</a>
+					</td>
+					<td>
+						Vulkan implementation of GrAAL
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx/window.html">gfx.window</a>
+					</td>
+					<td>
+						Optional window package, mainly to run gfx-d examples
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./gfx.html">gfx</a>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				</table>
+			</div>
+			<footer>
+				<div id="license-info"></div>
+			</footer>
+		</div>
+	</body>
+</html>

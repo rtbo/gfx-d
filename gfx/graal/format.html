@@ -1,0 +1,2128 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<title>Module gfx.graal.format</title>
+		<link rel="stylesheet" href="../../css/style.min.css"/>
+		<script type="text/javascript" src="../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../gfx.html">gfx</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">bindings
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">opengl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/gl.html">gl</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/glx.html">glx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/khrplatform.html">khrplatform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/wgl.html">wgl</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/bindings/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/vulkan/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/vulkan/vk.html">vk</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/core.html">core</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/log.html">log</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/rc.html">rc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/typecons.html">typecons</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/util.html">util</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">decl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/decl/engine.html">engine</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/decl/store.html">store</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">genmesh
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/genmesh/algorithm.html">algorithm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/genmesh/cube.html">cube</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/genmesh/poly.html">poly</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/gl3.html">gl3</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/gl3/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/gl3/swapchain.html">swapchain</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../gfx/graal.html">graal</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/buffer.html">buffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/cmd.html">cmd</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/device.html">device</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/error.html">error</a>
+						</div>
+					</li>
+					<li>
+						<div class="module selected">
+							<a href="../../gfx/graal/format.html">format</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/memory.html">memory</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/pipeline.html">pipeline</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/presentation.html">presentation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/queue.html">queue</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/renderpass.html">renderpass</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/sync.html">sync</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/types.html">types</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/math.html">math</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/approx.html">approx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/inverse.html">inverse</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/mat.html">mat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/proj.html">proj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/transform.html">transform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/vec.html">vec</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/memalloc.html">memalloc</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/memalloc/dedicated.html">dedicated</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/memalloc/pool.html">pool</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/vulkan/wsi.html">wsi</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window.html">window</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window/wayland.html">wayland</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/wayland/xdg_shell.html">xdg_shell</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window/win32.html">win32</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/win32/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/win32/keymap.html">keymap</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window/xcb.html">xcb</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/xcb/context.html">context</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/keys.html">keys</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/xkeyboard.html">xkeyboard</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with
+				<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Module gfx.graal.format</h1><p>Format description module
+</p>
+				<section></section>
+				<section>
+					<h2>Functions</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="alphaBits" class="public property" href="../../gfx/graal/format/alphaBits.html">alphaBits</a><span class="decoration">(st)</span>
+								</code>
+							</td>
+							<td>Get the alphaBits of an image surface.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="alphaShift" class="public property" href="../../gfx/graal/format/alphaShift.html">alphaShift</a><span class="decoration">(st)</span>
+								</code>
+							</td>
+							<td>Get the alphaShift of an image surface.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="blueBits" class="public property" href="../../gfx/graal/format/blueBits.html">blueBits</a><span class="decoration">(st)</span>
+								</code>
+							</td>
+							<td>Get the blueBits of an image surface.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="blueShift" class="public property" href="../../gfx/graal/format/blueShift.html">blueShift</a><span class="decoration">(st)</span>
+								</code>
+							</td>
+							<td>Get the blueShift of an image surface.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="colorBits" class="public property" href="../../gfx/graal/format/colorBits.html">colorBits</a><span class="decoration">(st)</span>
+								</code>
+							</td>
+							<td>Get the colorBits of an image surface.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="depthBits" class="public property" href="../../gfx/graal/format/depthBits.html">depthBits</a><span class="decoration">(st)</span>
+								</code>
+							</td>
+							<td>Get the depthBits of an image surface.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="formatDesc" class="public" href="../../gfx/graal/format/formatDesc.html">formatDesc</a><span class="decoration">(fmt)</span>
+								</code>
+							</td>
+							<td>get the description of a format
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="greenBits" class="public property" href="../../gfx/graal/format/greenBits.html">greenBits</a><span class="decoration">(st)</span>
+								</code>
+							</td>
+							<td>Get the greenBits of an image surface.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="greenShift" class="public property" href="../../gfx/graal/format/greenShift.html">greenShift</a><span class="decoration">(st)</span>
+								</code>
+							</td>
+							<td>Get the greenShift of an image surface.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="numComponents" class="public property" href="../../gfx/graal/format/numComponents.html">numComponents</a><span class="decoration">(st)</span>
+								</code>
+							</td>
+							<td>Get the numComponents of an image surface.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="redBits" class="public property" href="../../gfx/graal/format/redBits.html">redBits</a><span class="decoration">(st)</span>
+								</code>
+							</td>
+							<td>Get the redBits of an image surface.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="redShift" class="public property" href="../../gfx/graal/format/redShift.html">redShift</a><span class="decoration">(st)</span>
+								</code>
+							</td>
+							<td>Get the redShift of an image surface.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="sharedExpBits" class="public property" href="../../gfx/graal/format/sharedExpBits.html">sharedExpBits</a><span class="decoration">(st)</span>
+								</code>
+							</td>
+							<td>Get the sharedExpBits of an image surface.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="stencilBits" class="public property" href="../../gfx/graal/format/stencilBits.html">stencilBits</a><span class="decoration">(st)</span>
+								</code>
+							</td>
+							<td>Get the stencilBits of an image surface.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="totalBits" class="public property" href="../../gfx/graal/format/totalBits.html">totalBits</a><span class="decoration">(st)</span>
+								</code>
+							</td>
+							<td>Get the totalBits of an image surface.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Structs</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="A1_R5_G5_B5" class="public" href="../../gfx/graal/format/A1_R5_G5_B5.html">A1_R5_G5_B5</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.A1_R5_G5_B5.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="A1r5g5b5_uNorm" class="public" href="../../gfx/graal/format/A1r5g5b5_uNorm.html">A1r5g5b5_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.a1r5g5b5_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="A2_B10_G10_R10" class="public" href="../../gfx/graal/format/A2_B10_G10_R10.html">A2_B10_G10_R10</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.A2_B10_G10_R10.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="A2_R10_G10_B10" class="public" href="../../gfx/graal/format/A2_R10_G10_B10.html">A2_R10_G10_B10</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.A2_R10_G10_B10.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="A2b10g10r10_sInt" class="public" href="../../gfx/graal/format/A2b10g10r10_sInt.html">A2b10g10r10_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.a2b10g10r10_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="A2b10g10r10_sNorm" class="public" href="../../gfx/graal/format/A2b10g10r10_sNorm.html">A2b10g10r10_sNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.a2b10g10r10_sNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="A2b10g10r10_sScaled" class="public" href="../../gfx/graal/format/A2b10g10r10_sScaled.html">A2b10g10r10_sScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.a2b10g10r10_sScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="A2b10g10r10_uInt" class="public" href="../../gfx/graal/format/A2b10g10r10_uInt.html">A2b10g10r10_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.a2b10g10r10_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="A2b10g10r10_uNorm" class="public" href="../../gfx/graal/format/A2b10g10r10_uNorm.html">A2b10g10r10_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.a2b10g10r10_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="A2b10g10r10_uScaled" class="public" href="../../gfx/graal/format/A2b10g10r10_uScaled.html">A2b10g10r10_uScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.a2b10g10r10_uScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="A2r10g10b10_sInt" class="public" href="../../gfx/graal/format/A2r10g10b10_sInt.html">A2r10g10b10_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.a2r10g10b10_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="A2r10g10b10_sNorm" class="public" href="../../gfx/graal/format/A2r10g10b10_sNorm.html">A2r10g10b10_sNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.a2r10g10b10_sNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="A2r10g10b10_sScaled" class="public" href="../../gfx/graal/format/A2r10g10b10_sScaled.html">A2r10g10b10_sScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.a2r10g10b10_sScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="A2r10g10b10_uInt" class="public" href="../../gfx/graal/format/A2r10g10b10_uInt.html">A2r10g10b10_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.a2r10g10b10_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="A2r10g10b10_uNorm" class="public" href="../../gfx/graal/format/A2r10g10b10_uNorm.html">A2r10g10b10_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.a2r10g10b10_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="A2r10g10b10_uScaled" class="public" href="../../gfx/graal/format/A2r10g10b10_uScaled.html">A2r10g10b10_uScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.a2r10g10b10_uScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="A8_B8_G8_R8" class="public" href="../../gfx/graal/format/A8_B8_G8_R8.html">A8_B8_G8_R8</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.A8_B8_G8_R8.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Abgr8_sInt" class="public" href="../../gfx/graal/format/Abgr8_sInt.html">Abgr8_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.abgr8_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Abgr8_sNorm" class="public" href="../../gfx/graal/format/Abgr8_sNorm.html">Abgr8_sNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.abgr8_sNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Abgr8_sRgb" class="public" href="../../gfx/graal/format/Abgr8_sRgb.html">Abgr8_sRgb</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.abgr8_sRgb
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Abgr8_sScaled" class="public" href="../../gfx/graal/format/Abgr8_sScaled.html">Abgr8_sScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.abgr8_sScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Abgr8_uInt" class="public" href="../../gfx/graal/format/Abgr8_uInt.html">Abgr8_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.abgr8_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Abgr8_uNorm" class="public" href="../../gfx/graal/format/Abgr8_uNorm.html">Abgr8_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.abgr8_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Abgr8_uScaled" class="public" href="../../gfx/graal/format/Abgr8_uScaled.html">Abgr8_uScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.abgr8_uScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="B10_G11_R11" class="public" href="../../gfx/graal/format/B10_G11_R11.html">B10_G11_R11</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.B10_G11_R11.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="B10g11r11_uFloat" class="public" href="../../gfx/graal/format/B10g11r11_uFloat.html">B10g11r11_uFloat</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.b10g11r11_uFloat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="B4_G4_R4_A4" class="public" href="../../gfx/graal/format/B4_G4_R4_A4.html">B4_G4_R4_A4</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.B4_G4_R4_A4.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="B5_G5_R5_A1" class="public" href="../../gfx/graal/format/B5_G5_R5_A1.html">B5_G5_R5_A1</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.B5_G5_R5_A1.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="B5_G6_R5" class="public" href="../../gfx/graal/format/B5_G6_R5.html">B5_G6_R5</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.B5_G6_R5.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="B5g5r5a1_uNorm" class="public" href="../../gfx/graal/format/B5g5r5a1_uNorm.html">B5g5r5a1_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.b5g5r5a1_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="B5g6r5_uNorm" class="public" href="../../gfx/graal/format/B5g6r5_uNorm.html">B5g6r5_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.b5g6r5_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="B8_G8_R8" class="public" href="../../gfx/graal/format/B8_G8_R8.html">B8_G8_R8</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.B8_G8_R8.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="B8_G8_R8_A8" class="public" href="../../gfx/graal/format/B8_G8_R8_A8.html">B8_G8_R8_A8</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.B8_G8_R8_A8.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Bgr8_sInt" class="public" href="../../gfx/graal/format/Bgr8_sInt.html">Bgr8_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.bgr8_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Bgr8_sNorm" class="public" href="../../gfx/graal/format/Bgr8_sNorm.html">Bgr8_sNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.bgr8_sNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Bgr8_sRgb" class="public" href="../../gfx/graal/format/Bgr8_sRgb.html">Bgr8_sRgb</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.bgr8_sRgb
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Bgr8_sScaled" class="public" href="../../gfx/graal/format/Bgr8_sScaled.html">Bgr8_sScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.bgr8_sScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Bgr8_uInt" class="public" href="../../gfx/graal/format/Bgr8_uInt.html">Bgr8_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.bgr8_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Bgr8_uNorm" class="public" href="../../gfx/graal/format/Bgr8_uNorm.html">Bgr8_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.bgr8_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Bgr8_uScaled" class="public" href="../../gfx/graal/format/Bgr8_uScaled.html">Bgr8_uScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.bgr8_uScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Bgra4_uNorm" class="public" href="../../gfx/graal/format/Bgra4_uNorm.html">Bgra4_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.bgra4_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Bgra8_sInt" class="public" href="../../gfx/graal/format/Bgra8_sInt.html">Bgra8_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.bgra8_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Bgra8_sNorm" class="public" href="../../gfx/graal/format/Bgra8_sNorm.html">Bgra8_sNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.bgra8_sNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Bgra8_sRgb" class="public" href="../../gfx/graal/format/Bgra8_sRgb.html">Bgra8_sRgb</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.bgra8_sRgb
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Bgra8_sScaled" class="public" href="../../gfx/graal/format/Bgra8_sScaled.html">Bgra8_sScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.bgra8_sScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Bgra8_uInt" class="public" href="../../gfx/graal/format/Bgra8_uInt.html">Bgra8_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.bgra8_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Bgra8_uNorm" class="public" href="../../gfx/graal/format/Bgra8_uNorm.html">Bgra8_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.bgra8_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Bgra8_uScaled" class="public" href="../../gfx/graal/format/Bgra8_uScaled.html">Bgra8_uScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.bgra8_uScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="D16" class="public" href="../../gfx/graal/format/D16.html">D16</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.D16.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="D16_S8" class="public" href="../../gfx/graal/format/D16_S8.html">D16_S8</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.D16_S8.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="D16_uNorm" class="public" href="../../gfx/graal/format/D16_uNorm.html">D16_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.d16_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="D16s8_uNorm" class="public" href="../../gfx/graal/format/D16s8_uNorm.html">D16s8_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.d16s8_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="D24_S8" class="public" href="../../gfx/graal/format/D24_S8.html">D24_S8</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.D24_S8.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="D24s8_uNorm" class="public" href="../../gfx/graal/format/D24s8_uNorm.html">D24s8_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.d24s8_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="D32" class="public" href="../../gfx/graal/format/D32.html">D32</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.D32.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="D32_S8" class="public" href="../../gfx/graal/format/D32_S8.html">D32_S8</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.D32_S8.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="D32_sFloat" class="public" href="../../gfx/graal/format/D32_sFloat.html">D32_sFloat</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.d32_sFloat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="D32s8_sFloat" class="public" href="../../gfx/graal/format/D32s8_sFloat.html">D32s8_sFloat</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.d32s8_sFloat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="E5_B9_G9_R9" class="public" href="../../gfx/graal/format/E5_B9_G9_R9.html">E5_B9_G9_R9</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.E5_B9_G9_R9.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Ebgr9_uFloat" class="public" href="../../gfx/graal/format/Ebgr9_uFloat.html">Ebgr9_uFloat</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.ebgr9_uFloat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="FormatDesc" class="public" href="../../gfx/graal/format/FormatDesc.html">FormatDesc</a>
+								</code>
+							</td>
+							<td>description of a format
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="FormatProperties" class="public" href="../../gfx/graal/format/FormatProperties.html">FormatProperties</a>
+								</code>
+							</td>
+							<td>Format properties
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R16" class="public" href="../../gfx/graal/format/R16.html">R16</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R16.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R16_G16" class="public" href="../../gfx/graal/format/R16_G16.html">R16_G16</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R16_G16.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R16_G16_B16" class="public" href="../../gfx/graal/format/R16_G16_B16.html">R16_G16_B16</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R16_G16_B16.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R16_G16_B16_A16" class="public" href="../../gfx/graal/format/R16_G16_B16_A16.html">R16_G16_B16_A16</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R16_G16_B16_A16.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R16_sFloat" class="public" href="../../gfx/graal/format/R16_sFloat.html">R16_sFloat</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r16_sFloat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R16_sInt" class="public" href="../../gfx/graal/format/R16_sInt.html">R16_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r16_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R16_sNorm" class="public" href="../../gfx/graal/format/R16_sNorm.html">R16_sNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r16_sNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R16_sScaled" class="public" href="../../gfx/graal/format/R16_sScaled.html">R16_sScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r16_sScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R16_uInt" class="public" href="../../gfx/graal/format/R16_uInt.html">R16_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r16_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R16_uNorm" class="public" href="../../gfx/graal/format/R16_uNorm.html">R16_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r16_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R16_uScaled" class="public" href="../../gfx/graal/format/R16_uScaled.html">R16_uScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r16_uScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R32" class="public" href="../../gfx/graal/format/R32.html">R32</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R32.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R32_G32" class="public" href="../../gfx/graal/format/R32_G32.html">R32_G32</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R32_G32.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R32_G32_B32" class="public" href="../../gfx/graal/format/R32_G32_B32.html">R32_G32_B32</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R32_G32_B32.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R32_G32_B32_A32" class="public" href="../../gfx/graal/format/R32_G32_B32_A32.html">R32_G32_B32_A32</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R32_G32_B32_A32.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R32_sFloat" class="public" href="../../gfx/graal/format/R32_sFloat.html">R32_sFloat</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r32_sFloat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R32_sInt" class="public" href="../../gfx/graal/format/R32_sInt.html">R32_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r32_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R32_uInt" class="public" href="../../gfx/graal/format/R32_uInt.html">R32_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r32_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R4_G4" class="public" href="../../gfx/graal/format/R4_G4.html">R4_G4</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R4_G4.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R4_G4_B4_A4" class="public" href="../../gfx/graal/format/R4_G4_B4_A4.html">R4_G4_B4_A4</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R4_G4_B4_A4.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R5_G5_B5_A1" class="public" href="../../gfx/graal/format/R5_G5_B5_A1.html">R5_G5_B5_A1</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R5_G5_B5_A1.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R5_G6_B5" class="public" href="../../gfx/graal/format/R5_G6_B5.html">R5_G6_B5</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R5_G6_B5.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R5g5b5a1_uNorm" class="public" href="../../gfx/graal/format/R5g5b5a1_uNorm.html">R5g5b5a1_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r5g5b5a1_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R5g6b5_uNorm" class="public" href="../../gfx/graal/format/R5g6b5_uNorm.html">R5g6b5_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r5g6b5_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R64" class="public" href="../../gfx/graal/format/R64.html">R64</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R64.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R64_G64" class="public" href="../../gfx/graal/format/R64_G64.html">R64_G64</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R64_G64.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R64_G64_B64" class="public" href="../../gfx/graal/format/R64_G64_B64.html">R64_G64_B64</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R64_G64_B64.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R64_G64_B64_A64" class="public" href="../../gfx/graal/format/R64_G64_B64_A64.html">R64_G64_B64_A64</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R64_G64_B64_A64.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R64_sFloat" class="public" href="../../gfx/graal/format/R64_sFloat.html">R64_sFloat</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r64_sFloat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R64_sInt" class="public" href="../../gfx/graal/format/R64_sInt.html">R64_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r64_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R64_uInt" class="public" href="../../gfx/graal/format/R64_uInt.html">R64_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r64_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R8" class="public" href="../../gfx/graal/format/R8.html">R8</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R8.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R8_G8" class="public" href="../../gfx/graal/format/R8_G8.html">R8_G8</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R8_G8.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R8_G8_B8" class="public" href="../../gfx/graal/format/R8_G8_B8.html">R8_G8_B8</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R8_G8_B8.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R8_G8_B8_A8" class="public" href="../../gfx/graal/format/R8_G8_B8_A8.html">R8_G8_B8_A8</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.R8_G8_B8_A8.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R8_sInt" class="public" href="../../gfx/graal/format/R8_sInt.html">R8_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r8_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R8_sNorm" class="public" href="../../gfx/graal/format/R8_sNorm.html">R8_sNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r8_sNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R8_sRgb" class="public" href="../../gfx/graal/format/R8_sRgb.html">R8_sRgb</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r8_sRgb
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R8_sScaled" class="public" href="../../gfx/graal/format/R8_sScaled.html">R8_sScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r8_sScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R8_uInt" class="public" href="../../gfx/graal/format/R8_uInt.html">R8_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r8_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R8_uNorm" class="public" href="../../gfx/graal/format/R8_uNorm.html">R8_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r8_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="R8_uScaled" class="public" href="../../gfx/graal/format/R8_uScaled.html">R8_uScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.r8_uScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg16_sFloat" class="public" href="../../gfx/graal/format/Rg16_sFloat.html">Rg16_sFloat</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg16_sFloat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg16_sInt" class="public" href="../../gfx/graal/format/Rg16_sInt.html">Rg16_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg16_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg16_sNorm" class="public" href="../../gfx/graal/format/Rg16_sNorm.html">Rg16_sNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg16_sNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg16_sScaled" class="public" href="../../gfx/graal/format/Rg16_sScaled.html">Rg16_sScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg16_sScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg16_uInt" class="public" href="../../gfx/graal/format/Rg16_uInt.html">Rg16_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg16_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg16_uNorm" class="public" href="../../gfx/graal/format/Rg16_uNorm.html">Rg16_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg16_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg16_uScaled" class="public" href="../../gfx/graal/format/Rg16_uScaled.html">Rg16_uScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg16_uScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg32_sFloat" class="public" href="../../gfx/graal/format/Rg32_sFloat.html">Rg32_sFloat</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg32_sFloat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg32_sInt" class="public" href="../../gfx/graal/format/Rg32_sInt.html">Rg32_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg32_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg32_uInt" class="public" href="../../gfx/graal/format/Rg32_uInt.html">Rg32_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg32_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg4_uNorm" class="public" href="../../gfx/graal/format/Rg4_uNorm.html">Rg4_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg4_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg64_sFloat" class="public" href="../../gfx/graal/format/Rg64_sFloat.html">Rg64_sFloat</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg64_sFloat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg64_sInt" class="public" href="../../gfx/graal/format/Rg64_sInt.html">Rg64_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg64_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg64_uInt" class="public" href="../../gfx/graal/format/Rg64_uInt.html">Rg64_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg64_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg8_sInt" class="public" href="../../gfx/graal/format/Rg8_sInt.html">Rg8_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg8_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg8_sNorm" class="public" href="../../gfx/graal/format/Rg8_sNorm.html">Rg8_sNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg8_sNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg8_sRgb" class="public" href="../../gfx/graal/format/Rg8_sRgb.html">Rg8_sRgb</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg8_sRgb
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg8_sScaled" class="public" href="../../gfx/graal/format/Rg8_sScaled.html">Rg8_sScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg8_sScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg8_uInt" class="public" href="../../gfx/graal/format/Rg8_uInt.html">Rg8_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg8_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg8_uNorm" class="public" href="../../gfx/graal/format/Rg8_uNorm.html">Rg8_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg8_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rg8_uScaled" class="public" href="../../gfx/graal/format/Rg8_uScaled.html">Rg8_uScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rg8_uScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb16_sFloat" class="public" href="../../gfx/graal/format/Rgb16_sFloat.html">Rgb16_sFloat</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb16_sFloat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb16_sInt" class="public" href="../../gfx/graal/format/Rgb16_sInt.html">Rgb16_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb16_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb16_sNorm" class="public" href="../../gfx/graal/format/Rgb16_sNorm.html">Rgb16_sNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb16_sNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb16_sScaled" class="public" href="../../gfx/graal/format/Rgb16_sScaled.html">Rgb16_sScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb16_sScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb16_uInt" class="public" href="../../gfx/graal/format/Rgb16_uInt.html">Rgb16_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb16_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb16_uNorm" class="public" href="../../gfx/graal/format/Rgb16_uNorm.html">Rgb16_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb16_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb16_uScaled" class="public" href="../../gfx/graal/format/Rgb16_uScaled.html">Rgb16_uScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb16_uScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb32_sFloat" class="public" href="../../gfx/graal/format/Rgb32_sFloat.html">Rgb32_sFloat</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb32_sFloat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb32_sInt" class="public" href="../../gfx/graal/format/Rgb32_sInt.html">Rgb32_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb32_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb32_uInt" class="public" href="../../gfx/graal/format/Rgb32_uInt.html">Rgb32_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb32_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb64_sFloat" class="public" href="../../gfx/graal/format/Rgb64_sFloat.html">Rgb64_sFloat</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb64_sFloat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb64_sInt" class="public" href="../../gfx/graal/format/Rgb64_sInt.html">Rgb64_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb64_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb64_uInt" class="public" href="../../gfx/graal/format/Rgb64_uInt.html">Rgb64_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb64_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb8_sInt" class="public" href="../../gfx/graal/format/Rgb8_sInt.html">Rgb8_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb8_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb8_sNorm" class="public" href="../../gfx/graal/format/Rgb8_sNorm.html">Rgb8_sNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb8_sNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb8_sRgb" class="public" href="../../gfx/graal/format/Rgb8_sRgb.html">Rgb8_sRgb</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb8_sRgb
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb8_sScaled" class="public" href="../../gfx/graal/format/Rgb8_sScaled.html">Rgb8_sScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb8_sScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb8_uInt" class="public" href="../../gfx/graal/format/Rgb8_uInt.html">Rgb8_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb8_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb8_uNorm" class="public" href="../../gfx/graal/format/Rgb8_uNorm.html">Rgb8_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb8_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgb8_uScaled" class="public" href="../../gfx/graal/format/Rgb8_uScaled.html">Rgb8_uScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgb8_uScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba16_sFloat" class="public" href="../../gfx/graal/format/Rgba16_sFloat.html">Rgba16_sFloat</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba16_sFloat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba16_sInt" class="public" href="../../gfx/graal/format/Rgba16_sInt.html">Rgba16_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba16_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba16_sNorm" class="public" href="../../gfx/graal/format/Rgba16_sNorm.html">Rgba16_sNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba16_sNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba16_sScaled" class="public" href="../../gfx/graal/format/Rgba16_sScaled.html">Rgba16_sScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba16_sScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba16_uInt" class="public" href="../../gfx/graal/format/Rgba16_uInt.html">Rgba16_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba16_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba16_uNorm" class="public" href="../../gfx/graal/format/Rgba16_uNorm.html">Rgba16_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba16_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba16_uScaled" class="public" href="../../gfx/graal/format/Rgba16_uScaled.html">Rgba16_uScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba16_uScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba32_sFloat" class="public" href="../../gfx/graal/format/Rgba32_sFloat.html">Rgba32_sFloat</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba32_sFloat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba32_sInt" class="public" href="../../gfx/graal/format/Rgba32_sInt.html">Rgba32_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba32_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba32_uInt" class="public" href="../../gfx/graal/format/Rgba32_uInt.html">Rgba32_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba32_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba4_uNorm" class="public" href="../../gfx/graal/format/Rgba4_uNorm.html">Rgba4_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba4_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba64_sFloat" class="public" href="../../gfx/graal/format/Rgba64_sFloat.html">Rgba64_sFloat</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba64_sFloat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba64_sInt" class="public" href="../../gfx/graal/format/Rgba64_sInt.html">Rgba64_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba64_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba64_uInt" class="public" href="../../gfx/graal/format/Rgba64_uInt.html">Rgba64_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba64_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba8_sInt" class="public" href="../../gfx/graal/format/Rgba8_sInt.html">Rgba8_sInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba8_sInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba8_sNorm" class="public" href="../../gfx/graal/format/Rgba8_sNorm.html">Rgba8_sNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba8_sNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba8_sRgb" class="public" href="../../gfx/graal/format/Rgba8_sRgb.html">Rgba8_sRgb</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba8_sRgb
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba8_sScaled" class="public" href="../../gfx/graal/format/Rgba8_sScaled.html">Rgba8_sScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba8_sScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba8_uInt" class="public" href="../../gfx/graal/format/Rgba8_uInt.html">Rgba8_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba8_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba8_uNorm" class="public" href="../../gfx/graal/format/Rgba8_uNorm.html">Rgba8_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba8_uNorm
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rgba8_uScaled" class="public" href="../../gfx/graal/format/Rgba8_uScaled.html">Rgba8_uScaled</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.rgba8_uScaled
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="S8" class="public" href="../../gfx/graal/format/S8.html">S8</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.S8.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="S8_uInt" class="public" href="../../gfx/graal/format/S8_uInt.html">S8_uInt</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.s8_uInt
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="X8_D24" class="public" href="../../gfx/graal/format/X8_D24.html">X8_D24</a>
+								</code>
+							</td>
+							<td>Static descriptor of SurfaceType.X8_D24.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="X8d24_uNorm" class="public" href="../../gfx/graal/format/X8d24_uNorm.html">X8d24_uNorm</a>
+								</code>
+							</td>
+							<td>Static descriptor of Format.x8d24_uNorm
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Enums</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Format" class="public" href="../../gfx/graal/format/Format.html">Format</a>
+								</code>
+							</td>
+							<td>The format of an Image.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="FormatFeatures" class="public" href="../../gfx/graal/format/FormatFeatures.html">FormatFeatures</a>
+								</code>
+							</td>
+							<td>Format features
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="NumFormat" class="public" href="../../gfx/graal/format/NumFormat.html">NumFormat</a>
+								</code>
+							</td>
+							<td>numeric format of texel channels
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="SurfaceType" class="public" href="../../gfx/graal/format/SurfaceType.html">SurfaceType</a>
+								</code>
+							</td>
+							<td>Describes the components of a surface
+</td>
+						</tr>
+					</table>
+				</section>
+			</div>
+			<footer>
+				<div id="license-info">
+					
+					
+					
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>

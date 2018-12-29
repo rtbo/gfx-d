@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<title>Module gfx.core.log</title>
+		<link rel="stylesheet" href="../../css/style.min.css"/>
+		<script type="text/javascript" src="../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../gfx.html">gfx</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">bindings
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">opengl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/gl.html">gl</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/glx.html">glx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/khrplatform.html">khrplatform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/wgl.html">wgl</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/bindings/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/vulkan/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/vulkan/vk.html">vk</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/core.html">core</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../gfx/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module selected">
+							<a href="../../gfx/core/log.html">log</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/rc.html">rc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/typecons.html">typecons</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/util.html">util</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">decl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/decl/engine.html">engine</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/decl/store.html">store</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">genmesh
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/genmesh/algorithm.html">algorithm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/genmesh/cube.html">cube</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/genmesh/poly.html">poly</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/gl3.html">gl3</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/gl3/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/gl3/swapchain.html">swapchain</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/graal.html">graal</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/buffer.html">buffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/cmd.html">cmd</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/device.html">device</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/error.html">error</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/format.html">format</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/memory.html">memory</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/pipeline.html">pipeline</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/presentation.html">presentation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/queue.html">queue</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/renderpass.html">renderpass</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/sync.html">sync</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/types.html">types</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/math.html">math</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/approx.html">approx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/inverse.html">inverse</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/mat.html">mat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/proj.html">proj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/transform.html">transform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/vec.html">vec</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/memalloc.html">memalloc</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/memalloc/dedicated.html">dedicated</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/memalloc/pool.html">pool</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/vulkan/wsi.html">wsi</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window.html">window</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window/wayland.html">wayland</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/wayland/xdg_shell.html">xdg_shell</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window/win32.html">win32</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/win32/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/win32/keymap.html">keymap</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window/xcb.html">xcb</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/xcb/context.html">context</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/keys.html">keys</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/xkeyboard.html">xkeyboard</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with
+				<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Module gfx.core.log</h1><p>Logging module
+</p><section><p>This module provides logging functionality.
+Everything is thread-safe at the exception of global severity and mask
+getters/setters. This is done so to avoid paying for synchronization of log
+entries that will be filtered out.
+</p>
+</section>
+
+				<section></section>
+				<section>
+					<h2>Functions</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="debug_" class="public" href="../../gfx/core/log/debug_.html">debug_</a><span class="decoration">(tag, msg)</span>
+								</code>
+							</td>
+							<td>add a log entry with debug severity
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="debugf" class="public" href="../../gfx/core/log/debugf.html">debugf</a><span class="decoration">(tag, fmt, args)</span>
+								</code>
+							</td>
+							<td>add a log entry with debug severity
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="error" class="public" href="../../gfx/core/log/error.html">error</a><span class="decoration">(tag, msg)</span>
+								</code>
+							</td>
+							<td>add a log entry with error severity
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="errorf" class="public" href="../../gfx/core/log/errorf.html">errorf</a><span class="decoration">(tag, fmt, args)</span>
+								</code>
+							</td>
+							<td>add a log entry with error severity
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="info" class="public" href="../../gfx/core/log/info.html">info</a><span class="decoration">(tag, msg)</span>
+								</code>
+							</td>
+							<td>add a log entry with info severity
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="infof" class="public" href="../../gfx/core/log/infof.html">infof</a><span class="decoration">(tag, fmt, args)</span>
+								</code>
+							</td>
+							<td>add a log entry with info severity
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="log" class="public" href="../../gfx/core/log/log.html">log</a><span class="decoration">(sev, tag, msg)</span>
+								</code>
+							</td>
+							<td>add a log entry
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="logf" class="public" href="../../gfx/core/log/logf.html">logf</a><span class="decoration">(sev, tag, fmt, args)</span>
+								</code>
+							</td>
+							<td>add a log entry
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="logger" class="public property" href="../../gfx/core/log/logger.html">logger</a><span class="decoration">()</span>
+								</code>
+							</td>
+							<td>The installed logger.
+By default StdOutLogger.
+Assigning null re-assign the default
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="mask" class="public property" href="../../gfx/core/log/mask.html">mask</a><span class="decoration">()</span>
+								</code>
+							</td>
+							<td>A mask for bypassing some messages.
+By default 0xffffffff
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="msgFormat" class="public property" href="../../gfx/core/log/msgFormat.html">msgFormat</a><span class="decoration">()</span>
+								</code>
+							</td>
+							<td>The format string for log messages
+The entries are as follow:
+- %d: datetime (formatted according timeFormat)
+- %s: severity
+- %p: padding of severity
+- %t: tag
+- %m: msg
+The default format string is defaultMsgFormat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="severity" class="public property" href="../../gfx/core/log/severity.html">severity</a><span class="decoration">()</span>
+								</code>
+							</td>
+							<td>Minimum Severity for message filtering.
+All messages with lower severity are filtered out.
+By default Severity.info in release builds and Severity.debug_ in debug builds.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="timeFormat" class="public property" href="../../gfx/core/log/timeFormat.html">timeFormat</a><span class="decoration">()</span>
+								</code>
+							</td>
+							<td>The format string for date-time in log message
+The format of this string is the same as smjg.libs.util.datetime:
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="trace" class="public" href="../../gfx/core/log/trace.html">trace</a><span class="decoration">(tag, msg)</span>
+								</code>
+							</td>
+							<td>add a log entry with trace severity
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="tracef" class="public" href="../../gfx/core/log/tracef.html">tracef</a><span class="decoration">(tag, fmt, args)</span>
+								</code>
+							</td>
+							<td>add a log entry with trace severity
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="warning" class="public" href="../../gfx/core/log/warning.html">warning</a><span class="decoration">(tag, msg)</span>
+								</code>
+							</td>
+							<td>add a log entry with warning severity
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="warningf" class="public" href="../../gfx/core/log/warningf.html">warningf</a><span class="decoration">(tag, fmt, args)</span>
+								</code>
+							</td>
+							<td>add a log entry with warning severity
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Interfaces</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Logger" class="public" href="../../gfx/core/log/Logger.html">Logger</a>
+								</code>
+							</td>
+							<td>An abstract logger. All log operations are synchronized by a global mutex.
+Implementations do not need to bother about thread safety.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Classes</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="FileLogger" class="public" href="../../gfx/core/log/FileLogger.html">FileLogger</a>
+								</code>
+							</td>
+							<td>A logger that prints into a file
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="StdErrLogger" class="public" href="../../gfx/core/log/StdErrLogger.html">StdErrLogger</a>
+								</code>
+							</td>
+							<td>A logger that prints to stderr
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="StdOutLogger" class="public" href="../../gfx/core/log/StdOutLogger.html">StdOutLogger</a>
+								</code>
+							</td>
+							<td>A logger that prints to stdout
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Structs</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="LogTag" class="public" href="../../gfx/core/log/LogTag.html">LogTag</a>
+								</code>
+							</td>
+							<td>LogTag encapsulate a string tag and a bitmask.
+It a also have helpers to log entries with the given tag and mask.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Enums</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Severity" class="public" href="../../gfx/core/log/Severity.html">Severity</a>
+								</code>
+							</td>
+							<td>Log messages severity
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Manifest constants</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a id="defaultMask" class="public" href="../../gfx/core/log/defaultMask.html">
+									<code>defaultMask</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>The default filter mask
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="defaultMsgFormat" class="public" href="../../gfx/core/log/defaultMsgFormat.html">
+									<code>defaultMsgFormat</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>the default format string for log messages
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="defaultSeverity" class="public" href="../../gfx/core/log/defaultSeverity.html">
+									<code>defaultSeverity</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>The default severity
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="defaultTimeFormat" class="public" href="../../gfx/core/log/defaultTimeFormat.html">
+									<code>defaultTimeFormat</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>the default format string for date-time
+</td>
+						</tr>
+					</table>
+				</section>
+			</div>
+			<footer>
+				<div id="license-info">
+					
+					
+					
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>

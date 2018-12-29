@@ -1,0 +1,2840 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<title>Glx - multiple declarations</title>
+		<link rel="stylesheet" href="../../../../css/style.min.css"/>
+		<script type="text/javascript" src="../../../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../../gfx.html">gfx</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">bindings
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">opengl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/gl.html">gl</a>
+						</div>
+					</li>
+					<li>
+						<div class="module selected">
+							<a href="../../../../gfx/bindings/opengl/glx.html">glx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/khrplatform.html">khrplatform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/wgl.html">wgl</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/bindings/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/vulkan/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/vulkan/vk.html">vk</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/core.html">core</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/log.html">log</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/rc.html">rc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/typecons.html">typecons</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/util.html">util</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">decl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/decl/engine.html">engine</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/decl/store.html">store</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">genmesh
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/genmesh/algorithm.html">algorithm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/genmesh/cube.html">cube</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/genmesh/poly.html">poly</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/gl3.html">gl3</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/gl3/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/gl3/swapchain.html">swapchain</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/graal.html">graal</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/buffer.html">buffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/cmd.html">cmd</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/device.html">device</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/error.html">error</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/format.html">format</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/memory.html">memory</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/pipeline.html">pipeline</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/presentation.html">presentation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/queue.html">queue</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/renderpass.html">renderpass</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/sync.html">sync</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/types.html">types</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/math.html">math</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/approx.html">approx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/inverse.html">inverse</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/mat.html">mat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/proj.html">proj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/transform.html">transform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/vec.html">vec</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/memalloc.html">memalloc</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/memalloc/dedicated.html">dedicated</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/memalloc/pool.html">pool</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/vulkan/wsi.html">wsi</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window.html">window</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window/wayland.html">wayland</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/wayland/xdg_shell.html">xdg_shell</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window/win32.html">win32</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/win32/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/win32/keymap.html">keymap</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window/xcb.html">xcb</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/xcb/context.html">context</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/keys.html">keys</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/xkeyboard.html">xkeyboard</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with
+				<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Glx - multiple declarations</h1>
+				<nav class="page-nav">
+					<ul>
+						<li>
+							<a href="#0">
+								Class <code>Glx</code>
+							</a>
+						</li>
+						<li>
+							<a href="#1">
+								Class <code>Glx</code>
+							</a>
+						</li>
+					</ul>
+				</nav><h2 id="0">Class Glx</h2><p>GLX loader base class
+</p>
+				<div class="prototype">
+					<code class="lang-d">
+						<div class="single-prototype">
+				<span class="kwd">class</span> <span class="typ">Glx</span>
+				<span class="pun">;</span>
+						</div>
+					</code>
+				</div>
+				
+				<section><h3>Constructors</h3>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.this.html" class="public">
+									<code>this</code>
+								</a>
+							</td>
+							<td></td>
+						</tr>
+					</table>
+				</section>
+				<section><h3>Methods</h3>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BindChannelToWindowSGIX.html" class="public">
+									<code>BindChannelToWindowSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_video_resize
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BindHyperpipeSGIX.html" class="public">
+									<code>BindHyperpipeSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_hyperpipe
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BindSwapBarrierNV.html" class="public">
+									<code>BindSwapBarrierNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BindSwapBarrierSGIX.html" class="public">
+									<code>BindSwapBarrierSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_swap_barrier
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BindTexImageEXT.html" class="public">
+									<code>BindTexImageEXT</code>
+								</a>
+							</td>
+							<td>Commands for GLX_EXT_texture_from_pixmap
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BindVideoCaptureDeviceNV.html" class="public">
+									<code>BindVideoCaptureDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_capture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BindVideoDeviceNV.html" class="public">
+									<code>BindVideoDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_present_video
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BindVideoImageNV.html" class="public">
+									<code>BindVideoImageNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_out
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BlitContextFramebufferAMD.html" class="public">
+									<code>BlitContextFramebufferAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ChannelRectSGIX.html" class="public">
+									<code>ChannelRectSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_video_resize
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ChannelRectSyncSGIX.html" class="public">
+									<code>ChannelRectSyncSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_video_resize
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ChooseFBConfig.html" class="public">
+									<code>ChooseFBConfig</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ChooseFBConfigSGIX.html" class="public">
+									<code>ChooseFBConfigSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_fbconfig
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ChooseVisual.html" class="public">
+									<code>ChooseVisual</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CopyBufferSubDataNV.html" class="public">
+									<code>CopyBufferSubDataNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_copy_buffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CopyContext.html" class="public">
+									<code>CopyContext</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CopyImageSubDataNV.html" class="public">
+									<code>CopyImageSubDataNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_copy_image
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CopySubBufferMESA.html" class="public">
+									<code>CopySubBufferMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_copy_sub_buffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateAssociatedContextAMD.html" class="public">
+									<code>CreateAssociatedContextAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateAssociatedContextAttribsAMD.html" class="public">
+									<code>CreateAssociatedContextAttribsAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateContext.html" class="public">
+									<code>CreateContext</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateContextAttribsARB.html" class="public">
+									<code>CreateContextAttribsARB</code>
+								</a>
+							</td>
+							<td>Commands for GLX_ARB_create_context
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateContextWithConfigSGIX.html" class="public">
+									<code>CreateContextWithConfigSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_fbconfig
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateGLXPbufferSGIX.html" class="public">
+									<code>CreateGLXPbufferSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateGLXPixmap.html" class="public">
+									<code>CreateGLXPixmap</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateGLXPixmapMESA.html" class="public">
+									<code>CreateGLXPixmapMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_pixmap_colormap
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateGLXPixmapWithConfigSGIX.html" class="public">
+									<code>CreateGLXPixmapWithConfigSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_fbconfig
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateNewContext.html" class="public">
+									<code>CreateNewContext</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreatePbuffer.html" class="public">
+									<code>CreatePbuffer</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreatePixmap.html" class="public">
+									<code>CreatePixmap</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateWindow.html" class="public">
+									<code>CreateWindow</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CushionSGI.html" class="public">
+									<code>CushionSGI</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGI_cushion
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DelayBeforeSwapNV.html" class="public">
+									<code>DelayBeforeSwapNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_delay_before_swap
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DeleteAssociatedContextAMD.html" class="public">
+									<code>DeleteAssociatedContextAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DestroyContext.html" class="public">
+									<code>DestroyContext</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DestroyGLXPbufferSGIX.html" class="public">
+									<code>DestroyGLXPbufferSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DestroyGLXPixmap.html" class="public">
+									<code>DestroyGLXPixmap</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DestroyHyperpipeConfigSGIX.html" class="public">
+									<code>DestroyHyperpipeConfigSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_hyperpipe
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DestroyPbuffer.html" class="public">
+									<code>DestroyPbuffer</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DestroyPixmap.html" class="public">
+									<code>DestroyPixmap</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DestroyWindow.html" class="public">
+									<code>DestroyWindow</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.EnumerateVideoCaptureDevicesNV.html" class="public">
+									<code>EnumerateVideoCaptureDevicesNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_capture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.EnumerateVideoDevicesNV.html" class="public">
+									<code>EnumerateVideoDevicesNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_present_video
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.FreeContextEXT.html" class="public">
+									<code>FreeContextEXT</code>
+								</a>
+							</td>
+							<td>Commands for GLX_EXT_import_context
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetAGPOffsetMESA.html" class="public">
+									<code>GetAGPOffsetMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_agp_offset
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetClientString.html" class="public">
+									<code>GetClientString</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetConfig.html" class="public">
+									<code>GetConfig</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetContextGPUIDAMD.html" class="public">
+									<code>GetContextGPUIDAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetContextIDEXT.html" class="public">
+									<code>GetContextIDEXT</code>
+								</a>
+							</td>
+							<td>Commands for GLX_EXT_import_context
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetCurrentAssociatedContextAMD.html" class="public">
+									<code>GetCurrentAssociatedContextAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetCurrentContext.html" class="public">
+									<code>GetCurrentContext</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetCurrentDisplay.html" class="public">
+									<code>GetCurrentDisplay</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_2
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetCurrentDisplayEXT.html" class="public">
+									<code>GetCurrentDisplayEXT</code>
+								</a>
+							</td>
+							<td>Commands for GLX_EXT_import_context
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetCurrentDrawable.html" class="public">
+									<code>GetCurrentDrawable</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetCurrentReadDrawable.html" class="public">
+									<code>GetCurrentReadDrawable</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetCurrentReadDrawableSGI.html" class="public">
+									<code>GetCurrentReadDrawableSGI</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGI_make_current_read
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetFBConfigAttrib.html" class="public">
+									<code>GetFBConfigAttrib</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetFBConfigAttribSGIX.html" class="public">
+									<code>GetFBConfigAttribSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_fbconfig
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetFBConfigFromVisualSGIX.html" class="public">
+									<code>GetFBConfigFromVisualSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_fbconfig
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetFBConfigs.html" class="public">
+									<code>GetFBConfigs</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetGPUIDsAMD.html" class="public">
+									<code>GetGPUIDsAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetGPUInfoAMD.html" class="public">
+									<code>GetGPUInfoAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetMscRateOML.html" class="public">
+									<code>GetMscRateOML</code>
+								</a>
+							</td>
+							<td>Commands for GLX_OML_sync_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetProcAddress.html" class="public">
+									<code>GetProcAddress</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_4
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetProcAddressARB.html" class="public">
+									<code>GetProcAddressARB</code>
+								</a>
+							</td>
+							<td>Commands for GLX_ARB_get_proc_address
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetSelectedEvent.html" class="public">
+									<code>GetSelectedEvent</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetSelectedEventSGIX.html" class="public">
+									<code>GetSelectedEventSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetSwapIntervalMESA.html" class="public">
+									<code>GetSwapIntervalMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_swap_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetSyncValuesOML.html" class="public">
+									<code>GetSyncValuesOML</code>
+								</a>
+							</td>
+							<td>Commands for GLX_OML_sync_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetTransparentIndexSUN.html" class="public">
+									<code>GetTransparentIndexSUN</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SUN_get_transparent_index
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetVideoDeviceNV.html" class="public">
+									<code>GetVideoDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_out
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetVideoInfoNV.html" class="public">
+									<code>GetVideoInfoNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_out
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetVideoSyncSGI.html" class="public">
+									<code>GetVideoSyncSGI</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGI_video_sync
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetVisualFromFBConfig.html" class="public">
+									<code>GetVisualFromFBConfig</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetVisualFromFBConfigSGIX.html" class="public">
+									<code>GetVisualFromFBConfigSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_fbconfig
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.HyperpipeAttribSGIX.html" class="public">
+									<code>HyperpipeAttribSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_hyperpipe
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.HyperpipeConfigSGIX.html" class="public">
+									<code>HyperpipeConfigSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_hyperpipe
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ImportContextEXT.html" class="public">
+									<code>ImportContextEXT</code>
+								</a>
+							</td>
+							<td>Commands for GLX_EXT_import_context
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.IsDirect.html" class="public">
+									<code>IsDirect</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.JoinSwapGroupNV.html" class="public">
+									<code>JoinSwapGroupNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.JoinSwapGroupSGIX.html" class="public">
+									<code>JoinSwapGroupSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.LockVideoCaptureDeviceNV.html" class="public">
+									<code>LockVideoCaptureDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_capture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.MakeAssociatedContextCurrentAMD.html" class="public">
+									<code>MakeAssociatedContextCurrentAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.MakeContextCurrent.html" class="public">
+									<code>MakeContextCurrent</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.MakeCurrent.html" class="public">
+									<code>MakeCurrent</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.MakeCurrentReadSGI.html" class="public">
+									<code>MakeCurrentReadSGI</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGI_make_current_read
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.NamedCopyBufferSubDataNV.html" class="public">
+									<code>NamedCopyBufferSubDataNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_copy_buffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryChannelDeltasSGIX.html" class="public">
+									<code>QueryChannelDeltasSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_video_resize
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryChannelRectSGIX.html" class="public">
+									<code>QueryChannelRectSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_video_resize
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryContext.html" class="public">
+									<code>QueryContext</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryContextInfoEXT.html" class="public">
+									<code>QueryContextInfoEXT</code>
+								</a>
+							</td>
+							<td>Commands for GLX_EXT_import_context
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryCurrentRendererIntegerMESA.html" class="public">
+									<code>QueryCurrentRendererIntegerMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_query_renderer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryCurrentRendererStringMESA.html" class="public">
+									<code>QueryCurrentRendererStringMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_query_renderer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryDrawable.html" class="public">
+									<code>QueryDrawable</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryExtension.html" class="public">
+									<code>QueryExtension</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryExtensionsString.html" class="public">
+									<code>QueryExtensionsString</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryFrameCountNV.html" class="public">
+									<code>QueryFrameCountNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryGLXPbufferSGIX.html" class="public">
+									<code>QueryGLXPbufferSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryHyperpipeAttribSGIX.html" class="public">
+									<code>QueryHyperpipeAttribSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_hyperpipe
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryHyperpipeBestAttribSGIX.html" class="public">
+									<code>QueryHyperpipeBestAttribSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_hyperpipe
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryHyperpipeConfigSGIX.html" class="public">
+									<code>QueryHyperpipeConfigSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_hyperpipe
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryHyperpipeNetworkSGIX.html" class="public">
+									<code>QueryHyperpipeNetworkSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_hyperpipe
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryMaxSwapBarriersSGIX.html" class="public">
+									<code>QueryMaxSwapBarriersSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_swap_barrier
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryMaxSwapGroupsNV.html" class="public">
+									<code>QueryMaxSwapGroupsNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryRendererIntegerMESA.html" class="public">
+									<code>QueryRendererIntegerMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_query_renderer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryRendererStringMESA.html" class="public">
+									<code>QueryRendererStringMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_query_renderer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryServerString.html" class="public">
+									<code>QueryServerString</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QuerySwapGroupNV.html" class="public">
+									<code>QuerySwapGroupNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryVersion.html" class="public">
+									<code>QueryVersion</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryVideoCaptureDeviceNV.html" class="public">
+									<code>QueryVideoCaptureDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_capture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ReleaseBuffersMESA.html" class="public">
+									<code>ReleaseBuffersMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_release_buffers
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ReleaseTexImageEXT.html" class="public">
+									<code>ReleaseTexImageEXT</code>
+								</a>
+							</td>
+							<td>Commands for GLX_EXT_texture_from_pixmap
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ReleaseVideoCaptureDeviceNV.html" class="public">
+									<code>ReleaseVideoCaptureDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_capture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ReleaseVideoDeviceNV.html" class="public">
+									<code>ReleaseVideoDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_out
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ReleaseVideoImageNV.html" class="public">
+									<code>ReleaseVideoImageNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_out
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ResetFrameCountNV.html" class="public">
+									<code>ResetFrameCountNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.SelectEvent.html" class="public">
+									<code>SelectEvent</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.SelectEventSGIX.html" class="public">
+									<code>SelectEventSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.SendPbufferToVideoNV.html" class="public">
+									<code>SendPbufferToVideoNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_out
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.Set3DfxModeMESA.html" class="public">
+									<code>Set3DfxModeMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_set_3dfx_mode
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.SwapBuffers.html" class="public">
+									<code>SwapBuffers</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.SwapBuffersMscOML.html" class="public">
+									<code>SwapBuffersMscOML</code>
+								</a>
+							</td>
+							<td>Commands for GLX_OML_sync_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.SwapIntervalEXT.html" class="public">
+									<code>SwapIntervalEXT</code>
+								</a>
+							</td>
+							<td>Commands for GLX_EXT_swap_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.SwapIntervalMESA.html" class="public">
+									<code>SwapIntervalMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_swap_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.SwapIntervalSGI.html" class="public">
+									<code>SwapIntervalSGI</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGI_swap_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.UseXFont.html" class="public">
+									<code>UseXFont</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.WaitForMscOML.html" class="public">
+									<code>WaitForMscOML</code>
+								</a>
+							</td>
+							<td>Commands for GLX_OML_sync_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.WaitForSbcOML.html" class="public">
+									<code>WaitForSbcOML</code>
+								</a>
+							</td>
+							<td>Commands for GLX_OML_sync_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.WaitGL.html" class="public">
+									<code>WaitGL</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.WaitVideoSyncSGI.html" class="public">
+									<code>WaitVideoSyncSGI</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGI_video_sync
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.WaitX.html" class="public">
+									<code>WaitX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+					</table>
+				</section>
+				<h2 id="1">Class Glx</h2><p>GLX loader base class
+</p>
+				<div class="prototype">
+					<code class="lang-d">
+						<div class="single-prototype">
+				<span class="kwd">class</span> <span class="typ">Glx</span>
+				<span class="pun">;</span>
+						</div>
+					</code>
+				</div>
+				
+				<section><h3>Constructors</h3>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.this.html" class="public">
+									<code>this</code>
+								</a>
+							</td>
+							<td></td>
+						</tr>
+					</table>
+				</section>
+				<section><h3>Methods</h3>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BindChannelToWindowSGIX.html" class="public">
+									<code>BindChannelToWindowSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_video_resize
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BindHyperpipeSGIX.html" class="public">
+									<code>BindHyperpipeSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_hyperpipe
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BindSwapBarrierNV.html" class="public">
+									<code>BindSwapBarrierNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BindSwapBarrierSGIX.html" class="public">
+									<code>BindSwapBarrierSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_swap_barrier
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BindTexImageEXT.html" class="public">
+									<code>BindTexImageEXT</code>
+								</a>
+							</td>
+							<td>Commands for GLX_EXT_texture_from_pixmap
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BindVideoCaptureDeviceNV.html" class="public">
+									<code>BindVideoCaptureDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_capture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BindVideoDeviceNV.html" class="public">
+									<code>BindVideoDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_present_video
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BindVideoImageNV.html" class="public">
+									<code>BindVideoImageNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_out
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.BlitContextFramebufferAMD.html" class="public">
+									<code>BlitContextFramebufferAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ChannelRectSGIX.html" class="public">
+									<code>ChannelRectSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_video_resize
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ChannelRectSyncSGIX.html" class="public">
+									<code>ChannelRectSyncSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_video_resize
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ChooseFBConfig.html" class="public">
+									<code>ChooseFBConfig</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ChooseFBConfigSGIX.html" class="public">
+									<code>ChooseFBConfigSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_fbconfig
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ChooseVisual.html" class="public">
+									<code>ChooseVisual</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CopyBufferSubDataNV.html" class="public">
+									<code>CopyBufferSubDataNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_copy_buffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CopyContext.html" class="public">
+									<code>CopyContext</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CopyImageSubDataNV.html" class="public">
+									<code>CopyImageSubDataNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_copy_image
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CopySubBufferMESA.html" class="public">
+									<code>CopySubBufferMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_copy_sub_buffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateAssociatedContextAMD.html" class="public">
+									<code>CreateAssociatedContextAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateAssociatedContextAttribsAMD.html" class="public">
+									<code>CreateAssociatedContextAttribsAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateContext.html" class="public">
+									<code>CreateContext</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateContextAttribsARB.html" class="public">
+									<code>CreateContextAttribsARB</code>
+								</a>
+							</td>
+							<td>Commands for GLX_ARB_create_context
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateContextWithConfigSGIX.html" class="public">
+									<code>CreateContextWithConfigSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_fbconfig
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateGLXPbufferSGIX.html" class="public">
+									<code>CreateGLXPbufferSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateGLXPixmap.html" class="public">
+									<code>CreateGLXPixmap</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateGLXPixmapMESA.html" class="public">
+									<code>CreateGLXPixmapMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_pixmap_colormap
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateGLXPixmapWithConfigSGIX.html" class="public">
+									<code>CreateGLXPixmapWithConfigSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_fbconfig
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateNewContext.html" class="public">
+									<code>CreateNewContext</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreatePbuffer.html" class="public">
+									<code>CreatePbuffer</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreatePixmap.html" class="public">
+									<code>CreatePixmap</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CreateWindow.html" class="public">
+									<code>CreateWindow</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.CushionSGI.html" class="public">
+									<code>CushionSGI</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGI_cushion
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DelayBeforeSwapNV.html" class="public">
+									<code>DelayBeforeSwapNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_delay_before_swap
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DeleteAssociatedContextAMD.html" class="public">
+									<code>DeleteAssociatedContextAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DestroyContext.html" class="public">
+									<code>DestroyContext</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DestroyGLXPbufferSGIX.html" class="public">
+									<code>DestroyGLXPbufferSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DestroyGLXPixmap.html" class="public">
+									<code>DestroyGLXPixmap</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DestroyHyperpipeConfigSGIX.html" class="public">
+									<code>DestroyHyperpipeConfigSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_hyperpipe
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DestroyPbuffer.html" class="public">
+									<code>DestroyPbuffer</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DestroyPixmap.html" class="public">
+									<code>DestroyPixmap</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.DestroyWindow.html" class="public">
+									<code>DestroyWindow</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.EnumerateVideoCaptureDevicesNV.html" class="public">
+									<code>EnumerateVideoCaptureDevicesNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_capture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.EnumerateVideoDevicesNV.html" class="public">
+									<code>EnumerateVideoDevicesNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_present_video
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.FreeContextEXT.html" class="public">
+									<code>FreeContextEXT</code>
+								</a>
+							</td>
+							<td>Commands for GLX_EXT_import_context
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetAGPOffsetMESA.html" class="public">
+									<code>GetAGPOffsetMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_agp_offset
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetClientString.html" class="public">
+									<code>GetClientString</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetConfig.html" class="public">
+									<code>GetConfig</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetContextGPUIDAMD.html" class="public">
+									<code>GetContextGPUIDAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetContextIDEXT.html" class="public">
+									<code>GetContextIDEXT</code>
+								</a>
+							</td>
+							<td>Commands for GLX_EXT_import_context
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetCurrentAssociatedContextAMD.html" class="public">
+									<code>GetCurrentAssociatedContextAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetCurrentContext.html" class="public">
+									<code>GetCurrentContext</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetCurrentDisplay.html" class="public">
+									<code>GetCurrentDisplay</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_2
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetCurrentDisplayEXT.html" class="public">
+									<code>GetCurrentDisplayEXT</code>
+								</a>
+							</td>
+							<td>Commands for GLX_EXT_import_context
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetCurrentDrawable.html" class="public">
+									<code>GetCurrentDrawable</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetCurrentReadDrawable.html" class="public">
+									<code>GetCurrentReadDrawable</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetCurrentReadDrawableSGI.html" class="public">
+									<code>GetCurrentReadDrawableSGI</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGI_make_current_read
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetFBConfigAttrib.html" class="public">
+									<code>GetFBConfigAttrib</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetFBConfigAttribSGIX.html" class="public">
+									<code>GetFBConfigAttribSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_fbconfig
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetFBConfigFromVisualSGIX.html" class="public">
+									<code>GetFBConfigFromVisualSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_fbconfig
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetFBConfigs.html" class="public">
+									<code>GetFBConfigs</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetGPUIDsAMD.html" class="public">
+									<code>GetGPUIDsAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetGPUInfoAMD.html" class="public">
+									<code>GetGPUInfoAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetMscRateOML.html" class="public">
+									<code>GetMscRateOML</code>
+								</a>
+							</td>
+							<td>Commands for GLX_OML_sync_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetProcAddress.html" class="public">
+									<code>GetProcAddress</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_4
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetProcAddressARB.html" class="public">
+									<code>GetProcAddressARB</code>
+								</a>
+							</td>
+							<td>Commands for GLX_ARB_get_proc_address
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetSelectedEvent.html" class="public">
+									<code>GetSelectedEvent</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetSelectedEventSGIX.html" class="public">
+									<code>GetSelectedEventSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetSwapIntervalMESA.html" class="public">
+									<code>GetSwapIntervalMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_swap_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetSyncValuesOML.html" class="public">
+									<code>GetSyncValuesOML</code>
+								</a>
+							</td>
+							<td>Commands for GLX_OML_sync_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetTransparentIndexSUN.html" class="public">
+									<code>GetTransparentIndexSUN</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SUN_get_transparent_index
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetVideoDeviceNV.html" class="public">
+									<code>GetVideoDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_out
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetVideoInfoNV.html" class="public">
+									<code>GetVideoInfoNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_out
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetVideoSyncSGI.html" class="public">
+									<code>GetVideoSyncSGI</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGI_video_sync
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetVisualFromFBConfig.html" class="public">
+									<code>GetVisualFromFBConfig</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.GetVisualFromFBConfigSGIX.html" class="public">
+									<code>GetVisualFromFBConfigSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_fbconfig
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.HyperpipeAttribSGIX.html" class="public">
+									<code>HyperpipeAttribSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_hyperpipe
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.HyperpipeConfigSGIX.html" class="public">
+									<code>HyperpipeConfigSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_hyperpipe
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ImportContextEXT.html" class="public">
+									<code>ImportContextEXT</code>
+								</a>
+							</td>
+							<td>Commands for GLX_EXT_import_context
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.IsDirect.html" class="public">
+									<code>IsDirect</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.JoinSwapGroupNV.html" class="public">
+									<code>JoinSwapGroupNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.JoinSwapGroupSGIX.html" class="public">
+									<code>JoinSwapGroupSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.LockVideoCaptureDeviceNV.html" class="public">
+									<code>LockVideoCaptureDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_capture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.MakeAssociatedContextCurrentAMD.html" class="public">
+									<code>MakeAssociatedContextCurrentAMD</code>
+								</a>
+							</td>
+							<td>Commands for GLX_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.MakeContextCurrent.html" class="public">
+									<code>MakeContextCurrent</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.MakeCurrent.html" class="public">
+									<code>MakeCurrent</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.MakeCurrentReadSGI.html" class="public">
+									<code>MakeCurrentReadSGI</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGI_make_current_read
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.NamedCopyBufferSubDataNV.html" class="public">
+									<code>NamedCopyBufferSubDataNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_copy_buffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryChannelDeltasSGIX.html" class="public">
+									<code>QueryChannelDeltasSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_video_resize
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryChannelRectSGIX.html" class="public">
+									<code>QueryChannelRectSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_video_resize
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryContext.html" class="public">
+									<code>QueryContext</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryContextInfoEXT.html" class="public">
+									<code>QueryContextInfoEXT</code>
+								</a>
+							</td>
+							<td>Commands for GLX_EXT_import_context
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryCurrentRendererIntegerMESA.html" class="public">
+									<code>QueryCurrentRendererIntegerMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_query_renderer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryCurrentRendererStringMESA.html" class="public">
+									<code>QueryCurrentRendererStringMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_query_renderer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryDrawable.html" class="public">
+									<code>QueryDrawable</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryExtension.html" class="public">
+									<code>QueryExtension</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryExtensionsString.html" class="public">
+									<code>QueryExtensionsString</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryFrameCountNV.html" class="public">
+									<code>QueryFrameCountNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryGLXPbufferSGIX.html" class="public">
+									<code>QueryGLXPbufferSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryHyperpipeAttribSGIX.html" class="public">
+									<code>QueryHyperpipeAttribSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_hyperpipe
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryHyperpipeBestAttribSGIX.html" class="public">
+									<code>QueryHyperpipeBestAttribSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_hyperpipe
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryHyperpipeConfigSGIX.html" class="public">
+									<code>QueryHyperpipeConfigSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_hyperpipe
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryHyperpipeNetworkSGIX.html" class="public">
+									<code>QueryHyperpipeNetworkSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_hyperpipe
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryMaxSwapBarriersSGIX.html" class="public">
+									<code>QueryMaxSwapBarriersSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_swap_barrier
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryMaxSwapGroupsNV.html" class="public">
+									<code>QueryMaxSwapGroupsNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryRendererIntegerMESA.html" class="public">
+									<code>QueryRendererIntegerMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_query_renderer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryRendererStringMESA.html" class="public">
+									<code>QueryRendererStringMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_query_renderer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryServerString.html" class="public">
+									<code>QueryServerString</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QuerySwapGroupNV.html" class="public">
+									<code>QuerySwapGroupNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryVersion.html" class="public">
+									<code>QueryVersion</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.QueryVideoCaptureDeviceNV.html" class="public">
+									<code>QueryVideoCaptureDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_capture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ReleaseBuffersMESA.html" class="public">
+									<code>ReleaseBuffersMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_release_buffers
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ReleaseTexImageEXT.html" class="public">
+									<code>ReleaseTexImageEXT</code>
+								</a>
+							</td>
+							<td>Commands for GLX_EXT_texture_from_pixmap
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ReleaseVideoCaptureDeviceNV.html" class="public">
+									<code>ReleaseVideoCaptureDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_capture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ReleaseVideoDeviceNV.html" class="public">
+									<code>ReleaseVideoDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_out
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ReleaseVideoImageNV.html" class="public">
+									<code>ReleaseVideoImageNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_out
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.ResetFrameCountNV.html" class="public">
+									<code>ResetFrameCountNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.SelectEvent.html" class="public">
+									<code>SelectEvent</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_3
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.SelectEventSGIX.html" class="public">
+									<code>SelectEventSGIX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGIX_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.SendPbufferToVideoNV.html" class="public">
+									<code>SendPbufferToVideoNV</code>
+								</a>
+							</td>
+							<td>Commands for GLX_NV_video_out
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.Set3DfxModeMESA.html" class="public">
+									<code>Set3DfxModeMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_set_3dfx_mode
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.SwapBuffers.html" class="public">
+									<code>SwapBuffers</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.SwapBuffersMscOML.html" class="public">
+									<code>SwapBuffersMscOML</code>
+								</a>
+							</td>
+							<td>Commands for GLX_OML_sync_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.SwapIntervalEXT.html" class="public">
+									<code>SwapIntervalEXT</code>
+								</a>
+							</td>
+							<td>Commands for GLX_EXT_swap_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.SwapIntervalMESA.html" class="public">
+									<code>SwapIntervalMESA</code>
+								</a>
+							</td>
+							<td>Commands for GLX_MESA_swap_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.SwapIntervalSGI.html" class="public">
+									<code>SwapIntervalSGI</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGI_swap_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.UseXFont.html" class="public">
+									<code>UseXFont</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.WaitForMscOML.html" class="public">
+									<code>WaitForMscOML</code>
+								</a>
+							</td>
+							<td>Commands for GLX_OML_sync_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.WaitForSbcOML.html" class="public">
+									<code>WaitForSbcOML</code>
+								</a>
+							</td>
+							<td>Commands for GLX_OML_sync_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.WaitGL.html" class="public">
+									<code>WaitGL</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.WaitVideoSyncSGI.html" class="public">
+									<code>WaitVideoSyncSGI</code>
+								</a>
+							</td>
+							<td>Commands for GLX_SGI_video_sync
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/glx/Glx.WaitX.html" class="public">
+									<code>WaitX</code>
+								</a>
+							</td>
+							<td>Commands for GLX_VERSION_1_0
+</td>
+						</tr>
+					</table>
+				</section>
+				
+			</div>
+			<footer>
+				<div id="license-info">
+					
+					
+					
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<title>Struct VkPhysicalDeviceLimits</title>
+		<link rel="stylesheet" href="../../../../css/style.min.css"/>
+		<script type="text/javascript" src="../../../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../../gfx.html">gfx</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">bindings
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">opengl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/gl.html">gl</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/glx.html">glx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/khrplatform.html">khrplatform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/wgl.html">wgl</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../../gfx/bindings/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/vulkan/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module selected">
+							<a href="../../../../gfx/bindings/vulkan/vk.html">vk</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/core.html">core</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/log.html">log</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/rc.html">rc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/typecons.html">typecons</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/util.html">util</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">decl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/decl/engine.html">engine</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/decl/store.html">store</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">genmesh
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/genmesh/algorithm.html">algorithm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/genmesh/cube.html">cube</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/genmesh/poly.html">poly</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/gl3.html">gl3</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/gl3/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/gl3/swapchain.html">swapchain</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/graal.html">graal</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/buffer.html">buffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/cmd.html">cmd</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/device.html">device</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/error.html">error</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/format.html">format</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/memory.html">memory</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/pipeline.html">pipeline</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/presentation.html">presentation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/queue.html">queue</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/renderpass.html">renderpass</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/sync.html">sync</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/types.html">types</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/math.html">math</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/approx.html">approx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/inverse.html">inverse</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/mat.html">mat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/proj.html">proj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/transform.html">transform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/vec.html">vec</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/memalloc.html">memalloc</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/memalloc/dedicated.html">dedicated</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/memalloc/pool.html">pool</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/vulkan/wsi.html">wsi</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window.html">window</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window/wayland.html">wayland</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/wayland/xdg_shell.html">xdg_shell</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window/win32.html">win32</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/win32/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/win32/keymap.html">keymap</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window/xcb.html">xcb</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/xcb/context.html">context</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/keys.html">keys</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/xkeyboard.html">xkeyboard</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with
+				<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Struct VkPhysicalDeviceLimits</h1><p></p>
+				<div class="prototype">
+					<code class="lang-d">
+						<div class="single-prototype">
+				<span class="kwd">struct</span> <span class="typ">VkPhysicalDeviceLimits</span>
+				<span class="pun">;</span>
+						</div>
+					</code>
+				</div>
+				
+				<section><h2>Fields</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.bufferImageGranularity.html" class="public"><code>bufferImageGranularity</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ulong</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.discreteQueuePriorities.html" class="public"><code>discreteQueuePriorities</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.framebufferColorSampleCounts.html" class="public"><code>framebufferColorSampleCounts</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.framebufferDepthSampleCounts.html" class="public"><code>framebufferDepthSampleCounts</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.framebufferNoAttachmentsSampleCounts.html" class="public"><code>framebufferNoAttachmentsSampleCounts</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.framebufferStencilSampleCounts.html" class="public"><code>framebufferStencilSampleCounts</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.lineWidthGranularity.html" class="public"><code>lineWidthGranularity</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.lineWidthRange.html" class="public"><code>lineWidthRange</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span><span class="pun">[</span><span class="lit">2</span><span class="pun">]</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxBoundDescriptorSets.html" class="public"><code>maxBoundDescriptorSets</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxClipDistances.html" class="public"><code>maxClipDistances</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxColorAttachments.html" class="public"><code>maxColorAttachments</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxCombinedClipAndCullDistances.html" class="public"><code>maxCombinedClipAndCullDistances</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxComputeSharedMemorySize.html" class="public"><code>maxComputeSharedMemorySize</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxComputeWorkGroupCount.html" class="public"><code>maxComputeWorkGroupCount</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span><span class="pun">[</span><span class="lit">3</span><span class="pun">]</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxComputeWorkGroupInvocations.html" class="public"><code>maxComputeWorkGroupInvocations</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxComputeWorkGroupSize.html" class="public"><code>maxComputeWorkGroupSize</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span><span class="pun">[</span><span class="lit">3</span><span class="pun">]</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxCullDistances.html" class="public"><code>maxCullDistances</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxDescriptorSetInputAttachments.html" class="public"><code>maxDescriptorSetInputAttachments</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxDescriptorSetSampledImages.html" class="public"><code>maxDescriptorSetSampledImages</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxDescriptorSetSamplers.html" class="public"><code>maxDescriptorSetSamplers</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxDescriptorSetStorageBuffers.html" class="public"><code>maxDescriptorSetStorageBuffers</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxDescriptorSetStorageBuffersDynamic.html" class="public"><code>maxDescriptorSetStorageBuffersDynamic</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxDescriptorSetStorageImages.html" class="public"><code>maxDescriptorSetStorageImages</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxDescriptorSetUniformBuffers.html" class="public"><code>maxDescriptorSetUniformBuffers</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxDescriptorSetUniformBuffersDynamic.html" class="public"><code>maxDescriptorSetUniformBuffersDynamic</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxDrawIndexedIndexValue.html" class="public"><code>maxDrawIndexedIndexValue</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxDrawIndirectCount.html" class="public"><code>maxDrawIndirectCount</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxFragmentCombinedOutputResources.html" class="public"><code>maxFragmentCombinedOutputResources</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxFragmentDualSrcAttachments.html" class="public"><code>maxFragmentDualSrcAttachments</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxFragmentInputComponents.html" class="public"><code>maxFragmentInputComponents</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxFragmentOutputAttachments.html" class="public"><code>maxFragmentOutputAttachments</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxFramebufferHeight.html" class="public"><code>maxFramebufferHeight</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxFramebufferLayers.html" class="public"><code>maxFramebufferLayers</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxFramebufferWidth.html" class="public"><code>maxFramebufferWidth</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxGeometryInputComponents.html" class="public"><code>maxGeometryInputComponents</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxGeometryOutputComponents.html" class="public"><code>maxGeometryOutputComponents</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxGeometryOutputVertices.html" class="public"><code>maxGeometryOutputVertices</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxGeometryShaderInvocations.html" class="public"><code>maxGeometryShaderInvocations</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxGeometryTotalOutputComponents.html" class="public"><code>maxGeometryTotalOutputComponents</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxImageArrayLayers.html" class="public"><code>maxImageArrayLayers</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxImageDimension1D.html" class="public"><code>maxImageDimension1D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxImageDimension2D.html" class="public"><code>maxImageDimension2D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxImageDimension3D.html" class="public"><code>maxImageDimension3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxImageDimensionCube.html" class="public"><code>maxImageDimensionCube</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxInterpolationOffset.html" class="public"><code>maxInterpolationOffset</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxMemoryAllocationCount.html" class="public"><code>maxMemoryAllocationCount</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxPerStageDescriptorInputAttachments.html" class="public"><code>maxPerStageDescriptorInputAttachments</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxPerStageDescriptorSampledImages.html" class="public"><code>maxPerStageDescriptorSampledImages</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxPerStageDescriptorSamplers.html" class="public"><code>maxPerStageDescriptorSamplers</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxPerStageDescriptorStorageBuffers.html" class="public"><code>maxPerStageDescriptorStorageBuffers</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxPerStageDescriptorStorageImages.html" class="public"><code>maxPerStageDescriptorStorageImages</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxPerStageDescriptorUniformBuffers.html" class="public"><code>maxPerStageDescriptorUniformBuffers</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxPerStageResources.html" class="public"><code>maxPerStageResources</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxPushConstantsSize.html" class="public"><code>maxPushConstantsSize</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxSampleMaskWords.html" class="public"><code>maxSampleMaskWords</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxSamplerAllocationCount.html" class="public"><code>maxSamplerAllocationCount</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxSamplerAnisotropy.html" class="public"><code>maxSamplerAnisotropy</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxSamplerLodBias.html" class="public"><code>maxSamplerLodBias</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxStorageBufferRange.html" class="public"><code>maxStorageBufferRange</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxTessellationControlPerPatchOutputComponents.html" class="public"><code>maxTessellationControlPerPatchOutputComponents</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxTessellationControlPerVertexInputComponents.html" class="public"><code>maxTessellationControlPerVertexInputComponents</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxTessellationControlPerVertexOutputComponents.html" class="public"><code>maxTessellationControlPerVertexOutputComponents</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxTessellationControlTotalOutputComponents.html" class="public"><code>maxTessellationControlTotalOutputComponents</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxTessellationEvaluationInputComponents.html" class="public"><code>maxTessellationEvaluationInputComponents</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxTessellationEvaluationOutputComponents.html" class="public"><code>maxTessellationEvaluationOutputComponents</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxTessellationGenerationLevel.html" class="public"><code>maxTessellationGenerationLevel</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxTessellationPatchSize.html" class="public"><code>maxTessellationPatchSize</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxTexelBufferElements.html" class="public"><code>maxTexelBufferElements</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxTexelGatherOffset.html" class="public"><code>maxTexelGatherOffset</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxTexelOffset.html" class="public"><code>maxTexelOffset</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxUniformBufferRange.html" class="public"><code>maxUniformBufferRange</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxVertexInputAttributeOffset.html" class="public"><code>maxVertexInputAttributeOffset</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxVertexInputAttributes.html" class="public"><code>maxVertexInputAttributes</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxVertexInputBindings.html" class="public"><code>maxVertexInputBindings</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxVertexInputBindingStride.html" class="public"><code>maxVertexInputBindingStride</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxVertexOutputComponents.html" class="public"><code>maxVertexOutputComponents</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxViewportDimensions.html" class="public"><code>maxViewportDimensions</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span><span class="pun">[</span><span class="lit">2</span><span class="pun">]</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.maxViewports.html" class="public"><code>maxViewports</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.minInterpolationOffset.html" class="public"><code>minInterpolationOffset</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.minMemoryMapAlignment.html" class="public"><code>minMemoryMapAlignment</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ulong</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.minStorageBufferOffsetAlignment.html" class="public"><code>minStorageBufferOffsetAlignment</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ulong</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.minTexelBufferOffsetAlignment.html" class="public"><code>minTexelBufferOffsetAlignment</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ulong</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.minTexelGatherOffset.html" class="public"><code>minTexelGatherOffset</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.minTexelOffset.html" class="public"><code>minTexelOffset</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.minUniformBufferOffsetAlignment.html" class="public"><code>minUniformBufferOffsetAlignment</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ulong</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.mipmapPrecisionBits.html" class="public"><code>mipmapPrecisionBits</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.nonCoherentAtomSize.html" class="public"><code>nonCoherentAtomSize</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ulong</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.optimalBufferCopyOffsetAlignment.html" class="public"><code>optimalBufferCopyOffsetAlignment</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ulong</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.optimalBufferCopyRowPitchAlignment.html" class="public"><code>optimalBufferCopyRowPitchAlignment</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ulong</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.pointSizeGranularity.html" class="public"><code>pointSizeGranularity</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.pointSizeRange.html" class="public"><code>pointSizeRange</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span><span class="pun">[</span><span class="lit">2</span><span class="pun">]</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.sampledImageColorSampleCounts.html" class="public"><code>sampledImageColorSampleCounts</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.sampledImageDepthSampleCounts.html" class="public"><code>sampledImageDepthSampleCounts</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.sampledImageIntegerSampleCounts.html" class="public"><code>sampledImageIntegerSampleCounts</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.sampledImageStencilSampleCounts.html" class="public"><code>sampledImageStencilSampleCounts</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.sparseAddressSpaceSize.html" class="public"><code>sparseAddressSpaceSize</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ulong</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.standardSampleLocations.html" class="public"><code>standardSampleLocations</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.storageImageSampleCounts.html" class="public"><code>storageImageSampleCounts</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.strictLines.html" class="public"><code>strictLines</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.subPixelInterpolationOffsetBits.html" class="public"><code>subPixelInterpolationOffsetBits</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.subPixelPrecisionBits.html" class="public"><code>subPixelPrecisionBits</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.subTexelPrecisionBits.html" class="public"><code>subTexelPrecisionBits</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.timestampComputeAndGraphics.html" class="public"><code>timestampComputeAndGraphics</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.timestampPeriod.html" class="public"><code>timestampPeriod</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.viewportBoundsRange.html" class="public"><code>viewportBoundsRange</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span><span class="pun">[</span><span class="lit">2</span><span class="pun">]</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkPhysicalDeviceLimits.viewportSubPixelBits.html" class="public"><code>viewportSubPixelBits</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
+					</table>
+				</section>
+				
+			</div>
+			<footer>
+				<div id="license-info">
+					
+					
+					
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>

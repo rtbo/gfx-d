@@ -1,0 +1,2534 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<title>Class Wgl</title>
+		<link rel="stylesheet" href="../../../../css/style.min.css"/>
+		<script type="text/javascript" src="../../../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../../gfx.html">gfx</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">bindings
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">opengl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/gl.html">gl</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/glx.html">glx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/khrplatform.html">khrplatform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module selected">
+							<a href="../../../../gfx/bindings/opengl/wgl.html">wgl</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/bindings/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/vulkan/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/vulkan/vk.html">vk</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/core.html">core</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/log.html">log</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/rc.html">rc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/typecons.html">typecons</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/util.html">util</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">decl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/decl/engine.html">engine</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/decl/store.html">store</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">genmesh
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/genmesh/algorithm.html">algorithm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/genmesh/cube.html">cube</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/genmesh/poly.html">poly</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/gl3.html">gl3</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/gl3/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/gl3/swapchain.html">swapchain</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/graal.html">graal</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/buffer.html">buffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/cmd.html">cmd</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/device.html">device</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/error.html">error</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/format.html">format</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/memory.html">memory</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/pipeline.html">pipeline</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/presentation.html">presentation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/queue.html">queue</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/renderpass.html">renderpass</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/sync.html">sync</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/types.html">types</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/math.html">math</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/approx.html">approx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/inverse.html">inverse</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/mat.html">mat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/proj.html">proj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/transform.html">transform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/vec.html">vec</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/memalloc.html">memalloc</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/memalloc/dedicated.html">dedicated</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/memalloc/pool.html">pool</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/vulkan/wsi.html">wsi</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window.html">window</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window/wayland.html">wayland</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/wayland/xdg_shell.html">xdg_shell</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window/win32.html">win32</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/win32/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/win32/keymap.html">keymap</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window/xcb.html">xcb</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/xcb/context.html">context</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/keys.html">keys</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/xkeyboard.html">xkeyboard</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with
+				<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Class Wgl</h1><p>WinGL loader base class
+</p>
+				<div class="prototype">
+					<code class="lang-d">
+						<div class="single-prototype">
+				<span class="kwd">class</span> <span class="typ">Wgl</span>
+				<span class="pun">;</span>
+						</div>
+					</code>
+				</div>
+				
+				<section><h2>Constructors</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.this.html" class="public">
+									<code>this</code>
+								</a>
+							</td>
+							<td></td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Fields</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._AllocateMemoryNV.html" class="public"><code>_AllocateMemoryNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglAllocateMemoryNV.html"><span class="typ">PFN_wglAllocateMemoryNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._AssociateImageBufferEventsI3D.html" class="public"><code>_AssociateImageBufferEventsI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglAssociateImageBufferEventsI3D.html"><span class="typ">PFN_wglAssociateImageBufferEventsI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._BeginFrameTrackingI3D.html" class="public"><code>_BeginFrameTrackingI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglBeginFrameTrackingI3D.html"><span class="typ">PFN_wglBeginFrameTrackingI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._BindDisplayColorTableEXT.html" class="public"><code>_BindDisplayColorTableEXT</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglBindDisplayColorTableEXT.html"><span class="typ">PFN_wglBindDisplayColorTableEXT</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._BindSwapBarrierNV.html" class="public"><code>_BindSwapBarrierNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglBindSwapBarrierNV.html"><span class="typ">PFN_wglBindSwapBarrierNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._BindTexImageARB.html" class="public"><code>_BindTexImageARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglBindTexImageARB.html"><span class="typ">PFN_wglBindTexImageARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._BindVideoCaptureDeviceNV.html" class="public"><code>_BindVideoCaptureDeviceNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglBindVideoCaptureDeviceNV.html"><span class="typ">PFN_wglBindVideoCaptureDeviceNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._BindVideoDeviceNV.html" class="public"><code>_BindVideoDeviceNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglBindVideoDeviceNV.html"><span class="typ">PFN_wglBindVideoDeviceNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._BindVideoImageNV.html" class="public"><code>_BindVideoImageNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglBindVideoImageNV.html"><span class="typ">PFN_wglBindVideoImageNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._BlitContextFramebufferAMD.html" class="public"><code>_BlitContextFramebufferAMD</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglBlitContextFramebufferAMD.html"><span class="typ">PFN_wglBlitContextFramebufferAMD</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._ChoosePixelFormatARB.html" class="public"><code>_ChoosePixelFormatARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglChoosePixelFormatARB.html"><span class="typ">PFN_wglChoosePixelFormatARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._ChoosePixelFormatEXT.html" class="public"><code>_ChoosePixelFormatEXT</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglChoosePixelFormatEXT.html"><span class="typ">PFN_wglChoosePixelFormatEXT</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._CopyContext.html" class="public"><code>_CopyContext</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglCopyContext.html"><span class="typ">PFN_wglCopyContext</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._CopyImageSubDataNV.html" class="public"><code>_CopyImageSubDataNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglCopyImageSubDataNV.html"><span class="typ">PFN_wglCopyImageSubDataNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._CreateAffinityDCNV.html" class="public"><code>_CreateAffinityDCNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglCreateAffinityDCNV.html"><span class="typ">PFN_wglCreateAffinityDCNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._CreateAssociatedContextAMD.html" class="public"><code>_CreateAssociatedContextAMD</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglCreateAssociatedContextAMD.html"><span class="typ">PFN_wglCreateAssociatedContextAMD</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._CreateAssociatedContextAttribsAMD.html" class="public"><code>_CreateAssociatedContextAttribsAMD</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglCreateAssociatedContextAttribsAMD.html"><span class="typ">PFN_wglCreateAssociatedContextAttribsAMD</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._CreateBufferRegionARB.html" class="public"><code>_CreateBufferRegionARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglCreateBufferRegionARB.html"><span class="typ">PFN_wglCreateBufferRegionARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._CreateContext.html" class="public"><code>_CreateContext</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglCreateContext.html"><span class="typ">PFN_wglCreateContext</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._CreateContextAttribsARB.html" class="public"><code>_CreateContextAttribsARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglCreateContextAttribsARB.html"><span class="typ">PFN_wglCreateContextAttribsARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._CreateDisplayColorTableEXT.html" class="public"><code>_CreateDisplayColorTableEXT</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglCreateDisplayColorTableEXT.html"><span class="typ">PFN_wglCreateDisplayColorTableEXT</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._CreateImageBufferI3D.html" class="public"><code>_CreateImageBufferI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglCreateImageBufferI3D.html"><span class="typ">PFN_wglCreateImageBufferI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._CreateLayerContext.html" class="public"><code>_CreateLayerContext</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglCreateLayerContext.html"><span class="typ">PFN_wglCreateLayerContext</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._CreatePbufferARB.html" class="public"><code>_CreatePbufferARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglCreatePbufferARB.html"><span class="typ">PFN_wglCreatePbufferARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._CreatePbufferEXT.html" class="public"><code>_CreatePbufferEXT</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglCreatePbufferEXT.html"><span class="typ">PFN_wglCreatePbufferEXT</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DelayBeforeSwapNV.html" class="public"><code>_DelayBeforeSwapNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDelayBeforeSwapNV.html"><span class="typ">PFN_wglDelayBeforeSwapNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DeleteAssociatedContextAMD.html" class="public"><code>_DeleteAssociatedContextAMD</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDeleteAssociatedContextAMD.html"><span class="typ">PFN_wglDeleteAssociatedContextAMD</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DeleteBufferRegionARB.html" class="public"><code>_DeleteBufferRegionARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDeleteBufferRegionARB.html"><span class="typ">PFN_wglDeleteBufferRegionARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DeleteContext.html" class="public"><code>_DeleteContext</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDeleteContext.html"><span class="typ">PFN_wglDeleteContext</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DeleteDCNV.html" class="public"><code>_DeleteDCNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDeleteDCNV.html"><span class="typ">PFN_wglDeleteDCNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DescribeLayerPlane.html" class="public"><code>_DescribeLayerPlane</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDescribeLayerPlane.html"><span class="typ">PFN_wglDescribeLayerPlane</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DestroyDisplayColorTableEXT.html" class="public"><code>_DestroyDisplayColorTableEXT</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDestroyDisplayColorTableEXT.html"><span class="typ">PFN_wglDestroyDisplayColorTableEXT</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DestroyImageBufferI3D.html" class="public"><code>_DestroyImageBufferI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDestroyImageBufferI3D.html"><span class="typ">PFN_wglDestroyImageBufferI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DestroyPbufferARB.html" class="public"><code>_DestroyPbufferARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDestroyPbufferARB.html"><span class="typ">PFN_wglDestroyPbufferARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DestroyPbufferEXT.html" class="public"><code>_DestroyPbufferEXT</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDestroyPbufferEXT.html"><span class="typ">PFN_wglDestroyPbufferEXT</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DisableFrameLockI3D.html" class="public"><code>_DisableFrameLockI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDisableFrameLockI3D.html"><span class="typ">PFN_wglDisableFrameLockI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DisableGenlockI3D.html" class="public"><code>_DisableGenlockI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDisableGenlockI3D.html"><span class="typ">PFN_wglDisableGenlockI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DXCloseDeviceNV.html" class="public"><code>_DXCloseDeviceNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDXCloseDeviceNV.html"><span class="typ">PFN_wglDXCloseDeviceNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DXLockObjectsNV.html" class="public"><code>_DXLockObjectsNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDXLockObjectsNV.html"><span class="typ">PFN_wglDXLockObjectsNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DXObjectAccessNV.html" class="public"><code>_DXObjectAccessNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDXObjectAccessNV.html"><span class="typ">PFN_wglDXObjectAccessNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DXOpenDeviceNV.html" class="public"><code>_DXOpenDeviceNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDXOpenDeviceNV.html"><span class="typ">PFN_wglDXOpenDeviceNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DXRegisterObjectNV.html" class="public"><code>_DXRegisterObjectNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDXRegisterObjectNV.html"><span class="typ">PFN_wglDXRegisterObjectNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DXSetResourceShareHandleNV.html" class="public"><code>_DXSetResourceShareHandleNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDXSetResourceShareHandleNV.html"><span class="typ">PFN_wglDXSetResourceShareHandleNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DXUnlockObjectsNV.html" class="public"><code>_DXUnlockObjectsNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDXUnlockObjectsNV.html"><span class="typ">PFN_wglDXUnlockObjectsNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._DXUnregisterObjectNV.html" class="public"><code>_DXUnregisterObjectNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglDXUnregisterObjectNV.html"><span class="typ">PFN_wglDXUnregisterObjectNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._EnableFrameLockI3D.html" class="public"><code>_EnableFrameLockI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglEnableFrameLockI3D.html"><span class="typ">PFN_wglEnableFrameLockI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._EnableGenlockI3D.html" class="public"><code>_EnableGenlockI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglEnableGenlockI3D.html"><span class="typ">PFN_wglEnableGenlockI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._EndFrameTrackingI3D.html" class="public"><code>_EndFrameTrackingI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglEndFrameTrackingI3D.html"><span class="typ">PFN_wglEndFrameTrackingI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._EnumerateVideoCaptureDevicesNV.html" class="public"><code>_EnumerateVideoCaptureDevicesNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglEnumerateVideoCaptureDevicesNV.html"><span class="typ">PFN_wglEnumerateVideoCaptureDevicesNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._EnumerateVideoDevicesNV.html" class="public"><code>_EnumerateVideoDevicesNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglEnumerateVideoDevicesNV.html"><span class="typ">PFN_wglEnumerateVideoDevicesNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._EnumGpuDevicesNV.html" class="public"><code>_EnumGpuDevicesNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglEnumGpuDevicesNV.html"><span class="typ">PFN_wglEnumGpuDevicesNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._EnumGpusFromAffinityDCNV.html" class="public"><code>_EnumGpusFromAffinityDCNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglEnumGpusFromAffinityDCNV.html"><span class="typ">PFN_wglEnumGpusFromAffinityDCNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._EnumGpusNV.html" class="public"><code>_EnumGpusNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglEnumGpusNV.html"><span class="typ">PFN_wglEnumGpusNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._FreeMemoryNV.html" class="public"><code>_FreeMemoryNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglFreeMemoryNV.html"><span class="typ">PFN_wglFreeMemoryNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GenlockSampleRateI3D.html" class="public"><code>_GenlockSampleRateI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGenlockSampleRateI3D.html"><span class="typ">PFN_wglGenlockSampleRateI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GenlockSourceDelayI3D.html" class="public"><code>_GenlockSourceDelayI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGenlockSourceDelayI3D.html"><span class="typ">PFN_wglGenlockSourceDelayI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GenlockSourceEdgeI3D.html" class="public"><code>_GenlockSourceEdgeI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGenlockSourceEdgeI3D.html"><span class="typ">PFN_wglGenlockSourceEdgeI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GenlockSourceI3D.html" class="public"><code>_GenlockSourceI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGenlockSourceI3D.html"><span class="typ">PFN_wglGenlockSourceI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetContextGPUIDAMD.html" class="public"><code>_GetContextGPUIDAMD</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetContextGPUIDAMD.html"><span class="typ">PFN_wglGetContextGPUIDAMD</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetCurrentAssociatedContextAMD.html" class="public"><code>_GetCurrentAssociatedContextAMD</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetCurrentAssociatedContextAMD.html"><span class="typ">PFN_wglGetCurrentAssociatedContextAMD</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetCurrentContext.html" class="public"><code>_GetCurrentContext</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetCurrentContext.html"><span class="typ">PFN_wglGetCurrentContext</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetCurrentDC.html" class="public"><code>_GetCurrentDC</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetCurrentDC.html"><span class="typ">PFN_wglGetCurrentDC</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetCurrentReadDCARB.html" class="public"><code>_GetCurrentReadDCARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetCurrentReadDCARB.html"><span class="typ">PFN_wglGetCurrentReadDCARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetCurrentReadDCEXT.html" class="public"><code>_GetCurrentReadDCEXT</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetCurrentReadDCEXT.html"><span class="typ">PFN_wglGetCurrentReadDCEXT</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetDigitalVideoParametersI3D.html" class="public"><code>_GetDigitalVideoParametersI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetDigitalVideoParametersI3D.html"><span class="typ">PFN_wglGetDigitalVideoParametersI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetExtensionsStringARB.html" class="public"><code>_GetExtensionsStringARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetExtensionsStringARB.html"><span class="typ">PFN_wglGetExtensionsStringARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetExtensionsStringEXT.html" class="public"><code>_GetExtensionsStringEXT</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetExtensionsStringEXT.html"><span class="typ">PFN_wglGetExtensionsStringEXT</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetFrameUsageI3D.html" class="public"><code>_GetFrameUsageI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetFrameUsageI3D.html"><span class="typ">PFN_wglGetFrameUsageI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetGammaTableI3D.html" class="public"><code>_GetGammaTableI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetGammaTableI3D.html"><span class="typ">PFN_wglGetGammaTableI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetGammaTableParametersI3D.html" class="public"><code>_GetGammaTableParametersI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetGammaTableParametersI3D.html"><span class="typ">PFN_wglGetGammaTableParametersI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetGenlockSampleRateI3D.html" class="public"><code>_GetGenlockSampleRateI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetGenlockSampleRateI3D.html"><span class="typ">PFN_wglGetGenlockSampleRateI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetGenlockSourceDelayI3D.html" class="public"><code>_GetGenlockSourceDelayI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetGenlockSourceDelayI3D.html"><span class="typ">PFN_wglGetGenlockSourceDelayI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetGenlockSourceEdgeI3D.html" class="public"><code>_GetGenlockSourceEdgeI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetGenlockSourceEdgeI3D.html"><span class="typ">PFN_wglGetGenlockSourceEdgeI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetGenlockSourceI3D.html" class="public"><code>_GetGenlockSourceI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetGenlockSourceI3D.html"><span class="typ">PFN_wglGetGenlockSourceI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetGPUIDsAMD.html" class="public"><code>_GetGPUIDsAMD</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetGPUIDsAMD.html"><span class="typ">PFN_wglGetGPUIDsAMD</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetGPUInfoAMD.html" class="public"><code>_GetGPUInfoAMD</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetGPUInfoAMD.html"><span class="typ">PFN_wglGetGPUInfoAMD</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetLayerPaletteEntries.html" class="public"><code>_GetLayerPaletteEntries</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetLayerPaletteEntries.html"><span class="typ">PFN_wglGetLayerPaletteEntries</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetMscRateOML.html" class="public"><code>_GetMscRateOML</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetMscRateOML.html"><span class="typ">PFN_wglGetMscRateOML</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetPbufferDCARB.html" class="public"><code>_GetPbufferDCARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetPbufferDCARB.html"><span class="typ">PFN_wglGetPbufferDCARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetPbufferDCEXT.html" class="public"><code>_GetPbufferDCEXT</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetPbufferDCEXT.html"><span class="typ">PFN_wglGetPbufferDCEXT</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetPixelFormatAttribfvARB.html" class="public"><code>_GetPixelFormatAttribfvARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetPixelFormatAttribfvARB.html"><span class="typ">PFN_wglGetPixelFormatAttribfvARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetPixelFormatAttribfvEXT.html" class="public"><code>_GetPixelFormatAttribfvEXT</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetPixelFormatAttribfvEXT.html"><span class="typ">PFN_wglGetPixelFormatAttribfvEXT</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetPixelFormatAttribivARB.html" class="public"><code>_GetPixelFormatAttribivARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetPixelFormatAttribivARB.html"><span class="typ">PFN_wglGetPixelFormatAttribivARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetPixelFormatAttribivEXT.html" class="public"><code>_GetPixelFormatAttribivEXT</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetPixelFormatAttribivEXT.html"><span class="typ">PFN_wglGetPixelFormatAttribivEXT</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetProcAddress.html" class="public"><code>_GetProcAddress</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetProcAddress.html"><span class="typ">PFN_wglGetProcAddress</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetSwapIntervalEXT.html" class="public"><code>_GetSwapIntervalEXT</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetSwapIntervalEXT.html"><span class="typ">PFN_wglGetSwapIntervalEXT</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetSyncValuesOML.html" class="public"><code>_GetSyncValuesOML</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetSyncValuesOML.html"><span class="typ">PFN_wglGetSyncValuesOML</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetVideoDeviceNV.html" class="public"><code>_GetVideoDeviceNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetVideoDeviceNV.html"><span class="typ">PFN_wglGetVideoDeviceNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._GetVideoInfoNV.html" class="public"><code>_GetVideoInfoNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglGetVideoInfoNV.html"><span class="typ">PFN_wglGetVideoInfoNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._IsEnabledFrameLockI3D.html" class="public"><code>_IsEnabledFrameLockI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglIsEnabledFrameLockI3D.html"><span class="typ">PFN_wglIsEnabledFrameLockI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._IsEnabledGenlockI3D.html" class="public"><code>_IsEnabledGenlockI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglIsEnabledGenlockI3D.html"><span class="typ">PFN_wglIsEnabledGenlockI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._JoinSwapGroupNV.html" class="public"><code>_JoinSwapGroupNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglJoinSwapGroupNV.html"><span class="typ">PFN_wglJoinSwapGroupNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._LoadDisplayColorTableEXT.html" class="public"><code>_LoadDisplayColorTableEXT</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglLoadDisplayColorTableEXT.html"><span class="typ">PFN_wglLoadDisplayColorTableEXT</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._LockVideoCaptureDeviceNV.html" class="public"><code>_LockVideoCaptureDeviceNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglLockVideoCaptureDeviceNV.html"><span class="typ">PFN_wglLockVideoCaptureDeviceNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._MakeAssociatedContextCurrentAMD.html" class="public"><code>_MakeAssociatedContextCurrentAMD</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglMakeAssociatedContextCurrentAMD.html"><span class="typ">PFN_wglMakeAssociatedContextCurrentAMD</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._MakeContextCurrentARB.html" class="public"><code>_MakeContextCurrentARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglMakeContextCurrentARB.html"><span class="typ">PFN_wglMakeContextCurrentARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._MakeContextCurrentEXT.html" class="public"><code>_MakeContextCurrentEXT</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglMakeContextCurrentEXT.html"><span class="typ">PFN_wglMakeContextCurrentEXT</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._MakeCurrent.html" class="public"><code>_MakeCurrent</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglMakeCurrent.html"><span class="typ">PFN_wglMakeCurrent</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._QueryCurrentContextNV.html" class="public"><code>_QueryCurrentContextNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglQueryCurrentContextNV.html"><span class="typ">PFN_wglQueryCurrentContextNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._QueryFrameCountNV.html" class="public"><code>_QueryFrameCountNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglQueryFrameCountNV.html"><span class="typ">PFN_wglQueryFrameCountNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._QueryFrameLockMasterI3D.html" class="public"><code>_QueryFrameLockMasterI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglQueryFrameLockMasterI3D.html"><span class="typ">PFN_wglQueryFrameLockMasterI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._QueryFrameTrackingI3D.html" class="public"><code>_QueryFrameTrackingI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglQueryFrameTrackingI3D.html"><span class="typ">PFN_wglQueryFrameTrackingI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._QueryGenlockMaxSourceDelayI3D.html" class="public"><code>_QueryGenlockMaxSourceDelayI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglQueryGenlockMaxSourceDelayI3D.html"><span class="typ">PFN_wglQueryGenlockMaxSourceDelayI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._QueryMaxSwapGroupsNV.html" class="public"><code>_QueryMaxSwapGroupsNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglQueryMaxSwapGroupsNV.html"><span class="typ">PFN_wglQueryMaxSwapGroupsNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._QueryPbufferARB.html" class="public"><code>_QueryPbufferARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglQueryPbufferARB.html"><span class="typ">PFN_wglQueryPbufferARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._QueryPbufferEXT.html" class="public"><code>_QueryPbufferEXT</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglQueryPbufferEXT.html"><span class="typ">PFN_wglQueryPbufferEXT</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._QuerySwapGroupNV.html" class="public"><code>_QuerySwapGroupNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglQuerySwapGroupNV.html"><span class="typ">PFN_wglQuerySwapGroupNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._QueryVideoCaptureDeviceNV.html" class="public"><code>_QueryVideoCaptureDeviceNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglQueryVideoCaptureDeviceNV.html"><span class="typ">PFN_wglQueryVideoCaptureDeviceNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._RealizeLayerPalette.html" class="public"><code>_RealizeLayerPalette</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglRealizeLayerPalette.html"><span class="typ">PFN_wglRealizeLayerPalette</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._ReleaseImageBufferEventsI3D.html" class="public"><code>_ReleaseImageBufferEventsI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglReleaseImageBufferEventsI3D.html"><span class="typ">PFN_wglReleaseImageBufferEventsI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._ReleasePbufferDCARB.html" class="public"><code>_ReleasePbufferDCARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglReleasePbufferDCARB.html"><span class="typ">PFN_wglReleasePbufferDCARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._ReleasePbufferDCEXT.html" class="public"><code>_ReleasePbufferDCEXT</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglReleasePbufferDCEXT.html"><span class="typ">PFN_wglReleasePbufferDCEXT</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._ReleaseTexImageARB.html" class="public"><code>_ReleaseTexImageARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglReleaseTexImageARB.html"><span class="typ">PFN_wglReleaseTexImageARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._ReleaseVideoCaptureDeviceNV.html" class="public"><code>_ReleaseVideoCaptureDeviceNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglReleaseVideoCaptureDeviceNV.html"><span class="typ">PFN_wglReleaseVideoCaptureDeviceNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._ReleaseVideoDeviceNV.html" class="public"><code>_ReleaseVideoDeviceNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglReleaseVideoDeviceNV.html"><span class="typ">PFN_wglReleaseVideoDeviceNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._ReleaseVideoImageNV.html" class="public"><code>_ReleaseVideoImageNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglReleaseVideoImageNV.html"><span class="typ">PFN_wglReleaseVideoImageNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._ResetFrameCountNV.html" class="public"><code>_ResetFrameCountNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglResetFrameCountNV.html"><span class="typ">PFN_wglResetFrameCountNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._RestoreBufferRegionARB.html" class="public"><code>_RestoreBufferRegionARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglRestoreBufferRegionARB.html"><span class="typ">PFN_wglRestoreBufferRegionARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._SaveBufferRegionARB.html" class="public"><code>_SaveBufferRegionARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglSaveBufferRegionARB.html"><span class="typ">PFN_wglSaveBufferRegionARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._SendPbufferToVideoNV.html" class="public"><code>_SendPbufferToVideoNV</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglSendPbufferToVideoNV.html"><span class="typ">PFN_wglSendPbufferToVideoNV</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._SetDigitalVideoParametersI3D.html" class="public"><code>_SetDigitalVideoParametersI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglSetDigitalVideoParametersI3D.html"><span class="typ">PFN_wglSetDigitalVideoParametersI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._SetGammaTableI3D.html" class="public"><code>_SetGammaTableI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglSetGammaTableI3D.html"><span class="typ">PFN_wglSetGammaTableI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._SetGammaTableParametersI3D.html" class="public"><code>_SetGammaTableParametersI3D</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglSetGammaTableParametersI3D.html"><span class="typ">PFN_wglSetGammaTableParametersI3D</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._SetLayerPaletteEntries.html" class="public"><code>_SetLayerPaletteEntries</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglSetLayerPaletteEntries.html"><span class="typ">PFN_wglSetLayerPaletteEntries</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._SetPbufferAttribARB.html" class="public"><code>_SetPbufferAttribARB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglSetPbufferAttribARB.html"><span class="typ">PFN_wglSetPbufferAttribARB</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._SetStereoEmitterState3DL.html" class="public"><code>_SetStereoEmitterState3DL</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglSetStereoEmitterState3DL.html"><span class="typ">PFN_wglSetStereoEmitterState3DL</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._ShareLists.html" class="public"><code>_ShareLists</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglShareLists.html"><span class="typ">PFN_wglShareLists</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._SwapBuffersMscOML.html" class="public"><code>_SwapBuffersMscOML</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglSwapBuffersMscOML.html"><span class="typ">PFN_wglSwapBuffersMscOML</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._SwapIntervalEXT.html" class="public"><code>_SwapIntervalEXT</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglSwapIntervalEXT.html"><span class="typ">PFN_wglSwapIntervalEXT</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._SwapLayerBuffers.html" class="public"><code>_SwapLayerBuffers</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglSwapLayerBuffers.html"><span class="typ">PFN_wglSwapLayerBuffers</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._SwapLayerBuffersMscOML.html" class="public"><code>_SwapLayerBuffersMscOML</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglSwapLayerBuffersMscOML.html"><span class="typ">PFN_wglSwapLayerBuffersMscOML</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._UseFontBitmaps.html" class="public"><code>_UseFontBitmaps</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglUseFontBitmaps.html"><span class="typ">PFN_wglUseFontBitmaps</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._UseFontBitmapsA.html" class="public"><code>_UseFontBitmapsA</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglUseFontBitmapsA.html"><span class="typ">PFN_wglUseFontBitmapsA</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._UseFontBitmapsW.html" class="public"><code>_UseFontBitmapsW</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglUseFontBitmapsW.html"><span class="typ">PFN_wglUseFontBitmapsW</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._UseFontOutlines.html" class="public"><code>_UseFontOutlines</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglUseFontOutlines.html"><span class="typ">PFN_wglUseFontOutlines</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._UseFontOutlinesA.html" class="public"><code>_UseFontOutlinesA</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglUseFontOutlinesA.html"><span class="typ">PFN_wglUseFontOutlinesA</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._UseFontOutlinesW.html" class="public"><code>_UseFontOutlinesW</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglUseFontOutlinesW.html"><span class="typ">PFN_wglUseFontOutlinesW</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._WaitForMscOML.html" class="public"><code>_WaitForMscOML</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglWaitForMscOML.html"><span class="typ">PFN_wglWaitForMscOML</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl._WaitForSbcOML.html" class="public"><code>_WaitForSbcOML</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/wgl/PFN_wglWaitForSbcOML.html"><span class="typ">PFN_wglWaitForSbcOML</span></a></code></td><td></td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Methods</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.AllocateMemoryNV.html" class="public">
+									<code>AllocateMemoryNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_vertex_array_range
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.AssociateImageBufferEventsI3D.html" class="public">
+									<code>AssociateImageBufferEventsI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_image_buffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.BeginFrameTrackingI3D.html" class="public">
+									<code>BeginFrameTrackingI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_swap_frame_usage
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.BindDisplayColorTableEXT.html" class="public">
+									<code>BindDisplayColorTableEXT</code>
+								</a>
+							</td>
+							<td>Commands for WGL_EXT_display_color_table
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.BindSwapBarrierNV.html" class="public">
+									<code>BindSwapBarrierNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.BindTexImageARB.html" class="public">
+									<code>BindTexImageARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_render_texture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.BindVideoCaptureDeviceNV.html" class="public">
+									<code>BindVideoCaptureDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_video_capture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.BindVideoDeviceNV.html" class="public">
+									<code>BindVideoDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_present_video
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.BindVideoImageNV.html" class="public">
+									<code>BindVideoImageNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_video_output
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.BlitContextFramebufferAMD.html" class="public">
+									<code>BlitContextFramebufferAMD</code>
+								</a>
+							</td>
+							<td>Commands for WGL_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.ChoosePixelFormatARB.html" class="public">
+									<code>ChoosePixelFormatARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_pixel_format
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.ChoosePixelFormatEXT.html" class="public">
+									<code>ChoosePixelFormatEXT</code>
+								</a>
+							</td>
+							<td>Commands for WGL_EXT_pixel_format
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.CopyContext.html" class="public">
+									<code>CopyContext</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.CopyImageSubDataNV.html" class="public">
+									<code>CopyImageSubDataNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_copy_image
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.CreateAffinityDCNV.html" class="public">
+									<code>CreateAffinityDCNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_gpu_affinity
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.CreateAssociatedContextAMD.html" class="public">
+									<code>CreateAssociatedContextAMD</code>
+								</a>
+							</td>
+							<td>Commands for WGL_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.CreateAssociatedContextAttribsAMD.html" class="public">
+									<code>CreateAssociatedContextAttribsAMD</code>
+								</a>
+							</td>
+							<td>Commands for WGL_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.CreateBufferRegionARB.html" class="public">
+									<code>CreateBufferRegionARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_buffer_region
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.CreateContext.html" class="public">
+									<code>CreateContext</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.CreateContextAttribsARB.html" class="public">
+									<code>CreateContextAttribsARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_create_context
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.CreateDisplayColorTableEXT.html" class="public">
+									<code>CreateDisplayColorTableEXT</code>
+								</a>
+							</td>
+							<td>Commands for WGL_EXT_display_color_table
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.CreateImageBufferI3D.html" class="public">
+									<code>CreateImageBufferI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_image_buffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.CreateLayerContext.html" class="public">
+									<code>CreateLayerContext</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.CreatePbufferARB.html" class="public">
+									<code>CreatePbufferARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.CreatePbufferEXT.html" class="public">
+									<code>CreatePbufferEXT</code>
+								</a>
+							</td>
+							<td>Commands for WGL_EXT_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DelayBeforeSwapNV.html" class="public">
+									<code>DelayBeforeSwapNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_delay_before_swap
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DeleteAssociatedContextAMD.html" class="public">
+									<code>DeleteAssociatedContextAMD</code>
+								</a>
+							</td>
+							<td>Commands for WGL_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DeleteBufferRegionARB.html" class="public">
+									<code>DeleteBufferRegionARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_buffer_region
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DeleteContext.html" class="public">
+									<code>DeleteContext</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DeleteDCNV.html" class="public">
+									<code>DeleteDCNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_gpu_affinity
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DescribeLayerPlane.html" class="public">
+									<code>DescribeLayerPlane</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DestroyDisplayColorTableEXT.html" class="public">
+									<code>DestroyDisplayColorTableEXT</code>
+								</a>
+							</td>
+							<td>Commands for WGL_EXT_display_color_table
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DestroyImageBufferI3D.html" class="public">
+									<code>DestroyImageBufferI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_image_buffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DestroyPbufferARB.html" class="public">
+									<code>DestroyPbufferARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DestroyPbufferEXT.html" class="public">
+									<code>DestroyPbufferEXT</code>
+								</a>
+							</td>
+							<td>Commands for WGL_EXT_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DisableFrameLockI3D.html" class="public">
+									<code>DisableFrameLockI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_swap_frame_lock
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DisableGenlockI3D.html" class="public">
+									<code>DisableGenlockI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_genlock
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DXCloseDeviceNV.html" class="public">
+									<code>DXCloseDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_DX_interop
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DXLockObjectsNV.html" class="public">
+									<code>DXLockObjectsNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_DX_interop
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DXObjectAccessNV.html" class="public">
+									<code>DXObjectAccessNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_DX_interop
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DXOpenDeviceNV.html" class="public">
+									<code>DXOpenDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_DX_interop
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DXRegisterObjectNV.html" class="public">
+									<code>DXRegisterObjectNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_DX_interop
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DXSetResourceShareHandleNV.html" class="public">
+									<code>DXSetResourceShareHandleNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_DX_interop
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DXUnlockObjectsNV.html" class="public">
+									<code>DXUnlockObjectsNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_DX_interop
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.DXUnregisterObjectNV.html" class="public">
+									<code>DXUnregisterObjectNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_DX_interop
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.EnableFrameLockI3D.html" class="public">
+									<code>EnableFrameLockI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_swap_frame_lock
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.EnableGenlockI3D.html" class="public">
+									<code>EnableGenlockI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_genlock
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.EndFrameTrackingI3D.html" class="public">
+									<code>EndFrameTrackingI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_swap_frame_usage
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.EnumerateVideoCaptureDevicesNV.html" class="public">
+									<code>EnumerateVideoCaptureDevicesNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_video_capture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.EnumerateVideoDevicesNV.html" class="public">
+									<code>EnumerateVideoDevicesNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_present_video
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.EnumGpuDevicesNV.html" class="public">
+									<code>EnumGpuDevicesNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_gpu_affinity
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.EnumGpusFromAffinityDCNV.html" class="public">
+									<code>EnumGpusFromAffinityDCNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_gpu_affinity
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.EnumGpusNV.html" class="public">
+									<code>EnumGpusNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_gpu_affinity
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.FreeMemoryNV.html" class="public">
+									<code>FreeMemoryNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_vertex_array_range
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GenlockSampleRateI3D.html" class="public">
+									<code>GenlockSampleRateI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_genlock
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GenlockSourceDelayI3D.html" class="public">
+									<code>GenlockSourceDelayI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_genlock
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GenlockSourceEdgeI3D.html" class="public">
+									<code>GenlockSourceEdgeI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_genlock
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GenlockSourceI3D.html" class="public">
+									<code>GenlockSourceI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_genlock
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetContextGPUIDAMD.html" class="public">
+									<code>GetContextGPUIDAMD</code>
+								</a>
+							</td>
+							<td>Commands for WGL_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetCurrentAssociatedContextAMD.html" class="public">
+									<code>GetCurrentAssociatedContextAMD</code>
+								</a>
+							</td>
+							<td>Commands for WGL_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetCurrentContext.html" class="public">
+									<code>GetCurrentContext</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetCurrentDC.html" class="public">
+									<code>GetCurrentDC</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetCurrentReadDCARB.html" class="public">
+									<code>GetCurrentReadDCARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_make_current_read
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetCurrentReadDCEXT.html" class="public">
+									<code>GetCurrentReadDCEXT</code>
+								</a>
+							</td>
+							<td>Commands for WGL_EXT_make_current_read
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetDigitalVideoParametersI3D.html" class="public">
+									<code>GetDigitalVideoParametersI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_digital_video_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetExtensionsStringARB.html" class="public">
+									<code>GetExtensionsStringARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_extensions_string
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetExtensionsStringEXT.html" class="public">
+									<code>GetExtensionsStringEXT</code>
+								</a>
+							</td>
+							<td>Commands for WGL_EXT_extensions_string
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetFrameUsageI3D.html" class="public">
+									<code>GetFrameUsageI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_swap_frame_usage
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetGammaTableI3D.html" class="public">
+									<code>GetGammaTableI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_gamma
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetGammaTableParametersI3D.html" class="public">
+									<code>GetGammaTableParametersI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_gamma
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetGenlockSampleRateI3D.html" class="public">
+									<code>GetGenlockSampleRateI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_genlock
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetGenlockSourceDelayI3D.html" class="public">
+									<code>GetGenlockSourceDelayI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_genlock
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetGenlockSourceEdgeI3D.html" class="public">
+									<code>GetGenlockSourceEdgeI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_genlock
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetGenlockSourceI3D.html" class="public">
+									<code>GetGenlockSourceI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_genlock
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetGPUIDsAMD.html" class="public">
+									<code>GetGPUIDsAMD</code>
+								</a>
+							</td>
+							<td>Commands for WGL_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetGPUInfoAMD.html" class="public">
+									<code>GetGPUInfoAMD</code>
+								</a>
+							</td>
+							<td>Commands for WGL_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetLayerPaletteEntries.html" class="public">
+									<code>GetLayerPaletteEntries</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetMscRateOML.html" class="public">
+									<code>GetMscRateOML</code>
+								</a>
+							</td>
+							<td>Commands for WGL_OML_sync_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetPbufferDCARB.html" class="public">
+									<code>GetPbufferDCARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetPbufferDCEXT.html" class="public">
+									<code>GetPbufferDCEXT</code>
+								</a>
+							</td>
+							<td>Commands for WGL_EXT_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetPixelFormatAttribfvARB.html" class="public">
+									<code>GetPixelFormatAttribfvARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_pixel_format
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetPixelFormatAttribfvEXT.html" class="public">
+									<code>GetPixelFormatAttribfvEXT</code>
+								</a>
+							</td>
+							<td>Commands for WGL_EXT_pixel_format
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetPixelFormatAttribivARB.html" class="public">
+									<code>GetPixelFormatAttribivARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_pixel_format
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetPixelFormatAttribivEXT.html" class="public">
+									<code>GetPixelFormatAttribivEXT</code>
+								</a>
+							</td>
+							<td>Commands for WGL_EXT_pixel_format
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetProcAddress.html" class="public">
+									<code>GetProcAddress</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetSwapIntervalEXT.html" class="public">
+									<code>GetSwapIntervalEXT</code>
+								</a>
+							</td>
+							<td>Commands for WGL_EXT_swap_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetSyncValuesOML.html" class="public">
+									<code>GetSyncValuesOML</code>
+								</a>
+							</td>
+							<td>Commands for WGL_OML_sync_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetVideoDeviceNV.html" class="public">
+									<code>GetVideoDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_video_output
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.GetVideoInfoNV.html" class="public">
+									<code>GetVideoInfoNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_video_output
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.IsEnabledFrameLockI3D.html" class="public">
+									<code>IsEnabledFrameLockI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_swap_frame_lock
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.IsEnabledGenlockI3D.html" class="public">
+									<code>IsEnabledGenlockI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_genlock
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.JoinSwapGroupNV.html" class="public">
+									<code>JoinSwapGroupNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.LoadDisplayColorTableEXT.html" class="public">
+									<code>LoadDisplayColorTableEXT</code>
+								</a>
+							</td>
+							<td>Commands for WGL_EXT_display_color_table
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.loadSymbol.html" class="public">
+									<code>loadSymbol</code>
+								</a>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.LockVideoCaptureDeviceNV.html" class="public">
+									<code>LockVideoCaptureDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_video_capture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.MakeAssociatedContextCurrentAMD.html" class="public">
+									<code>MakeAssociatedContextCurrentAMD</code>
+								</a>
+							</td>
+							<td>Commands for WGL_AMD_gpu_association
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.MakeContextCurrentARB.html" class="public">
+									<code>MakeContextCurrentARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_make_current_read
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.MakeContextCurrentEXT.html" class="public">
+									<code>MakeContextCurrentEXT</code>
+								</a>
+							</td>
+							<td>Commands for WGL_EXT_make_current_read
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.MakeCurrent.html" class="public">
+									<code>MakeCurrent</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.QueryCurrentContextNV.html" class="public">
+									<code>QueryCurrentContextNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_present_video
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.QueryFrameCountNV.html" class="public">
+									<code>QueryFrameCountNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.QueryFrameLockMasterI3D.html" class="public">
+									<code>QueryFrameLockMasterI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_swap_frame_lock
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.QueryFrameTrackingI3D.html" class="public">
+									<code>QueryFrameTrackingI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_swap_frame_usage
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.QueryGenlockMaxSourceDelayI3D.html" class="public">
+									<code>QueryGenlockMaxSourceDelayI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_genlock
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.QueryMaxSwapGroupsNV.html" class="public">
+									<code>QueryMaxSwapGroupsNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.QueryPbufferARB.html" class="public">
+									<code>QueryPbufferARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.QueryPbufferEXT.html" class="public">
+									<code>QueryPbufferEXT</code>
+								</a>
+							</td>
+							<td>Commands for WGL_EXT_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.QuerySwapGroupNV.html" class="public">
+									<code>QuerySwapGroupNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.QueryVideoCaptureDeviceNV.html" class="public">
+									<code>QueryVideoCaptureDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_video_capture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.RealizeLayerPalette.html" class="public">
+									<code>RealizeLayerPalette</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.ReleaseImageBufferEventsI3D.html" class="public">
+									<code>ReleaseImageBufferEventsI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_image_buffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.ReleasePbufferDCARB.html" class="public">
+									<code>ReleasePbufferDCARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.ReleasePbufferDCEXT.html" class="public">
+									<code>ReleasePbufferDCEXT</code>
+								</a>
+							</td>
+							<td>Commands for WGL_EXT_pbuffer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.ReleaseTexImageARB.html" class="public">
+									<code>ReleaseTexImageARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_render_texture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.ReleaseVideoCaptureDeviceNV.html" class="public">
+									<code>ReleaseVideoCaptureDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_video_capture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.ReleaseVideoDeviceNV.html" class="public">
+									<code>ReleaseVideoDeviceNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_video_output
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.ReleaseVideoImageNV.html" class="public">
+									<code>ReleaseVideoImageNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_video_output
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.ResetFrameCountNV.html" class="public">
+									<code>ResetFrameCountNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_swap_group
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.RestoreBufferRegionARB.html" class="public">
+									<code>RestoreBufferRegionARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_buffer_region
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.SaveBufferRegionARB.html" class="public">
+									<code>SaveBufferRegionARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_buffer_region
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.SendPbufferToVideoNV.html" class="public">
+									<code>SendPbufferToVideoNV</code>
+								</a>
+							</td>
+							<td>Commands for WGL_NV_video_output
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.SetDigitalVideoParametersI3D.html" class="public">
+									<code>SetDigitalVideoParametersI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_digital_video_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.SetGammaTableI3D.html" class="public">
+									<code>SetGammaTableI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_gamma
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.SetGammaTableParametersI3D.html" class="public">
+									<code>SetGammaTableParametersI3D</code>
+								</a>
+							</td>
+							<td>Commands for WGL_I3D_gamma
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.SetLayerPaletteEntries.html" class="public">
+									<code>SetLayerPaletteEntries</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.SetPbufferAttribARB.html" class="public">
+									<code>SetPbufferAttribARB</code>
+								</a>
+							</td>
+							<td>Commands for WGL_ARB_render_texture
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.SetStereoEmitterState3DL.html" class="public">
+									<code>SetStereoEmitterState3DL</code>
+								</a>
+							</td>
+							<td>Commands for WGL_3DL_stereo_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.ShareLists.html" class="public">
+									<code>ShareLists</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.SwapBuffersMscOML.html" class="public">
+									<code>SwapBuffersMscOML</code>
+								</a>
+							</td>
+							<td>Commands for WGL_OML_sync_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.SwapIntervalEXT.html" class="public">
+									<code>SwapIntervalEXT</code>
+								</a>
+							</td>
+							<td>Commands for WGL_EXT_swap_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.SwapLayerBuffers.html" class="public">
+									<code>SwapLayerBuffers</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.SwapLayerBuffersMscOML.html" class="public">
+									<code>SwapLayerBuffersMscOML</code>
+								</a>
+							</td>
+							<td>Commands for WGL_OML_sync_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.UseFontBitmaps.html" class="public">
+									<code>UseFontBitmaps</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.UseFontBitmapsA.html" class="public">
+									<code>UseFontBitmapsA</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.UseFontBitmapsW.html" class="public">
+									<code>UseFontBitmapsW</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.UseFontOutlines.html" class="public">
+									<code>UseFontOutlines</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.UseFontOutlinesA.html" class="public">
+									<code>UseFontOutlinesA</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.UseFontOutlinesW.html" class="public">
+									<code>UseFontOutlinesW</code>
+								</a>
+							</td>
+							<td>Commands for WGL_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.WaitForMscOML.html" class="public">
+									<code>WaitForMscOML</code>
+								</a>
+							</td>
+							<td>Commands for WGL_OML_sync_control
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/opengl/wgl/Wgl.WaitForSbcOML.html" class="public">
+									<code>WaitForSbcOML</code>
+								</a>
+							</td>
+							<td>Commands for WGL_OML_sync_control
+</td>
+						</tr>
+					</table>
+				</section>
+				
+			</div>
+			<footer>
+				<div id="license-info">
+					
+					
+					
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>

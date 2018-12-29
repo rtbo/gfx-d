@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<title>Module gfx.math.mat</title>
+		<link rel="stylesheet" href="../../css/style.min.css"/>
+		<script type="text/javascript" src="../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../gfx.html">gfx</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">bindings
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">opengl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/gl.html">gl</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/glx.html">glx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/khrplatform.html">khrplatform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/wgl.html">wgl</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/bindings/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/vulkan/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/vulkan/vk.html">vk</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/core.html">core</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/log.html">log</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/rc.html">rc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/typecons.html">typecons</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/util.html">util</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">decl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/decl/engine.html">engine</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/decl/store.html">store</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">genmesh
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/genmesh/algorithm.html">algorithm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/genmesh/cube.html">cube</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/genmesh/poly.html">poly</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/gl3.html">gl3</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/gl3/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/gl3/swapchain.html">swapchain</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/graal.html">graal</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/buffer.html">buffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/cmd.html">cmd</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/device.html">device</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/error.html">error</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/format.html">format</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/memory.html">memory</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/pipeline.html">pipeline</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/presentation.html">presentation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/queue.html">queue</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/renderpass.html">renderpass</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/sync.html">sync</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/types.html">types</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../gfx/math.html">math</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/approx.html">approx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/inverse.html">inverse</a>
+						</div>
+					</li>
+					<li>
+						<div class="module selected">
+							<a href="../../gfx/math/mat.html">mat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/proj.html">proj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/transform.html">transform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/vec.html">vec</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/memalloc.html">memalloc</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/memalloc/dedicated.html">dedicated</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/memalloc/pool.html">pool</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/vulkan/wsi.html">wsi</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window.html">window</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window/wayland.html">wayland</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/wayland/xdg_shell.html">xdg_shell</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window/win32.html">win32</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/win32/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/win32/keymap.html">keymap</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window/xcb.html">xcb</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/xcb/context.html">context</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/keys.html">keys</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/xkeyboard.html">xkeyboard</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with
+				<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Module gfx.math.mat</h1><p>Matrix linear algebra module
+</p>
+				<section></section>
+				<section>
+					<h2>Functions</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="gaussianInverse" class="public property" href="../../gfx/math/mat/gaussianInverse.html">gaussianInverse</a><span class="decoration">(mat)</span>
+								</code>
+							</td>
+							<td>Compute the inverse of a matrix with Gaussian elimination method.
+Complexity O(n3).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="mat" class="public" href="../../gfx/math/mat/mat.html">mat</a><span class="decoration">(rows)</span>
+								</code>
+							</td>
+							<td>Build a matrix whose component type and size is inferred from arguments.
+Arguments must be rows or matrices with consistent column count.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="transpose" class="public" href="../../gfx/math/mat/transpose.html">transpose</a><span class="decoration">(mat)</span>
+								</code>
+							</td>
+							<td>Give the transposed form of a matrix.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Structs</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Mat" class="public" href="../../gfx/math/mat/Mat.html">Mat</a>
+								</code>
+							</td>
+							<td>Matrix type for linear algebra
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Manifest constants</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a id="areMat" class="public" href="../../gfx/math/mat/areMat.html">
+									<code>areMat</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>Check if all types of MatSeq are instantiation of Mat with R rows and C columns
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="areMat" class="public" href="../../gfx/math/mat/areMat.html">
+									<code>areMat</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>Check if all types of MatSeq are instantiation of Mat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="hasAVX" class="public" href="../../gfx/math/mat/hasAVX.html">
+									<code>hasAVX</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="hasAVX2" class="public" href="../../gfx/math/mat/hasAVX2.html">
+									<code>hasAVX2</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="isMat" class="public" href="../../gfx/math/mat/isMat.html">
+									<code>isMat</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>Check whether MatT is a Mat
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="isMat" class="public" href="../../gfx/math/mat/isMat.html">
+									<code>isMat</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>Check whether MatT is a Mat with R rows and C columns
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="isMat2" class="public" href="../../gfx/math/mat/isMat2.html">
+									<code>isMat2</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>Check whether M is 2x2 matrix
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="isMat3" class="public" href="../../gfx/math/mat/isMat3.html">
+									<code>isMat3</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>Check whether M is 3x3 matrix
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="isMat4" class="public" href="../../gfx/math/mat/isMat4.html">
+									<code>isMat4</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>Check whether M is 4x4 matrix
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Aliases</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a id="DMat" class="public" href="../../gfx/math/mat/DMat.html">
+									<code>DMat</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(double,R,C)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="DMat2" class="public" href="../../gfx/math/mat/DMat2.html">
+									<code>DMat2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(double,2L,2L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="DMat2x2" class="public" href="../../gfx/math/mat/DMat2x2.html">
+									<code>DMat2x2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(double,2L,2L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="DMat2x3" class="public" href="../../gfx/math/mat/DMat2x3.html">
+									<code>DMat2x3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(double,2L,3L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="DMat2x4" class="public" href="../../gfx/math/mat/DMat2x4.html">
+									<code>DMat2x4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(double,2L,4L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="DMat3" class="public" href="../../gfx/math/mat/DMat3.html">
+									<code>DMat3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(double,3L,3L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="DMat3x2" class="public" href="../../gfx/math/mat/DMat3x2.html">
+									<code>DMat3x2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(double,3L,2L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="DMat3x3" class="public" href="../../gfx/math/mat/DMat3x3.html">
+									<code>DMat3x3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(double,3L,3L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="DMat3x4" class="public" href="../../gfx/math/mat/DMat3x4.html">
+									<code>DMat3x4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(double,3L,4L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="DMat4" class="public" href="../../gfx/math/mat/DMat4.html">
+									<code>DMat4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(double,4L,4L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="DMat4x2" class="public" href="../../gfx/math/mat/DMat4x2.html">
+									<code>DMat4x2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(double,4L,2L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="DMat4x3" class="public" href="../../gfx/math/mat/DMat4x3.html">
+									<code>DMat4x3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(double,4L,3L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="DMat4x4" class="public" href="../../gfx/math/mat/DMat4x4.html">
+									<code>DMat4x4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(double,4L,4L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="FMat" class="public" href="../../gfx/math/mat/FMat.html">
+									<code>FMat</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(float,R,C)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="FMat2" class="public" href="../../gfx/math/mat/FMat2.html">
+									<code>FMat2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(float,2L,2L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="FMat2x2" class="public" href="../../gfx/math/mat/FMat2x2.html">
+									<code>FMat2x2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(float,2L,2L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="FMat2x3" class="public" href="../../gfx/math/mat/FMat2x3.html">
+									<code>FMat2x3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(float,2L,3L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="FMat2x4" class="public" href="../../gfx/math/mat/FMat2x4.html">
+									<code>FMat2x4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(float,2L,4L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="FMat3" class="public" href="../../gfx/math/mat/FMat3.html">
+									<code>FMat3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(float,3L,3L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="FMat3x2" class="public" href="../../gfx/math/mat/FMat3x2.html">
+									<code>FMat3x2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(float,3L,2L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="FMat3x3" class="public" href="../../gfx/math/mat/FMat3x3.html">
+									<code>FMat3x3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(float,3L,3L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="FMat3x4" class="public" href="../../gfx/math/mat/FMat3x4.html">
+									<code>FMat3x4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(float,3L,4L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="FMat4" class="public" href="../../gfx/math/mat/FMat4.html">
+									<code>FMat4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(float,4L,4L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="FMat4x2" class="public" href="../../gfx/math/mat/FMat4x2.html">
+									<code>FMat4x2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(float,4L,2L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="FMat4x3" class="public" href="../../gfx/math/mat/FMat4x3.html">
+									<code>FMat4x3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(float,4L,3L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="FMat4x4" class="public" href="../../gfx/math/mat/FMat4x4.html">
+									<code>FMat4x4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(float,4L,4L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="IMat" class="public" href="../../gfx/math/mat/IMat.html">
+									<code>IMat</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(int,R,C)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="IMat2" class="public" href="../../gfx/math/mat/IMat2.html">
+									<code>IMat2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(int,2L,2L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="IMat2x2" class="public" href="../../gfx/math/mat/IMat2x2.html">
+									<code>IMat2x2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(int,2L,2L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="IMat2x3" class="public" href="../../gfx/math/mat/IMat2x3.html">
+									<code>IMat2x3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(int,2L,3L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="IMat2x4" class="public" href="../../gfx/math/mat/IMat2x4.html">
+									<code>IMat2x4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(int,2L,4L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="IMat3" class="public" href="../../gfx/math/mat/IMat3.html">
+									<code>IMat3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(int,3L,3L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="IMat3x2" class="public" href="../../gfx/math/mat/IMat3x2.html">
+									<code>IMat3x2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(int,3L,2L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="IMat3x3" class="public" href="../../gfx/math/mat/IMat3x3.html">
+									<code>IMat3x3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(int,3L,3L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="IMat3x4" class="public" href="../../gfx/math/mat/IMat3x4.html">
+									<code>IMat3x4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(int,3L,4L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="IMat4" class="public" href="../../gfx/math/mat/IMat4.html">
+									<code>IMat4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(int,4L,4L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="IMat4x2" class="public" href="../../gfx/math/mat/IMat4x2.html">
+									<code>IMat4x2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(int,4L,2L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="IMat4x3" class="public" href="../../gfx/math/mat/IMat4x3.html">
+									<code>IMat4x3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(int,4L,3L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="IMat4x4" class="public" href="../../gfx/math/mat/IMat4x4.html">
+									<code>IMat4x4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(int,4L,4L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="Mat2" class="public" href="../../gfx/math/mat/Mat2.html">
+									<code>Mat2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat2x2.html"><span class="typ">Mat2x2</span></a>!T</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="Mat2x2" class="public" href="../../gfx/math/mat/Mat2x2.html">
+									<code>Mat2x2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(T,2,2)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="Mat2x3" class="public" href="../../gfx/math/mat/Mat2x3.html">
+									<code>Mat2x3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(T,2,3)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="Mat2x4" class="public" href="../../gfx/math/mat/Mat2x4.html">
+									<code>Mat2x4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(T,2,4)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="Mat3" class="public" href="../../gfx/math/mat/Mat3.html">
+									<code>Mat3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat3x3.html"><span class="typ">Mat3x3</span></a>!T</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="Mat3x2" class="public" href="../../gfx/math/mat/Mat3x2.html">
+									<code>Mat3x2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(T,3,2)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="Mat3x3" class="public" href="../../gfx/math/mat/Mat3x3.html">
+									<code>Mat3x3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(T,3,3)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="Mat3x4" class="public" href="../../gfx/math/mat/Mat3x4.html">
+									<code>Mat3x4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(T,3,4)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="Mat4" class="public" href="../../gfx/math/mat/Mat4.html">
+									<code>Mat4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat4x4.html"><span class="typ">Mat4x4</span></a>!T</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="Mat4x2" class="public" href="../../gfx/math/mat/Mat4x2.html">
+									<code>Mat4x2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(T,4,2)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="Mat4x3" class="public" href="../../gfx/math/mat/Mat4x3.html">
+									<code>Mat4x3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(T,4,3)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="Mat4x4" class="public" href="../../gfx/math/mat/Mat4x4.html">
+									<code>Mat4x4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(T,4,4)</code>
+							</td>
+							<td></td>
+						</tr>
+					</table>
+				</section>
+			</div>
+			<footer>
+				<div id="license-info">
+					
+					
+					
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>

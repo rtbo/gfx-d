@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<title>Module gfx.math.vec</title>
+		<link rel="stylesheet" href="../../css/style.min.css"/>
+		<script type="text/javascript" src="../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../gfx.html">gfx</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">bindings
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">opengl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/gl.html">gl</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/glx.html">glx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/khrplatform.html">khrplatform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/wgl.html">wgl</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/bindings/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/vulkan/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/vulkan/vk.html">vk</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/core.html">core</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/log.html">log</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/rc.html">rc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/typecons.html">typecons</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/util.html">util</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">decl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/decl/engine.html">engine</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/decl/store.html">store</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">genmesh
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/genmesh/algorithm.html">algorithm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/genmesh/cube.html">cube</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/genmesh/poly.html">poly</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/gl3.html">gl3</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/gl3/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/gl3/swapchain.html">swapchain</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/graal.html">graal</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/buffer.html">buffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/cmd.html">cmd</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/device.html">device</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/error.html">error</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/format.html">format</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/memory.html">memory</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/pipeline.html">pipeline</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/presentation.html">presentation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/queue.html">queue</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/renderpass.html">renderpass</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/sync.html">sync</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/types.html">types</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../gfx/math.html">math</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/approx.html">approx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/inverse.html">inverse</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/mat.html">mat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/proj.html">proj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/transform.html">transform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module selected">
+							<a href="../../gfx/math/vec.html">vec</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/memalloc.html">memalloc</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/memalloc/dedicated.html">dedicated</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/memalloc/pool.html">pool</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/vulkan/wsi.html">wsi</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window.html">window</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window/wayland.html">wayland</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/wayland/xdg_shell.html">xdg_shell</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window/win32.html">win32</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/win32/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/win32/keymap.html">keymap</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window/xcb.html">xcb</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/xcb/context.html">context</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/keys.html">keys</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/xkeyboard.html">xkeyboard</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with
+				<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Module gfx.math.vec</h1><p>Vector linear algebra module
+</p>
+				<section></section>
+				<section>
+					<h2>Functions</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="cross" class="public" href="../../gfx/math/vec/cross.html">cross</a><span class="decoration">(lhs, rhs)</span>
+								</code>
+							</td>
+							<td>Vector cross product
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="dot" class="public" href="../../gfx/math/vec/dot.html">dot</a><span class="decoration">(v1, v2)</span>
+								</code>
+							</td>
+							<td>Compute the dot product of two vectors.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="magnitude" class="public" href="../../gfx/math/vec/magnitude.html">magnitude</a><span class="decoration">(v)</span>
+								</code>
+							</td>
+							<td>Compute the magnitude of a vector.
+This is not to be confused with length which gives the number of components.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="normalize" class="public" href="../../gfx/math/vec/normalize.html">normalize</a><span class="decoration">(v)</span>
+								</code>
+							</td>
+							<td>Compute the normalization of a vector.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="squaredMag" class="public" href="../../gfx/math/vec/squaredMag.html">squaredMag</a><span class="decoration">(v)</span>
+								</code>
+							</td>
+							<td>Compute the squared magnitude of a vector.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="vec" class="public" href="../../gfx/math/vec/vec.html">vec</a><span class="decoration">(comps)</span>
+								</code>
+							</td>
+							<td>Build a Vec whose component type and size is deducted from arguments.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Structs</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Vec" class="public" href="../../gfx/math/vec/Vec.html">Vec</a>
+								</code>
+							</td>
+							<td></td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Templates</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="vec" class="public" href="../../gfx/math/vec/vec.html">vec</a>
+								</code>
+							</td>
+							<td>Build a Vec with specified component type T and size deducted from arguments.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="vec" class="public" href="../../gfx/math/vec/vec.html">vec</a>
+								</code>
+							</td>
+							<td>Build a Vec with specified size and type deducted from arguments
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Manifest constants</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a id="isVec" class="public" href="../../gfx/math/vec/isVec.html">
+									<code>isVec</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>Check whether VecT is a Vec
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="isVec" class="public" href="../../gfx/math/vec/isVec.html">
+									<code>isVec</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>Check whether VecT is a Vec of size N
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="isVec2" class="public" href="../../gfx/math/vec/isVec2.html">
+									<code>isVec2</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>Check whether VecT is a Vec of size N
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="isVec3" class="public" href="../../gfx/math/vec/isVec3.html">
+									<code>isVec3</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>Check whether VecT is a Vec of size N
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="isVec4" class="public" href="../../gfx/math/vec/isVec4.html">
+									<code>isVec4</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>Check whether VecT is a Vec of size N
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Aliases</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a id="DVec" class="public" href="../../gfx/math/vec/DVec.html">
+									<code>DVec</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/vec/Vec.html"><span class="typ">Vec</span></a>!(double,N)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="dvec" class="public" href="../../gfx/math/vec/dvec.html">
+									<code>dvec</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"></code>
+							</td>
+							<td>Build a Vec with specified component type T and size deducted from arguments.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="DVec2" class="public" href="../../gfx/math/vec/DVec2.html">
+									<code>DVec2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/vec/Vec.html"><span class="typ">Vec</span></a>!(double,2L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="DVec3" class="public" href="../../gfx/math/vec/DVec3.html">
+									<code>DVec3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/vec/Vec.html"><span class="typ">Vec</span></a>!(double,3L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="DVec4" class="public" href="../../gfx/math/vec/DVec4.html">
+									<code>DVec4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/vec/Vec.html"><span class="typ">Vec</span></a>!(double,4L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="FVec" class="public" href="../../gfx/math/vec/FVec.html">
+									<code>FVec</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/vec/Vec.html"><span class="typ">Vec</span></a>!(float,N)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="fvec" class="public" href="../../gfx/math/vec/fvec.html">
+									<code>fvec</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"></code>
+							</td>
+							<td>Build a Vec with specified component type T and size deducted from arguments.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="FVec2" class="public" href="../../gfx/math/vec/FVec2.html">
+									<code>FVec2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/vec/Vec.html"><span class="typ">Vec</span></a>!(float,2L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="FVec3" class="public" href="../../gfx/math/vec/FVec3.html">
+									<code>FVec3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/vec/Vec.html"><span class="typ">Vec</span></a>!(float,3L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="FVec4" class="public" href="../../gfx/math/vec/FVec4.html">
+									<code>FVec4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/vec/Vec.html"><span class="typ">Vec</span></a>!(float,4L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="IVec" class="public" href="../../gfx/math/vec/IVec.html">
+									<code>IVec</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/vec/Vec.html"><span class="typ">Vec</span></a>!(int,N)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="ivec" class="public" href="../../gfx/math/vec/ivec.html">
+									<code>ivec</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"></code>
+							</td>
+							<td>Build a Vec with specified component type T and size deducted from arguments.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="IVec2" class="public" href="../../gfx/math/vec/IVec2.html">
+									<code>IVec2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/vec/Vec.html"><span class="typ">Vec</span></a>!(int,2L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="IVec3" class="public" href="../../gfx/math/vec/IVec3.html">
+									<code>IVec3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/vec/Vec.html"><span class="typ">Vec</span></a>!(int,3L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="IVec4" class="public" href="../../gfx/math/vec/IVec4.html">
+									<code>IVec4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/vec/Vec.html"><span class="typ">Vec</span></a>!(int,4L)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="Vec2" class="public" href="../../gfx/math/vec/Vec2.html">
+									<code>Vec2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/vec/Vec.html"><span class="typ">Vec</span></a>!(T,2)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="vec2" class="public" href="../../gfx/math/vec/vec2.html">
+									<code>vec2</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"></code>
+							</td>
+							<td>Build a Vec with specified size and type deducted from arguments
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="Vec3" class="public" href="../../gfx/math/vec/Vec3.html">
+									<code>Vec3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/vec/Vec.html"><span class="typ">Vec</span></a>!(T,3)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="vec3" class="public" href="../../gfx/math/vec/vec3.html">
+									<code>vec3</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"></code>
+							</td>
+							<td>Build a Vec with specified size and type deducted from arguments
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="Vec4" class="public" href="../../gfx/math/vec/Vec4.html">
+									<code>Vec4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><a href="../../gfx/math/vec/Vec.html"><span class="typ">Vec</span></a>!(T,4)</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="vec4" class="public" href="../../gfx/math/vec/vec4.html">
+									<code>vec4</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"></code>
+							</td>
+							<td>Build a Vec with specified size and type deducted from arguments
+</td>
+						</tr>
+					</table>
+				</section>
+			</div>
+			<footer>
+				<div id="license-info">
+					
+					
+					
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>

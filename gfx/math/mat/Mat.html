@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<title>Struct Mat</title>
+		<link rel="stylesheet" href="../../../css/style.min.css"/>
+		<script type="text/javascript" src="../../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../gfx.html">gfx</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">bindings
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">opengl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/opengl/gl.html">gl</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/opengl/glx.html">glx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/opengl/khrplatform.html">khrplatform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/opengl/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/opengl/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/opengl/wgl.html">wgl</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/bindings/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/vulkan/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/vulkan/vk.html">vk</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/core.html">core</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/core/log.html">log</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/core/rc.html">rc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/core/typecons.html">typecons</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/core/util.html">util</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">decl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/decl/engine.html">engine</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/decl/store.html">store</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">genmesh
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/genmesh/algorithm.html">algorithm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/genmesh/cube.html">cube</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/genmesh/poly.html">poly</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/gl3.html">gl3</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/gl3/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/gl3/swapchain.html">swapchain</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/graal.html">graal</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/buffer.html">buffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/cmd.html">cmd</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/device.html">device</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/error.html">error</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/format.html">format</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/memory.html">memory</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/pipeline.html">pipeline</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/presentation.html">presentation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/queue.html">queue</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/renderpass.html">renderpass</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/sync.html">sync</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/types.html">types</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../gfx/math.html">math</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/math/approx.html">approx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/math/inverse.html">inverse</a>
+						</div>
+					</li>
+					<li>
+						<div class="module selected">
+							<a href="../../../gfx/math/mat.html">mat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/math/proj.html">proj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/math/transform.html">transform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/math/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/math/vec.html">vec</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/memalloc.html">memalloc</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/memalloc/dedicated.html">dedicated</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/memalloc/pool.html">pool</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/vulkan/wsi.html">wsi</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/window.html">window</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/window/wayland.html">wayland</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/window/wayland/xdg_shell.html">xdg_shell</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/window/win32.html">win32</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/window/win32/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/window/win32/keymap.html">keymap</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/window/xcb.html">xcb</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/window/xcb/context.html">context</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/window/keys.html">keys</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/window/xkeyboard.html">xkeyboard</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with
+				<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Struct Mat</h1><p>Matrix type for linear algebra
+</p>
+				<div class="prototype">
+					<code class="lang-d">
+						<div class="single-prototype">
+				<span class="kwd">struct</span> <span class="typ">Mat</span>(T, <span class="typ">ulong</span> R, <span class="typ">ulong</span> C)
+				<span class="pun">;</span>
+						</div>
+					</code>
+				</div>
+				
+				<section><h2>Constructors</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.this.html" class="public">
+									<code>this</code>
+								</a>
+							</td>
+							<td>Build a matrix from its elements.
+To be provided row major.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.this.html" class="public">
+									<code>this</code>
+								</a>
+							</td>
+							<td>Build a matrix from the provided rows.
+Each row must be an array (static or dynamic) and have the correct number
+of elements.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Fields</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat._rep.html" class="public"><code>_rep</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">T</span><span class="pun">[</span><span class="pln">R</span><span class="pun">*</span><span class="pln">C</span><span class="pun">]</span></code></td><td></td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Properties</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.compTup.html" class="public property"><code>compTup</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">Tuple</span>!CompSeq</code></td><td>All components in a tuple
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.ct.html" class="public property"><code>ct</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/math/mat/Mat.Component.html"><span class="typ">Mat<wbr/></span><span class="pun">.<wbr/></span><span class="typ">Component</span></a></code></td><td>Index a component at compile time
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.ct.html" class="public property"><code>ct</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/math/mat/Mat.Row.html"><span class="typ">Mat<wbr/></span><span class="pun">.<wbr/></span><span class="typ">Row</span></a></code></td><td>Index a row at compile time
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.ctCol.html" class="public property"><code>ctCol</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/math/mat/Mat.Column.html"><span class="typ">Mat<wbr/></span><span class="pun">.<wbr/></span><span class="typ">Column</span></a></code></td><td>Index a column at compile time
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.ctIndex.html" class="public property"><code>ctIndex</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="kwd">auto</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.data.html" class="public property"><code>data</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="kwd">inout</span><span class="pun">(</span><a href="../../../gfx/math/mat/Mat.Component.html"><span class="typ">Mat<wbr/></span><span class="pun">.<wbr/></span><span class="typ">Component</span></a><span class="pun">)</span><span class="pun">[]</span></code></td><td>Direct access to underlying data.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.identityCode.html" class="public property"><code>identityCode</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.rowTup.html" class="public property"><code>rowTup</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">Tuple</span>!RowSeq</code></td><td>All rows in a tuple
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.slice.html" class="public property"><code>slice</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(T,RE-RS,CE-CS)</code></td><td>Return a slice of the matrix
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.slice.html" class="public property"><code>slice</code></a><span class="tableEntryAnnotation">[set]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/math/mat/Mat.html"><span class="typ">Mat</span></a>!(U,UR,UC)</code></td><td>Assign a slice of this matrix
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Methods</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.column.html" class="public">
+									<code>column</code>
+								</a>
+							</td>
+							<td>Index a matrix column.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.comp.html" class="public">
+									<code>comp</code>
+								</a>
+							</td>
+							<td>Index a matrix component
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.ct.html" class="public">
+									<code>ct</code>
+								</a>
+							</td>
+							<td>Assign a compile time indexed component
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.ct.html" class="public">
+									<code>ct</code>
+								</a>
+							</td>
+							<td>Assign a row indexed at compile time
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.ctCol.html" class="public">
+									<code>ctCol</code>
+								</a>
+							</td>
+							<td>Assign a column indexed at compile time
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.index.html" class="public">
+									<code>index</code>
+								</a>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.opBinary.html" class="public">
+									<code>opBinary</code>
+								</a>
+							</td>
+							<td>Build an augmented matrix (add oth to the right of this matrix)
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.opBinary.html" class="public">
+									<code>opBinary</code>
+								</a>
+							</td>
+							<td>Add/Subtract by a matrix to its right.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.opBinary.html" class="public">
+									<code>opBinary</code>
+								</a>
+							</td>
+							<td>Multiply by a matrix to its right.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.opBinary.html" class="public">
+									<code>opBinary</code>
+								</a>
+							</td>
+							<td>Multiply a matrix by a vector to its right.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.opBinary.html" class="public">
+									<code>opBinary</code>
+								</a>
+							</td>
+							<td>Operation of a matrix with a scalar on its right.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.opBinaryRight.html" class="public">
+									<code>opBinaryRight</code>
+								</a>
+							</td>
+							<td>Multiply a matrix by a vector to its left.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.opBinaryRight.html" class="public">
+									<code>opBinaryRight</code>
+								</a>
+							</td>
+							<td>Operation of a matrix with a scalar on its left.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.opCast.html" class="public">
+									<code>opCast</code>
+								</a>
+							</td>
+							<td>Cast a matrix to another type
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.opDollar.html" class="public">
+									<code>opDollar</code>
+								</a>
+							</td>
+							<td>Number of components per direction.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.opIndex.html" class="public">
+									<code>opIndex</code>
+								</a>
+							</td>
+							<td>Index a matrix component.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.opIndex.html" class="public">
+									<code>opIndex</code>
+								</a>
+							</td>
+							<td>Index a matrix row
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.opIndexAssign.html" class="public">
+									<code>opIndexAssign</code>
+								</a>
+							</td>
+							<td>Assign a matrix component.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.opIndexAssign.html" class="public">
+									<code>opIndexAssign</code>
+								</a>
+							</td>
+							<td>Assign a row
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.opIndexOpAssign.html" class="public">
+									<code>opIndexOpAssign</code>
+								</a>
+							</td>
+							<td>Apply op on a matrix component.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.opOpAssign.html" class="public">
+									<code>opOpAssign</code>
+								</a>
+							</td>
+							<td>Assign operation of a matrix with a scalar on its right.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.opOpAssign.html" class="public">
+									<code>opOpAssign</code>
+								</a>
+							</td>
+							<td>Assign operation of a matrix with a matrix on its right.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.row.html" class="public">
+									<code>row</code>
+								</a>
+							</td>
+							<td>Index a matrix row.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.simdScalarOp.html" class="public">
+									<code>simdScalarOp</code>
+								</a>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.toString.html" class="public">
+									<code>toString</code>
+								</a>
+							</td>
+							<td></td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Aliases</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.Column.html" class="public">
+									<code>Column</code>
+								</a>
+							</td>
+							<td>The matrix columns type.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.Component.html" class="public">
+									<code>Component</code>
+								</a>
+							</td>
+							<td>The type of the componetypeof(rt.expand)nts.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.CompSeq.html" class="public">
+									<code>CompSeq</code>
+								</a>
+							</td>
+							<td>Alias to a type sequence holding all components
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.Row.html" class="public">
+									<code>Row</code>
+								</a>
+							</td>
+							<td>The matrix rows type.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/math/mat/Mat.RowSeq.html" class="public">
+									<code>RowSeq</code>
+								</a>
+							</td>
+							<td>Alias to a type sequence holding all rows
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Example</h2>
+
+<pre class="code"><code class="lang-d"><span class="kwd">import <a href="../../../gfx/math/approx.html"></span><span class="pln">gfx<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">approx</span></a><span class="pln"> </span><span class="pun">: </span><span class="pln">approxUlp</span><span class="pun">;
+
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">approxUlp</span><span class="pun">(</span><span class="typ">FMat2x2<wbr/></span><span class="pun">.</span><span class="pln">identity</span><span class="pun">, <a href="../../../gfx/math/mat/FMat2x2.html"></span><span class="typ">FMat2x2</span></a><span class="pun">(
+    </span><span class="lit">1</span><span class="pun">, </span><span class="lit">0</span><span class="pun">,
+    </span><span class="lit">0</span><span class="pun">, </span><span class="lit">1
+</span><span class="pun">)));
+</span></code></pre>
+</section>
+<section><h2>Example</h2>
+
+<pre class="code"><code class="lang-d"><span class="kwd">import <a href="../../../gfx/math/approx.html"></span><span class="pln">gfx<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">approx</span></a><span class="pln"> </span><span class="pun">: </span><span class="pln">approxUlp</span><span class="pun">;
+
+</span><span class="kwd">immutable </span><span class="pln">ml </span><span class="pun">= </span><span class="typ">Mat</span><span class="pun">!(</span><span class="typ">float</span><span class="pun">, </span><span class="lit">2</span><span class="pun">, </span><span class="lit">3</span><span class="pun">)(
+    </span><span class="lit">1</span><span class="pun">, </span><span class="lit">2</span><span class="pun">, </span><span class="lit">3</span><span class="pun">,
+    </span><span class="lit">4</span><span class="pun">, </span><span class="lit">5</span><span class="pun">, </span><span class="lit">6</span><span class="pun">,
+);
+</span><span class="kwd">immutable </span><span class="pln">mr </span><span class="pun">= </span><span class="typ">Mat</span><span class="pun">!(</span><span class="typ">float</span><span class="pun">, </span><span class="lit">3</span><span class="pun">, </span><span class="lit">2</span><span class="pun">)(
+    </span><span class="lit">1</span><span class="pun">, </span><span class="lit">2</span><span class="pun">,
+    </span><span class="lit">3</span><span class="pun">, </span><span class="lit">4</span><span class="pun">,
+    </span><span class="lit">5</span><span class="pun">, </span><span class="lit">6</span><span class="pun">,
+);
+</span><span class="kwd">immutable </span><span class="pln">exp </span><span class="pun">= </span><span class="typ">Mat</span><span class="pun">!(</span><span class="typ">float</span><span class="pun">, </span><span class="lit">2</span><span class="pun">, </span><span class="lit">2</span><span class="pun">)(
+    </span><span class="lit">1</span><span class="pun">+</span><span class="lit">6</span><span class="pun">+</span><span class="lit">15</span><span class="pun">,  </span><span class="lit">2</span><span class="pun">+</span><span class="lit">8</span><span class="pun">+</span><span class="lit">18</span><span class="pun">,
+    </span><span class="lit">4</span><span class="pun">+</span><span class="lit">15</span><span class="pun">+</span><span class="lit">30</span><span class="pun">, </span><span class="lit">8</span><span class="pun">+</span><span class="lit">20</span><span class="pun">+</span><span class="lit">36
+</span><span class="pun">);
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">approxUlp</span><span class="pun">(</span><span class="pln">ml </span><span class="pun">* </span><span class="pln">mr</span><span class="pun">, </span><span class="pln">exp</span><span class="pun">));
+</span></code></pre>
+</section>
+
+			</div>
+			<footer>
+				<div id="license-info">
+					
+					
+					
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>

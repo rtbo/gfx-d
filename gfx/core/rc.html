@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<title>Module gfx.core.rc</title>
+		<link rel="stylesheet" href="../../css/style.min.css"/>
+		<script type="text/javascript" src="../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../gfx.html">gfx</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">bindings
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">opengl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/gl.html">gl</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/glx.html">glx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/khrplatform.html">khrplatform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/opengl/wgl.html">wgl</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/bindings/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/vulkan/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/vulkan/vk.html">vk</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/bindings/core.html">core</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../gfx/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/log.html">log</a>
+						</div>
+					</li>
+					<li>
+						<div class="module selected">
+							<a href="../../gfx/core/rc.html">rc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/typecons.html">typecons</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/core/util.html">util</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">decl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/decl/engine.html">engine</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/decl/store.html">store</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">genmesh
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/genmesh/algorithm.html">algorithm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/genmesh/cube.html">cube</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/genmesh/poly.html">poly</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/gl3.html">gl3</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/gl3/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/gl3/swapchain.html">swapchain</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/graal.html">graal</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/buffer.html">buffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/cmd.html">cmd</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/device.html">device</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/error.html">error</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/format.html">format</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/memory.html">memory</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/pipeline.html">pipeline</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/presentation.html">presentation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/queue.html">queue</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/renderpass.html">renderpass</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/sync.html">sync</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/graal/types.html">types</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/math.html">math</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/approx.html">approx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/inverse.html">inverse</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/mat.html">mat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/proj.html">proj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/transform.html">transform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/math/vec.html">vec</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/memalloc.html">memalloc</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/memalloc/dedicated.html">dedicated</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/memalloc/pool.html">pool</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/vulkan/wsi.html">wsi</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window.html">window</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window/wayland.html">wayland</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/wayland/xdg_shell.html">xdg_shell</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window/win32.html">win32</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/win32/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/win32/keymap.html">keymap</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../gfx/window/xcb.html">xcb</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/xcb/context.html">context</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/keys.html">keys</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../gfx/window/xkeyboard.html">xkeyboard</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with
+				<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Module gfx.core.rc</h1><p>Reference counting module
+</p>
+				<section></section>
+				<section>
+					<h2>Functions</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="countObj" class="public" href="../../gfx/core/rc/countObj.html">countObj</a><span class="decoration">(obj)</span>
+								</code>
+							</td>
+							<td>Counts the number of references of a single object.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="disposeAA" class="public" href="../../gfx/core/rc/disposeAA.html">disposeAA</a><span class="decoration">(arr)</span>
+								</code>
+							</td>
+							<td>Dispose GC allocated associative array of resources
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="disposeArr" class="public" href="../../gfx/core/rc/disposeArr.html">disposeArr</a><span class="decoration">(arr)</span>
+								</code>
+							</td>
+							<td>Dispose GC allocated array of resources
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="disposeObj" class="public" href="../../gfx/core/rc/disposeObj.html">disposeObj</a><span class="decoration">(obj)</span>
+								</code>
+							</td>
+							<td>Dispose and nullify a single object, that might be null
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="giveAwayObj" class="public" href="../../gfx/core/rc/giveAwayObj.html">giveAwayObj</a><span class="decoration">(obj)</span>
+								</code>
+							</td>
+							<td>Decreases the reference count of a single object without disposing it.
+Use this to move an object out of a scope (typically return at the end of a return function)
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="lockObj" class="public" href="../../gfx/core/rc/lockObj.html">lockObj</a><span class="decoration">(obj)</span>
+								</code>
+							</td>
+							<td>Locks a single object.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="nullRc" class="public property" href="../../gfx/core/rc/nullRc.html">nullRc</a><span class="decoration">()</span>
+								</code>
+							</td>
+							<td>Produces an Rc!T holding a null object
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="rc" class="public" href="../../gfx/core/rc/rc.html">rc</a><span class="decoration">(obj)</span>
+								</code>
+							</td>
+							<td>Helper that places an instance of T within a Rc!T
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="reinitAA" class="public" href="../../gfx/core/rc/reinitAA.html">reinitAA</a><span class="decoration">(arr)</span>
+								</code>
+							</td>
+							<td>Reinitialises a GC allocated associative array of struct.
+Useful if the struct release resource in its destructor.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="reinitArr" class="public" href="../../gfx/core/rc/reinitArr.html">reinitArr</a><span class="decoration">(arr)</span>
+								</code>
+							</td>
+							<td>Reinitialises a GC allocated array of struct.
+Useful if the struct release resource in its destructor.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="reinitStruct" class="public" href="../../gfx/core/rc/reinitStruct.html">reinitStruct</a><span class="decoration">(t)</span>
+								</code>
+							</td>
+							<td>Reinitialises a single struct
+Useful if the struct release resource in its destructor.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="releaseAA" class="public" href="../../gfx/core/rc/releaseAA.html">releaseAA</a><span class="decoration">(arr)</span>
+								</code>
+							</td>
+							<td>Release GC allocated associative array of ref-counted resources
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="releaseArr" class="public" href="../../gfx/core/rc/releaseArr.html">releaseArr</a><span class="decoration">(arr)</span>
+								</code>
+							</td>
+							<td>Release GC allocated array of ref-counted resources
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="releaseObj" class="public" href="../../gfx/core/rc/releaseObj.html">releaseObj</a><span class="decoration">(obj, disposeOnZero)</span>
+								</code>
+							</td>
+							<td>Releases and nullify a single object. The object may be null.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="retainAA" class="public" href="../../gfx/core/rc/retainAA.html">retainAA</a><span class="decoration">(arr)</span>
+								</code>
+							</td>
+							<td>Retain GC allocated associative array of ref-counted resources
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="retainArr" class="public" href="../../gfx/core/rc/retainArr.html">retainArr</a><span class="decoration">(arr)</span>
+								</code>
+							</td>
+							<td>Retain GC allocated array of ref-counted resources
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="retainObj" class="public" href="../../gfx/core/rc/retainObj.html">retainObj</a><span class="decoration">(obj)</span>
+								</code>
+							</td>
+							<td>Retains a single object.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Interfaces</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Disposable" class="public" href="../../gfx/core/rc/Disposable.html">Disposable</a>
+								</code>
+							</td>
+							<td>A resource that can be disposed
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="IAtomicRefCounted" class="public" href="../../gfx/core/rc/IAtomicRefCounted.html">IAtomicRefCounted</a>
+								</code>
+							</td>
+							<td>A atomic reference counted resource.
+Objects implementing this interface can be safely manipulated as shared.
+Implementing class should mixin atomicRcCode to use the provided implementation.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Classes</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="AtomicRefCounted" class="public" href="../../gfx/core/rc/AtomicRefCounted.html">AtomicRefCounted</a>
+								</code>
+							</td>
+							<td>Abstract class that implements IAtomicRefCounted.
+Should be used over IAtomicRefCounted when practicable to avoid code
+duplication in the final executable.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Structs</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Rc" class="public" href="../../gfx/core/rc/Rc.html">Rc</a>
+								</code>
+							</td>
+							<td>Helper struct that manages the reference count of an object using RAII.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Weak" class="public" href="../../gfx/core/rc/Weak.html">Weak</a>
+								</code>
+							</td>
+							<td>Helper struct that keeps a weak reference to a Resource.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Templates</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="makeRc" class="public" href="../../gfx/core/rc/makeRc.html">makeRc</a>
+								</code>
+							</td>
+							<td>Helper that build a new instance of T and returns it within a Rc!T
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Manifest constants</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a id="atomicRcCode" class="public" href="../../gfx/core/rc/atomicRcCode.html">
+									<code>atomicRcCode</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>A string that can be mixed-in a class declaration to implement IAtomicRefCounted.
+dispose is not implemented of course, but is called by release while the object is locked.
+Classes implementing it are free to do it in a non-thread safe manner as long
+as dispose does not manipulate external state.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a id="gfxRcMask" class="public" href="../../gfx/core/rc/gfxRcMask.html">
+									<code>gfxRcMask</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="isAtomicRefCounted" class="public" href="../../gfx/core/rc/isAtomicRefCounted.html">
+									<code>isAtomicRefCounted</code>
+								</a>
+							</td>
+							<td>
+							</td>
+							<td>compile time check that T can be ref counted atomically.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Global variables</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a id="gfxRcLog" class="public" href="../../gfx/core/rc/gfxRcLog.html">
+									<code>gfxRcLog</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><span class="kwd">immutable</span><span class="pun">(</span><a href="../../gfx/core/log/LogTag.html"><span class="typ">LogTag</span></a><span class="pun">)</span></code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="rcPrintStack" class="public" href="../../gfx/core/rc/rcPrintStack.html">
+									<code>rcPrintStack</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><span class="typ">bool</span></code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a id="rcTypeRegex" class="public" href="../../gfx/core/rc/rcTypeRegex.html">
+									<code>rcTypeRegex</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><span class="typ">string</span></code>
+							</td>
+							<td></td>
+						</tr>
+					</table>
+				</section>
+			</div>
+			<footer>
+				<div id="license-info">
+					
+					
+					
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>

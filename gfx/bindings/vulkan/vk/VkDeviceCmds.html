@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<title>Class VkDeviceCmds</title>
+		<link rel="stylesheet" href="../../../../css/style.min.css"/>
+		<script type="text/javascript" src="../../../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../../gfx.html">gfx</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">bindings
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">opengl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/gl.html">gl</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/glx.html">glx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/khrplatform.html">khrplatform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/opengl/wgl.html">wgl</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../../gfx/bindings/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/vulkan/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module selected">
+							<a href="../../../../gfx/bindings/vulkan/vk.html">vk</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/bindings/core.html">core</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/log.html">log</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/rc.html">rc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/typecons.html">typecons</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/core/util.html">util</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">decl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/decl/engine.html">engine</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/decl/store.html">store</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">genmesh
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/genmesh/algorithm.html">algorithm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/genmesh/cube.html">cube</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/genmesh/poly.html">poly</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/gl3.html">gl3</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/gl3/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/gl3/swapchain.html">swapchain</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/graal.html">graal</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/buffer.html">buffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/cmd.html">cmd</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/device.html">device</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/error.html">error</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/format.html">format</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/memory.html">memory</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/pipeline.html">pipeline</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/presentation.html">presentation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/queue.html">queue</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/renderpass.html">renderpass</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/sync.html">sync</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/graal/types.html">types</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/math.html">math</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/approx.html">approx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/inverse.html">inverse</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/mat.html">mat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/proj.html">proj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/transform.html">transform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/math/vec.html">vec</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/memalloc.html">memalloc</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/memalloc/dedicated.html">dedicated</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/memalloc/pool.html">pool</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/vulkan/wsi.html">wsi</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window.html">window</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window/wayland.html">wayland</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/wayland/xdg_shell.html">xdg_shell</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window/win32.html">win32</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/win32/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/win32/keymap.html">keymap</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../../gfx/window/xcb.html">xcb</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/xcb/context.html">context</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/keys.html">keys</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../gfx/window/xkeyboard.html">xkeyboard</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with
+				<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Class VkDeviceCmds</h1><p></p>
+				<div class="prototype">
+					<code class="lang-d">
+						<div class="single-prototype">
+				<span class="kwd">class</span> <span class="typ">VkDeviceCmds</span>
+				<span class="pun">;</span>
+						</div>
+					</code>
+				</div>
+				
+				<section><h2>Constructors</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.this.html" class="public">
+									<code>this</code>
+								</a>
+							</td>
+							<td></td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Methods</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.AcquireNextImage2KHR.html" class="public">
+									<code>AcquireNextImage2KHR</code>
+								</a>
+							</td>
+							<td>Commands for VK_KHR_swapchain
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.AcquireNextImageKHR.html" class="public">
+									<code>AcquireNextImageKHR</code>
+								</a>
+							</td>
+							<td>Commands for VK_KHR_swapchain
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.AllocateCommandBuffers.html" class="public">
+									<code>AllocateCommandBuffers</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.AllocateDescriptorSets.html" class="public">
+									<code>AllocateDescriptorSets</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.AllocateMemory.html" class="public">
+									<code>AllocateMemory</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.BeginCommandBuffer.html" class="public">
+									<code>BeginCommandBuffer</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.BindBufferMemory.html" class="public">
+									<code>BindBufferMemory</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.BindBufferMemory2.html" class="public">
+									<code>BindBufferMemory2</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.BindImageMemory.html" class="public">
+									<code>BindImageMemory</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.BindImageMemory2.html" class="public">
+									<code>BindImageMemory2</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdBeginQuery.html" class="public">
+									<code>CmdBeginQuery</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdBeginRenderPass.html" class="public">
+									<code>CmdBeginRenderPass</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdBindDescriptorSets.html" class="public">
+									<code>CmdBindDescriptorSets</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdBindIndexBuffer.html" class="public">
+									<code>CmdBindIndexBuffer</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdBindPipeline.html" class="public">
+									<code>CmdBindPipeline</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdBindVertexBuffers.html" class="public">
+									<code>CmdBindVertexBuffers</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdBlitImage.html" class="public">
+									<code>CmdBlitImage</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdClearAttachments.html" class="public">
+									<code>CmdClearAttachments</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdClearColorImage.html" class="public">
+									<code>CmdClearColorImage</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdClearDepthStencilImage.html" class="public">
+									<code>CmdClearDepthStencilImage</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdCopyBuffer.html" class="public">
+									<code>CmdCopyBuffer</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdCopyBufferToImage.html" class="public">
+									<code>CmdCopyBufferToImage</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdCopyImage.html" class="public">
+									<code>CmdCopyImage</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdCopyImageToBuffer.html" class="public">
+									<code>CmdCopyImageToBuffer</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdCopyQueryPoolResults.html" class="public">
+									<code>CmdCopyQueryPoolResults</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdDispatch.html" class="public">
+									<code>CmdDispatch</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdDispatchBase.html" class="public">
+									<code>CmdDispatchBase</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdDispatchIndirect.html" class="public">
+									<code>CmdDispatchIndirect</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdDraw.html" class="public">
+									<code>CmdDraw</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdDrawIndexed.html" class="public">
+									<code>CmdDrawIndexed</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdDrawIndexedIndirect.html" class="public">
+									<code>CmdDrawIndexedIndirect</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdDrawIndirect.html" class="public">
+									<code>CmdDrawIndirect</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdEndQuery.html" class="public">
+									<code>CmdEndQuery</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdEndRenderPass.html" class="public">
+									<code>CmdEndRenderPass</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdExecuteCommands.html" class="public">
+									<code>CmdExecuteCommands</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdFillBuffer.html" class="public">
+									<code>CmdFillBuffer</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdNextSubpass.html" class="public">
+									<code>CmdNextSubpass</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdPipelineBarrier.html" class="public">
+									<code>CmdPipelineBarrier</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdPushConstants.html" class="public">
+									<code>CmdPushConstants</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdResetEvent.html" class="public">
+									<code>CmdResetEvent</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdResetQueryPool.html" class="public">
+									<code>CmdResetQueryPool</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdResolveImage.html" class="public">
+									<code>CmdResolveImage</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdSetBlendConstants.html" class="public">
+									<code>CmdSetBlendConstants</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdSetDepthBias.html" class="public">
+									<code>CmdSetDepthBias</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdSetDepthBounds.html" class="public">
+									<code>CmdSetDepthBounds</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdSetDeviceMask.html" class="public">
+									<code>CmdSetDeviceMask</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdSetEvent.html" class="public">
+									<code>CmdSetEvent</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdSetLineWidth.html" class="public">
+									<code>CmdSetLineWidth</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdSetScissor.html" class="public">
+									<code>CmdSetScissor</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdSetStencilCompareMask.html" class="public">
+									<code>CmdSetStencilCompareMask</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdSetStencilReference.html" class="public">
+									<code>CmdSetStencilReference</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdSetStencilWriteMask.html" class="public">
+									<code>CmdSetStencilWriteMask</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdSetViewport.html" class="public">
+									<code>CmdSetViewport</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdUpdateBuffer.html" class="public">
+									<code>CmdUpdateBuffer</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdWaitEvents.html" class="public">
+									<code>CmdWaitEvents</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CmdWriteTimestamp.html" class="public">
+									<code>CmdWriteTimestamp</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateBuffer.html" class="public">
+									<code>CreateBuffer</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateBufferView.html" class="public">
+									<code>CreateBufferView</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateCommandPool.html" class="public">
+									<code>CreateCommandPool</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateComputePipelines.html" class="public">
+									<code>CreateComputePipelines</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateDescriptorPool.html" class="public">
+									<code>CreateDescriptorPool</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateDescriptorSetLayout.html" class="public">
+									<code>CreateDescriptorSetLayout</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateDescriptorUpdateTemplate.html" class="public">
+									<code>CreateDescriptorUpdateTemplate</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateEvent.html" class="public">
+									<code>CreateEvent</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateFence.html" class="public">
+									<code>CreateFence</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateFramebuffer.html" class="public">
+									<code>CreateFramebuffer</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateGraphicsPipelines.html" class="public">
+									<code>CreateGraphicsPipelines</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateImage.html" class="public">
+									<code>CreateImage</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateImageView.html" class="public">
+									<code>CreateImageView</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreatePipelineCache.html" class="public">
+									<code>CreatePipelineCache</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreatePipelineLayout.html" class="public">
+									<code>CreatePipelineLayout</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateQueryPool.html" class="public">
+									<code>CreateQueryPool</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateRenderPass.html" class="public">
+									<code>CreateRenderPass</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateSampler.html" class="public">
+									<code>CreateSampler</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateSamplerYcbcrConversion.html" class="public">
+									<code>CreateSamplerYcbcrConversion</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateSemaphore.html" class="public">
+									<code>CreateSemaphore</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateShaderModule.html" class="public">
+									<code>CreateShaderModule</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.CreateSwapchainKHR.html" class="public">
+									<code>CreateSwapchainKHR</code>
+								</a>
+							</td>
+							<td>Commands for VK_KHR_swapchain
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyBuffer.html" class="public">
+									<code>DestroyBuffer</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyBufferView.html" class="public">
+									<code>DestroyBufferView</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyCommandPool.html" class="public">
+									<code>DestroyCommandPool</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyDescriptorPool.html" class="public">
+									<code>DestroyDescriptorPool</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyDescriptorSetLayout.html" class="public">
+									<code>DestroyDescriptorSetLayout</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyDescriptorUpdateTemplate.html" class="public">
+									<code>DestroyDescriptorUpdateTemplate</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyDevice.html" class="public">
+									<code>DestroyDevice</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyEvent.html" class="public">
+									<code>DestroyEvent</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyFence.html" class="public">
+									<code>DestroyFence</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyFramebuffer.html" class="public">
+									<code>DestroyFramebuffer</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyImage.html" class="public">
+									<code>DestroyImage</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyImageView.html" class="public">
+									<code>DestroyImageView</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyPipeline.html" class="public">
+									<code>DestroyPipeline</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyPipelineCache.html" class="public">
+									<code>DestroyPipelineCache</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyPipelineLayout.html" class="public">
+									<code>DestroyPipelineLayout</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyQueryPool.html" class="public">
+									<code>DestroyQueryPool</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyRenderPass.html" class="public">
+									<code>DestroyRenderPass</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroySampler.html" class="public">
+									<code>DestroySampler</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroySamplerYcbcrConversion.html" class="public">
+									<code>DestroySamplerYcbcrConversion</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroySemaphore.html" class="public">
+									<code>DestroySemaphore</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroyShaderModule.html" class="public">
+									<code>DestroyShaderModule</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DestroySwapchainKHR.html" class="public">
+									<code>DestroySwapchainKHR</code>
+								</a>
+							</td>
+							<td>Commands for VK_KHR_swapchain
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.DeviceWaitIdle.html" class="public">
+									<code>DeviceWaitIdle</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.EndCommandBuffer.html" class="public">
+									<code>EndCommandBuffer</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.FlushMappedMemoryRanges.html" class="public">
+									<code>FlushMappedMemoryRanges</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.FreeCommandBuffers.html" class="public">
+									<code>FreeCommandBuffers</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.FreeDescriptorSets.html" class="public">
+									<code>FreeDescriptorSets</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.FreeMemory.html" class="public">
+									<code>FreeMemory</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetBufferMemoryRequirements.html" class="public">
+									<code>GetBufferMemoryRequirements</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetBufferMemoryRequirements2.html" class="public">
+									<code>GetBufferMemoryRequirements2</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetDescriptorSetLayoutSupport.html" class="public">
+									<code>GetDescriptorSetLayoutSupport</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetDeviceGroupPeerMemoryFeatures.html" class="public">
+									<code>GetDeviceGroupPeerMemoryFeatures</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetDeviceGroupPresentCapabilitiesKHR.html" class="public">
+									<code>GetDeviceGroupPresentCapabilitiesKHR</code>
+								</a>
+							</td>
+							<td>Commands for VK_KHR_swapchain
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetDeviceGroupSurfacePresentModesKHR.html" class="public">
+									<code>GetDeviceGroupSurfacePresentModesKHR</code>
+								</a>
+							</td>
+							<td>Commands for VK_KHR_swapchain
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetDeviceMemoryCommitment.html" class="public">
+									<code>GetDeviceMemoryCommitment</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetDeviceQueue.html" class="public">
+									<code>GetDeviceQueue</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetDeviceQueue2.html" class="public">
+									<code>GetDeviceQueue2</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetEventStatus.html" class="public">
+									<code>GetEventStatus</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetFenceStatus.html" class="public">
+									<code>GetFenceStatus</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetImageMemoryRequirements.html" class="public">
+									<code>GetImageMemoryRequirements</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetImageMemoryRequirements2.html" class="public">
+									<code>GetImageMemoryRequirements2</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetImageSparseMemoryRequirements.html" class="public">
+									<code>GetImageSparseMemoryRequirements</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetImageSparseMemoryRequirements2.html" class="public">
+									<code>GetImageSparseMemoryRequirements2</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetImageSubresourceLayout.html" class="public">
+									<code>GetImageSubresourceLayout</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetPipelineCacheData.html" class="public">
+									<code>GetPipelineCacheData</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetQueryPoolResults.html" class="public">
+									<code>GetQueryPoolResults</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetRenderAreaGranularity.html" class="public">
+									<code>GetRenderAreaGranularity</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.GetSwapchainImagesKHR.html" class="public">
+									<code>GetSwapchainImagesKHR</code>
+								</a>
+							</td>
+							<td>Commands for VK_KHR_swapchain
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.InvalidateMappedMemoryRanges.html" class="public">
+									<code>InvalidateMappedMemoryRanges</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.MapMemory.html" class="public">
+									<code>MapMemory</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.MergePipelineCaches.html" class="public">
+									<code>MergePipelineCaches</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.QueueBindSparse.html" class="public">
+									<code>QueueBindSparse</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.QueuePresentKHR.html" class="public">
+									<code>QueuePresentKHR</code>
+								</a>
+							</td>
+							<td>Commands for VK_KHR_swapchain
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.QueueSubmit.html" class="public">
+									<code>QueueSubmit</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.QueueWaitIdle.html" class="public">
+									<code>QueueWaitIdle</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.ResetCommandBuffer.html" class="public">
+									<code>ResetCommandBuffer</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.ResetCommandPool.html" class="public">
+									<code>ResetCommandPool</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.ResetDescriptorPool.html" class="public">
+									<code>ResetDescriptorPool</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.ResetEvent.html" class="public">
+									<code>ResetEvent</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.ResetFences.html" class="public">
+									<code>ResetFences</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.SetEvent.html" class="public">
+									<code>SetEvent</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.TrimCommandPool.html" class="public">
+									<code>TrimCommandPool</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.UnmapMemory.html" class="public">
+									<code>UnmapMemory</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.UpdateDescriptorSets.html" class="public">
+									<code>UpdateDescriptorSets</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.UpdateDescriptorSetWithTemplate.html" class="public">
+									<code>UpdateDescriptorSetWithTemplate</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_1
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../gfx/bindings/vulkan/vk/VkDeviceCmds.WaitForFences.html" class="public">
+									<code>WaitForFences</code>
+								</a>
+							</td>
+							<td>Commands for VK_VERSION_1_0
+</td>
+						</tr>
+					</table>
+				</section>
+				
+			</div>
+			<footer>
+				<div id="license-info">
+					
+					
+					
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>
