@@ -108,6 +108,13 @@ test_script:
  - echo %PATH%
  - '%DC% --version'
  - dub test --arch=%Darch% --compiler=%DC%
+ - dub test gfx:core --arch=%Darch% --compiler=%DC%
+ - dub test gfx:decl --arch=%Darch% --compiler=%DC%
+ - dub test gfx:genmesh --arch=%Darch% --compiler=%DC%
+ - dub test gfx:gl3 --arch=%Darch% --compiler=%DC%
+ - dub test gfx:math --arch=%Darch% --compiler=%DC%
+ - dub test gfx:memalloc --arch=%Darch% --compiler=%DC%
+ - dub test gfx:vulkan --arch=%Darch% --compiler=%DC%
  - dub build gfx:declapi --arch=%Darch% --compiler=%DC%
  - dub build gfx:depth --arch=%Darch% --compiler=%DC%
  - dub build gfx:shadow --arch=%Darch% --compiler=%DC%
