@@ -15,5 +15,6 @@ docs.json
 *.a
 window/source/gfx/window/wayland/zxdg_shell_v6.d
 
-# example executables
+# example/test executables
 examples/**/gfx_*
+**/gfx-*-test-*

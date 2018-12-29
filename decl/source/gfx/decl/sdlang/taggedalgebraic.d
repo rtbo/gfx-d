@@ -8,7 +8,7 @@
 module gfx.decl.sdlang.taggedalgebraic;
 
 import std.typetuple;
-import std.traits : isInstanceOf;
+import std.traits : isInstanceOf, Unqual;
 
 // TODO:
 //  - distinguish between @property and non@-property methods.

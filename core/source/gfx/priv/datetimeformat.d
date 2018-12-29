@@ -769,6 +769,7 @@ immutable string[13] LONG_U_MONTH_NAME = [
 ];
 
 unittest {
+	import std.datetime;
 	import std.stdio;
 
 	writefln("Unittest commenced at %s",  Clock.currTime.toString);
