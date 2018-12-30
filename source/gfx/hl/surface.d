@@ -69,7 +69,7 @@ final class GraphicsSurface : AtomicRefCounted
     private PresentMode _presentMode;
     private CompositeAlpha _compAlpha;
     private uint _numImages;
-    //private uint[2] _size;
+    private uint[2] _size;
     //private bool _mustRebuildSwapchain;
 
     private Rc!Swapchain _swapchain;
@@ -135,6 +135,8 @@ final class GraphicsSurface : AtomicRefCounted
         _swapchain = enforce(_device.createSwapchain(_surface.obj, _presentMode, _numImages,
                 _format, sz, usage, _compAlpha, oldSc), "Could not create a swap chain").rc;
 
+        _size = sz;
+
         // ensure we don't miss anything to release
         assert(_perImages.length == 0 || _perImages.length == _numImages);
         if (_perImages.length != _numImages)
@@ -157,7 +159,7 @@ final class GraphicsSurface : AtomicRefCounted
     /// Get the underlying surface
     @property Surface surface()
     {
-        return _surface.obj;
+        return _surface;
     }
 
     /// Semaphore that is signaled when the acquired image is available for
@@ -167,10 +169,38 @@ final class GraphicsSurface : AtomicRefCounted
         return _imageAvailSem;
     }
 
+    /// Semaphore that is signaled when the rendering on the image is finished
+    /// and the image is ready for presentation.
+    @property Semaphore renderingDoneSem()
+    {
+        return _renderingDoneSem;
+    }
+
+    /// The image format of the surface
+    @property Format format()
+    {
+        return _format;
+    }
+
+    /// Whether the surface can be alpha-blended by the system compositor.
+    @property bool supportsAlphaBlend()
+    {
+        import gfx.graal.format : formatDesc, alphaBits;
+
+        return _compAlpha != CompositeAlpha.opaque &&
+                alphaBits(formatDesc(_format).surfaceType) > 0;
+    }
+
     /// Get the swapchain managed by this GraphicsSurface
     @property Swapchain swapchain()
     {
         return _swapchain.obj;
+    }
+
+    /// Get the size of the surface
+    @property uint[2] size()
+    {
+        return _size;
     }
 
     /// The number of images in the swapchain
@@ -187,10 +217,17 @@ final class GraphicsSurface : AtomicRefCounted
     }
 
     /// Get an image view from the swapchain
-    ImageView image(in uint index)
+    ImageView view(in uint index)
     in(index < _numImages)
     {
         return _perImages[index].view;
+    }
+
+    /// Get the fence related to the image at the specified index
+    Fence fence(in uint index)
+    in(index < _numImages)
+    {
+        return _perImages[index].fence;
     }
 
     /// infinite timeout
