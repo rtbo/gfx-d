@@ -4,6 +4,7 @@ version(Windows):
 
 import core.sys.windows.wingdi;
 import gfx.bindings.opengl.gl : Gl, GL_TRUE;
+import gfx.bindings.opengl.loader;
 import gfx.bindings.opengl.wgl;
 import gfx.gl3.context : GlAttribs, GlContext, GlProfile, glVersions;
 import gfx.window.win32 : gfxW32Log;
@@ -83,7 +84,8 @@ public class Win32GlContext : GlContext
     private HGLRC _ctx;
     private int _pixelFormat;
 
-    this(in GlAttribs attribs, HWND window) {
+    this(in GlAttribs attribs, HWND window)
+    {
         _attribs = attribs;
 
         registerWindowClass();
