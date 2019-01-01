@@ -1,3 +1,4 @@
+/// Definitions from `khrplatform.h`
 module gfx.bindings.opengl.khrplatform;
 
 alias khronos_int8_t                = byte;

@@ -2,7 +2,7 @@ module gfx.window.xcb.context;
 
 version(linux):
 
-import gfx.bindings.core : SharedLib;
+import gfx.bindings.opengl.loader : SharedLib;
 import gfx.gl3.context : GlAttribs, GlContext, glVersions;
 import X11.Xlib : XDisplay = Display, XErrorEvent;
 
@@ -11,7 +11,7 @@ import gfx.window.xcb : gfxXcbLog;
 /// GlX backed OpenGL context
 class XcbGlContext : GlContext
 {
-    import gfx.bindings.core : SharedSym;
+    import gfx.bindings.opengl.loader : SharedSym;
     import gfx.bindings.opengl.gl : Gl;
     import gfx.bindings.opengl.glx : Glx, GLXContext, GLXFBConfig;
     import gfx.core.rc : atomicRcCode, Disposable;
@@ -36,10 +36,10 @@ class XcbGlContext : GlContext
     /// It can be a dummy window destroyed right initialization.
     this (XDisplay* dpy, in int mainScreenNum, in GlAttribs attribs, in size_t window)
     {
-        import gfx.bindings.core : openSharedLib, loadSharedSym, SharedLib;
-        import gfx.bindings.opengl : splitExtString;
+        import gfx.bindings.opengl.loader : openSharedLib, loadSharedSym, SharedLib;
         import gfx.bindings.opengl.gl : GL_EXTENSIONS;
         import gfx.bindings.opengl.glx : PFN_glXGetProcAddressARB;
+        import gfx.bindings.opengl.util : splitExtString;
         import std.algorithm : canFind;
         import std.exception : enforce;
         import X11.Xlib : XSetErrorHandler, XSync;
@@ -99,7 +99,7 @@ class XcbGlContext : GlContext
     }
 
     override void dispose() {
-        import gfx.bindings.core : closeSharedLib;
+        import gfx.bindings.opengl.loader : closeSharedLib;
 
         _glx.DestroyContext(_dpy, _ctx);
         gfxXcbLog.trace("destroyed GL/GLX context");
@@ -203,7 +203,7 @@ class XcbGlContext : GlContext
 
 private SharedLib loadGlLib()
 {
-    import gfx.bindings.core : openSharedLib;
+    import gfx.bindings.opengl.loader : openSharedLib;
 
     immutable glLibNames = ["libGL.so.1", "libGL.so"];
 

@@ -1,11 +1,12 @@
-/// GLX bindings for D. Generated automatically by gldgen.py
+/// GLX bindings for D. Generated automatically by gldgen.
+/// See https://github.com/rtbo/gldgen
 module gfx.bindings.opengl.glx;
 
 version(linux):
 
 import core.stdc.config;
 import core.stdc.stdint;
-import gfx.bindings.core;
+import gfx.bindings.opengl.loader : SymbolLoader;
 import gfx.bindings.opengl.gl;
 import X11.Xlib;
 
@@ -357,7 +358,6 @@ enum GLX_RENDERER_OPENGL_CORE_PROFILE_VERSION_MESA          = 0x818A;
 enum GLX_RENDERER_OPENGL_COMPATIBILITY_PROFILE_VERSION_MESA = 0x818B;
 enum GLX_RENDERER_OPENGL_ES_PROFILE_VERSION_MESA            = 0x818C;
 enum GLX_RENDERER_OPENGL_ES2_PROFILE_VERSION_MESA           = 0x818D;
-enum GLX_RENDERER_ID_MESA                                   = 0x818E;
 
 // Constants for GLX_MESA_set_3dfx_mode
 enum GLX_3DFX_WINDOW_MODE_MESA     = 0x1;

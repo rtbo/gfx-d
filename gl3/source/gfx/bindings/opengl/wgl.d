@@ -1,11 +1,12 @@
-/// WinGL bindings for D. Generated automatically by gldgen.py
+/// WinGL bindings for D. Generated automatically by gldgen.
+/// See https://github.com/rtbo/gldgen
 module gfx.bindings.opengl.wgl;
 
 version(Windows):
 import core.stdc.config : c_ulong;
 import core.sys.windows.windef;
 import core.sys.windows.wingdi;
-import gfx.bindings.core;
+import gfx.bindings.opengl.loader : SymbolLoader;
 import gfx.bindings.opengl.gl;
 
 // Base Types
@@ -240,8 +241,11 @@ enum WGL_GPU_NUM_SPI_AMD               = 0x21A8;
 // Constants for WGL_ATI_pixel_format_float
 enum WGL_TYPE_RGBA_FLOAT_ATI = 0x21A0;
 
+// Constants for WGL_ATI_render_texture_rectangle
+enum WGL_TEXTURE_RECTANGLE_ATI = 0x21A5;
+
 // Constants for WGL_EXT_colorspace
-enum WGL_COLORSPACE_EXT        = 0x3087;
+enum WGL_COLORSPACE_EXT        = 0x309D;
 enum WGL_COLORSPACE_SRGB_EXT   = 0x3089;
 enum WGL_COLORSPACE_LINEAR_EXT = 0x308A;
 

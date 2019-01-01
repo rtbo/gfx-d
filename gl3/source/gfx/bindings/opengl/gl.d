@@ -1,50 +1,55 @@
-/// OpenGL bindings for D. Generated automatically by gldgen.py
+/// OpenGL bindings for D. Generated automatically by gldgen.
+/// See https://github.com/rtbo/gldgen
 module gfx.bindings.opengl.gl;
 
 import core.stdc.stdint;
-import gfx.bindings.core;
+import gfx.bindings.opengl.khrplatform;
+import gfx.bindings.opengl.loader : SymbolLoader;
 
 // Base Types
 
 // Types for GL_VERSION_1_0
 alias GLvoid     = void;
 alias GLenum     = uint;
-alias GLfloat    = float;
+alias GLfloat    = khronos_float_t;
 alias GLint      = int;
 alias GLsizei    = int;
 alias GLbitfield = uint;
 alias GLdouble   = double;
 alias GLuint     = uint;
 alias GLboolean  = ubyte;
-alias GLubyte    = ubyte;
+alias GLubyte    = khronos_uint8_t;
 
 // Types for GL_VERSION_1_1
-alias GLclampf = float;
+alias GLclampf = khronos_float_t;
 alias GLclampd = double;
 
 // Types for GL_VERSION_1_5
-alias GLsizeiptr = ptrdiff_t;
-alias GLintptr   = ptrdiff_t;
+alias GLsizeiptr = khronos_ssize_t;
+alias GLintptr   = khronos_intptr_t;
 
 // Types for GL_VERSION_2_0
 alias GLchar   = char;
-alias GLshort  = short;
-alias GLbyte   = byte;
-alias GLushort = ushort;
+alias GLshort  = khronos_int16_t;
+alias GLbyte   = khronos_int8_t;
+alias GLushort = khronos_uint16_t;
 
 // Types for GL_VERSION_3_0
-alias GLhalf = ushort;
+alias GLhalf = khronos_uint16_t;
 
 // Types for GL_VERSION_3_2
 alias GLsync   = __GLsync*;
-alias GLuint64 = uint64_t;
-alias GLint64  = int64_t;
+alias GLuint64 = khronos_uint64_t;
+alias GLint64  = khronos_int64_t;
 
 // Types for GL_ARB_bindless_texture
-alias GLuint64EXT = uint64_t;
+alias GLuint64EXT = khronos_uint64_t;
+
+// Types for GL_EXT_EGL_image_storage
+alias GLeglImageOES = void *;
 
 // Types for GL_NV_gpu_shader5
-alias GLint64EXT = int64_t;
+alias GLint64EXT = khronos_int64_t;
 
 // Struct declarations
 struct __GLsync;
@@ -1570,7 +1575,26 @@ enum GL_PARAMETER_BUFFER_BINDING_ARB = 0x80EF;
 enum GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ARB = 0x88FE;
 
 // Constants for GL_ARB_internalformat_query2
-enum GL_SRGB_DECODE_ARB = 0x8299;
+enum GL_SRGB_DECODE_ARB            = 0x8299;
+enum GL_VIEW_CLASS_EAC_R11         = 0x9383;
+enum GL_VIEW_CLASS_EAC_RG11        = 0x9384;
+enum GL_VIEW_CLASS_ETC2_RGB        = 0x9385;
+enum GL_VIEW_CLASS_ETC2_RGBA       = 0x9386;
+enum GL_VIEW_CLASS_ETC2_EAC_RGBA   = 0x9387;
+enum GL_VIEW_CLASS_ASTC_4x4_RGBA   = 0x9388;
+enum GL_VIEW_CLASS_ASTC_5x4_RGBA   = 0x9389;
+enum GL_VIEW_CLASS_ASTC_5x5_RGBA   = 0x938A;
+enum GL_VIEW_CLASS_ASTC_6x5_RGBA   = 0x938B;
+enum GL_VIEW_CLASS_ASTC_6x6_RGBA   = 0x938C;
+enum GL_VIEW_CLASS_ASTC_8x5_RGBA   = 0x938D;
+enum GL_VIEW_CLASS_ASTC_8x6_RGBA   = 0x938E;
+enum GL_VIEW_CLASS_ASTC_8x8_RGBA   = 0x938F;
+enum GL_VIEW_CLASS_ASTC_10x5_RGBA  = 0x9390;
+enum GL_VIEW_CLASS_ASTC_10x6_RGBA  = 0x9391;
+enum GL_VIEW_CLASS_ASTC_10x8_RGBA  = 0x9392;
+enum GL_VIEW_CLASS_ASTC_10x10_RGBA = 0x9393;
+enum GL_VIEW_CLASS_ASTC_12x10_RGBA = 0x9394;
+enum GL_VIEW_CLASS_ASTC_12x12_RGBA = 0x9395;
 
 // Constants for GL_ARB_parallel_shader_compile
 enum GL_MAX_SHADER_COMPILER_THREADS_ARB = 0x91B0;
@@ -1740,6 +1764,14 @@ enum GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR = 0x93DB;
 enum GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR = 0x93DC;
 enum GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR = 0x93DD;
 
+// Constants for GL_AMD_framebuffer_multisample_advanced
+enum GL_RENDERBUFFER_STORAGE_SAMPLES_AMD          = 0x91B2;
+enum GL_MAX_COLOR_FRAMEBUFFER_SAMPLES_AMD         = 0x91B3;
+enum GL_MAX_COLOR_FRAMEBUFFER_STORAGE_SAMPLES_AMD = 0x91B4;
+enum GL_MAX_DEPTH_STENCIL_FRAMEBUFFER_SAMPLES_AMD = 0x91B5;
+enum GL_NUM_SUPPORTED_MULTISAMPLE_MODES_AMD       = 0x91B6;
+enum GL_SUPPORTED_MULTISAMPLE_MODES_AMD           = 0x91B7;
+
 // Constants for GL_AMD_performance_monitor
 enum GL_COUNTER_TYPE_AMD             = 0x8BC0;
 enum GL_COUNTER_RANGE_AMD            = 0x8BC1;
@@ -1782,6 +1814,9 @@ enum GL_EFFECTIVE_RASTER_SAMPLES_EXT          = 0x932C;
 // Constants for GL_EXT_separate_shader_objects
 enum GL_ACTIVE_PROGRAM_EXT = 0x8B8D;
 
+// Constants for GL_EXT_shader_framebuffer_fetch
+enum GL_FRAGMENT_SHADER_DISCARDS_SAMPLES_EXT = 0x8A52;
+
 // Constants for GL_EXT_texture_compression_s3tc
 enum GL_COMPRESSED_RGB_S3TC_DXT1_EXT  = 0x83F0;
 enum GL_COMPRESSED_RGBA_S3TC_DXT1_EXT = 0x83F1;
@@ -1791,6 +1826,9 @@ enum GL_COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
 // Constants for GL_EXT_texture_filter_minmax
 enum GL_TEXTURE_REDUCTION_MODE_EXT = 0x9366;
 enum GL_WEIGHTED_AVERAGE_EXT       = 0x9367;
+
+// Constants for GL_EXT_texture_sRGB_R8
+enum GL_SR8_EXT = 0x8FBD;
 
 // Constants for GL_EXT_texture_sRGB_decode
 enum GL_TEXTURE_SRGB_DECODE_EXT = 0x8A48;
@@ -1804,6 +1842,9 @@ enum GL_WINDOW_RECTANGLE_EXT      = 0x8F12;
 enum GL_WINDOW_RECTANGLE_MODE_EXT = 0x8F13;
 enum GL_MAX_WINDOW_RECTANGLES_EXT = 0x8F14;
 enum GL_NUM_WINDOW_RECTANGLES_EXT = 0x8F15;
+
+// Constants for GL_INTEL_blackhole_render
+enum GL_BLACKHOLE_RENDER_INTEL = 0x83FC;
 
 // Constants for GL_INTEL_conservative_rasterization
 enum GL_CONSERVATIVE_RASTERIZATION_INTEL = 0x83FE;
@@ -1998,6 +2039,68 @@ enum GL_SUPERSAMPLE_SCALE_X_NV = 0x9372;
 enum GL_SUPERSAMPLE_SCALE_Y_NV = 0x9373;
 enum GL_CONFORMANT_NV          = 0x9374;
 
+// Constants for GL_NV_memory_attachment
+enum GL_ATTACHED_MEMORY_OBJECT_NV      = 0x95A4;
+enum GL_ATTACHED_MEMORY_OFFSET_NV      = 0x95A5;
+enum GL_MEMORY_ATTACHABLE_ALIGNMENT_NV = 0x95A6;
+enum GL_MEMORY_ATTACHABLE_SIZE_NV      = 0x95A7;
+enum GL_MEMORY_ATTACHABLE_NV           = 0x95A8;
+enum GL_DETACHED_MEMORY_INCARNATION_NV = 0x95A9;
+enum GL_DETACHED_TEXTURES_NV           = 0x95AA;
+enum GL_DETACHED_BUFFERS_NV            = 0x95AB;
+enum GL_MAX_DETACHED_TEXTURES_NV       = 0x95AC;
+enum GL_MAX_DETACHED_BUFFERS_NV        = 0x95AD;
+
+// Constants for GL_NV_mesh_shader
+enum GL_MESH_SHADER_NV                                     = 0x9559;
+enum GL_TASK_SHADER_NV                                     = 0x955A;
+enum GL_MAX_MESH_UNIFORM_BLOCKS_NV                         = 0x8E60;
+enum GL_MAX_MESH_TEXTURE_IMAGE_UNITS_NV                    = 0x8E61;
+enum GL_MAX_MESH_IMAGE_UNIFORMS_NV                         = 0x8E62;
+enum GL_MAX_MESH_UNIFORM_COMPONENTS_NV                     = 0x8E63;
+enum GL_MAX_MESH_ATOMIC_COUNTER_BUFFERS_NV                 = 0x8E64;
+enum GL_MAX_MESH_ATOMIC_COUNTERS_NV                        = 0x8E65;
+enum GL_MAX_MESH_SHADER_STORAGE_BLOCKS_NV                  = 0x8E66;
+enum GL_MAX_COMBINED_MESH_UNIFORM_COMPONENTS_NV            = 0x8E67;
+enum GL_MAX_TASK_UNIFORM_BLOCKS_NV                         = 0x8E68;
+enum GL_MAX_TASK_TEXTURE_IMAGE_UNITS_NV                    = 0x8E69;
+enum GL_MAX_TASK_IMAGE_UNIFORMS_NV                         = 0x8E6A;
+enum GL_MAX_TASK_UNIFORM_COMPONENTS_NV                     = 0x8E6B;
+enum GL_MAX_TASK_ATOMIC_COUNTER_BUFFERS_NV                 = 0x8E6C;
+enum GL_MAX_TASK_ATOMIC_COUNTERS_NV                        = 0x8E6D;
+enum GL_MAX_TASK_SHADER_STORAGE_BLOCKS_NV                  = 0x8E6E;
+enum GL_MAX_COMBINED_TASK_UNIFORM_COMPONENTS_NV            = 0x8E6F;
+enum GL_MAX_MESH_WORK_GROUP_INVOCATIONS_NV                 = 0x95A2;
+enum GL_MAX_TASK_WORK_GROUP_INVOCATIONS_NV                 = 0x95A3;
+enum GL_MAX_MESH_TOTAL_MEMORY_SIZE_NV                      = 0x9536;
+enum GL_MAX_TASK_TOTAL_MEMORY_SIZE_NV                      = 0x9537;
+enum GL_MAX_MESH_OUTPUT_VERTICES_NV                        = 0x9538;
+enum GL_MAX_MESH_OUTPUT_PRIMITIVES_NV                      = 0x9539;
+enum GL_MAX_TASK_OUTPUT_COUNT_NV                           = 0x953A;
+enum GL_MAX_DRAW_MESH_TASKS_COUNT_NV                       = 0x953D;
+enum GL_MAX_MESH_VIEWS_NV                                  = 0x9557;
+enum GL_MESH_OUTPUT_PER_VERTEX_GRANULARITY_NV              = 0x92DF;
+enum GL_MESH_OUTPUT_PER_PRIMITIVE_GRANULARITY_NV           = 0x9543;
+enum GL_MAX_MESH_WORK_GROUP_SIZE_NV                        = 0x953B;
+enum GL_MAX_TASK_WORK_GROUP_SIZE_NV                        = 0x953C;
+enum GL_MESH_WORK_GROUP_SIZE_NV                            = 0x953E;
+enum GL_TASK_WORK_GROUP_SIZE_NV                            = 0x953F;
+enum GL_MESH_VERTICES_OUT_NV                               = 0x9579;
+enum GL_MESH_PRIMITIVES_OUT_NV                             = 0x957A;
+enum GL_MESH_OUTPUT_TYPE_NV                                = 0x957B;
+enum GL_UNIFORM_BLOCK_REFERENCED_BY_MESH_SHADER_NV         = 0x959C;
+enum GL_UNIFORM_BLOCK_REFERENCED_BY_TASK_SHADER_NV         = 0x959D;
+enum GL_ATOMIC_COUNTER_BUFFER_REFERENCED_BY_MESH_SHADER_NV = 0x959E;
+enum GL_ATOMIC_COUNTER_BUFFER_REFERENCED_BY_TASK_SHADER_NV = 0x959F;
+enum GL_REFERENCED_BY_MESH_SHADER_NV                       = 0x95A0;
+enum GL_REFERENCED_BY_TASK_SHADER_NV                       = 0x95A1;
+enum GL_MESH_SUBROUTINE_NV                                 = 0x957C;
+enum GL_TASK_SUBROUTINE_NV                                 = 0x957D;
+enum GL_MESH_SUBROUTINE_UNIFORM_NV                         = 0x957E;
+enum GL_TASK_SUBROUTINE_UNIFORM_NV                         = 0x957F;
+enum GL_MESH_SHADER_BIT_NV                                 = 0x00000040;
+enum GL_TASK_SHADER_BIT_NV                                 = 0x00000080;
+
 // Constants for GL_NV_path_rendering
 enum GL_PATH_FORMAT_SVG_NV                      = 0x9070;
 enum GL_PATH_FORMAT_PS_NV                       = 0x9071;
@@ -2156,6 +2259,9 @@ enum GL_FRAGMENT_INPUT_NV                       = 0x936D;
 // Constants for GL_NV_path_rendering_shared_edge
 enum GL_SHARED_EDGE_NV = 0xC0;
 
+// Constants for GL_NV_representative_fragment_test
+enum GL_REPRESENTATIVE_FRAGMENT_TEST_NV = 0x937F;
+
 // Constants for GL_NV_sample_locations
 enum GL_SAMPLE_LOCATION_SUBPIXEL_BITS_NV             = 0x933D;
 enum GL_SAMPLE_LOCATION_PIXEL_GRID_WIDTH_NV          = 0x933E;
@@ -2165,6 +2271,10 @@ enum GL_SAMPLE_LOCATION_NV                           = 0x8E50;
 enum GL_PROGRAMMABLE_SAMPLE_LOCATION_NV              = 0x9341;
 enum GL_FRAMEBUFFER_PROGRAMMABLE_SAMPLE_LOCATIONS_NV = 0x9342;
 enum GL_FRAMEBUFFER_SAMPLE_LOCATION_PIXEL_GRID_NV    = 0x9343;
+
+// Constants for GL_NV_scissor_exclusive
+enum GL_SCISSOR_TEST_EXCLUSIVE_NV = 0x9555;
+enum GL_SCISSOR_BOX_EXCLUSIVE_NV  = 0x9556;
 
 // Constants for GL_NV_shader_buffer_load
 enum GL_BUFFER_GPU_ADDRESS_NV        = 0x8F1D;
@@ -2178,6 +2288,29 @@ enum GL_SHADER_GLOBAL_ACCESS_BARRIER_BIT_NV = 0x00000010;
 enum GL_WARP_SIZE_NV    = 0x9339;
 enum GL_WARPS_PER_SM_NV = 0x933A;
 enum GL_SM_COUNT_NV     = 0x933B;
+
+// Constants for GL_NV_shading_rate_image
+enum GL_SHADING_RATE_IMAGE_NV                       = 0x9563;
+enum GL_SHADING_RATE_NO_INVOCATIONS_NV              = 0x9564;
+enum GL_SHADING_RATE_1_INVOCATION_PER_PIXEL_NV      = 0x9565;
+enum GL_SHADING_RATE_1_INVOCATION_PER_1X2_PIXELS_NV = 0x9566;
+enum GL_SHADING_RATE_1_INVOCATION_PER_2X1_PIXELS_NV = 0x9567;
+enum GL_SHADING_RATE_1_INVOCATION_PER_2X2_PIXELS_NV = 0x9568;
+enum GL_SHADING_RATE_1_INVOCATION_PER_2X4_PIXELS_NV = 0x9569;
+enum GL_SHADING_RATE_1_INVOCATION_PER_4X2_PIXELS_NV = 0x956A;
+enum GL_SHADING_RATE_1_INVOCATION_PER_4X4_PIXELS_NV = 0x956B;
+enum GL_SHADING_RATE_2_INVOCATIONS_PER_PIXEL_NV     = 0x956C;
+enum GL_SHADING_RATE_4_INVOCATIONS_PER_PIXEL_NV     = 0x956D;
+enum GL_SHADING_RATE_8_INVOCATIONS_PER_PIXEL_NV     = 0x956E;
+enum GL_SHADING_RATE_16_INVOCATIONS_PER_PIXEL_NV    = 0x956F;
+enum GL_SHADING_RATE_IMAGE_BINDING_NV               = 0x955B;
+enum GL_SHADING_RATE_IMAGE_TEXEL_WIDTH_NV           = 0x955C;
+enum GL_SHADING_RATE_IMAGE_TEXEL_HEIGHT_NV          = 0x955D;
+enum GL_SHADING_RATE_IMAGE_PALETTE_SIZE_NV          = 0x955E;
+enum GL_MAX_COARSE_FRAGMENT_SAMPLES_NV              = 0x955F;
+enum GL_SHADING_RATE_SAMPLE_ORDER_DEFAULT_NV        = 0x95AE;
+enum GL_SHADING_RATE_SAMPLE_ORDER_PIXEL_MAJOR_NV    = 0x95AF;
+enum GL_SHADING_RATE_SAMPLE_ORDER_SAMPLE_MAJOR_NV   = 0x95B0;
 
 // Constants for GL_NV_uniform_buffer_unified_memory
 enum GL_UNIFORM_BUFFER_UNIFIED_NV = 0x936E;
@@ -2434,8 +2567,8 @@ extern(C) nothrow @nogc {
         GLenum cap,
     );
     alias PFN_glDepthRange = void function (
-        GLdouble near,
-        GLdouble far,
+        GLdouble n,
+        GLdouble f,
     );
     alias PFN_glViewport = void function (
         GLint   x,
@@ -6348,6 +6481,24 @@ extern(C) nothrow @nogc {
         GLuint count,
     );
 
+    // Command pointers for GL_AMD_framebuffer_multisample_advanced
+    alias PFN_glRenderbufferStorageMultisampleAdvancedAMD = void function (
+        GLenum  target,
+        GLsizei samples,
+        GLsizei storageSamples,
+        GLenum  internalformat,
+        GLsizei width,
+        GLsizei height,
+    );
+    alias PFN_glNamedRenderbufferStorageMultisampleAdvancedAMD = void function (
+        GLuint  renderbuffer,
+        GLsizei samples,
+        GLsizei storageSamples,
+        GLenum  internalformat,
+        GLsizei width,
+        GLsizei height,
+    );
+
     // Command pointers for GL_AMD_performance_monitor
     alias PFN_glGetPerfMonitorGroupsAMD = void function (
         GLint*  numGroups,
@@ -6407,6 +6558,18 @@ extern(C) nothrow @nogc {
         GLsizei dataSize,
         GLuint* data,
         GLint*  bytesWritten,
+    );
+
+    // Command pointers for GL_EXT_EGL_image_storage
+    alias PFN_glEGLImageTargetTexStorageEXT = void function (
+        GLenum        target,
+        GLeglImageOES image,
+        const(GLint)* attrib_list,
+    );
+    alias PFN_glEGLImageTargetTextureStorageEXT = void function (
+        GLuint        texture,
+        GLeglImageOES image,
+        const(GLint)* attrib_list,
     );
 
     // Command pointers for GL_EXT_debug_label
@@ -7933,6 +8096,9 @@ extern(C) nothrow @nogc {
         const(GLchar)* string,
     );
 
+    // Command pointers for GL_EXT_shader_framebuffer_fetch_non_coherent
+    alias PFN_glFramebufferFetchBarrierEXT = void function ();
+
     // Command pointers for GL_EXT_window_rectangles
     alias PFN_glWindowRectanglesEXT = void function (
         GLenum        mode,
@@ -8459,6 +8625,59 @@ extern(C) nothrow @nogc {
         GLint*  params,
     );
 
+    // Command pointers for GL_NV_memory_attachment
+    alias PFN_glGetMemoryObjectDetachedResourcesuivNV = void function (
+        GLuint  memory,
+        GLenum  pname,
+        GLint   first,
+        GLsizei count,
+        GLuint* params,
+    );
+    alias PFN_glResetMemoryObjectParameterNV = void function (
+        GLuint memory,
+        GLenum pname,
+    );
+    alias PFN_glTexAttachMemoryNV = void function (
+        GLenum   target,
+        GLuint   memory,
+        GLuint64 offset,
+    );
+    alias PFN_glBufferAttachMemoryNV = void function (
+        GLenum   target,
+        GLuint   memory,
+        GLuint64 offset,
+    );
+    alias PFN_glTextureAttachMemoryNV = void function (
+        GLuint   texture,
+        GLuint   memory,
+        GLuint64 offset,
+    );
+    alias PFN_glNamedBufferAttachMemoryNV = void function (
+        GLuint   buffer,
+        GLuint   memory,
+        GLuint64 offset,
+    );
+
+    // Command pointers for GL_NV_mesh_shader
+    alias PFN_glDrawMeshTasksNV = void function (
+        GLuint first,
+        GLuint count,
+    );
+    alias PFN_glDrawMeshTasksIndirectNV = void function (
+        GLintptr indirect,
+    );
+    alias PFN_glMultiDrawMeshTasksIndirectNV = void function (
+        GLintptr indirect,
+        GLsizei  drawcount,
+        GLsizei  stride,
+    );
+    alias PFN_glMultiDrawMeshTasksIndirectCountNV = void function (
+        GLintptr indirect,
+        GLintptr drawcount,
+        GLsizei  maxdrawcount,
+        GLsizei  stride,
+    );
+
     // Command pointers for GL_NV_path_rendering
     alias PFN_glGenPathsNV = GLuint function (
         GLsizei range,
@@ -8840,6 +9059,19 @@ extern(C) nothrow @nogc {
     );
     alias PFN_glResolveDepthValuesNV = void function ();
 
+    // Command pointers for GL_NV_scissor_exclusive
+    alias PFN_glScissorExclusiveNV = void function (
+        GLint   x,
+        GLint   y,
+        GLsizei width,
+        GLsizei height,
+    );
+    alias PFN_glScissorExclusiveArrayvNV = void function (
+        GLuint        first,
+        GLsizei       count,
+        const(GLint)* v,
+    );
+
     // Command pointers for GL_NV_shader_buffer_load
     alias PFN_glMakeBufferResidentNV = void function (
         GLenum target,
@@ -8899,6 +9131,39 @@ extern(C) nothrow @nogc {
         GLint               location,
         GLsizei             count,
         const(GLuint64EXT)* value,
+    );
+
+    // Command pointers for GL_NV_shading_rate_image
+    alias PFN_glBindShadingRateImageNV = void function (
+        GLuint texture,
+    );
+    alias PFN_glGetShadingRateImagePaletteNV = void function (
+        GLuint  viewport,
+        GLuint  entry,
+        GLenum* rate,
+    );
+    alias PFN_glGetShadingRateSampleLocationivNV = void function (
+        GLenum rate,
+        GLuint samples,
+        GLuint index,
+        GLint* location,
+    );
+    alias PFN_glShadingRateImageBarrierNV = void function (
+        GLboolean synchronize,
+    );
+    alias PFN_glShadingRateImagePaletteNV = void function (
+        GLuint         viewport,
+        GLuint         first,
+        GLsizei        count,
+        const(GLenum)* rates,
+    );
+    alias PFN_glShadingRateSampleOrderNV = void function (
+        GLenum order,
+    );
+    alias PFN_glShadingRateSampleOrderCustomNV = void function (
+        GLenum        rate,
+        GLuint        samples,
+        const(GLint)* locations,
     );
 
     // Command pointers for GL_NV_texture_barrier
@@ -9908,6 +10173,10 @@ final class Gl {
         // GL_KHR_parallel_shader_compile,
         _MaxShaderCompilerThreadsKHR = cast(PFN_glMaxShaderCompilerThreadsKHR)loadSymbol(loader, "glMaxShaderCompilerThreadsKHR", []);
 
+        // GL_AMD_framebuffer_multisample_advanced,
+        _RenderbufferStorageMultisampleAdvancedAMD = cast(PFN_glRenderbufferStorageMultisampleAdvancedAMD)loadSymbol(loader, "glRenderbufferStorageMultisampleAdvancedAMD", []);
+        _NamedRenderbufferStorageMultisampleAdvancedAMD = cast(PFN_glNamedRenderbufferStorageMultisampleAdvancedAMD)loadSymbol(loader, "glNamedRenderbufferStorageMultisampleAdvancedAMD", []);
+
         // GL_AMD_performance_monitor,
         _GetPerfMonitorGroupsAMD = cast(PFN_glGetPerfMonitorGroupsAMD)loadSymbol(loader, "glGetPerfMonitorGroupsAMD", []);
         _GetPerfMonitorCountersAMD = cast(PFN_glGetPerfMonitorCountersAMD)loadSymbol(loader, "glGetPerfMonitorCountersAMD", []);
@@ -9920,6 +10189,10 @@ final class Gl {
         _BeginPerfMonitorAMD = cast(PFN_glBeginPerfMonitorAMD)loadSymbol(loader, "glBeginPerfMonitorAMD", []);
         _EndPerfMonitorAMD = cast(PFN_glEndPerfMonitorAMD)loadSymbol(loader, "glEndPerfMonitorAMD", []);
         _GetPerfMonitorCounterDataAMD = cast(PFN_glGetPerfMonitorCounterDataAMD)loadSymbol(loader, "glGetPerfMonitorCounterDataAMD", []);
+
+        // GL_EXT_EGL_image_storage,
+        _EGLImageTargetTexStorageEXT = cast(PFN_glEGLImageTargetTexStorageEXT)loadSymbol(loader, "glEGLImageTargetTexStorageEXT", []);
+        _EGLImageTargetTextureStorageEXT = cast(PFN_glEGLImageTargetTextureStorageEXT)loadSymbol(loader, "glEGLImageTargetTextureStorageEXT", []);
 
         // GL_EXT_debug_label,
         _LabelObjectEXT = cast(PFN_glLabelObjectEXT)loadSymbol(loader, "glLabelObjectEXT", []);
@@ -10151,6 +10424,9 @@ final class Gl {
         _ActiveProgramEXT = cast(PFN_glActiveProgramEXT)loadSymbol(loader, "glActiveProgramEXT", []);
         _CreateShaderProgramEXT = cast(PFN_glCreateShaderProgramEXT)loadSymbol(loader, "glCreateShaderProgramEXT", []);
 
+        // GL_EXT_shader_framebuffer_fetch_non_coherent,
+        _FramebufferFetchBarrierEXT = cast(PFN_glFramebufferFetchBarrierEXT)loadSymbol(loader, "glFramebufferFetchBarrierEXT", []);
+
         // GL_EXT_window_rectangles,
         _WindowRectanglesEXT = cast(PFN_glWindowRectanglesEXT)loadSymbol(loader, "glWindowRectanglesEXT", []);
 
@@ -10283,6 +10559,20 @@ final class Gl {
         // GL_NV_internalformat_sample_query,
         _GetInternalformatSampleivNV = cast(PFN_glGetInternalformatSampleivNV)loadSymbol(loader, "glGetInternalformatSampleivNV", []);
 
+        // GL_NV_memory_attachment,
+        _GetMemoryObjectDetachedResourcesuivNV = cast(PFN_glGetMemoryObjectDetachedResourcesuivNV)loadSymbol(loader, "glGetMemoryObjectDetachedResourcesuivNV", []);
+        _ResetMemoryObjectParameterNV = cast(PFN_glResetMemoryObjectParameterNV)loadSymbol(loader, "glResetMemoryObjectParameterNV", []);
+        _TexAttachMemoryNV = cast(PFN_glTexAttachMemoryNV)loadSymbol(loader, "glTexAttachMemoryNV", []);
+        _BufferAttachMemoryNV = cast(PFN_glBufferAttachMemoryNV)loadSymbol(loader, "glBufferAttachMemoryNV", []);
+        _TextureAttachMemoryNV = cast(PFN_glTextureAttachMemoryNV)loadSymbol(loader, "glTextureAttachMemoryNV", []);
+        _NamedBufferAttachMemoryNV = cast(PFN_glNamedBufferAttachMemoryNV)loadSymbol(loader, "glNamedBufferAttachMemoryNV", []);
+
+        // GL_NV_mesh_shader,
+        _DrawMeshTasksNV = cast(PFN_glDrawMeshTasksNV)loadSymbol(loader, "glDrawMeshTasksNV", []);
+        _DrawMeshTasksIndirectNV = cast(PFN_glDrawMeshTasksIndirectNV)loadSymbol(loader, "glDrawMeshTasksIndirectNV", []);
+        _MultiDrawMeshTasksIndirectNV = cast(PFN_glMultiDrawMeshTasksIndirectNV)loadSymbol(loader, "glMultiDrawMeshTasksIndirectNV", []);
+        _MultiDrawMeshTasksIndirectCountNV = cast(PFN_glMultiDrawMeshTasksIndirectCountNV)loadSymbol(loader, "glMultiDrawMeshTasksIndirectCountNV", []);
+
         // GL_NV_path_rendering,
         _GenPathsNV = cast(PFN_glGenPathsNV)loadSymbol(loader, "glGenPathsNV", []);
         _DeletePathsNV = cast(PFN_glDeletePathsNV)loadSymbol(loader, "glDeletePathsNV", []);
@@ -10347,6 +10637,10 @@ final class Gl {
         _NamedFramebufferSampleLocationsfvNV = cast(PFN_glNamedFramebufferSampleLocationsfvNV)loadSymbol(loader, "glNamedFramebufferSampleLocationsfvNV", []);
         _ResolveDepthValuesNV = cast(PFN_glResolveDepthValuesNV)loadSymbol(loader, "glResolveDepthValuesNV", []);
 
+        // GL_NV_scissor_exclusive,
+        _ScissorExclusiveNV = cast(PFN_glScissorExclusiveNV)loadSymbol(loader, "glScissorExclusiveNV", []);
+        _ScissorExclusiveArrayvNV = cast(PFN_glScissorExclusiveArrayvNV)loadSymbol(loader, "glScissorExclusiveArrayvNV", []);
+
         // GL_NV_shader_buffer_load,
         _MakeBufferResidentNV = cast(PFN_glMakeBufferResidentNV)loadSymbol(loader, "glMakeBufferResidentNV", []);
         _MakeBufferNonResidentNV = cast(PFN_glMakeBufferNonResidentNV)loadSymbol(loader, "glMakeBufferNonResidentNV", []);
@@ -10362,6 +10656,15 @@ final class Gl {
         _GetUniformui64vNV = cast(PFN_glGetUniformui64vNV)loadSymbol(loader, "glGetUniformui64vNV", []);
         _ProgramUniformui64NV = cast(PFN_glProgramUniformui64NV)loadSymbol(loader, "glProgramUniformui64NV", []);
         _ProgramUniformui64vNV = cast(PFN_glProgramUniformui64vNV)loadSymbol(loader, "glProgramUniformui64vNV", []);
+
+        // GL_NV_shading_rate_image,
+        _BindShadingRateImageNV = cast(PFN_glBindShadingRateImageNV)loadSymbol(loader, "glBindShadingRateImageNV", []);
+        _GetShadingRateImagePaletteNV = cast(PFN_glGetShadingRateImagePaletteNV)loadSymbol(loader, "glGetShadingRateImagePaletteNV", []);
+        _GetShadingRateSampleLocationivNV = cast(PFN_glGetShadingRateSampleLocationivNV)loadSymbol(loader, "glGetShadingRateSampleLocationivNV", []);
+        _ShadingRateImageBarrierNV = cast(PFN_glShadingRateImageBarrierNV)loadSymbol(loader, "glShadingRateImageBarrierNV", []);
+        _ShadingRateImagePaletteNV = cast(PFN_glShadingRateImagePaletteNV)loadSymbol(loader, "glShadingRateImagePaletteNV", []);
+        _ShadingRateSampleOrderNV = cast(PFN_glShadingRateSampleOrderNV)loadSymbol(loader, "glShadingRateSampleOrderNV", []);
+        _ShadingRateSampleOrderCustomNV = cast(PFN_glShadingRateSampleOrderCustomNV)loadSymbol(loader, "glShadingRateSampleOrderCustomNV", []);
 
         // GL_NV_texture_barrier,
         _TextureBarrierNV = cast(PFN_glTextureBarrierNV)loadSymbol(loader, "glTextureBarrierNV", []);
@@ -10649,9 +10952,9 @@ final class Gl {
         return _IsEnabled (cap);
     }
     /// ditto
-    public void DepthRange (GLdouble near, GLdouble far) const {
+    public void DepthRange (GLdouble n, GLdouble f) const {
         assert(_DepthRange !is null, "OpenGL command glDepthRange was not loaded");
-        return _DepthRange (near, far);
+        return _DepthRange (n, f);
     }
     /// ditto
     public void Viewport (GLint x, GLint y, GLsizei width, GLsizei height) const {
@@ -14131,6 +14434,17 @@ final class Gl {
         return _MaxShaderCompilerThreadsKHR (count);
     }
 
+    /// Commands for GL_AMD_framebuffer_multisample_advanced
+    public void RenderbufferStorageMultisampleAdvancedAMD (GLenum target, GLsizei samples, GLsizei storageSamples, GLenum internalformat, GLsizei width, GLsizei height) const {
+        assert(_RenderbufferStorageMultisampleAdvancedAMD !is null, "OpenGL command glRenderbufferStorageMultisampleAdvancedAMD was not loaded");
+        return _RenderbufferStorageMultisampleAdvancedAMD (target, samples, storageSamples, internalformat, width, height);
+    }
+    /// ditto
+    public void NamedRenderbufferStorageMultisampleAdvancedAMD (GLuint renderbuffer, GLsizei samples, GLsizei storageSamples, GLenum internalformat, GLsizei width, GLsizei height) const {
+        assert(_NamedRenderbufferStorageMultisampleAdvancedAMD !is null, "OpenGL command glNamedRenderbufferStorageMultisampleAdvancedAMD was not loaded");
+        return _NamedRenderbufferStorageMultisampleAdvancedAMD (renderbuffer, samples, storageSamples, internalformat, width, height);
+    }
+
     /// Commands for GL_AMD_performance_monitor
     public void GetPerfMonitorGroupsAMD (GLint* numGroups, GLsizei groupsSize, GLuint* groups) const {
         assert(_GetPerfMonitorGroupsAMD !is null, "OpenGL command glGetPerfMonitorGroupsAMD was not loaded");
@@ -14185,6 +14499,17 @@ final class Gl {
     public void GetPerfMonitorCounterDataAMD (GLuint monitor, GLenum pname, GLsizei dataSize, GLuint* data, GLint* bytesWritten) const {
         assert(_GetPerfMonitorCounterDataAMD !is null, "OpenGL command glGetPerfMonitorCounterDataAMD was not loaded");
         return _GetPerfMonitorCounterDataAMD (monitor, pname, dataSize, data, bytesWritten);
+    }
+
+    /// Commands for GL_EXT_EGL_image_storage
+    public void EGLImageTargetTexStorageEXT (GLenum target, GLeglImageOES image, const(GLint)* attrib_list) const {
+        assert(_EGLImageTargetTexStorageEXT !is null, "OpenGL command glEGLImageTargetTexStorageEXT was not loaded");
+        return _EGLImageTargetTexStorageEXT (target, image, attrib_list);
+    }
+    /// ditto
+    public void EGLImageTargetTextureStorageEXT (GLuint texture, GLeglImageOES image, const(GLint)* attrib_list) const {
+        assert(_EGLImageTargetTextureStorageEXT !is null, "OpenGL command glEGLImageTargetTextureStorageEXT was not loaded");
+        return _EGLImageTargetTextureStorageEXT (texture, image, attrib_list);
     }
 
     /// Commands for GL_EXT_debug_label
@@ -15292,6 +15617,12 @@ final class Gl {
         return _CreateShaderProgramEXT (type, string);
     }
 
+    /// Commands for GL_EXT_shader_framebuffer_fetch_non_coherent
+    public void FramebufferFetchBarrierEXT () const {
+        assert(_FramebufferFetchBarrierEXT !is null, "OpenGL command glFramebufferFetchBarrierEXT was not loaded");
+        return _FramebufferFetchBarrierEXT ();
+    }
+
     /// Commands for GL_EXT_window_rectangles
     public void WindowRectanglesEXT (GLenum mode, GLsizei count, const(GLint)* box) const {
         assert(_WindowRectanglesEXT !is null, "OpenGL command glWindowRectanglesEXT was not loaded");
@@ -15790,6 +16121,58 @@ final class Gl {
         return _GetInternalformatSampleivNV (target, internalformat, samples, pname, bufSize, params);
     }
 
+    /// Commands for GL_NV_memory_attachment
+    public void GetMemoryObjectDetachedResourcesuivNV (GLuint memory, GLenum pname, GLint first, GLsizei count, GLuint* params) const {
+        assert(_GetMemoryObjectDetachedResourcesuivNV !is null, "OpenGL command glGetMemoryObjectDetachedResourcesuivNV was not loaded");
+        return _GetMemoryObjectDetachedResourcesuivNV (memory, pname, first, count, params);
+    }
+    /// ditto
+    public void ResetMemoryObjectParameterNV (GLuint memory, GLenum pname) const {
+        assert(_ResetMemoryObjectParameterNV !is null, "OpenGL command glResetMemoryObjectParameterNV was not loaded");
+        return _ResetMemoryObjectParameterNV (memory, pname);
+    }
+    /// ditto
+    public void TexAttachMemoryNV (GLenum target, GLuint memory, GLuint64 offset) const {
+        assert(_TexAttachMemoryNV !is null, "OpenGL command glTexAttachMemoryNV was not loaded");
+        return _TexAttachMemoryNV (target, memory, offset);
+    }
+    /// ditto
+    public void BufferAttachMemoryNV (GLenum target, GLuint memory, GLuint64 offset) const {
+        assert(_BufferAttachMemoryNV !is null, "OpenGL command glBufferAttachMemoryNV was not loaded");
+        return _BufferAttachMemoryNV (target, memory, offset);
+    }
+    /// ditto
+    public void TextureAttachMemoryNV (GLuint texture, GLuint memory, GLuint64 offset) const {
+        assert(_TextureAttachMemoryNV !is null, "OpenGL command glTextureAttachMemoryNV was not loaded");
+        return _TextureAttachMemoryNV (texture, memory, offset);
+    }
+    /// ditto
+    public void NamedBufferAttachMemoryNV (GLuint buffer, GLuint memory, GLuint64 offset) const {
+        assert(_NamedBufferAttachMemoryNV !is null, "OpenGL command glNamedBufferAttachMemoryNV was not loaded");
+        return _NamedBufferAttachMemoryNV (buffer, memory, offset);
+    }
+
+    /// Commands for GL_NV_mesh_shader
+    public void DrawMeshTasksNV (GLuint first, GLuint count) const {
+        assert(_DrawMeshTasksNV !is null, "OpenGL command glDrawMeshTasksNV was not loaded");
+        return _DrawMeshTasksNV (first, count);
+    }
+    /// ditto
+    public void DrawMeshTasksIndirectNV (GLintptr indirect) const {
+        assert(_DrawMeshTasksIndirectNV !is null, "OpenGL command glDrawMeshTasksIndirectNV was not loaded");
+        return _DrawMeshTasksIndirectNV (indirect);
+    }
+    /// ditto
+    public void MultiDrawMeshTasksIndirectNV (GLintptr indirect, GLsizei drawcount, GLsizei stride) const {
+        assert(_MultiDrawMeshTasksIndirectNV !is null, "OpenGL command glMultiDrawMeshTasksIndirectNV was not loaded");
+        return _MultiDrawMeshTasksIndirectNV (indirect, drawcount, stride);
+    }
+    /// ditto
+    public void MultiDrawMeshTasksIndirectCountNV (GLintptr indirect, GLintptr drawcount, GLsizei maxdrawcount, GLsizei stride) const {
+        assert(_MultiDrawMeshTasksIndirectCountNV !is null, "OpenGL command glMultiDrawMeshTasksIndirectCountNV was not loaded");
+        return _MultiDrawMeshTasksIndirectCountNV (indirect, drawcount, maxdrawcount, stride);
+    }
+
     /// Commands for GL_NV_path_rendering
     public GLuint GenPathsNV (GLsizei range) const {
         assert(_GenPathsNV !is null, "OpenGL command glGenPathsNV was not loaded");
@@ -16092,6 +16475,17 @@ final class Gl {
         return _ResolveDepthValuesNV ();
     }
 
+    /// Commands for GL_NV_scissor_exclusive
+    public void ScissorExclusiveNV (GLint x, GLint y, GLsizei width, GLsizei height) const {
+        assert(_ScissorExclusiveNV !is null, "OpenGL command glScissorExclusiveNV was not loaded");
+        return _ScissorExclusiveNV (x, y, width, height);
+    }
+    /// ditto
+    public void ScissorExclusiveArrayvNV (GLuint first, GLsizei count, const(GLint)* v) const {
+        assert(_ScissorExclusiveArrayvNV !is null, "OpenGL command glScissorExclusiveArrayvNV was not loaded");
+        return _ScissorExclusiveArrayvNV (first, count, v);
+    }
+
     /// Commands for GL_NV_shader_buffer_load
     public void MakeBufferResidentNV (GLenum target, GLenum access) const {
         assert(_MakeBufferResidentNV !is null, "OpenGL command glMakeBufferResidentNV was not loaded");
@@ -16161,6 +16555,42 @@ final class Gl {
     public void ProgramUniformui64vNV (GLuint program, GLint location, GLsizei count, const(GLuint64EXT)* value) const {
         assert(_ProgramUniformui64vNV !is null, "OpenGL command glProgramUniformui64vNV was not loaded");
         return _ProgramUniformui64vNV (program, location, count, value);
+    }
+
+    /// Commands for GL_NV_shading_rate_image
+    public void BindShadingRateImageNV (GLuint texture) const {
+        assert(_BindShadingRateImageNV !is null, "OpenGL command glBindShadingRateImageNV was not loaded");
+        return _BindShadingRateImageNV (texture);
+    }
+    /// ditto
+    public void GetShadingRateImagePaletteNV (GLuint viewport, GLuint entry, GLenum* rate) const {
+        assert(_GetShadingRateImagePaletteNV !is null, "OpenGL command glGetShadingRateImagePaletteNV was not loaded");
+        return _GetShadingRateImagePaletteNV (viewport, entry, rate);
+    }
+    /// ditto
+    public void GetShadingRateSampleLocationivNV (GLenum rate, GLuint samples, GLuint index, GLint* location) const {
+        assert(_GetShadingRateSampleLocationivNV !is null, "OpenGL command glGetShadingRateSampleLocationivNV was not loaded");
+        return _GetShadingRateSampleLocationivNV (rate, samples, index, location);
+    }
+    /// ditto
+    public void ShadingRateImageBarrierNV (GLboolean synchronize) const {
+        assert(_ShadingRateImageBarrierNV !is null, "OpenGL command glShadingRateImageBarrierNV was not loaded");
+        return _ShadingRateImageBarrierNV (synchronize);
+    }
+    /// ditto
+    public void ShadingRateImagePaletteNV (GLuint viewport, GLuint first, GLsizei count, const(GLenum)* rates) const {
+        assert(_ShadingRateImagePaletteNV !is null, "OpenGL command glShadingRateImagePaletteNV was not loaded");
+        return _ShadingRateImagePaletteNV (viewport, first, count, rates);
+    }
+    /// ditto
+    public void ShadingRateSampleOrderNV (GLenum order) const {
+        assert(_ShadingRateSampleOrderNV !is null, "OpenGL command glShadingRateSampleOrderNV was not loaded");
+        return _ShadingRateSampleOrderNV (order);
+    }
+    /// ditto
+    public void ShadingRateSampleOrderCustomNV (GLenum rate, GLuint samples, const(GLint)* locations) const {
+        assert(_ShadingRateSampleOrderCustomNV !is null, "OpenGL command glShadingRateSampleOrderCustomNV was not loaded");
+        return _ShadingRateSampleOrderCustomNV (rate, samples, locations);
     }
 
     /// Commands for GL_NV_texture_barrier
@@ -17140,6 +17570,10 @@ final class Gl {
     // GL_KHR_parallel_shader_compile,
     private PFN_glMaxShaderCompilerThreadsKHR _MaxShaderCompilerThreadsKHR;
 
+    // GL_AMD_framebuffer_multisample_advanced,
+    private PFN_glRenderbufferStorageMultisampleAdvancedAMD _RenderbufferStorageMultisampleAdvancedAMD;
+    private PFN_glNamedRenderbufferStorageMultisampleAdvancedAMD _NamedRenderbufferStorageMultisampleAdvancedAMD;
+
     // GL_AMD_performance_monitor,
     private PFN_glGetPerfMonitorGroupsAMD _GetPerfMonitorGroupsAMD;
     private PFN_glGetPerfMonitorCountersAMD _GetPerfMonitorCountersAMD;
@@ -17152,6 +17586,10 @@ final class Gl {
     private PFN_glBeginPerfMonitorAMD _BeginPerfMonitorAMD;
     private PFN_glEndPerfMonitorAMD _EndPerfMonitorAMD;
     private PFN_glGetPerfMonitorCounterDataAMD _GetPerfMonitorCounterDataAMD;
+
+    // GL_EXT_EGL_image_storage,
+    private PFN_glEGLImageTargetTexStorageEXT _EGLImageTargetTexStorageEXT;
+    private PFN_glEGLImageTargetTextureStorageEXT _EGLImageTargetTextureStorageEXT;
 
     // GL_EXT_debug_label,
     private PFN_glLabelObjectEXT _LabelObjectEXT;
@@ -17383,6 +17821,9 @@ final class Gl {
     private PFN_glActiveProgramEXT _ActiveProgramEXT;
     private PFN_glCreateShaderProgramEXT _CreateShaderProgramEXT;
 
+    // GL_EXT_shader_framebuffer_fetch_non_coherent,
+    private PFN_glFramebufferFetchBarrierEXT _FramebufferFetchBarrierEXT;
+
     // GL_EXT_window_rectangles,
     private PFN_glWindowRectanglesEXT _WindowRectanglesEXT;
 
@@ -17515,6 +17956,20 @@ final class Gl {
     // GL_NV_internalformat_sample_query,
     private PFN_glGetInternalformatSampleivNV _GetInternalformatSampleivNV;
 
+    // GL_NV_memory_attachment,
+    private PFN_glGetMemoryObjectDetachedResourcesuivNV _GetMemoryObjectDetachedResourcesuivNV;
+    private PFN_glResetMemoryObjectParameterNV _ResetMemoryObjectParameterNV;
+    private PFN_glTexAttachMemoryNV _TexAttachMemoryNV;
+    private PFN_glBufferAttachMemoryNV _BufferAttachMemoryNV;
+    private PFN_glTextureAttachMemoryNV _TextureAttachMemoryNV;
+    private PFN_glNamedBufferAttachMemoryNV _NamedBufferAttachMemoryNV;
+
+    // GL_NV_mesh_shader,
+    private PFN_glDrawMeshTasksNV _DrawMeshTasksNV;
+    private PFN_glDrawMeshTasksIndirectNV _DrawMeshTasksIndirectNV;
+    private PFN_glMultiDrawMeshTasksIndirectNV _MultiDrawMeshTasksIndirectNV;
+    private PFN_glMultiDrawMeshTasksIndirectCountNV _MultiDrawMeshTasksIndirectCountNV;
+
     // GL_NV_path_rendering,
     private PFN_glGenPathsNV _GenPathsNV;
     private PFN_glDeletePathsNV _DeletePathsNV;
@@ -17579,6 +18034,10 @@ final class Gl {
     private PFN_glNamedFramebufferSampleLocationsfvNV _NamedFramebufferSampleLocationsfvNV;
     private PFN_glResolveDepthValuesNV _ResolveDepthValuesNV;
 
+    // GL_NV_scissor_exclusive,
+    private PFN_glScissorExclusiveNV _ScissorExclusiveNV;
+    private PFN_glScissorExclusiveArrayvNV _ScissorExclusiveArrayvNV;
+
     // GL_NV_shader_buffer_load,
     private PFN_glMakeBufferResidentNV _MakeBufferResidentNV;
     private PFN_glMakeBufferNonResidentNV _MakeBufferNonResidentNV;
@@ -17594,6 +18053,15 @@ final class Gl {
     private PFN_glGetUniformui64vNV _GetUniformui64vNV;
     private PFN_glProgramUniformui64NV _ProgramUniformui64NV;
     private PFN_glProgramUniformui64vNV _ProgramUniformui64vNV;
+
+    // GL_NV_shading_rate_image,
+    private PFN_glBindShadingRateImageNV _BindShadingRateImageNV;
+    private PFN_glGetShadingRateImagePaletteNV _GetShadingRateImagePaletteNV;
+    private PFN_glGetShadingRateSampleLocationivNV _GetShadingRateSampleLocationivNV;
+    private PFN_glShadingRateImageBarrierNV _ShadingRateImageBarrierNV;
+    private PFN_glShadingRateImagePaletteNV _ShadingRateImagePaletteNV;
+    private PFN_glShadingRateSampleOrderNV _ShadingRateSampleOrderNV;
+    private PFN_glShadingRateSampleOrderCustomNV _ShadingRateSampleOrderCustomNV;
 
     // GL_NV_texture_barrier,
     private PFN_glTextureBarrierNV _TextureBarrierNV;
