@@ -17,4 +17,5 @@ window/source/gfx/window/wayland/zxdg_shell_v6.d
 
 # example/test executables
 examples/**/gfx_*
+gfx-test-library
 **/gfx-*-test-*
