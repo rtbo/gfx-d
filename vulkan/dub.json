@@ -7,8 +7,7 @@
     "copyright": "Copyright © 2018, Remi Thebault",
     "license": "MIT",
     "dependencies": {
-        "gfx": { "path": ".." },
-        "gfx:bindings": "*"
+        "gfx": { "path": ".." }
     },
 
     "-ddoxFilterArgs": ["--min-protection=Protected"],
