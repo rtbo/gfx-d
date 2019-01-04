@@ -168,7 +168,7 @@ class XcbDisplay : Display
                     import gfx.gl3.context : GlAttribs;
                     import gfx.window.xcb.context : XcbGlContext;
                     gfxXcbLog.trace("Attempting to instantiate OpenGL");
-                    auto w = new XcbWindow(this, null, true);
+                    auto w = new XcbWindow(this, null, "", true);
                     w.show(10, 10);
                     scope(exit) w.close();
                     auto ctx = makeRc!XcbGlContext(_dpy, _mainScreenNum, GlAttribs.init, w._win);
@@ -197,9 +197,9 @@ class XcbDisplay : Display
         return _windows;
     }
 
-    override Window createWindow()
+    override Window createWindow(in string title)
     {
-        return new XcbWindow(this, _instance, false);
+        return new XcbWindow(this, _instance, title, false);
     }
 
     override void pollAndDispatch()
@@ -276,8 +276,13 @@ class XcbDisplay : Display
                 xcbWin._moveHandler(ev.event_x, ev.event_y);
             break;
         case XCB_CONFIGURE_NOTIFY:
+            auto ev = cast(xcb_configure_notify_event_t*)e;
+            auto xcbWin = xcbWindow(ev.event);
+            if (xcbWin) xcbWin.handleConfigureNotify(ev);
             break;
         case XCB_PROPERTY_NOTIFY:
+            // auto ev = cast(xcb_configure_notify_event_t*)e;
+            // auto xcbWin = xcbWindow(ev.window);
             break;
         case XCB_CLIENT_MESSAGE:
             auto ev = cast(xcb_client_message_event_t*)e;
@@ -313,6 +318,10 @@ class XcbWindow : Window
     private Instance _instance;
     private xcb_window_t _win;
     private Surface _surface;
+    private string _title;
+    private uint _width;
+    private uint _height;
+    private ResizeHandler _resizeHandler;
     private MouseHandler _moveHandler;
     private MouseHandler _onHandler;
     private MouseHandler _offHandler;
@@ -322,14 +331,38 @@ class XcbWindow : Window
     private bool _closeFlag;
     private bool _dummy;
 
-    this(XcbDisplay dpy, Instance instance, bool dummy)
+    this(XcbDisplay dpy, Instance instance, in string title, bool dummy)
     {
         assert(dpy && (dummy || instance));
         _dpy = dpy;
         _instance = instance;
+        _title = title;
         _dummy = dummy;
     }
 
+    override @property string title()
+    {
+        return _title;
+    }
+
+    override void setTitle(in string title)
+    {
+        import std.string : toStringz;
+
+        if (_win) {
+            xcb_change_property(_dpy._conn, cast(ubyte) XCB_PROP_MODE_REPLACE, _win,
+                    cast(xcb_atom_t) XCB_ATOM_WM_NAME, cast(xcb_atom_t) XCB_ATOM_STRING,
+                    8, cast(uint) title.length, toStringz(title));
+            xcb_change_property(_dpy._conn, cast(ubyte) XCB_PROP_MODE_REPLACE, _win,
+                    cast(xcb_atom_t) XCB_ATOM_WM_ICON_NAME, cast(xcb_atom_t) XCB_ATOM_STRING,
+                    8, cast(uint) title.length, toStringz(title));
+        }
+        _title = title;
+    }
+
+    override @property void onResize(ResizeHandler handler) {
+        _resizeHandler = handler;
+    }
     override @property void onMouseMove(MouseHandler handler) {
         _moveHandler = handler;
     }
@@ -386,6 +419,14 @@ class XcbWindow : Window
             throw new Exception(format("GFX-XCB: could not create window: %s", err.error_code));
         }
 
+        _width = width;
+        _height = height;
+
+        if (_dummy) {
+            xcb_flush(_dpy._conn);
+            return;
+        }
+
         // register regular events
         {
             const uint[] attrs = [
@@ -404,11 +445,8 @@ class XcbWindow : Window
             xcb_change_property(_dpy._conn, XCB_PROP_MODE_REPLACE, _win,
                     atom(Atom.WM_PROTOCOLS), XCB_ATOM_ATOM, 32, 1, &props[0]);
         }
-
-        if (_dummy) {
-            xcb_flush(_dpy._conn);
-            return;
-        }
+        // setting title
+        setTitle(_title);
 
         _dpy.registerWindow(this);
 
@@ -454,6 +492,16 @@ class XcbWindow : Window
     private xcb_atom_t atom(Atom atom) const
     {
         return _dpy.atom(atom);
+    }
+
+    private void handleConfigureNotify(xcb_configure_notify_event_t* e)
+    {
+        if (!_resizeHandler) return;
+        if (e.width != _width || e.height != _height) {
+            _width = e.width;
+            _height = e.height;
+            _resizeHandler(_width, _height);
+        }
     }
 }
 

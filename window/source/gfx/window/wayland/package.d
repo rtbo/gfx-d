@@ -18,6 +18,9 @@ enum gfxWlLogMask = 0x0800_0000;
 package immutable gfxWlLog = LogTag("GFX-WL", gfxWlLogMask);
 
 // FIXME: multithreading
+// TODO: decorations with title and close button
+//       need freetype and font matching:
+//       $ fc-match mono -b | sed -n 's/\s*file: "\(.*\)"(\w)/\1/p'
 
 class WaylandDisplay : Display
 {
@@ -93,15 +96,15 @@ class WaylandDisplay : Display
         return _windows;
     }
 
-    override Window createWindow() {
+    override Window createWindow(in string title) {
         if (xdgShell) {
-            auto w = new XdgWaylandWindow(this, _instance, xdgShell);
+            auto w = new XdgWaylandWindow(this, _instance, xdgShell, title);
             wldWindows ~= w;
             _windows ~= w;
             return w;
         }
         else if (wlShell) {
-            auto w = new WaylandWindow(this, _instance, wlShell);
+            auto w = new WaylandWindow(this, _instance, wlShell, title);
             wldWindows ~= w;
             _windows ~= w;
             return w;
@@ -246,10 +249,21 @@ class WaylandDisplay : Display
 
 private abstract class WaylandWindowBase : Window
 {
-    this(WaylandDisplay display, Instance instance)
+    this(WaylandDisplay display, Instance instance, string title)
     {
         this.dpy = display;
         this.instance = instance;
+        this._title = title;
+    }
+
+    override @property string title()
+    {
+        return _title;
+    }
+
+    override void setTitle(in string title)
+    {
+        _title = title;
     }
 
     override void close() {
@@ -276,6 +290,9 @@ private abstract class WaylandWindowBase : Window
 
     abstract protected void closeShell();
 
+    override @property void onResize(ResizeHandler handler) {
+        resizeHandler = handler;
+    }
     override @property void onMouseMove(MouseHandler handler) {
         moveHandler = handler;
     }
@@ -354,6 +371,9 @@ private abstract class WaylandWindowBase : Window
     private WlSurface wlSurface;
     private Surface gfxSurface;
 
+    private string _title;
+
+    private ResizeHandler resizeHandler;
     private MouseHandler moveHandler;
     private MouseHandler onHandler;
     private MouseHandler offHandler;
@@ -367,8 +387,8 @@ private abstract class WaylandWindowBase : Window
 
 private class WaylandWindow : WaylandWindowBase
 {
-    this (WaylandDisplay display, Instance instance, WlShell wlShell) {
-        super(display, instance);
+    this (WaylandDisplay display, Instance instance, WlShell wlShell, string title) {
+        super(display, instance, title);
         this.wlShell = wlShell;
     }
 
@@ -393,9 +413,9 @@ private class WaylandWindow : WaylandWindowBase
 
 private class XdgWaylandWindow : WaylandWindowBase
 {
-    this (WaylandDisplay display, Instance instance, ZxdgShellV6 xdgShell)
+    this (WaylandDisplay display, Instance instance, ZxdgShellV6 xdgShell, string title)
     {
-        super(display, instance);
+        super(display, instance, title);
         this.xdgShell = xdgShell;
     }
 

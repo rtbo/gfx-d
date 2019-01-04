@@ -10,13 +10,14 @@ package immutable gfxWindowLog = LogTag("GFX-WINDOW", gfxWindowLogMask);
 
 alias MouseHandler = void delegate(uint x, uint y);
 alias KeyHandler = void delegate(uint key);
+alias ResizeHandler = void delegate(uint width, uint height);
 alias CloseHandler = bool delegate();
 
 interface Display : IAtomicRefCounted
 {
     @property Instance instance();
     @property Window[] windows();
-    Window createWindow();
+    Window createWindow(string title="Gfx-d Window");
     void pollAndDispatch();
 }
 
@@ -27,10 +28,14 @@ interface Window
     void show(uint width, uint height);
     void close();
 
+    @property string title();
+    void setTitle(string title);
+
     @property Surface surface();
     @property bool closeFlag() const;
     @property void closeFlag(in bool flag);
 
+    @property void onResize(ResizeHandler handler);
     @property void onMouseMove(MouseHandler handler);
     @property void onMouseOn(MouseHandler handler);
     @property void onMouseOff(MouseHandler handler);
