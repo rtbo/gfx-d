@@ -23,14 +23,9 @@ import std.typecons;
 class TriangleExample : Example
 {
     Rc!RenderPass renderPass;
-    Framebuffer[] framebuffers;
     Rc!Pipeline pipeline;
     PerImage[] perImages;
     Rc!Buffer vertBuf;
-
-    struct PerImage {
-        bool undefinedLayout=true;
-    }
 
     struct Vertex {
         float[4] position;
@@ -41,21 +36,21 @@ class TriangleExample : Example
         super("Triangle", args);
     }
 
-    override void dispose() {
+    override void dispose()
+    {
         if (device) {
             device.waitIdle();
         }
         vertBuf.unload();
         pipeline.unload();
         renderPass.unload();
-        releaseArr(framebuffers);
         super.dispose();
     }
 
-    override void prepare() {
+    override void prepare()
+    {
         super.prepare();
         prepareBuffer();
-        prepareRenderPass();
         preparePipeline();
     }
 
@@ -75,7 +70,8 @@ class TriangleExample : Example
         vertBuf = createStaticBuffer(vertexData, BufferUsage.vertex);
     }
 
-    void prepareRenderPass() {
+    override void prepareRenderPass()
+    {
         const attachments = [
             AttachmentDescription(swapchain.format, 1,
                 AttachmentOps(LoadOp.clear, StoreOp.store),
@@ -92,18 +88,17 @@ class TriangleExample : Example
         ];
 
         renderPass = device.createRenderPass(attachments, subpasses, []);
+    }
 
-        framebuffers = new Framebuffer[scImages.length];
-        foreach (i; 0 .. scImages.length) {
-            framebuffers[i] = device.createFramebuffer(renderPass, [
-                scImages[i].createView(
-                    ImageType.d2,
-                    ImageSubresourceRange(ImageAspect.color),
-                    Swizzle.identity
-                )
-            ], surfaceSize[0], surfaceSize[1], 1);
-        }
-        retainArr(framebuffers);
+    override void prepareFramebuffer(PerImage fb, CommandBuffer layoutChangeCmdBuf)
+    {
+        fb.framebuffer = device.createFramebuffer(renderPass, [
+            fb.color.createView(
+                ImageType.d2,
+                ImageSubresourceRange(ImageAspect.color),
+                Swizzle.identity
+            )
+        ], surfaceSize[0], surfaceSize[1], 1);
     }
 
     void preparePipeline()
@@ -156,36 +151,20 @@ class TriangleExample : Example
     }
 
 
-    override void recordCmds(size_t cmdBufInd, size_t imgInd) {
+    override void recordCmds(PerImage imgData)
+    {
         import gfx.graal.types : trans;
-
-        if (!perImages.length) {
-            perImages = new PerImage[scImages.length];
-        }
 
         const cv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         auto subrange = ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1);
 
-        auto buf = cmdBufs[cmdBufInd];
+        auto buf = imgData.cmdBufs[0];
 
         //buf.reset();
         buf.begin(No.persistent);
 
-        if (perImages[imgInd].undefinedLayout) {
-            buf.pipelineBarrier(
-                trans(PipelineStage.colorAttachmentOutput, PipelineStage.colorAttachmentOutput), [],
-                [ ImageMemoryBarrier(
-                    trans(Access.none, Access.colorAttachmentWrite),
-                    trans(ImageLayout.undefined, ImageLayout.presentSrc),
-                    trans(graphicsQueueIndex, graphicsQueueIndex),
-                    scImages[imgInd], subrange
-                ) ]
-            );
-            perImages[imgInd].undefinedLayout = false;
-        }
-
         buf.beginRenderPass(
-            renderPass, framebuffers[imgInd],
+            renderPass, imgData.framebuffer,
             Rect(0, 0, surfaceSize[0], surfaceSize[1]), [ ClearValues(cv) ]
         );
 
@@ -200,8 +179,8 @@ class TriangleExample : Example
 
 }
 
-int main(string[] args) {
-
+int main(string[] args)
+{
     try {
         auto example = new TriangleExample(args);
         example.prepare();
@@ -211,24 +190,10 @@ int main(string[] args) {
             example.window.closeFlag = true;
         };
 
-        import std.datetime.stopwatch : StopWatch;
-
-        uint frameCount;
-        ulong lastUs;
-        StopWatch sw;
-        sw.start();
-
-        enum reportFreq = 100;
-
         while (!example.window.closeFlag) {
             example.display.pollAndDispatch();
             example.render();
-            ++ frameCount;
-            if ((frameCount % reportFreq) == 0) {
-                const us = sw.peek().total!"usecs";
-                writeln("FPS: ", 1000_000.0 * reportFreq / (us - lastUs));
-                lastUs = us;
-            }
+            example.frameTick();
         }
 
         return 0;

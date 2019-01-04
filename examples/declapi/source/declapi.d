@@ -29,7 +29,6 @@ class DeclAPIExample : Example
     Rc!RenderPass renderPass;
     Rc!Pipeline pipeline;
     Rc!PipelineLayout layout;
-    PerImage[] framebuffers;
     size_t cubeLen;
     enum cubeCount = 3;
     const(ushort)[] indices;
@@ -42,21 +41,6 @@ class DeclAPIExample : Example
     DescriptorSet set;
 
     DeclarativeEngine declEng;
-
-    class PerImage : Disposable {
-        ImageBase       color;
-        Rc!ImageView    colorView;
-        Rc!Image        depth;
-        Rc!ImageView    depthView;
-        Rc!Framebuffer  framebuffer;
-
-        override void dispose() {
-            colorView.unload();
-            depth.unload();
-            depthView.unload();
-            framebuffer.unload();
-        }
-    }
 
     struct Vertex
     {
@@ -99,7 +83,6 @@ class DeclAPIExample : Example
         indBuf.unload();
         matBuf.unload();
         ligBuf.unload();
-        disposeArr(framebuffers);
         setLayout.unload();
         descPool.unload();
         layout.unload();
@@ -110,20 +93,10 @@ class DeclAPIExample : Example
     }
 
     override void prepare() {
+
         super.prepare();
 
-        declEng = new DeclarativeEngine(device);
-        declEng.declareStruct!Vertex();
-        declEng.addView!"shader.vert.spv"();
-        declEng.addView!"shader.frag.spv"();
-        declEng.store.store("sc_format", swapchain.format);
-        declEng.store.store("depth_format", findDepthFormat());
-        //declEng.store.store("rp", renderPass);
-        declEng.parseSDLView!"pipeline.sdl"();
-
         prepareBuffers();
-        prepareRenderPass();
-        prepareFramebuffers();
         preparePipeline();
         prepareDescriptorSet();
     }
@@ -176,53 +149,34 @@ class DeclAPIExample : Example
         ligBuf = createStaticBuffer(lights, BufferUsage.uniform);
     }
 
-    void prepareRenderPass() {
+    override void prepareRenderPass()
+    {
+        // need a valid device and swapchain, so we prepare it here
+        declEng = new DeclarativeEngine(device);
+        declEng.declareStruct!Vertex();
+        declEng.addView!"shader.vert.spv"();
+        declEng.addView!"shader.frag.spv"();
+        declEng.store.store("sc_format", swapchain.format);
+        declEng.store.store("depth_format", findDepthFormat());
+        declEng.parseSDLView!"pipeline.sdl"();
+
         renderPass = declEng.store.expect!RenderPass("rp");
     }
 
-    void prepareFramebuffers()
+    override void prepareFramebuffer(PerImage imgData, CommandBuffer layoutChangeCmdBuf)
     {
-        auto b = autoCmdBuf().rc;
+        imgData.depth = createDepthImage(surfaceSize[0], surfaceSize[1]);
 
-        foreach (img; scImages) {
-            auto pi = new PerImage;
-            pi.color = img;
-            pi.colorView = img.createView(
-                ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
-            );
-            pi.depth = createDepthImage(surfaceSize[0], surfaceSize[1]);
-            pi.depthView = pi.depth.createView(
-                ImageType.d2, ImageSubresourceRange(ImageAspect.depth), Swizzle.identity
-            );
-            pi.framebuffer = device.createFramebuffer(renderPass, [
-                pi.colorView.obj, pi.depthView.obj
-            ], surfaceSize[0], surfaceSize[1], 1);
+        auto colorView = imgData.color.createView(
+            ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
+        ).rc;
+        auto depthView = imgData.depth.createView(
+            ImageType.d2, ImageSubresourceRange(ImageAspect.depth), Swizzle.identity
+        ).rc;
 
-            b.cmdBuf.pipelineBarrier(
-                trans(PipelineStage.colorAttachmentOutput, PipelineStage.colorAttachmentOutput), [],
-                [ ImageMemoryBarrier(
-                    trans(Access.none, Access.colorAttachmentWrite),
-                    trans(ImageLayout.undefined, ImageLayout.presentSrc),
-                    trans(queueFamilyIgnored, queueFamilyIgnored),
-                    img, ImageSubresourceRange(ImageAspect.color)
-                ) ]
-            );
-
-            const hasStencil = formatDesc(pi.depth.info.format).surfaceType.stencilBits > 0;
-            const aspect = hasStencil ? ImageAspect.depthStencil : ImageAspect.depth;
-            b.cmdBuf.pipelineBarrier(
-                trans(PipelineStage.topOfPipe, PipelineStage.earlyFragmentTests), [], [
-                    ImageMemoryBarrier(
-                        trans(Access.none, Access.depthStencilAttachmentRead | Access.depthStencilAttachmentWrite),
-                        trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
-                        trans(queueFamilyIgnored, queueFamilyIgnored),
-                        pi.depth, ImageSubresourceRange(aspect)
-                    )
-                ]
-            );
-
-            framebuffers ~= pi;
-        }
+        imgData.framebuffer = device.createFramebuffer(renderPass, [
+            colorView.obj, depthView.obj
+        ], surfaceSize[0], surfaceSize[1], 1);
     }
 
     void preparePipeline()
@@ -232,13 +186,14 @@ class DeclAPIExample : Example
         pipeline = declEng.store.expect!Pipeline("pl");
     }
 
-    void prepareDescriptorSet() {
+    void prepareDescriptorSet()
+    {
         const poolSizes = [
             DescriptorPoolSize(DescriptorType.uniformBufferDynamic, 1),
             DescriptorPoolSize(DescriptorType.uniformBuffer, 1),
         ];
         descPool = device.createDescriptorPool(1, poolSizes);
-        set = descPool.allocate([ setLayout ])[0];
+        set = descPool.allocate([ setLayout.obj ])[0];
 
         auto writes = [
             WriteDescriptorSet(set, 0, 0, new UniformBufferDynamicDescWrites([
@@ -251,7 +206,8 @@ class DeclAPIExample : Example
         device.updateDescriptorSets(writes, []);
     }
 
-    void updateMatrices(in Matrices[] mat) {
+    void updateMatrices(in Matrices[] mat)
+    {
         auto mm = matBuf.boundMemory.map();
         auto v = mm.view!(Matrices[])(0, mat.length);
         v[] = mat;
@@ -260,14 +216,14 @@ class DeclAPIExample : Example
         device.flushMappedMemory(mms);
     }
 
-    override void recordCmds(size_t cmdBufInd, size_t imgInd) {
+    override void recordCmds(PerImage imgData)
+    {
         import gfx.graal.types : trans;
 
         const ccv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         const dcv = ClearDepthStencilValues(1f, 0);
 
-        auto buf = cmdBufs[cmdBufInd];
-        auto fb = framebuffers[imgInd];
+        CommandBuffer buf = imgData.cmdBufs[0];
 
         buf.begin(No.persistent);
 
@@ -275,7 +231,7 @@ class DeclAPIExample : Example
         buf.setScissor(0, [ Rect(0, 0, surfaceSize[0], surfaceSize[1]) ]);
 
         buf.beginRenderPass(
-            renderPass, fb.framebuffer,
+            renderPass, imgData.framebuffer,
             Rect(0, 0, surfaceSize[0], surfaceSize[1]),
             [ ClearValues(ccv), ClearValues(dcv) ]
         );
@@ -295,8 +251,8 @@ class DeclAPIExample : Example
 
 }
 
-int main(string[] args) {
-
+int main(string[] args)
+{
     try {
         auto example = new DeclAPIExample(args);
         example.prepare();
@@ -305,14 +261,6 @@ int main(string[] args) {
         example.window.onMouseOn = (uint, uint) {
             example.window.closeFlag = true;
         };
-        import std.datetime.stopwatch : StopWatch;
-
-        ulong frameCount;
-        ulong lastUs;
-        StopWatch sw;
-        sw.start();
-
-        enum reportFreq = 100;
 
         // 6 RPM at 60 FPS
         const puls = 6 * 2*PI / 3600f;
@@ -338,18 +286,13 @@ int main(string[] args) {
                     model.affineInverse(), // need the transpose of model inverse
                 );
             }
-
+            angle += puls;
             example.updateMatrices(matrices);
 
-            angle += puls;
-
             example.render();
-            ++ frameCount;
-            if ((frameCount % reportFreq) == 0) {
-                const us = sw.peek().total!"usecs";
-                writeln("FPS: ", 1000_000.0 * reportFreq / (us - lastUs));
-                lastUs = us;
-            }
+
+            example.frameTick();
+
             example.display.pollAndDispatch();
         }
 

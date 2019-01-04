@@ -23,7 +23,6 @@ import std.typecons;
 class StencilExample : Example
 {
     Rc!RenderPass renderPass;
-    PerImage[] framebuffers;
     Rc!Pipeline stencilWritePipeline;
     Rc!DescriptorSetLayout stencilWriteDSL;
     Rc!PipelineLayout stencilWriteLayout;
@@ -37,21 +36,6 @@ class StencilExample : Example
     Rc!Image chessboard;
     Rc!ImageView chessboardView;
     Rc!Sampler sampler;
-
-    class PerImage : Disposable {
-        ImageBase       color;
-        Rc!ImageView    colorView;
-        Rc!Image        stencil;
-        Rc!ImageView    stencilView;
-        Rc!Framebuffer  framebuffer;
-
-        override void dispose() {
-            colorView.unload();
-            stencil.unload();
-            stencilView.unload();
-            framebuffer.unload();
-        }
-    }
 
     struct VertexP2T2 {
         float[2] position;
@@ -90,7 +74,6 @@ class StencilExample : Example
             device.waitIdle();
         }
         renderPass.unload();
-        disposeArr(framebuffers);
         stencilWritePipeline.unload();
         stencilWriteDSL.unload();
         stencilWriteLayout.unload();
@@ -111,13 +94,12 @@ class StencilExample : Example
         super.prepare();
         prepareChessboard();
         prepareBuffer();
-        prepareRenderPass();
-        prepareFramebuffers();
         preparePipeline();
         prepareDescriptorSet();
     }
 
-    void prepareChessboard() {
+    void prepareChessboard()
+    {
         auto data = new ubyte[32*32];
         foreach (r; 0 .. 32) {
             foreach (c; 0 .. 32) {
@@ -140,7 +122,8 @@ class StencilExample : Example
         ));
     }
 
-    void prepareBuffer() {
+    void prepareBuffer()
+    {
         auto data = new ubyte[squareLen + triangleLen];
         data[0 .. squareLen] = cast(immutable(ubyte)[])square;
         data[squareLen .. squareLen+triangleLen] = cast(immutable(ubyte[]))triangle;
@@ -149,7 +132,8 @@ class StencilExample : Example
         indBuf = createStaticBuffer(squareIndices, BufferUsage.index);
     }
 
-    void prepareRenderPass() {
+    override void prepareRenderPass()
+    {
         const attachments = [
             AttachmentDescription(
                 swapchain.format, 1,
@@ -188,48 +172,19 @@ class StencilExample : Example
         renderPass = device.createRenderPass(attachments, subpasses, dependencies);
     }
 
-    void prepareFramebuffers()
+    override void prepareFramebuffer(PerImage imgData, CommandBuffer layoutChangeCmdBuf)
     {
-        auto b = autoCmdBuf().rc;
+        imgData.stencil = createStencilImage(surfaceSize[0], surfaceSize[1]);
 
-        foreach (img; scImages)
-        {
-            auto pi = new PerImage;
-            pi.color = img;
-            pi.colorView = img.createView(
-                ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
-            );
-            pi.stencil = createStencilImage(surfaceSize[0], surfaceSize[1]);
-            pi.stencilView = pi.stencil.createView(
-                ImageType.d2, ImageSubresourceRange(ImageAspect.stencil), Swizzle.identity
-            );
-            pi.framebuffer = device.createFramebuffer(renderPass, [
-                pi.colorView.obj, pi.stencilView.obj
-            ], surfaceSize[0], surfaceSize[1], 1);
-
-            b.cmdBuf.pipelineBarrier(
-                trans(PipelineStage.colorAttachmentOutput, PipelineStage.colorAttachmentOutput), [],
-                [ ImageMemoryBarrier(
-                    trans(Access.none, Access.colorAttachmentWrite),
-                    trans(ImageLayout.undefined, ImageLayout.presentSrc),
-                    trans(queueFamilyIgnored, queueFamilyIgnored),
-                    img, ImageSubresourceRange(ImageAspect.color)
-                ) ]
-            );
-
-            b.cmdBuf.pipelineBarrier(
-                trans(PipelineStage.topOfPipe, PipelineStage.earlyFragmentTests), [], [
-                    ImageMemoryBarrier(
-                        trans(Access.none, Access.depthStencilAttachmentRead | Access.depthStencilAttachmentWrite),
-                        trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
-                        trans(queueFamilyIgnored, queueFamilyIgnored),
-                        pi.stencil, ImageSubresourceRange(ImageAspect.stencil)
-                    )
-                ]
-            );
-
-            framebuffers ~= pi;
-        }
+        auto colorView = imgData.color.createView(
+            ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
+        ).rc;
+        auto stencilView = imgData.stencil.createView(
+            ImageType.d2, ImageSubresourceRange(ImageAspect.stencil), Swizzle.identity
+        ).rc;
+        imgData.framebuffer = device.createFramebuffer(renderPass, [
+            colorView.obj, stencilView.obj
+        ], surfaceSize[0], surfaceSize[1], 1);
     }
 
     void preparePipeline()
@@ -342,18 +297,19 @@ class StencilExample : Example
     }
 
 
-    override void recordCmds(size_t cmdBufInd, size_t imgInd) {
+    override void recordCmds(PerImage imgData)
+    {
         import gfx.graal.types : trans;
 
         const cv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         const dsv = ClearDepthStencilValues(0f, 0);
 
-        auto buf = cmdBufs[cmdBufInd];
+        auto buf = imgData.cmdBufs[0];
 
         buf.begin(No.persistent);
 
         buf.beginRenderPass(
-            renderPass, framebuffers[imgInd].framebuffer,
+            renderPass, imgData.framebuffer,
             Rect(0, 0, surfaceSize[0], surfaceSize[1]),
             [ ClearValues(cv), ClearValues(dsv) ]
         );
@@ -380,8 +336,8 @@ class StencilExample : Example
 
 }
 
-int main(string[] args) {
-
+int main(string[] args)
+{
     try {
         auto example = new StencilExample(args);
         example.prepare();
@@ -391,24 +347,10 @@ int main(string[] args) {
             example.window.closeFlag = true;
         };
 
-        import std.datetime.stopwatch : StopWatch;
-
-        uint frameCount;
-        ulong lastUs;
-        StopWatch sw;
-        sw.start();
-
-        enum reportFreq = 100;
-
         while (!example.window.closeFlag) {
             example.display.pollAndDispatch();
             example.render();
-            ++ frameCount;
-            if ((frameCount % reportFreq) == 0) {
-                const us = sw.peek().total!"usecs";
-                writeln("FPS: ", 1000_000.0 * reportFreq / (us - lastUs));
-                lastUs = us;
-            }
+            example.frameTick();
         }
 
         return 0;

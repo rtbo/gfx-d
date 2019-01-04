@@ -1,13 +1,19 @@
 module example;
 
+import gfx.core.log;
 import gfx.core.rc;
 import gfx.graal;
+import gfx.graal.buffer;
 import gfx.graal.cmd;
 import gfx.graal.device;
+import gfx.graal.format;
 import gfx.graal.image;
+import gfx.graal.memory;
+import gfx.graal.presentation;
 import gfx.graal.queue;
+import gfx.graal.renderpass;
 import gfx.graal.sync;
-import gfx.vulkan;
+import gfx.graal.types;
 import gfx.window;
 
 import std.algorithm;
@@ -15,20 +21,37 @@ import std.exception;
 import std.typecons;
 import std.traits : isArray;
 
-struct FPSProbe {
+immutable log = LogTag("GFX-EX");
+
+struct FpsProbe
+{
     import std.datetime.stopwatch : StopWatch;
 
     private StopWatch sw;
     private size_t lastUsecs;
     private size_t lastFc;
-    size_t frameCount;
+    private size_t fc;
 
     void start() { sw.start(); }
-    void tick() { frameCount += 1; }
-    @property float fps() {
+
+    bool running() { return sw.running(); }
+
+    void stop()
+    {
+        sw.stop();
+        lastUsecs = 0;
+        lastFc = 0;
+        fc = 0;
+    }
+
+    void tick() { fc += 1; }
+
+    size_t framecount() { return fc; }
+
+    float computeFps() {
         const usecs = sw.peek().total!"usecs"();
-        const fps = 1000_000f * (frameCount - lastFc) / (usecs-lastUsecs);
-        lastFc = frameCount;
+        const fps = 1000_000f * (fc - lastFc) / (usecs-lastUsecs);
+        lastFc = fc;
         lastUsecs = usecs;
         return fps;
     }
@@ -65,15 +88,53 @@ class Example : Disposable
     uint[2] surfaceSize;
     bool hasAlpha;
     Rc!Swapchain swapchain;
-    ImageBase[] scImages;
     Rc!Semaphore imageAvailableSem;
     Rc!Semaphore renderingFinishSem;
     Rc!CommandPool cmdPool;
-    CommandBuffer[] cmdBufs;
-    Fence[] fences;
+    size_t numCmdBufPerFrame = 1;
+    uint frameNumber;
+    PerImage[] imgDatas;
+    FpsProbe probe;
 
-    enum numCmdBufs=2;
-    size_t cmdBufInd;
+    /// one of these per swapchain image
+    static class PerImage : AtomicRefCounted
+    {
+        ImageBase color;
+        Rc!Image depth;
+        Rc!Image stencil;
+        Rc!Framebuffer framebuffer;
+        Rc!Fence fence; // to keep track of when command processing is done
+        Rc!CommandPool cmdPool; // keeping track here to delete the command bufs
+        CommandBuffer[] cmdBufs;
+
+        override void dispose()
+        {
+            depth.unload();
+            stencil.unload();
+            framebuffer.unload();
+            fence.unload();
+            if (cmdBufs.length) cmdPool.free(cmdBufs);
+            cmdPool.unload();
+        }
+    }
+
+    // garbage collection
+    // it is sometimes desirable to delete objects still in use in a command
+    // buffer (this happens when rebuilding the swapchain for example)
+    // each entry is given an optional fence to check for the command buffer
+    // completion, and if the fence is null, it checks that the garbage
+    // was not emitted more than maxFcAge frames ago.
+    GarbageEntry garbageEntries;
+    GarbageEntry lastGarbageEntry;
+    enum maxFcAge = 4;
+
+    class GarbageEntry
+    {
+        GarbageEntry next;
+        uint fc;
+        Fence fence;
+        IAtomicRefCounted resource;
+    }
 
     this (string title, string[] args=[])
     {
@@ -81,24 +142,29 @@ class Example : Disposable
         this.args = args;
     }
 
-    override void dispose() {
+    override void dispose()
+    {
+        probe.stop();
         if (device) {
             device.waitIdle();
         }
-        releaseArr(fences);
-        if (cmdPool && cmdBufs.length) {
-            cmdPool.free(cmdBufs);
-            cmdPool.unload();
+        while (garbageEntries) {
+            if (garbageEntries.fence) {
+                garbageEntries.fence.wait();
+                releaseObj(garbageEntries.fence);
+            }
+            releaseObj(garbageEntries.resource);
+            garbageEntries = garbageEntries.next;
         }
+        cmdPool.unload();
+        releaseArr(imgDatas);
         // the rest is checked with Rc, so it is safe to call unload even
         // if object is invalid
         imageAvailableSem.unload();
         renderingFinishSem.unload();
         swapchain.unload();
         device.unload();
-        if (window) {
-            //window.close();
-        }
+        // if (window) window.close();
         instance.unload();
         display.unload();
     }
@@ -124,15 +190,22 @@ class Example : Disposable
         instance = display.instance;
         ndc = instance.apiProps.ndc;
         // Create a window. The surface is created during the call to show.
-        window = display.createWindow();
+        window = display.createWindow(title);
         window.show(640, 480);
 
-        instance.setDebugCallback((Severity sev, string msg) {
+        // the swapchain will report when rebuild is needed, no need to
+        // call rebuildSwapchain explicitely
+        window.onResize = (uint w, uint h) {
+            surfaceSize = [ w, h ];
+        };
+
+        alias Sev = gfx.graal.Severity;
+        instance.setDebugCallback((Sev sev, string msg) {
             import std.stdio : writefln;
-            if (sev == Severity.warning) {
+            if (sev >= Sev.warning) {
                 writefln("Gfx backend %s message: %s", sev, msg);
             }
-            if (sev == Severity.error) {
+            if (sev == Sev.error) {
                 // debug break;
                 asm { int 0x03; }
             }
@@ -140,9 +213,13 @@ class Example : Disposable
 
         // The rest of the preparation.
         prepareDevice();
-        prepareSwapchain(null);
         prepareSync();
         prepareCmds();
+        prepareSwapchain(null);
+        prepareRenderPass();
+        prepareFramebuffers();
+
+        probe.start();
     }
 
     void prepareDevice()
@@ -179,10 +256,22 @@ class Example : Disposable
         }
     }
 
-    void prepareSwapchain(Swapchain former=null) {
+    void prepareSync()
+    {
+        imageAvailableSem = device.createSemaphore();
+        renderingFinishSem = device.createSemaphore();
+    }
+
+    void prepareCmds() {
+        cmdPool = device.createCommandPool(graphicsQueueIndex);
+    }
+
+    void prepareSwapchain(Swapchain former=null)
+    {
         const surfCaps = physicalDevice.surfaceCaps(window.surface);
         enforce(surfCaps.usage & ImageUsage.transferDst, "TransferDst not supported by surface");
-        const usage = ImageUsage.colorAttachment;
+        enforce(surfCaps.usage & ImageUsage.colorAttachment, "ColorAttachment not supported by surface");
+        const usage = ImageUsage.colorAttachment | ImageUsage.transferDst;
         const numImages = max(2, surfCaps.minImages);
         enforce(surfCaps.maxImages == 0 || surfCaps.maxImages >= numImages);
         const f = chooseFormat(physicalDevice, window.surface);
@@ -209,70 +298,178 @@ class Example : Disposable
         const pm = choosePresentMode(physicalDevice, window.surface);
 
         swapchain = device.createSwapchain(window.surface, pm, numImages, f, surfaceSize, usage, ca, former);
-        scImages = swapchain.images;
     }
 
-    void prepareSync() {
-        imageAvailableSem = device.createSemaphore();
-        renderingFinishSem = device.createSemaphore();
-        fences = new Fence[numCmdBufs];
-        foreach (i; 0 .. numCmdBufs) {
-            fences[i] = device.createFence(Yes.signaled);
+    void prepareRenderPass()
+    {}
+
+    void prepareFramebuffers()
+    {
+        auto layoutChange = autoCmdBuf.rc;
+
+        auto scImages = swapchain.images;
+        imgDatas = new PerImage[scImages.length];
+        auto cmdBufs = cmdPool.allocate(scImages.length * numCmdBufPerFrame);
+
+        foreach(i, img; scImages) {
+            auto imgData = new PerImage;
+            imgData.color = img;
+            imgData.fence = device.createFence(Yes.signaled);
+            imgData.cmdPool = cmdPool;
+            imgData.cmdBufs = cmdBufs[i*numCmdBufPerFrame .. (i+1)*numCmdBufPerFrame];
+
+            prepareFramebuffer(imgData, layoutChange.cmdBuf);
+
+            layoutChange.cmdBuf.pipelineBarrier(
+                trans(PipelineStage.colorAttachmentOutput, PipelineStage.colorAttachmentOutput), [],
+                [ ImageMemoryBarrier(
+                    trans(Access.none, Access.colorAttachmentWrite),
+                    trans(ImageLayout.undefined, ImageLayout.presentSrc),
+                    trans(queueFamilyIgnored, queueFamilyIgnored),
+                    img, ImageSubresourceRange(ImageAspect.color)
+                ) ]
+            );
+            if (imgData.depth) {
+                const hasStencil = formatDesc(imgData.depth.info.format).surfaceType.stencilBits > 0;
+                const aspect = hasStencil ? ImageAspect.depthStencil : ImageAspect.depth;
+                layoutChange.cmdBuf.pipelineBarrier(
+                    trans(PipelineStage.topOfPipe, PipelineStage.earlyFragmentTests), [], [
+                        ImageMemoryBarrier(
+                            trans(Access.none, Access.depthStencilAttachmentRead | Access.depthStencilAttachmentWrite),
+                            trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
+                            trans(queueFamilyIgnored, queueFamilyIgnored),
+                            imgData.depth.obj, ImageSubresourceRange(aspect)
+                        )
+                    ]
+                );
+            }
+            if (imgData.stencil) {
+                layoutChange.cmdBuf.pipelineBarrier(
+                    trans(PipelineStage.topOfPipe, PipelineStage.earlyFragmentTests), [], [
+                        ImageMemoryBarrier(
+                            trans(Access.none, Access.depthStencilAttachmentRead | Access.depthStencilAttachmentWrite),
+                            trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
+                            trans(queueFamilyIgnored, queueFamilyIgnored),
+                            imgData.stencil, ImageSubresourceRange(ImageAspect.stencil)
+                        )
+                    ]
+                );
+            }
+            imgDatas[i] = retainObj(imgData);
         }
-        retainArr(fences);
     }
 
-    void prepareCmds() {
-        cmdPool = device.createCommandPool(graphicsQueueIndex);
-        cmdBufs = cmdPool.allocate(numCmdBufs);
-    }
+    void prepareFramebuffer(PerImage imgData, CommandBuffer layoutChangeCmdBuf)
+    {}
 
-    abstract void recordCmds(size_t cmdBufInd, size_t imgInd);
-
-    size_t nextCmdBuf() {
-        const ind = cmdBufInd++;
-        if (cmdBufInd == numCmdBufs) {
-            cmdBufInd = 0;
-        }
-        return ind;
-    }
+    abstract void recordCmds(PerImage imgData);
 
     void render()
     {
-        import core.time : dur;
+        import gfx.graal.error : OutOfDateException;
 
         const acq = swapchain.acquireNextImage(imageAvailableSem.obj);
-        assert(acq.hasIndex); // TODO
-        const imgInd = acq.index;
-        const cmdBufInd = nextCmdBuf();
 
-        fences[cmdBufInd].wait();
-        fences[cmdBufInd].reset();
+        if (acq.hasIndex) {
+            const imgInd = acq.index;
 
-        recordCmds(cmdBufInd, imgInd);
+            auto imgData = imgDatas[imgInd];
+            imgData.fence.wait();
+            imgData.fence.reset();
 
-        submit(cmdBufInd);
+            recordCmds(imgData);
 
-        presentQueue.present(
-            [ renderingFinishSem.obj ],
-            [ PresentRequest(swapchain, imgInd) ]
-        );
+            submit(imgData);
 
-        // if (needReconstruction) {
-        //     prepareSwapchain(swapchain);
-        //     presentPool.reset();
-        // }
+            try {
+                presentQueue.present(
+                    [ renderingFinishSem.obj ],
+                    [ PresentRequest(swapchain, imgInd) ]
+                );
+            }
+            catch (OutOfDateException ex) {
+                // The swapchain became out of date between acquire and present.
+                // Rare, but can happen
+                log.errorf("error during presentation: %s", ex.msg);
+                log.errorf("acquisition was %s", acq.state);
+                rebuildSwapchain();
+                return;
+            }
+        }
+
+        if (acq.swapchainNeedsRebuild) {
+            rebuildSwapchain();
+        }
     }
 
-    void submit(ulong cmdBufInd) {
+    /// default submission when there is one command buffer per frame
+    void submit(PerImage imgData)
+    {
         graphicsQueue.submit([
             Submission (
                 [ StageWait(imageAvailableSem, PipelineStage.transfer) ],
-                [ renderingFinishSem.obj ], [ cmdBufs[cmdBufInd] ]
+                [ renderingFinishSem.obj ], imgData.cmdBufs[0 .. 1]
             )
-        ], fences[cmdBufInd] );
+        ], imgData.fence );
     }
 
+
+    void rebuildSwapchain()
+    {
+        foreach (imgData; imgDatas) {
+            gc(imgData, imgData.fence);
+        }
+        releaseArr(imgDatas);
+        prepareSwapchain(swapchain.obj);
+        prepareFramebuffers();
+    }
+
+    void frameTick()
+    {
+        frameNumber += 1;
+        collectGarbage();
+
+        enum reportPeriod = 120;
+        probe.tick();
+        if (probe.framecount % reportPeriod == 0) {
+            log.infof("FPS = %s", probe.computeFps());
+        }
+    }
+
+    void gc(IAtomicRefCounted resource, Fence fence=null)
+    {
+        auto entry = new GarbageEntry;
+        entry.resource = retainObj(resource);
+        if (fence) entry.fence = retainObj(fence);
+        entry.fc = frameNumber;
+
+        if (lastGarbageEntry) {
+            lastGarbageEntry.next = entry;
+            lastGarbageEntry = entry;
+        }
+        else {
+            assert(!garbageEntries);
+            garbageEntries = entry;
+            lastGarbageEntry = entry;
+        }
+    }
+
+    void collectGarbage()
+    {
+        while (garbageEntries) {
+            if ((garbageEntries.fence && garbageEntries.fence.signaled) ||
+                (garbageEntries.fc+maxFcAge < frameNumber))
+            {
+                if (garbageEntries.fence) releaseObj(garbageEntries.fence);
+                releaseObj(garbageEntries.resource);
+                garbageEntries = garbageEntries.next;
+            }
+            else {
+                break;
+            }
+        }
+        if (!garbageEntries) lastGarbageEntry = null;
+    }
 
     // Following functions are general utility that can be used by subclassing
     // examples.
@@ -526,7 +723,7 @@ class Example : Disposable
 
 /// Utility command buffer for a one time submission that automatically submit
 /// when disposed.
-/// Generally used for transfer operations.
+/// Generally used for transfer operations, or image layout change.
 class AutoCmdBuf : AtomicRefCounted
 {
     Rc!CommandPool pool;

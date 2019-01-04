@@ -31,13 +31,14 @@ final class ShadowExample : Example
 
     Rc!DescriptorPool descPool;
 
+    Rc!Fence lastSub;
+
     // shadow pass
     Rc!Semaphore shadowFinishedSem;
     Rc!RenderPass shadowRenderPass;
     Rc!Pipeline shadowPipeline;
     Rc!Image shadowTex;
     Rc!Sampler shadowSampler;
-    Rc!Framebuffer shadowFramebuffer;
     Rc!DescriptorSetLayout shadowDSLayout;
     Rc!PipelineLayout shadowLayout;
     DescriptorSet shadowDS;
@@ -45,7 +46,6 @@ final class ShadowExample : Example
     // mesh pass
     Rc!RenderPass meshRenderPass;
     Rc!Pipeline meshPipeline;
-    PerImage[] framebuffers;
     Rc!ImageView meshShadowView;
     Rc!DescriptorSetLayout meshDSLayout;
     Rc!PipelineLayout meshLayout;
@@ -58,22 +58,7 @@ final class ShadowExample : Example
     // constants
     enum shadowSize = 2048;
     enum maxLights = 5;
-
-    final class PerImage : Disposable
-    {
-        ImageBase color;
-        Rc!ImageView colorView;
-        Rc!Image depth;
-        Rc!ImageView depthView;
-        Rc!Framebuffer meshFramebuffer;
-
-        override void dispose() {
-            meshFramebuffer.unload();
-            colorView.unload();
-            depth.unload();
-            depthView.unload();
-        }
-    }
+    enum numLights = 3;
 
     // supporting structs
 
@@ -124,7 +109,6 @@ final class ShadowExample : Example
         FVec4 color;
         FMat4 view;
         FMat4 proj;
-        CommandBuffer cmdBuf;
         Rc!ImageView shadowPlane;
         Rc!Framebuffer shadowFb;
     }
@@ -141,6 +125,7 @@ final class ShadowExample : Example
         meshUniformBuf.unload();
         ligUniformBuf.unload();
 
+        lastSub.unload();
         descPool.unload();
 
         shadowFinishedSem.unload();
@@ -148,13 +133,11 @@ final class ShadowExample : Example
         shadowPipeline.unload();
         shadowTex.unload();
         shadowSampler.unload();
-        shadowFramebuffer.unload();
         shadowDSLayout.unload();
         shadowLayout.unload();
 
         meshRenderPass.unload();
         meshPipeline.unload();
-        disposeArr(framebuffers);
         meshShadowView.unload();
         meshDSLayout.unload();
         meshLayout.unload();
@@ -164,23 +147,21 @@ final class ShadowExample : Example
         super.dispose();
     }
 
-    override void prepare() {
+    override void prepare()
+    {
+        numCmdBufPerFrame = numLights + 1;
         super.prepare();
         prepareSceneAndResources();
-        prepareShadowRenderPass();
-        prepareMeshRenderPass();
-        prepareFramebuffers();
+        prepareShadowFramebuffers();
         prepareDescriptors();
         preparePipelines();
     }
 
-    void prepareSceneAndResources() {
-
+    void prepareSceneAndResources()
+    {
         import std.exception : enforce;
 
         // setting up lights
-
-        enum numLights = 3;
 
         shadowTex = device.createImage(
             ImageInfo.d2Array(shadowSize, shadowSize, numLights)
@@ -213,8 +194,6 @@ final class ShadowExample : Example
             none!float, 0f, [0f, 0f], some(CompareOp.lessOrEqual)
         ));
 
-        auto ligCmdBufs = cmdPool.allocate(numLights);
-
         auto makeLight(uint layer, FVec3 pos, FVec4 color, float fov)
         {
             enum near = 5f;
@@ -232,8 +211,6 @@ final class ShadowExample : Example
                 ),
                 Swizzle.identity
             );
-            l.cmdBuf = ligCmdBufs[layer];
-
             return l;
         }
         lights = [
@@ -336,7 +313,14 @@ final class ShadowExample : Example
         );
     }
 
-    void prepareShadowRenderPass() {
+    override void prepareRenderPass()
+    {
+        prepareShadowRenderPass();
+        prepareMeshRenderPass();
+    }
+
+    void prepareShadowRenderPass()
+    {
         const attachments = [
             AttachmentDescription(
                 Format.d32_sFloat, 1,
@@ -355,7 +339,8 @@ final class ShadowExample : Example
         shadowFinishedSem = device.createSemaphore();
     }
 
-    void prepareMeshRenderPass() {
+    void prepareMeshRenderPass()
+    {
         const attachments = [
             AttachmentDescription(swapchain.format, 1,
                 AttachmentOps(LoadOp.clear, StoreOp.store),
@@ -380,54 +365,29 @@ final class ShadowExample : Example
         meshRenderPass = device.createRenderPass(attachments, subpasses, []);
     }
 
-    void prepareFramebuffers() {
+    void prepareShadowFramebuffers()
+    {
         foreach (ref l; lights) {
+            if (l.shadowFb) continue; // not needed during rebuild of swapchain
             l.shadowFb = device.createFramebuffer(
                 shadowRenderPass, [ l.shadowPlane.obj ], shadowSize, shadowSize, 1
             );
         }
+    }
 
-        auto b = autoCmdBuf().rc;
+    override void prepareFramebuffer(PerImage imgData, CommandBuffer layoutChangeCmdBuf)
+    {
+        imgData.depth = createDepthImage(surfaceSize[0], surfaceSize[1]);
 
-        foreach (img; scImages) {
-
-            auto pi = new PerImage;
-            pi.color = img;
-            pi.colorView = img.createView(
-                ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
-            );
-            pi.depth = createDepthImage(surfaceSize[0], surfaceSize[1]);
-            pi.depthView = pi.depth.createView(
-                ImageType.d2, ImageSubresourceRange(ImageAspect.depth), Swizzle.identity
-            );
-            pi.meshFramebuffer = device.createFramebuffer(meshRenderPass, [
-                pi.colorView.obj, pi.depthView.obj
-            ], surfaceSize[0], surfaceSize[1], 1);
-
-            b.cmdBuf.pipelineBarrier(
-                trans(PipelineStage.colorAttachmentOutput, PipelineStage.colorAttachmentOutput), [], [
-                    ImageMemoryBarrier(
-                        trans(Access.none, Access.colorAttachmentWrite),
-                        trans(ImageLayout.undefined, ImageLayout.presentSrc),
-                        trans(queueFamilyIgnored, queueFamilyIgnored),
-                        img, ImageSubresourceRange(ImageAspect.color)
-                    )
-                ]
-            );
-
-            b.cmdBuf.pipelineBarrier(
-                trans(PipelineStage.topOfPipe, PipelineStage.earlyFragmentTests), [], [
-                    ImageMemoryBarrier(
-                        trans(Access.none, Access.depthStencilAttachmentRead | Access.depthStencilAttachmentWrite),
-                        trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
-                        trans(queueFamilyIgnored, queueFamilyIgnored),
-                        pi.depth, ImageSubresourceRange(ImageAspect.depth)
-                    )
-                ]
-            );
-
-            framebuffers ~= pi;
-        }
+        auto colorView = imgData.color.createView(
+            ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
+        ).rc;
+        auto depthView = imgData.depth.createView(
+            ImageType.d2, ImageSubresourceRange(ImageAspect.depth), Swizzle.identity
+        ).rc;
+        imgData.framebuffer = device.createFramebuffer(meshRenderPass, [
+            colorView.obj, depthView.obj
+        ], surfaceSize[0], surfaceSize[1], 1);
     }
 
     void prepareDescriptors() {
@@ -438,7 +398,7 @@ final class ShadowExample : Example
             ]
         );
         shadowLayout = device.createPipelineLayout(
-            [ shadowDSLayout ], []
+            [ shadowDSLayout.obj ], []
         );
 
         meshDSLayout = device.createDescriptorSetLayout(
@@ -450,7 +410,7 @@ final class ShadowExample : Example
             ]
         );
         meshLayout = device.createPipelineLayout(
-            [ meshDSLayout ], []
+            [ meshDSLayout.obj ], []
         );
 
         descPool = device.createDescriptorPool( 2,
@@ -461,7 +421,7 @@ final class ShadowExample : Example
             ]
         );
 
-        auto dss = descPool.allocate( [ shadowDSLayout, meshDSLayout ] );
+        auto dss = descPool.allocate( [ shadowDSLayout.obj, meshDSLayout.obj ] );
         shadowDS = dss[0];
         meshDS = dss[1];
 
@@ -578,7 +538,8 @@ final class ShadowExample : Example
         return info;
     }
 
-    void preparePipelines() {
+    void preparePipelines()
+    {
         auto infos = [
             prepareShadowPipeline(), prepareMeshPipeline()
         ];
@@ -592,8 +553,8 @@ final class ShadowExample : Example
         }
     }
 
-    void updateBuffers(in FMat4 viewProj) {
-
+    void updateBuffers(in FMat4 viewProj)
+    {
         const axis = fvec(0, 0, 1);
         foreach (ref m; meshes) {
             const r = rotation(m.pulse, axis);
@@ -636,62 +597,10 @@ final class ShadowExample : Example
         device.flushMappedMemory(mms);
     }
 
-    override void render()
-    {
-        import core.time : dur;
-        import gfx.graal.queue : PresentRequest, StageWait, Submission;
-        import std.algorithm : map;
-        import std.array : array;
-
-        const acq = swapchain.acquireNextImage(imageAvailableSem.obj);
-        assert(acq.hasIndex); // TODO
-        const imgInd = acq.index;
-        const cmdBufInd = nextCmdBuf();
-
-        // we have cmdbufs for each light that must be used on every frame
-        // therefore, we must sync with the same fence on every frame
-        fences[0].wait();
-        fences[0].reset();
-
-        recordCmds(cmdBufInd, imgInd);
-
-        auto shadowSubmission = Submission(
-            [],
-            [ shadowFinishedSem.obj ],
-            lights.map!((ref Light l) { return l.cmdBuf; }).array
-        );
-        auto meshSubmission = Submission(
-            [
-                StageWait(shadowFinishedSem, PipelineStage.fragmentShader),
-                StageWait(imageAvailableSem, PipelineStage.transfer)
-            ],
-            [ renderingFinishSem.obj ], [ cmdBufs[cmdBufInd] ]
-        );
-
-        graphicsQueue.submit(
-            [
-                shadowSubmission,
-                meshSubmission
-            ],
-            fences[0]
-        );
-
-        presentQueue.present(
-            [ renderingFinishSem.obj ],
-            [ PresentRequest(swapchain, imgInd) ]
-        );
-
-        // if (needReconstruction) {
-        //     prepareSwapchain(swapchain);
-        //     presentPool.reset();
-        // }
-    }
-
-
-    override void recordCmds(ulong cmdBufInd, ulong imgInd)
+    override void recordCmds(PerImage imgData)
     {
         void recordLight(uint il, ref Light l) {
-            auto buf = l.cmdBuf;
+            auto buf = imgData.cmdBufs[il];
             buf.begin(No.persistent);
 
             buf.beginRenderPass(
@@ -718,12 +627,11 @@ final class ShadowExample : Example
         }
 
         void recordMeshes() {
-            auto buf = cmdBufs[cmdBufInd];
-            auto fb = framebuffers[imgInd];
+            auto buf = imgData.cmdBufs[$-1];
 
             buf.begin(No.persistent);
             buf.beginRenderPass(
-                meshRenderPass, fb.meshFramebuffer, Rect(0, 0, surfaceSize[0], surfaceSize[1]),
+                meshRenderPass, imgData.framebuffer, Rect(0, 0, surfaceSize[0], surfaceSize[1]),
                 [
                     ClearValues.color(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f),
                     ClearValues.depthStencil(1f, 0)
@@ -753,41 +661,60 @@ final class ShadowExample : Example
         recordMeshes();
     }
 
+    override void submit (PerImage imgData)
+    {
+        import gfx.graal.queue : StageWait, Submission;
+
+        auto shadowSubmission = Submission(
+            [],
+            [ shadowFinishedSem.obj ],
+            imgData.cmdBufs[0 .. lights.length],
+        );
+        auto meshSubmission = Submission(
+            [
+                StageWait(shadowFinishedSem, PipelineStage.fragmentShader),
+                StageWait(imageAvailableSem, PipelineStage.transfer)
+            ],
+            [ renderingFinishSem.obj ], imgData.cmdBufs[lights.length .. $]
+        );
+
+        graphicsQueue.submit(
+            [
+                shadowSubmission,
+                meshSubmission
+            ],
+            imgData.fence
+        );
+    }
+
+    override void rebuildSwapchain()
+    {
+        device.waitIdle();
+        super.rebuildSwapchain();
+    }
 }
 
-int main(string[] args) {
-
+int main(string[] args)
+{
     try {
         auto example = new ShadowExample(args);
         example.prepare();
         scope(exit) example.dispose();
 
-        example.window.onMouseOn = (uint, uint) {
-            example.window.closeFlag = true;
-        };
-
-
-        const projConfig = example.ndc;
+        // example.window.onMouseOn = (uint, uint) {
+        //     example.window.closeFlag = true;
+        // };
 
         const winSize = example.surfaceSize;
-        const proj = perspective(projConfig, 45f, winSize[0]/(cast(float)winSize[1]), 1f, 20f);
+        const proj = perspective(example.ndc, 45f, winSize[0]/(cast(float)winSize[1]), 1f, 20f);
         const viewProj = proj * lookAt(fvec(3, -10, 6), fvec(0, 0, 0), fvec(0, 0, 1));
-
-        FPSProbe fpsProbe;
-        fpsProbe.start();
-
-        enum reportFreq = 60;
 
         while (!example.window.closeFlag) {
 
             example.updateBuffers(viewProj);
             example.render();
+            example.frameTick();
             example.display.pollAndDispatch();
-
-            fpsProbe.tick();
-            if ((fpsProbe.frameCount % reportFreq) == 0) {
-                writeln("FPS: ", fpsProbe.fps);
-            }
         }
 
         return 0;

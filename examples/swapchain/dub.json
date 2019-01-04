@@ -6,9 +6,16 @@
 	"description": "gfx-d swapchain example",
 	"copyright": "Copyright © 2016, Remi Thebault",
 	"license": "MIT",
+	"sourcePaths": [
+		"source", "../common"
+	],
 	"targetType": "executable",
-    "dependencies": {
-		"gfx" : { "path": "../../"  },
-		"gfx:window" : { "path": "../../window" }
-    }
+	"dependencies": {
+		"gfx": {
+			"path": "../../"
+		},
+		"gfx:window": {
+			"path": "../../window"
+		}
+	}
 }

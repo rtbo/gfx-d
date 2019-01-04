@@ -26,10 +26,8 @@ import std.math;
 class TextureExample : Example
 {
     Rc!RenderPass renderPass;
-    Framebuffer[] framebuffers;
     Rc!Pipeline pipeline;
     Rc!PipelineLayout layout;
-    PerImage[] perImages;
     ushort[] indices;
     Rc!Buffer vertBuf;
     Rc!Buffer indBuf;
@@ -41,10 +39,6 @@ class TextureExample : Example
     Rc!DescriptorPool descPool;
     Rc!DescriptorSetLayout setLayout;
     DescriptorSet set;
-
-    struct PerImage {
-        bool undefinedLayout=true;
-    }
 
     struct Vertex {
         float[3] position;
@@ -73,7 +67,8 @@ class TextureExample : Example
         super("Texture", args);
     }
 
-    override void dispose() {
+    override void dispose()
+    {
         if (device) {
             device.waitIdle();
         }
@@ -89,21 +84,20 @@ class TextureExample : Example
         layout.unload();
         pipeline.unload();
         renderPass.unload();
-        releaseArr(framebuffers);
         super.dispose();
     }
 
-    override void prepare() {
+    override void prepare()
+    {
         super.prepare();
         prepareBuffers();
         prepareTexture();
-        prepareRenderPass();
         preparePipeline();
         prepareDescriptorSet();
     }
 
-    void prepareBuffers() {
-
+    void prepareBuffers()
+    {
         import gfx.genmesh.cube : genCube;
         import gfx.genmesh.algorithm : indexCollectMesh, triangulate, vertices;
         import gfx.genmesh.poly : quad;
@@ -137,7 +131,8 @@ class TextureExample : Example
         ligBuf = createStaticBuffer(lights, BufferUsage.uniform);
     }
 
-    void prepareTexture() {
+    void prepareTexture()
+    {
         import img : ImageFormat, ImgImage = Image;
         auto img = ImgImage.loadFromView!("crate.jpg")(ImageFormat.argb);
         texImg = createTextureImage(
@@ -161,7 +156,8 @@ class TextureExample : Example
         ));
     }
 
-    void prepareRenderPass() {
+    override void prepareRenderPass()
+    {
         const attachments = [
             AttachmentDescription(swapchain.format, 1,
                 AttachmentOps(LoadOp.clear, StoreOp.store),
@@ -178,18 +174,17 @@ class TextureExample : Example
         ];
 
         renderPass = device.createRenderPass(attachments, subpasses, []);
+    }
 
-        framebuffers = new Framebuffer[scImages.length];
-        foreach (i; 0 .. scImages.length) {
-            framebuffers[i] = device.createFramebuffer(renderPass, [
-                scImages[i].createView(
-                    ImageType.d2,
-                    ImageSubresourceRange(ImageAspect.color),
-                    Swizzle.identity
-                )
-            ], surfaceSize[0], surfaceSize[1], 1);
-        }
-        retainArr(framebuffers);
+    override void prepareFramebuffer(PerImage imgData, CommandBuffer layoutChangeCmdBuf)
+    {
+        imgData.framebuffer = device.createFramebuffer(renderPass, [
+            imgData.color.createView(
+                ImageType.d2,
+                ImageSubresourceRange(ImageAspect.color),
+                Swizzle.identity
+            )
+        ], surfaceSize[0], surfaceSize[1], 1);
     }
 
     void preparePipeline()
@@ -208,7 +203,7 @@ class TextureExample : Example
         ];
 
         setLayout = device.createDescriptorSetLayout(layoutBindings);
-        layout = device.createPipelineLayout([setLayout], []);
+        layout = device.createPipelineLayout([ setLayout.obj ], []);
 
         PipelineInfo info;
         info.shaders.vertex = vtxShader;
@@ -250,13 +245,14 @@ class TextureExample : Example
         pipeline = pls[0];
     }
 
-    void prepareDescriptorSet() {
+    void prepareDescriptorSet()
+    {
         const poolSizes = [
             DescriptorPoolSize(DescriptorType.uniformBuffer, 2),
             DescriptorPoolSize(DescriptorType.combinedImageSampler, 1)
         ];
         descPool = device.createDescriptorPool(1, poolSizes);
-        set = descPool.allocate([ setLayout ])[0];
+        set = descPool.allocate([ setLayout.obj ])[0];
 
         auto writes = [
             WriteDescriptorSet(set, 0, 0, new UniformBufferDescWrites([
@@ -272,7 +268,8 @@ class TextureExample : Example
         device.updateDescriptorSets(writes, []);
     }
 
-    void updateMatrices(in Matrices mat) {
+    void updateMatrices(in Matrices mat)
+    {
         auto mm = matBuf.boundMemory.map();
         auto v = mm.view!(Matrices[])(0, 1);
         v[0] = mat;
@@ -281,36 +278,20 @@ class TextureExample : Example
         device.flushMappedMemory(mms);
     }
 
-    override void recordCmds(size_t cmdBufInd, size_t imgInd) {
+    override void recordCmds(PerImage imgData)
+    {
         import gfx.graal.types : trans;
-
-        if (!perImages.length) {
-            perImages = new PerImage[scImages.length];
-        }
 
         const cv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         auto subrange = ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1);
 
-        auto buf = cmdBufs[cmdBufInd];
+        auto buf = imgData.cmdBufs[0];
 
         //buf.reset();
         buf.begin(No.persistent);
 
-        if (perImages[imgInd].undefinedLayout) {
-            buf.pipelineBarrier(
-                trans(PipelineStage.colorAttachmentOutput, PipelineStage.colorAttachmentOutput), [],
-                [ ImageMemoryBarrier(
-                    trans(Access.none, Access.colorAttachmentWrite),
-                    trans(ImageLayout.undefined, ImageLayout.presentSrc),
-                    trans(graphicsQueueIndex, graphicsQueueIndex),
-                    scImages[imgInd], subrange
-                ) ]
-            );
-            perImages[imgInd].undefinedLayout = false;
-        }
-
         buf.beginRenderPass(
-            renderPass, framebuffers[imgInd],
+            renderPass, imgData.framebuffer,
             Rect(0, 0, surfaceSize[0], surfaceSize[1]), [ ClearValues(cv) ]
         );
 
@@ -339,8 +320,8 @@ mat4 correctionMatrix() pure
     );
 }
 
-int main(string[] args) {
-
+int main(string[] args)
+{
     try {
         auto example = new TextureExample(args);
         example.prepare();
@@ -349,15 +330,6 @@ int main(string[] args) {
         example.window.onMouseOn = (uint, uint) {
             example.window.closeFlag = true;
         };
-
-        import std.datetime.stopwatch : StopWatch;
-
-        ulong frameCount;
-        ulong lastUs;
-        StopWatch sw;
-        sw.start();
-
-        enum reportFreq = 100;
 
         // 6 RPM at 60 FPS
         const puls = 6 * 2*PI / 3600f;
@@ -377,14 +349,9 @@ int main(string[] args) {
                 normals.transposed().matrix
             ) );
 
-            example.display.pollAndDispatch();
             example.render();
-            ++ frameCount;
-            if ((frameCount % reportFreq) == 0) {
-                const us = sw.peek().total!"usecs";
-                writeln("FPS: ", 1000_000.0 * reportFreq / (us - lastUs));
-                lastUs = us;
-            }
+            example.frameTick();
+            example.display.pollAndDispatch();
         }
 
         return 0;
