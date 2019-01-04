@@ -59,7 +59,7 @@ immutable Backend[] defaultBackendLoadOrder = [
 Display createDisplay(in Backend[] loadOrder=defaultBackendLoadOrder)
 {
     version(linux) {
-        enum useWayland = false;
+        enum useWayland = true;
         static if (useWayland) {
             import gfx.window.wayland : WaylandDisplay;
             return new WaylandDisplay;
