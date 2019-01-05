@@ -88,15 +88,18 @@ class WaylandDisplay : Display
         reg.destroy();
     }
 
-    override @property Instance instance() {
+    override @property Instance instance()
+    {
         return _instance;
     }
 
-    override @property Window[] windows() {
+    override @property Window[] windows()
+    {
         return _windows;
     }
 
-    override Window createWindow(in string title) {
+    override Window createWindow(in string title)
+    {
         if (xdgShell) {
             auto w = new XdgWaylandWindow(this, _instance, xdgShell, title);
             wldWindows ~= w;
@@ -109,12 +112,11 @@ class WaylandDisplay : Display
             _windows ~= w;
             return w;
         }
-        else {
-            return null;
-        }
+        throw new Exception("No shell available. Can't create any Wayland window.");
     }
 
-    override void pollAndDispatch() {
+    override void pollAndDispatch()
+    {
         while (display.prepareRead() != 0) {
             display.dispatchPending();
         }
@@ -124,7 +126,8 @@ class WaylandDisplay : Display
     }
 
 
-    package void unrefWindow(WaylandWindowBase window) {
+    package void unrefWindow(WaylandWindowBase window)
+    {
         import std.algorithm : remove;
         wldWindows = wldWindows.remove!(w => w is window);
         _windows = _windows.remove!(w => w is window);
@@ -242,6 +245,7 @@ class WaylandDisplay : Display
             compositor.destroy();
             compositor = null;
         }
+        _instance.unload();
         display.disconnect();
         display = null;
     }
@@ -286,6 +290,8 @@ private abstract class WaylandWindowBase : Window
             "Could ont create a Vulkan surface"
         );
         wlSurface.commit();
+        this.width = width;
+        this.height = height;
     }
 
     abstract protected void closeShell();
@@ -338,7 +344,8 @@ private abstract class WaylandWindowBase : Window
         }
     }
 
-    private void pointerMotion(WlFixed x, WlFixed y) {
+    private void pointerMotion(WlFixed x, WlFixed y)
+    {
         curX = x; curY = y;
         if (moveHandler) {
             moveHandler(cast(int)x, cast(int)y);
@@ -346,13 +353,16 @@ private abstract class WaylandWindowBase : Window
     }
 
 
-    private void pointerEnter(WlFixed x, WlFixed y) {
+    private void pointerEnter(WlFixed x, WlFixed y)
+    {
         curX = x; curY = y;
     }
 
-    private void pointerLeave() {}
+    private void pointerLeave()
+    {}
 
-    private void key(uint key, WlKeyboard.KeyState state) {
+    private void key(uint key, WlKeyboard.KeyState state)
+    {
         switch (state) {
         case WlKeyboard.KeyState.pressed:
             if (onKeyOnHandler) onKeyOnHandler(key);
@@ -367,12 +377,10 @@ private abstract class WaylandWindowBase : Window
 
     private WaylandDisplay dpy;
     private Instance instance;
-
     private WlSurface wlSurface;
     private Surface gfxSurface;
 
-    private string _title;
-
+    // event handlers
     private ResizeHandler resizeHandler;
     private MouseHandler moveHandler;
     private MouseHandler onHandler;
@@ -380,9 +388,14 @@ private abstract class WaylandWindowBase : Window
     private KeyHandler onKeyOnHandler;
     private KeyHandler onKeyOffHandler;
     private CloseHandler onCloseHandler;
+
+    // state handling
+    private bool _closeFlag;
+    private string _title;
     private WlFixed curX;
     private WlFixed curY;
-    private bool _closeFlag;
+    private uint width;
+    private uint height;
 }
 
 private class WaylandWindow : WaylandWindowBase
@@ -401,10 +414,17 @@ private class WaylandWindow : WaylandWindowBase
         };
 
         wlShellSurf.setToplevel();
+        wlShellSurf.onConfigure = &onConfigure;
     }
 
-    override protected void closeShell() {
+    override protected void closeShell()
+    {
         wlShellSurf.destroy();
+    }
+
+    private void onConfigure(WlShellSurface, WlShellSurface.Resize, int width, int height)
+    {
+        if (resizeHandler) resizeHandler(width, height);
     }
 
     private WlShell wlShell;
@@ -426,21 +446,39 @@ private class XdgWaylandWindow : WaylandWindowBase
 
 		xdgTopLevel.onConfigure = &onTLConfigure;
 		xdgTopLevel.onClose = &onTLClose;
-		xdgTopLevel.setTitle("Gfx-d Wayland window");
+		xdgTopLevel.setTitle(title);
 
-		xdgSurf.onConfigure = (XdgSurface surf, uint serial)
-		{
-			surf.ackConfigure(serial);
-			configured = true;
-		};
+		xdgSurf.onConfigure = (XdgSurface xdgSurf, uint serial)
+        {
+            xdgSurf.ackConfigure(serial);
+        };
+    }
+
+    override void setTitle(in string title)
+    {
+        _title = title;
+        if (xdgTopLevel) xdgTopLevel.setTitle(title);
     }
 
   	void onTLConfigure(XdgToplevel, int width, int height, wl_array* states)
 	{
+        if (width != 0) {
+            this.width = width;
+        }
+        if (height != 0) {
+            this.height = height;
+        }
+        if (resizeHandler) resizeHandler(this.width, this.height);
 	}
 
 	void onTLClose(XdgToplevel)
 	{
+        if (onCloseHandler) {
+            _closeFlag = onCloseHandler();
+        }
+        else {
+            _closeFlag = true;
+        }
 	}
 
     override protected void closeShell() {
