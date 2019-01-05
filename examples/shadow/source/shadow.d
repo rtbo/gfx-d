@@ -701,9 +701,9 @@ int main(string[] args)
         example.prepare();
         scope(exit) example.dispose();
 
-        // example.window.onMouseOn = (uint, uint) {
-        //     example.window.closeFlag = true;
-        // };
+        example.window.onMouseOn = (uint, uint) {
+            example.window.closeFlag = true;
+        };
 
         const winSize = example.surfaceSize;
         const proj = perspective(example.ndc, 45f, winSize[0]/(cast(float)winSize[1]), 1f, 20f);
