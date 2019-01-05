@@ -90,7 +90,8 @@ class StencilExample : Example
         super.dispose();
     }
 
-    override void prepare() {
+    override void prepare() 
+    {
         super.prepare();
         prepareChessboard();
         prepareBuffer();

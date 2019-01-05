@@ -18,6 +18,7 @@ import gfx.window;
 
 import std.algorithm;
 import std.exception;
+import std.stdio;
 import std.typecons;
 import std.traits : isArray;
 
@@ -499,6 +500,14 @@ class Example : Disposable
         );
     }
 
+    /// Find a supported stencil format
+    Format findStencilFormat() {
+        return findSupportedFormat(
+            [ Format.s8_uInt, Format.d16s8_uNorm, Format.d24s8_uNorm, Format.d32s8_sFloat ],
+            ImageTiling.optimal, FormatFeatures.depthStencilAttachment
+        );
+    }
+
     /// Return the index of a memory type supporting all of props,
     /// or uint.max if none was found.
     uint findMemType(MemoryRequirements mr, MemProps props)
@@ -676,8 +685,7 @@ class Example : Disposable
     Image createStencilImage(uint width, uint height)
     {
         // assume s8_uInt is supported
-        const f = Format.s8_uInt;
-
+        const f = findStencilFormat();
         // create an image
         auto img = enforce(device.createImage(
             ImageInfo.d2(width, height).withFormat(f).withUsage(ImageUsage.depthStencilAttachment)
