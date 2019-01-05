@@ -53,7 +53,7 @@ class Win32Display : Display
                     import gfx.window.win32.context : Win32GlContext;
 
                     gfxW32Log.trace("Attempting to instantiate OpenGL");
-                    auto w = new Win32Window(this, true);
+                    auto w = new Win32Window(this, "", true);
                     scope(exit) w.close();
                     auto ctx = makeRc!Win32GlContext(GlAttribs.init, w.hWnd);
                     gfxW32Log.trace("Creating an OpenGL instance");
@@ -86,8 +86,8 @@ class Win32Display : Display
     override @property Window[] windows() {
         return _iwindows;
     }
-    override Window createWindow() {
-        return new Win32Window(this, false);
+    override Window createWindow(string title) {
+        return new Win32Window(this, title, false);
     }
     override void pollAndDispatch() {
         MSG msg;
@@ -138,6 +138,8 @@ class Win32Display : Display
                     wnd._closeFlag = true;
                 }
                 return true;
+            case WM_SIZE:
+                return wnd.handleResize(wParam, lParam);
             case WM_LBUTTONDOWN:
             case WM_LBUTTONUP:
             case WM_MBUTTONDOWN:
@@ -166,6 +168,7 @@ class Win32Window : Window
     private HWND hWnd;
     private Rc!Surface gfxSurface;
 
+    private ResizeHandler resizeHandler;
     private MouseHandler moveHandler;
     private MouseHandler onHandler;
     private MouseHandler offHandler;
@@ -173,14 +176,18 @@ class Win32Window : Window
     private KeyHandler keyOffHandler;
     private CloseHandler closeHandler;
     private bool mouseOut;
+    private string tit;
+    private uint width;
+    private uint height;
     private bool _closeFlag;
     private bool dummy;
 
-    this(Win32Display dpy, bool dummy=false)
+    this(Win32Display dpy, string title, bool dummy=false)
     {
         import std.utf : toUTF16z;
 
         this.dpy = dpy;
+        this.tit = title;
         this.dummy = dummy;
 
         HINSTANCE hInstance = GetModuleHandle(null);
@@ -201,6 +208,8 @@ class Win32Window : Window
         );
 
         if (dummy) return;
+
+        SetWindowTextW(hWnd, tit.toUTF16z);
 
         // What follow is a non-portable way to have alpha value of framebuffer used in desktop composition
         // (by default composition makes window completely opaque)
@@ -261,6 +270,22 @@ class Win32Window : Window
         _closeFlag = flag;
     }
 
+    override @property string title()
+    {
+        return tit;
+    }
+    
+    override void setTitle(string title)
+    {
+        import std.utf : toUTF16z;
+
+        tit = title;
+        SetWindowTextW(hWnd, tit.toUTF16z);
+    }
+
+    override @property void onResize(ResizeHandler handler) {
+        resizeHandler = handler;
+    }
     override @property void onMouseMove(MouseHandler handler) {
         moveHandler = handler;
     }
@@ -284,7 +309,31 @@ class Win32Window : Window
         return gfxSurface.obj;
     }
 
-    private bool handleMouse(UINT msg, WPARAM wParam, LPARAM lParam) {
+    bool handleResize(WPARAM wParam, LPARAM lParam)
+    {
+        switch (wParam)
+        {
+            case SIZE_MAXSHOW:
+            case SIZE_MAXHIDE:
+            case SIZE_MINIMIZED:
+                return false;
+            case SIZE_MAXIMIZED:
+            case SIZE_RESTORED:
+                const w = GET_X_LPARAM(lParam);
+                const h = GET_Y_LPARAM(lParam);
+                if (w != width || h != height) {
+                    width = w;
+                    height = h;
+                    if (resizeHandler) resizeHandler(width, height);
+                }
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private bool handleMouse(UINT msg, WPARAM wParam, LPARAM lParam) 
+    {
         const x = GET_X_LPARAM(lParam);
         const y = GET_Y_LPARAM(lParam);
 
