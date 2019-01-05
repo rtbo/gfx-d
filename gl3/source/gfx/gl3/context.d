@@ -84,7 +84,12 @@ immutable string[] glRequiredExtensions = [
 immutable string[] glOptionalExtensions = [
     "GL_ARB_buffer_storage",
     "GL_ARB_texture_storage",
-    "GL_ARB_sampler_object"
+    "GL_ARB_texture_storage_multisample",
+    "GL_ARB_sampler_object",
+    "ARB_draw_elements_base_vertex",
+    "ARB_base_instance",
+    "ARB_viewport_array",
+    "GL_EXT_polygon_offset_clamp",
 ];
 
 string[] glAvailableExtensions(Gl gl)
