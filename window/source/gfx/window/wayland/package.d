@@ -8,7 +8,7 @@ import gfx.graal : Instance;
 import gfx.graal.presentation;
 import gfx.vulkan.wsi;
 import gfx.window;
-import gfx.window.wayland.zxdg_shell_v6;
+import gfx.window.wayland.xdg_shell;
 
 import wayland.client;
 import wayland.native.util;
@@ -34,7 +34,7 @@ class WaylandDisplay : Display
     private WlKeyboard kbd;
 
     private WlShell wlShell;
-    private ZxdgShellV6 xdgShell;
+    private XdgWmBase xdgShell;
 
     private Rc!Instance _instance;
 
@@ -74,12 +74,12 @@ class WaylandDisplay : Display
                     name, WlShell.iface, min(ver, 1)
                 );
             }
-            else if (iface == ZxdgShellV6.iface.name)
+            else if (iface == XdgWmBase.iface.name)
             {
-                xdgShell = cast(ZxdgShellV6)reg.bind(
-                    name, ZxdgShellV6.iface, min(ver, 1)
+                xdgShell = cast(XdgWmBase)reg.bind(
+                    name, XdgWmBase.iface, min(ver, 1)
                 );
-                xdgShell.onPing = (ZxdgShellV6 shell, uint serial) {
+                xdgShell.onPing = (XdgWmBase shell, uint serial) {
                     shell.pong(serial);
                 };
             }
@@ -413,7 +413,7 @@ private class WaylandWindow : WaylandWindowBase
 
 private class XdgWaylandWindow : WaylandWindowBase
 {
-    this (WaylandDisplay display, Instance instance, ZxdgShellV6 xdgShell, string title)
+    this (WaylandDisplay display, Instance instance, XdgWmBase xdgShell, string title)
     {
         super(display, instance, title);
         this.xdgShell = xdgShell;
@@ -428,18 +428,18 @@ private class XdgWaylandWindow : WaylandWindowBase
 		xdgTopLevel.onClose = &onTLClose;
 		xdgTopLevel.setTitle("Gfx-d Wayland window");
 
-		xdgSurf.onConfigure = (ZxdgSurfaceV6 surf, uint serial)
+		xdgSurf.onConfigure = (XdgSurface surf, uint serial)
 		{
 			surf.ackConfigure(serial);
 			configured = true;
 		};
     }
 
-  	void onTLConfigure(ZxdgToplevelV6, int width, int height, wl_array* states)
+  	void onTLConfigure(XdgToplevel, int width, int height, wl_array* states)
 	{
 	}
 
-	void onTLClose(ZxdgToplevelV6)
+	void onTLClose(XdgToplevel)
 	{
 	}
 
@@ -449,7 +449,7 @@ private class XdgWaylandWindow : WaylandWindowBase
     }
 
     private bool configured;
-    private ZxdgShellV6 xdgShell;
-    private ZxdgSurfaceV6 xdgSurf;
-    private ZxdgToplevelV6 xdgTopLevel;
+    private XdgWmBase xdgShell;
+    private XdgSurface xdgSurf;
+    private XdgToplevel xdgTopLevel;
 }

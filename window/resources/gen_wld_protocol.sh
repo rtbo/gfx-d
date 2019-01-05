@@ -23,7 +23,7 @@ gen_protocol () {
     fi
 }
 
-ZXDG_XML=$RES_DIR/xdg-shell-unstable-v6.xml
-ZXDG_SRC=$SRC_DIR/gfx/window/wayland/zxdg_shell_v6.d
-
-gen_protocol gfx.window.wayland.zxdg_shell_v6 $ZXDG_XML $ZXDG_SRC
+gen_protocol \
+    gfx.window.wayland.xdg_shell \
+    $RES_DIR/xdg-shell.xml \
+    $SRC_DIR/gfx/window/wayland/xdg_shell.d

@@ -13,7 +13,7 @@ docs.json
 
 # Linux
 *.a
-window/source/gfx/window/wayland/zxdg_shell_v6.d
+window/source/gfx/window/wayland/xdg_shell.d
 
 # example/test executables
 examples/**/gfx_*

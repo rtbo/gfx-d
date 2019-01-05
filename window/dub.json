@@ -24,7 +24,7 @@
                 "sh $PACKAGE_DIR/resources/gen_wld_protocol.sh $PACKAGE_DIR"
             ],
             "sourceFiles": [
-                "source/gfx/window/wayland/zxdg_shell_v6.d"
+                "source/gfx/window/wayland/xdg_shell.d"
             ]
         },
         {
