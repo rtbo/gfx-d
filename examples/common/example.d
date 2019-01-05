@@ -189,14 +189,18 @@ class Example : Disposable
         display = createDisplay(backendLoadOrder);
         instance = display.instance;
         ndc = instance.apiProps.ndc;
+
         // Create a window. The surface is created during the call to show.
         window = display.createWindow(title);
         window.show(640, 480);
+        surfaceSize = [640, 480];
 
-        // the swapchain will report when rebuild is needed, no need to
-        // call rebuildSwapchain explicitely
-        window.onResize = (uint w, uint h) {
-            surfaceSize = [ w, h ];
+        window.onResize = (uint w, uint h)
+        {
+            if (w != surfaceSize[0] || h != surfaceSize[1]) {
+                surfaceSize = [ w, h ];
+                rebuildSwapchain();
+            }
         };
 
         alias Sev = gfx.graal.Severity;
@@ -268,6 +272,8 @@ class Example : Disposable
 
     void prepareSwapchain(Swapchain former=null)
     {
+        log.infof("building swapchain %sx%s", surfaceSize[0], surfaceSize[1]);
+
         const surfCaps = physicalDevice.surfaceCaps(window.surface);
         enforce(surfCaps.usage & ImageUsage.transferDst, "TransferDst not supported by surface");
         enforce(surfCaps.usage & ImageUsage.colorAttachment, "ColorAttachment not supported by surface");
@@ -291,7 +297,6 @@ class Example : Disposable
         }
         hasAlpha = ca != CompositeAlpha.opaque;
 
-        surfaceSize = [ 640, 480 ];
         foreach (i; 0..2) {
             surfaceSize[i] = clamp(surfaceSize[i], surfCaps.minSize[i], surfCaps.maxSize[i]);
         }

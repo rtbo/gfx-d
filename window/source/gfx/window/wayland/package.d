@@ -170,7 +170,7 @@ class WaylandDisplay : Display
         foreach (w; wldWindows) {
             if (w.wlSurface is surface) {
                 pointedWindow = w;
-                w.pointerEnter(surfaceX, surfaceY);
+                w.pointerEnter(surfaceX, surfaceY, serial);
                 break;
             }
         }
@@ -180,28 +180,28 @@ class WaylandDisplay : Display
                         WlPointer.ButtonState state)
     {
         if (pointedWindow) {
-            pointedWindow.pointerButton(state);
+            pointedWindow.pointerButton(state, serial);
             focusWindow = pointedWindow;
         }
     }
 
-    private void pointerMotion(WlPointer, uint, WlFixed surfaceX, WlFixed surfaceY)
+    private void pointerMotion(WlPointer, uint serial, WlFixed surfaceX, WlFixed surfaceY)
     {
         if (pointedWindow) {
-            pointedWindow.pointerMotion(surfaceX, surfaceY);
+            pointedWindow.pointerMotion(surfaceX, surfaceY, serial);
         }
     }
 
     private void pointerLeave(WlPointer pointer, uint serial, WlSurface surface)
     {
         if (pointedWindow && pointedWindow.wlSurface is surface) {
-            pointedWindow.pointerLeave();
+            pointedWindow.pointerLeave(serial);
             pointedWindow = null;
         }
         else {
             foreach (w; wldWindows) {
                 if (w.wlSurface is surface) {
-                    w.pointerLeave();
+                    w.pointerLeave(serial);
                     break;
                 }
             }
@@ -212,10 +212,10 @@ class WaylandDisplay : Display
             WlKeyboard.KeyState state)
     {
         if (focusWindow) {
-            focusWindow.key(key, state);
+            focusWindow.key(key, state, serial);
         }
         else if (wldWindows.length) {
-            wldWindows[0].key(key, state);
+            wldWindows[0].key(key, state, serial);
         }
     }
 
@@ -250,6 +250,8 @@ class WaylandDisplay : Display
         display = null;
     }
 }
+
+private alias Side = XdgToplevel.ResizeEdge;
 
 private abstract class WaylandWindowBase : Window
 {
@@ -331,12 +333,21 @@ private abstract class WaylandWindowBase : Window
     }
 
 
-    private void pointerButton(WlPointer.ButtonState state) {
+    private void pointerButton(WlPointer.ButtonState state, uint serial)
+    {
         switch (state) {
         case WlPointer.ButtonState.pressed:
-            if (onHandler) onHandler(cast(int)curX, cast(int)curY);
+            gfxWlLog.info("button on");
+            const side = checkResizeArea();
+            if (side != Side.none) {
+                startResize(side, serial);
+            }
+            else {
+                if (onHandler) onHandler(cast(int)curX, cast(int)curY);
+            }
             break;
         case WlPointer.ButtonState.released:
+            gfxWlLog.info("button off");
             if (offHandler) offHandler(cast(int)curX, cast(int)curY);
             break;
         default:
@@ -344,7 +355,7 @@ private abstract class WaylandWindowBase : Window
         }
     }
 
-    private void pointerMotion(WlFixed x, WlFixed y)
+    private void pointerMotion(WlFixed x, WlFixed y, uint serial)
     {
         curX = x; curY = y;
         if (moveHandler) {
@@ -353,15 +364,17 @@ private abstract class WaylandWindowBase : Window
     }
 
 
-    private void pointerEnter(WlFixed x, WlFixed y)
+    private void pointerEnter(WlFixed x, WlFixed y, uint serial)
     {
         curX = x; curY = y;
     }
 
-    private void pointerLeave()
-    {}
+    private void pointerLeave(uint serial)
+    {
 
-    private void key(uint key, WlKeyboard.KeyState state)
+    }
+
+    private void key(uint key, WlKeyboard.KeyState state, uint serial)
     {
         switch (state) {
         case WlKeyboard.KeyState.pressed:
@@ -373,6 +386,24 @@ private abstract class WaylandWindowBase : Window
         default:
             break;
         }
+    }
+
+    protected abstract void startResize(Side side, uint serial);
+
+    private Side checkResizeArea()
+    {
+        const x = cast(int)curX;
+        const y = cast(int)curY;
+
+        Side side = Side.none;
+
+        if (x < resizeMargin) side |= Side.left;
+        else if (x >= width - resizeMargin) side |= Side.right;
+
+        if (y < resizeMargin) side |= Side.top;
+        else if (y >= height - resizeMargin) side |= Side.top;
+
+        return side;
     }
 
     private WaylandDisplay dpy;
@@ -396,6 +427,9 @@ private abstract class WaylandWindowBase : Window
     private WlFixed curY;
     private uint width;
     private uint height;
+
+    // parameters
+    private enum resizeMargin = 4;
 }
 
 private class WaylandWindow : WaylandWindowBase
@@ -420,6 +454,11 @@ private class WaylandWindow : WaylandWindowBase
     override protected void closeShell()
     {
         wlShellSurf.destroy();
+    }
+
+    override protected void startResize(Side side, uint serial)
+    {
+        wlShellSurf.resize(dpy.seat, serial, cast(WlShellSurface.Resize)side);
     }
 
     private void onConfigure(WlShellSurface, WlShellSurface.Resize, int width, int height)
@@ -481,9 +520,15 @@ private class XdgWaylandWindow : WaylandWindowBase
         }
 	}
 
-    override protected void closeShell() {
+    override protected void closeShell()
+    {
         xdgTopLevel.destroy();
         xdgSurf.destroy();
+    }
+
+    override protected void startResize(Side side, uint serial)
+    {
+        xdgTopLevel.resize(dpy.seat, serial, cast(uint)side);
     }
 
     private bool configured;
