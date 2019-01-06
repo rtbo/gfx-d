@@ -11,16 +11,12 @@ import gfx.window;
 import gfx.window.wayland.xdg_shell;
 
 import wayland.client;
+import wayland.cursor;
 import wayland.native.util;
 import wayland.util;
 
 enum gfxWlLogMask = 0x0800_0000;
 package immutable gfxWlLog = LogTag("GFX-WL", gfxWlLogMask);
-
-// FIXME: multithreading
-// TODO: decorations with title and close button
-//       need freetype and font matching:
-//       $ fc-match mono -b | sed -n 's/\s*file: "\(.*\)"(\w)/\1/p'
 
 class WaylandDisplay : Display
 {
@@ -29,9 +25,14 @@ class WaylandDisplay : Display
 
     private WlDisplay display;
     private WlCompositor compositor;
+    private WlShm shm;
     private WlSeat seat;
     private WlPointer pointer;
     private WlKeyboard kbd;
+
+    private WlCursorTheme cursorTheme;
+    private WlCursor[string] cursors;
+    private WlSurface cursorSurf;
 
     private WlShell wlShell;
     private XdgWmBase xdgShell;
@@ -43,7 +44,10 @@ class WaylandDisplay : Display
     private WaylandWindowBase focusWindow;
     private Window[] _windows;
 
-    this() {
+    this()
+    {
+        import std.exception : enforce;
+
         {
             // Only vulkan is supported. Let failure throw it.
             import gfx.vulkan : createVulkanInstance, vulkanInit;
@@ -60,6 +64,25 @@ class WaylandDisplay : Display
                 compositor = cast(WlCompositor)reg.bind(
                     name, WlCompositor.iface, min(ver, 4)
                 );
+            }
+            else if (iface == WlShm.iface.name)
+            {
+                shm = cast(WlShm)reg.bind(
+                    name, WlShm.iface, min(ver, 1)
+                );
+                cursorTheme = enforce(
+                    WlCursorTheme.load(null, 24, shm),
+                    "Unable to load default cursor theme"
+                );
+                const cursorIds = [
+                    "default", "n-resize", "ne-resize", "e-resize", "se-resize",
+                    "s-resize", "sw-resize", "w-resize", "nw-resize"
+                ];
+                foreach (cid; cursorIds) {
+                    cursors[cid] = enforce(
+                        cursorTheme.cursor(cid), "Unable to load "~cid~" from the default cursor theme"
+                    );
+                }
             }
             else if(iface == WlSeat.iface.name)
             {
@@ -86,6 +109,7 @@ class WaylandDisplay : Display
         };
         display.roundtrip();
         reg.destroy();
+        cursorSurf = compositor.createSurface();
     }
 
     override @property Instance instance()
@@ -125,7 +149,6 @@ class WaylandDisplay : Display
         display.dispatchPending();
     }
 
-
     package void unrefWindow(WaylandWindowBase window)
     {
         import std.algorithm : remove;
@@ -162,7 +185,6 @@ class WaylandDisplay : Display
             kbd = null;
         }
     }
-
 
     private void pointerEnter(WlPointer pointer, uint serial, WlSurface surface,
                         WlFixed surfaceX, WlFixed surfaceY)
@@ -220,6 +242,21 @@ class WaylandDisplay : Display
     }
 
 
+    private void setCursor(string cursorId, uint serial)
+    {
+        auto cursor = cursors[cursorId];
+        if (cursor.images.length > 1) {
+            gfxWlLog.warning("animated cursors are not supported, only showing first frame");
+        }
+        auto img = cursor.images[0];
+        auto buf = img.buffer;
+        if (!buf) return;
+        pointer.setCursor(serial, cursorSurf, img.hotspotX, img.hotspotY);
+        cursorSurf.attach(buf, 0, 0);
+        cursorSurf.damage(0, 0, img.width, img.height);
+        cursorSurf.commit();
+    }
+
     override void dispose()
     {
         if (wldWindows.length) {
@@ -229,6 +266,15 @@ class WaylandDisplay : Display
         assert(!wldWindows.length);
         assert(!_windows.length);
 
+        cursors = null;
+        if (cursorTheme) {
+            cursorTheme.destroy();
+            cursorTheme = null;
+        }
+        if (cursorSurf) {
+            cursorSurf.destroy();
+            cursorSurf = null;
+        }
         if (pointer) {
             pointer.destroy();
             pointer = null;
@@ -252,6 +298,23 @@ class WaylandDisplay : Display
 }
 
 private alias Side = XdgToplevel.ResizeEdge;
+
+private string sideToCursor(Side side)
+{
+    final switch (side)
+    {
+    case Side.none:         return "default";
+    case Side.top:          return "n-resize";
+    case Side.bottom:       return "s-resize";
+    case Side.left:         return "w-resize";
+    case Side.right:        return "e-resize";
+    case Side.topLeft:      return "nw-resize";
+    case Side.topRight:     return "ne-resize";
+    case Side.bottomLeft:   return "sw-resize";
+    case Side.bottomRight:  return "se-resize";
+    }
+}
+
 
 private abstract class WaylandWindowBase : Window
 {
@@ -332,12 +395,10 @@ private abstract class WaylandWindowBase : Window
         _closeFlag = flag;
     }
 
-
     private void pointerButton(WlPointer.ButtonState state, uint serial)
     {
         switch (state) {
         case WlPointer.ButtonState.pressed:
-            gfxWlLog.info("button on");
             const side = checkResizeArea();
             if (side != Side.none) {
                 startResize(side, serial);
@@ -347,7 +408,6 @@ private abstract class WaylandWindowBase : Window
             }
             break;
         case WlPointer.ButtonState.released:
-            gfxWlLog.info("button off");
             if (offHandler) offHandler(cast(int)curX, cast(int)curY);
             break;
         default:
@@ -358,6 +418,12 @@ private abstract class WaylandWindowBase : Window
     private void pointerMotion(WlFixed x, WlFixed y, uint serial)
     {
         curX = x; curY = y;
+
+        const side = checkResizeArea();
+        if (side != currentSide) {
+            dpy.setCursor(side.sideToCursor(), serial);
+            currentSide = side;
+        }
         if (moveHandler) {
             moveHandler(cast(int)x, cast(int)y);
         }
@@ -367,12 +433,13 @@ private abstract class WaylandWindowBase : Window
     private void pointerEnter(WlFixed x, WlFixed y, uint serial)
     {
         curX = x; curY = y;
+        const side = checkResizeArea();
+        dpy.setCursor(side.sideToCursor(), serial);
+        currentSide = side;
     }
 
     private void pointerLeave(uint serial)
-    {
-
-    }
+    {}
 
     private void key(uint key, WlKeyboard.KeyState state, uint serial)
     {
@@ -397,11 +464,11 @@ private abstract class WaylandWindowBase : Window
 
         Side side = Side.none;
 
-        if (x < resizeMargin) side |= Side.left;
+        if (x <= resizeMargin) side |= Side.left;
         else if (x >= width - resizeMargin) side |= Side.right;
 
-        if (y < resizeMargin) side |= Side.top;
-        else if (y >= height - resizeMargin) side |= Side.top;
+        if (y <= resizeMargin) side |= Side.top;
+        else if (y >= height - resizeMargin) side |= Side.bottom;
 
         return side;
     }
@@ -427,14 +494,16 @@ private abstract class WaylandWindowBase : Window
     private WlFixed curY;
     private uint width;
     private uint height;
+    private Side currentSide;
 
     // parameters
-    private enum resizeMargin = 4;
+    private enum resizeMargin = 5;
 }
 
 private class WaylandWindow : WaylandWindowBase
 {
-    this (WaylandDisplay display, Instance instance, WlShell wlShell, string title) {
+    this (WaylandDisplay display, Instance instance, WlShell wlShell, string title)
+    {
         super(display, instance, title);
         this.wlShell = wlShell;
     }
@@ -483,11 +552,11 @@ private class XdgWaylandWindow : WaylandWindowBase
         xdgSurf = xdgShell.getXdgSurface(wlSurf);
         xdgTopLevel = xdgSurf.getToplevel();
 
-		xdgTopLevel.onConfigure = &onTLConfigure;
-		xdgTopLevel.onClose = &onTLClose;
-		xdgTopLevel.setTitle(title);
+        xdgTopLevel.onConfigure = &onTLConfigure;
+        xdgTopLevel.onClose = &onTLClose;
+        xdgTopLevel.setTitle(title);
 
-		xdgSurf.onConfigure = (XdgSurface xdgSurf, uint serial)
+        xdgSurf.onConfigure = (XdgSurface xdgSurf, uint serial)
         {
             xdgSurf.ackConfigure(serial);
         };
@@ -499,8 +568,8 @@ private class XdgWaylandWindow : WaylandWindowBase
         if (xdgTopLevel) xdgTopLevel.setTitle(title);
     }
 
-  	void onTLConfigure(XdgToplevel, int width, int height, wl_array* states)
-	{
+      void onTLConfigure(XdgToplevel, int width, int height, wl_array* states)
+    {
         if (width != 0) {
             this.width = width;
         }
@@ -508,17 +577,17 @@ private class XdgWaylandWindow : WaylandWindowBase
             this.height = height;
         }
         if (resizeHandler) resizeHandler(this.width, this.height);
-	}
+    }
 
-	void onTLClose(XdgToplevel)
-	{
+    void onTLClose(XdgToplevel)
+    {
         if (onCloseHandler) {
             _closeFlag = onCloseHandler();
         }
         else {
             _closeFlag = true;
         }
-	}
+    }
 
     override protected void closeShell()
     {
@@ -532,6 +601,7 @@ private class XdgWaylandWindow : WaylandWindowBase
     }
 
     private bool configured;
+    private bool geometrySet;
     private XdgWmBase xdgShell;
     private XdgSurface xdgSurf;
     private XdgToplevel xdgTopLevel;
