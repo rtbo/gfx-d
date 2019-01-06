@@ -60,11 +60,11 @@ struct FpsProbe
 
 shared static this()
 {
-    debug(rc) {
-        import gfx.core.log : Severity, severity;
-        import gfx.core.rc : rcPrintStack, rcTypeRegex;
+    import gfx.core.log : Severity, severity;
+    severity = Severity.trace;
 
-        severity = Severity.trace;
+    debug(rc) {
+        import gfx.core.rc : rcPrintStack, rcTypeRegex;
         rcPrintStack = true;
         rcTypeRegex = "^GlDevice$";
     }
@@ -435,7 +435,7 @@ class Example : Disposable
         frameNumber += 1;
         collectGarbage();
 
-        enum reportPeriod = 120;
+        enum reportPeriod = 300;
         probe.tick();
         if (probe.framecount % reportPeriod == 0) {
             log.infof("FPS = %s", probe.computeFps());
