@@ -12,6 +12,8 @@ import gfx.graal.pipeline;
 import gfx.graal.renderpass;
 import gfx.graal.sync;
 import gfx.graal.types;
+import gfx.window;
+import gfx.window.keys;
 
 import gfx.math;
 
@@ -701,8 +703,11 @@ int main(string[] args)
         example.prepare();
         scope(exit) example.dispose();
 
-        example.window.onMouseOn = (uint, uint) {
-            example.window.closeFlag = true;
+        example.window.onKeyOn = (KeyEvent ev)
+        {
+            if (ev.sym == KeySym.escape) {
+                example.window.closeFlag = true;
+            }
         };
 
         const winSize = example.surfaceSize;

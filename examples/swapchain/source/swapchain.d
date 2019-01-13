@@ -5,6 +5,8 @@ import example;
 import gfx.graal.cmd;
 import gfx.graal.image;
 import gfx.graal.types;
+import gfx.window;
+import gfx.window.keys;
 
 import std.typecons;
 
@@ -58,8 +60,11 @@ int main(string[] args)
         example.prepare();
         scope(exit) example.dispose();
 
-        example.window.onMouseOn = (uint, uint) {
-            example.window.closeFlag = true;
+        example.window.onKeyOn = (KeyEvent ev)
+        {
+            if (ev.sym == KeySym.escape) {
+                example.window.closeFlag = true;
+            }
         };
 
         while (!example.window.closeFlag) {
