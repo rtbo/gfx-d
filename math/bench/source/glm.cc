@@ -17,9 +17,8 @@ void print(const glm::mat4 & m) {
     std::cout << "]\n";
 }
 
-extern "C" int glm_matmul()
+extern "C" int glm_matmul(int iter)
 {
-    constexpr int iter = 1000000;
     const auto axis = glm::vec3(1, 2, 3);
     const auto sc = glm::vec3(0.5, 2, 0.5);
     const auto tr = glm::vec3(4, 5, 6);
@@ -48,9 +47,8 @@ extern "C" int glm_matmul()
     return iter;
 }
 
-extern "C" int glm_matinv()
+extern "C" int glm_matinv(int iter)
 {
-    constexpr int iter = 1000000;
     const auto axis = glm::vec3(1, 2, 3);
     const auto sc = glm::vec3(0.5, 2, 0.5);
     const auto tr = glm::vec3(4, 5, 6);

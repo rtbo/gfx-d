@@ -170,40 +170,6 @@ graal:Pipeline {
  - inverse matrix
  - floating point utility
 
-Performance is decent. Here is a result of the `math/bench` benchmark:
-
-```
-DMD / GCC
-Benchmark: Matrix multiplication
-                 Lib                gfx:math                    gl3n                     glm
-            Compiler    Digital Mars D-2.083    Digital Mars D-2.083               g++-8.2.1
-       Iter/s single              1.4487e+07             1.34417e+07                  971031
-     Iter/s parallel             8.24903e+06              6.9573e+06                  611099
-
-Benchmark: Matrix inversion
-                 Lib                gfx:math                    gl3n                     glm
-            Compiler    Digital Mars D-2.083    Digital Mars D-2.083               g++-8.2.1
-       Iter/s single             1.27457e+06             5.81385e+06                  497396
-     Iter/s parallel                  850722             3.66418e+06                  307588
-
-LDC / Clang
-Benchmark: Matrix multiplication
-                 Lib                gfx:math                    gl3n                     glm
-            Compiler               LDC-2.083               LDC-2.083             clang-7.0.1
-       Iter/s single             5.52267e+07             6.50728e+07                  829559
-     Iter/s parallel             3.97197e+07             4.41865e+07                  558878
-
-Benchmark: Matrix inversion
-                 Lib                gfx:math                    gl3n                     glm
-            Compiler               LDC-2.083               LDC-2.083             clang-7.0.1
-       Iter/s single             4.64467e+06             9.82511e+06                  436288
-     Iter/s parallel             3.53922e+06             5.47816e+06                  262428
-```
-It is surprising to see that a popular C++ library underperforms compared to D
-libraries. It is possibly due to the fact that GLM is column-major, whereas
-gfx:math and gl3n are both row-major.
-
-
 ## gfx:memalloc - A graphics memory allocator
 
 ```d

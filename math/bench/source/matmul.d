@@ -2,15 +2,15 @@ module matmul;
 
 import std.stdio;
 
-enum iter = 1_000_000;
+extern(C) int glm_matmul(int iter);
 
-extern(C) int glm_matmul();
-
-int glmMatMul() {
-    return glm_matmul();
+int glmMatMul(int iter)
+{
+    return glm_matmul(iter);
 }
 
-int gfxMatMul() {
+int gfxMatMul(int iter)
+{
     import gfx.math;
     const axis = fvec(1, 2, 3);
     const sc = fvec(0.5, 2, 0.5);
@@ -37,7 +37,8 @@ int gfxMatMul() {
 }
 
 
-int gl3nMatMul() {
+int gl3nMatMul(int iter)
+{
     import gl3n.linalg;
     const axis = vec3(1, 2, 3);
     const sc = vec3(0.5, 2, 0.5);

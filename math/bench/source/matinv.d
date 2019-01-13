@@ -2,15 +2,15 @@ module matinv;
 
 import std.stdio;
 
-enum iter = 1_000_000;
+extern(C) int glm_matinv(int iter);
 
-extern(C) int glm_matinv();
-
-int glmMatInv() {
-    return glm_matinv();
+int glmMatInv(int iter)
+{
+    return glm_matinv(iter);
 }
 
-int gfxMatInv() {
+int gfxMatInv(int iter)
+{
     import gfx.math;
     const axis = fvec(1, 2, 3);
     const sc = fvec(0.5, 2, 0.5);
@@ -30,7 +30,8 @@ int gfxMatInv() {
 }
 
 
-int gl3nMatInv() {
+int gl3nMatInv(int iter)
+{
     import gl3n.linalg;
     const axis = vec3(1, 2, 3);
     const sc = vec3(0.5, 2, 0.5);
