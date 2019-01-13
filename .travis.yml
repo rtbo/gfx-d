@@ -17,6 +17,9 @@ addons:
       - gcc-8
       - libwayland-dev
       - libx11-xcb-dev
+      - libxcb-xkb-dev
+      - libxkbcommon-dev
+      - libxkbcommon-x11-dev
       - libpng16-dev
       - libjpeg-turbo8-dev
 script:
