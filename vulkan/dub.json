@@ -17,7 +17,7 @@
             "name": "linux",
             "platforms": ["linux"],
             "dependencies": {
-                "wayland:client": "~>0.1.3",
+                "wayland:client": "~>0.2.0",
                 "xcb-d": "~>2.1.1"
             }
         },
