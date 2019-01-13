@@ -6,6 +6,7 @@ version(Windows):
 import core.sys.windows.windows;
 import gfx.graal.presentation;
 import gfx.window;
+import gfx.window.keys;
 
 import std.exception;
 import gfx.core.log : LogTag;
@@ -336,13 +337,14 @@ class Win32Window : Window
     {
         const x = GET_X_LPARAM(lParam);
         const y = GET_Y_LPARAM(lParam);
+        const mods = keyMods;
 
         switch (msg) {
         case WM_LBUTTONDOWN:
         case WM_MBUTTONDOWN:
         case WM_RBUTTONDOWN:
             if (onHandler) {
-                onHandler(x, y);
+                onHandler(MouseEvent(x, y, mods));
                 return true;
             }
             break;
@@ -350,7 +352,7 @@ class Win32Window : Window
         case WM_MBUTTONUP:
         case WM_RBUTTONUP:
             if (offHandler) {
-                offHandler(x, y);
+                offHandler(MouseEvent(x, y, mods));
                 return true;
             }
             break;
@@ -367,7 +369,7 @@ class Win32Window : Window
                 TrackMouseEvent(&tm);
             }
             if (moveHandler) {
-                moveHandler(x, y);
+                moveHandler(MouseEvent(x, y, mods));
                 return true;
             }
             break;
@@ -382,23 +384,65 @@ class Win32Window : Window
         return false;
     }
 
-    private bool handleKey(UINT msg, WPARAM wParam, LPARAM lParam) {
-        KeyHandler handler;
-        if (msg == WM_KEYDOWN) {
-            handler = keyOnHandler;
-        }
-        else if (msg == WM_KEYUP) {
-            handler = keyOffHandler;
+    private bool handleKey(UINT msg, WPARAM wParam, LPARAM lParam) 
+    {
+        import gfx.window.win32.keymap : getKeysym, getKeycode;
+        import std.conv : to;
+
+        assert(msg != WM_CHAR, "WM_CHAR must be intercepted before delivery!");
+        assert(msg == WM_KEYDOWN || msg == WM_KEYUP, "Wrong delivery");
+
+        if (wParam < 0 || wParam >= 256) {
+            gfxW32Log.warningf("key %s received a virtual key out of byte boundary: %s",
+                        msg == WM_KEYDOWN?"down":"up", wParam);
+            return false;
         }
 
+        const sym = getKeysym(wParam);
+        const scancode = cast(ubyte)((lParam & scanCodeMask) >> 16);
+        const code = getKeycode(scancode);
+
+        KeyHandler handler;
+        string text;
+
+        switch (msg) {
+        case WM_KEYDOWN:
+            text = peekCharMsg().to!string;
+            // const repeat = ((lParam & previousStateMask) != 0);
+            // const repeatCount = lParam & repeatCountMask;
+            handler = keyOnHandler;
+            break;
+        case WM_KEYUP:
+            handler = keyOffHandler;
+            break;
+        default:
+            break;
+        }   
+
         if (handler) {
-            handler(cast(int)lParam); // TODO: sym, text, scancode and repeat from dgt
+            handler(KeyEvent(sym, code, keyMods, text)); 
             return true;
         }
         else {
             return false;
         }
+    }        
+    
+    wstring peekCharMsg()
+    {
+        MSG msg;
+        if (PeekMessage(&msg, hWnd, WM_CHAR, WM_CHAR, PM_REMOVE))
+        {
+            immutable auto count = msg.lParam & repeatCountMask;
+            auto str = new wchar[count];
+            str[] = cast(wchar)msg.wParam;
+
+            import std.exception : assumeUnique;
+            return assumeUnique(str);
+        }
+        return "";
     }
+
 }
 
 private __gshared Win32Display g_dpy;
@@ -430,12 +474,16 @@ package void registerWindowClass()
     enforce(RegisterClassExW(&wc), "could not register win32 window class");
 }
 
-package int GET_X_LPARAM(in LPARAM lp) pure
+private enum uint previousStateMask = 0x40000000;
+private enum uint repeatCountMask = 0x0000ffff;
+private enum uint scanCodeMask = 0x00ff0000;
+
+private int GET_X_LPARAM(in LPARAM lp) pure
 {
     return cast(int)(lp & 0x0000ffff);
 }
 
-package int GET_Y_LPARAM(in LPARAM lp) pure
+private int GET_Y_LPARAM(in LPARAM lp) pure
 {
     return cast(int)((lp & 0xffff0000) >> 16);
 }
@@ -460,6 +508,22 @@ private LRESULT win32WndProc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     return res;
 }
 
+@property KeyMods keyMods()
+{
+    KeyMods mods = KeyMods.none;
+
+    if (GetKeyState(VK_LSHIFT) & 0x8000) mods |= KeyMods.leftShift;
+    if (GetKeyState(VK_LCONTROL) & 0x8000) mods |= KeyMods.leftCtrl;
+    if (GetKeyState(VK_LMENU) & 0x8000) mods |= KeyMods.leftAlt;
+    if (GetKeyState(VK_LWIN) & 0x8000) mods |= KeyMods.leftSuper;
+
+    if (GetKeyState(VK_RSHIFT) & 0x8000) mods |= KeyMods.rightShift;
+    if (GetKeyState(VK_RCONTROL) & 0x8000) mods |= KeyMods.rightCtrl;
+    if (GetKeyState(VK_RMENU) & 0x8000) mods |= KeyMods.rightAlt;
+    if (GetKeyState(VK_RWIN) & 0x8000) mods |= KeyMods.rightSuper;
+
+    return mods;
+}
 // a few missing bindings
 
 private:
