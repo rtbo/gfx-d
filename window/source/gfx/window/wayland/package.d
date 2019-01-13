@@ -8,6 +8,8 @@ import gfx.graal : Instance;
 import gfx.graal.presentation;
 import gfx.vulkan.wsi;
 import gfx.window;
+import gfx.window.keys;
+import gfx.window.xkeyboard;
 import gfx.window.wayland.xdg_shell;
 
 import wayland.client;
@@ -29,6 +31,7 @@ class WaylandDisplay : Display
     private WlSeat seat;
     private WlPointer pointer;
     private WlKeyboard kbd;
+    private XKeyboard xkb;
 
     private WlCursorTheme cursorTheme;
     private WlCursor[string] cursors;
@@ -41,7 +44,7 @@ class WaylandDisplay : Display
 
     private WaylandWindowBase[] wldWindows;
     private WaylandWindowBase pointedWindow;
-    private WaylandWindowBase focusWindow;
+    private WaylandWindowBase kbdFocus;
     private Window[] _windows;
 
     this()
@@ -155,7 +158,7 @@ class WaylandDisplay : Display
         wldWindows = wldWindows.remove!(w => w is window);
         _windows = _windows.remove!(w => w is window);
         if (window is pointedWindow) pointedWindow = null;
-        if (window is focusWindow) focusWindow = null;
+        if (window is kbdFocus) kbdFocus = null;
     }
 
     private void seatCapChanged (WlSeat seat, WlSeat.Capability cap)
@@ -177,7 +180,11 @@ class WaylandDisplay : Display
         if ((cap & WlSeat.Capability.keyboard) && !kbd)
         {
             kbd = seat.getKeyboard();
+            kbd.onKeymap = &kbdKeymap;
+            kbd.onEnter = &kbdEnter;
+            kbd.onLeave = &kbdLeave;
             kbd.onKey = &kbdKey;
+            kbd.onModifiers = &kbdModifiers;
         }
         else if (!(cap & WlSeat.Capability.keyboard) && kbd)
         {
@@ -202,15 +209,14 @@ class WaylandDisplay : Display
                         WlPointer.ButtonState state)
     {
         if (pointedWindow) {
-            pointedWindow.pointerButton(state, serial);
-            focusWindow = pointedWindow;
+            pointedWindow.pointerButton(state, serial, xkb ? xkb.mods : KeyMods.init);
         }
     }
 
     private void pointerMotion(WlPointer, uint serial, WlFixed surfaceX, WlFixed surfaceY)
     {
         if (pointedWindow) {
-            pointedWindow.pointerMotion(surfaceX, surfaceY, serial);
+            pointedWindow.pointerMotion(surfaceX, surfaceY, serial, xkb ? xkb.mods : KeyMods.init);
         }
     }
 
@@ -230,17 +236,61 @@ class WaylandDisplay : Display
         }
     }
 
-    private void kbdKey(WlKeyboard keyboard, uint serial, uint time, uint key,
-            WlKeyboard.KeyState state)
+    private void kbdKeymap(WlKeyboard, WlKeyboard.KeymapFormat format, int fd, uint size)
     {
-        if (focusWindow) {
-            focusWindow.key(key, state, serial);
-        }
-        else if (wldWindows.length) {
-            wldWindows[0].key(key, state, serial);
+        import std.exception : enforce;
+
+        enforce(format == WlKeyboard.KeymapFormat.xkbV1, "Unsupported wayland keymap format");
+
+        if (xkb) xkb.dispose();
+        xkb = new WaylandKeyboard(fd, size);
+    }
+
+    private void kbdEnter(WlKeyboard, uint serial, WlSurface surf, wl_array* keys)
+    {
+        foreach (w; wldWindows) {
+            if (w.wlSurface is surf) {
+                kbdFocus = w;
+                break;
+            }
         }
     }
 
+    private void kbdLeave(WlKeyboard, uint serial, WlSurface surf)
+    {
+        if (kbdFocus && kbdFocus.wlSurface !is surf) {
+            gfxWlLog.warningf("Leaving window that was not entered");
+        }
+        kbdFocus = null;
+    }
+
+    private void kbdModifiers(WlKeyboard, uint serial, uint modsDepressed,
+                              uint modsLatched, uint modsLocked, uint group)
+    {
+        if (xkb) {
+            xkb.updateState(modsDepressed, modsLatched, modsLocked, 0, 0, group);
+        }
+    }
+
+    private void kbdKey(WlKeyboard, uint serial, uint time, uint key,
+                        WlKeyboard.KeyState state)
+    {
+        if (xkb) {
+            WaylandWindowBase w = kbdFocus;
+            if (!w && wldWindows.length) w = wldWindows[0];
+
+            switch (state) {
+            case WlKeyboard.KeyState.pressed:
+                xkb.processKeyDown(key+8, kbdFocus ? kbdFocus.onKeyOnHandler : null);
+                break;
+            case WlKeyboard.KeyState.released:
+                xkb.processKeyUp(key+8, kbdFocus ? kbdFocus.onKeyOffHandler : null);
+                break;
+            default:
+                break;
+            }
+        }
+    }
 
     private void setCursor(string cursorId, uint serial)
     {
@@ -275,6 +325,14 @@ class WaylandDisplay : Display
             cursorSurf.destroy();
             cursorSurf = null;
         }
+        if (xkb) {
+            xkb.dispose();
+            xkb = null;
+        }
+        if (kbd) {
+            kbd.destroy();
+            kbd = null;
+        }
         if (pointer) {
             pointer.destroy();
             pointer = null;
@@ -295,6 +353,43 @@ class WaylandDisplay : Display
         display.disconnect();
         display = null;
     }
+}
+
+private class WaylandKeyboard : XKeyboard
+{
+    this (int fd, uint size)
+    {
+        import core.sys.posix.sys.mman;
+        import core.sys.posix.unistd : close;
+        import std.exception : enforce;
+        import xkbcommon.xkbcommon;
+
+        void* buf = mmap(null, size, PROT_READ, MAP_SHARED, fd, 0);
+        enforce(buf != MAP_FAILED, "Could not mmap the wayland keymap");
+        scope(exit) {
+            munmap(buf, size);
+            close(fd);
+        }
+
+        auto ctx = enforce(
+            xkb_context_new(XKB_CONTEXT_NO_FLAGS), "Could not alloc XKB context"
+        );
+        scope(failure) xkb_context_unref(ctx);
+
+        auto keymap = enforce(
+            xkb_keymap_new_from_buffer(
+                ctx, cast(char*)buf, size-1,
+                XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS
+            ),
+            "Could not read keymap from mmapped file"
+        );
+        scope(failure) xkb_keymap_unref(keymap);
+
+        auto state = xkb_state_new(keymap);
+
+        super(ctx, keymap, state);
+    }
+
 }
 
 private alias Side = XdgToplevel.ResizeEdge;
@@ -395,8 +490,10 @@ private abstract class WaylandWindowBase : Window
         _closeFlag = flag;
     }
 
-    private void pointerButton(WlPointer.ButtonState state, uint serial)
+    private void pointerButton(WlPointer.ButtonState state, uint serial, KeyMods mods)
     {
+        const ev = MouseEvent (cast(int)curX, cast(int)curY, mods);
+
         switch (state) {
         case WlPointer.ButtonState.pressed:
             const side = checkResizeArea();
@@ -404,18 +501,18 @@ private abstract class WaylandWindowBase : Window
                 startResize(side, serial);
             }
             else {
-                if (onHandler) onHandler(cast(int)curX, cast(int)curY);
+                if (onHandler) onHandler(ev);
             }
             break;
         case WlPointer.ButtonState.released:
-            if (offHandler) offHandler(cast(int)curX, cast(int)curY);
+            if (offHandler) offHandler(ev);
             break;
         default:
             break;
         }
     }
 
-    private void pointerMotion(WlFixed x, WlFixed y, uint serial)
+    private void pointerMotion(WlFixed x, WlFixed y, uint serial, KeyMods mods)
     {
         curX = x; curY = y;
 
@@ -425,7 +522,8 @@ private abstract class WaylandWindowBase : Window
             currentSide = side;
         }
         if (moveHandler) {
-            moveHandler(cast(int)x, cast(int)y);
+            auto ev = MouseEvent(cast(int)x, cast(int)y, mods);
+            moveHandler(ev);
         }
     }
 
@@ -440,20 +538,6 @@ private abstract class WaylandWindowBase : Window
 
     private void pointerLeave(uint serial)
     {}
-
-    private void key(uint key, WlKeyboard.KeyState state, uint serial)
-    {
-        switch (state) {
-        case WlKeyboard.KeyState.pressed:
-            if (onKeyOnHandler) onKeyOnHandler(key);
-            break;
-        case WlKeyboard.KeyState.released:
-            if (onKeyOffHandler) onKeyOffHandler(key);
-            break;
-        default:
-            break;
-        }
-    }
 
     protected abstract void startResize(Side side, uint serial);
 
