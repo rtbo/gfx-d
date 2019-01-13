@@ -15,6 +15,8 @@ import gfx.graal.presentation;
 import gfx.graal.queue;
 import gfx.graal.renderpass;
 import gfx.graal.types;
+import gfx.window;
+import gfx.window.keys;
 
 import std.exception;
 import std.stdio;
@@ -90,7 +92,7 @@ class StencilExample : Example
         super.dispose();
     }
 
-    override void prepare() 
+    override void prepare()
     {
         super.prepare();
         prepareChessboard();
@@ -344,8 +346,11 @@ int main(string[] args)
         example.prepare();
         scope(exit) example.dispose();
 
-        example.window.onMouseOn = (uint, uint) {
-            example.window.closeFlag = true;
+        example.window.onKeyOn = (KeyEvent ev)
+        {
+            if (ev.sym == KeySym.escape) {
+                example.window.closeFlag = true;
+            }
         };
 
         while (!example.window.closeFlag) {

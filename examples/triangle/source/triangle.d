@@ -15,6 +15,8 @@ import gfx.graal.presentation;
 import gfx.graal.queue;
 import gfx.graal.renderpass;
 import gfx.graal.types;
+import gfx.window;
+import gfx.window.keys;
 
 import std.exception;
 import std.stdio;
@@ -182,12 +184,16 @@ class TriangleExample : Example
 int main(string[] args)
 {
     try {
+
         auto example = new TriangleExample(args);
         example.prepare();
         scope(exit) example.dispose();
 
-        example.window.onMouseOn = (uint, uint) {
-            example.window.closeFlag = true;
+        example.window.onKeyOn = (KeyEvent ev)
+        {
+            if (ev.sym == KeySym.escape) {
+                example.window.closeFlag = true;
+            }
         };
 
         while (!example.window.closeFlag) {

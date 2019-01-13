@@ -5,7 +5,9 @@ version(linux):
 import gfx.core.log : LogTag;
 import gfx.graal : Instance;
 import gfx.window;
+import gfx.window.xkeyboard;
 import xcb.xcb;
+import xcb.xkb;
 
 enum gfxXcbLogMask = 0x0800_0000;
 package immutable gfxXcbLog = LogTag("GFX-XCB");
@@ -55,6 +57,8 @@ class XcbDisplay : Display
     private xcb_connection_t* _conn;
     private xcb_atom_t[Atom] _atoms;
     private int _mainScreenNum;
+    private uint _xkbFirstEv;
+    private XcbKeyboard _xkb;
     private xcb_screen_t*[] _screens;
 
     private Rc!Instance _instance;
@@ -80,6 +84,8 @@ class XcbDisplay : Display
         initializeAtoms();
         initializeScreens();
         initializeInstance(loadOrder);
+
+        _xkb = new XcbKeyboard(_conn, _xkbFirstEv);
     }
 
     override void dispose()
@@ -91,6 +97,8 @@ class XcbDisplay : Display
             foreach (w; ws) w.close();
         }
         assert(!_windows.length);
+
+        _xkb.dispose();
 
         _instance.unload();
         gfxXcbLog.trace("closing X display");
@@ -248,32 +256,30 @@ class XcbDisplay : Display
         case XCB_KEY_PRESS:
             auto ev = cast(xcb_key_press_event_t*)e;
             auto xcbWin = xcbWindow(ev.event);
-            if (xcbWin && xcbWin._onKeyOnHandler)
-                xcbWin._onKeyOnHandler(ev.detail);
+            _xkb.processKeyDown(ev.detail, xcbWin ? xcbWin._onKeyOnHandler : null);
             break;
         case XCB_KEY_RELEASE:
             auto ev = cast(xcb_key_press_event_t*)e;
             auto xcbWin = xcbWindow(ev.event);
-            if (xcbWin && xcbWin._onKeyOffHandler)
-                xcbWin._onKeyOffHandler(ev.detail);
+            _xkb.processKeyUp(ev.detail, xcbWin ? xcbWin._onKeyOffHandler : null);
             break;
         case XCB_BUTTON_PRESS:
             auto ev = cast(xcb_button_press_event_t*)e;
             auto xcbWin = xcbWindow(ev.event);
             if (xcbWin && xcbWin._onHandler)
-                xcbWin._onHandler(ev.event_x, ev.event_y);
+                xcbWin._onHandler(MouseEvent(ev.event_x, ev.event_y, _xkb.mods));
             break;
         case XCB_BUTTON_RELEASE:
             auto ev = cast(xcb_button_press_event_t*)e;
             auto xcbWin = xcbWindow(ev.event);
             if (xcbWin && xcbWin._offHandler)
-                xcbWin._offHandler(ev.event_x, ev.event_y);
+                xcbWin._offHandler(MouseEvent(ev.event_x, ev.event_y, _xkb.mods));
             break;
         case XCB_MOTION_NOTIFY:
             auto ev = cast(xcb_motion_notify_event_t*)e;
             auto xcbWin = xcbWindow(ev.event);
             if (xcbWin && xcbWin._moveHandler)
-                xcbWin._moveHandler(ev.event_x, ev.event_y);
+                xcbWin._moveHandler(MouseEvent(ev.event_x, ev.event_y, _xkb.mods));
             break;
         case XCB_CONFIGURE_NOTIFY:
             auto ev = cast(xcb_configure_notify_event_t*)e;
@@ -297,6 +303,25 @@ class XcbDisplay : Display
             }
             break;
         default:
+            if (xcbType == _xkbFirstEv)
+            {
+                auto genKbd = cast(XkbGenericEvent*)e;
+                if (genKbd.common.deviceID == _xkb.device)
+                {
+                    switch (genKbd.common.xkbType)
+                    {
+                    case XCB_XKB_STATE_NOTIFY:
+                        auto es = &genKbd.state;
+                        _xkb.updateState(
+                            es.baseMods, es.latchedMods, es.lockedMods,
+                            es.baseGroup, es.latchedGroup, es.lockedGroup
+                        );
+                        break;
+                    default:
+                        break;
+                    }
+                }
+            }
             break;
         }
     }
@@ -307,6 +332,108 @@ class XcbDisplay : Display
         if (at)
             return *at;
         return XCB_ATOM_NONE;
+    }
+}
+
+private union XkbGenericEvent
+    {
+
+        struct CommonFields
+        {
+            ubyte response_type;
+            ubyte xkbType;
+            ushort sequence;
+            xcb_timestamp_t time;
+            ubyte deviceID;
+        }
+
+        CommonFields common;
+        xcb_xkb_new_keyboard_notify_event_t newKbd;
+        xcb_xkb_map_notify_event_t map;
+        xcb_xkb_state_notify_event_t state;
+    }
+
+
+private class XcbKeyboard : XKeyboard
+{
+    private uint _device;
+
+    this(xcb_connection_t *connection, out uint xkbFirstEv)
+    {
+        import core.stdc.stdlib : free;
+        import std.exception : enforce;
+        import xkbcommon.x11;
+        import xkbcommon.xkbcommon;
+
+        xcb_prefetch_extension_data(connection, &xcb_xkb_id);
+
+        auto reply = xcb_get_extension_data(connection, &xcb_xkb_id);
+        if (!reply || !reply.present) {
+            throw new Exception("XKB extension not supported by X server");
+        }
+        xkbFirstEv = reply.first_event;
+
+        auto cookie = xcb_xkb_use_extension(connection,
+                XKB_X11_MIN_MAJOR_XKB_VERSION,
+                XKB_X11_MIN_MINOR_XKB_VERSION);
+        auto xkbReply = xcb_xkb_use_extension_reply(connection, cookie, null);
+        if (!xkbReply) {
+            throw new Exception("could not get xkb extension");
+        }
+        else if(!xkbReply.supported) {
+            free(xkbReply);
+            throw new Exception("xkb required version not supported");
+        }
+        free(xkbReply);
+
+        ushort mapParts =
+            XCB_XKB_MAP_PART_KEY_TYPES |
+            XCB_XKB_MAP_PART_KEY_SYMS |
+            XCB_XKB_MAP_PART_MODIFIER_MAP |
+            XCB_XKB_MAP_PART_EXPLICIT_COMPONENTS |
+            XCB_XKB_MAP_PART_KEY_ACTIONS |
+            XCB_XKB_MAP_PART_KEY_BEHAVIORS |
+            XCB_XKB_MAP_PART_VIRTUAL_MODS |
+            XCB_XKB_MAP_PART_VIRTUAL_MOD_MAP;
+
+        ushort events =
+            XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY |
+            XCB_XKB_EVENT_TYPE_MAP_NOTIFY |
+            XCB_XKB_EVENT_TYPE_STATE_NOTIFY;
+
+        auto cookie2 = xcb_xkb_select_events_checked(
+                connection, XCB_XKB_ID_USE_CORE_KBD,
+                events, 0, events, mapParts, mapParts, null);
+        auto err = xcb_request_check(connection, cookie2);
+        if (err) {
+            throw new Exception("failed to select notify events from xcb xkb");
+        }
+
+        auto ctx = enforce(
+            xkb_context_new(XKB_CONTEXT_NO_FLAGS), "Could not alloc XKB context"
+        );
+        scope(failure) xkb_context_unref(ctx);
+
+        _device = xkb_x11_get_core_keyboard_device_id(connection);
+        enforce (_device != -1, "Could not get X11 keyboard device id");
+
+        auto keymap = enforce(
+            xkb_x11_keymap_new_from_device(ctx, connection, _device,
+                    XKB_KEYMAP_COMPILE_NO_FLAGS),
+            "Could not get X11 Keymap");
+        scope(failure) xkb_keymap_unref(keymap);
+
+        auto state = enforce(
+            xkb_x11_state_new_from_device(keymap, connection, _device),
+            "Could not alloc X11 XKB state"
+        );
+
+        super(ctx, keymap, state);
+    }
+
+    @property uint device()
+    {
+        return _device;
     }
 }
 

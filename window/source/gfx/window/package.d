@@ -4,12 +4,27 @@ module gfx.window;
 import gfx.core.rc : IAtomicRefCounted;
 import gfx.core.log : LogTag;
 import gfx.graal : Backend, Instance;
+import gfx.window.keys;
 
 enum gfxWindowLogMask = 0x0800_0000;
 package immutable gfxWindowLog = LogTag("GFX-WINDOW", gfxWindowLogMask);
 
-alias MouseHandler = void delegate(uint x, uint y);
-alias KeyHandler = void delegate(uint key);
+struct KeyEvent
+{
+    KeySym sym;
+    KeyCode code;
+    KeyMods mods;
+    string text;
+}
+
+struct MouseEvent
+{
+    uint x; uint y;
+    KeyMods mods;
+}
+
+alias MouseHandler = void delegate(MouseEvent ev);
+alias KeyHandler = void delegate(KeyEvent ev);
 alias ResizeHandler = void delegate(uint width, uint height);
 alias CloseHandler = bool delegate();
 
