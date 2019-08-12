@@ -173,7 +173,7 @@ body {
 }
 
 /// Decreases the reference count of a single object without disposing it.
-/// Use this to move an object out of a scope (typically return at the end of a return function)
+/// Use this to move an object out of a scope (typically return at the end of a function)
 T giveAwayObj(T)(ref T obj) if (is(T : IAtomicRefCounted))
 in {
     assert(obj, "giving away null object");
