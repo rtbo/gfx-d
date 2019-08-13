@@ -14,8 +14,8 @@ import std.typecons : Flag, No;
 interface CommandPool : IAtomicRefCounted {
     void reset();
 
-    PrimaryCommandBuffer[] allocatePrimary(size_t count);
-    SecondaryCommandBuffer[] allocateSecondary(size_t count);
+    PrimaryCommandBuffer[] allocatePrimary(in size_t count);
+    SecondaryCommandBuffer[] allocateSecondary(in size_t count);
 
     void free(CommandBuffer[] buffers)
     in {
@@ -208,11 +208,16 @@ enum CommandBufferUsage {
     simultaneousUse = 0x0004,
 }
 
+enum CommandBufferLevel {
+    primary,
+    secondary,
+}
+
 /// Base interface for a command buffer
 ///
 /// CommandBuffer are allocated and owned by a command pool.
 /// A command buffer can be in three defined states:
-/// 1. initial - that is the state after it as been created or reset
+/// 1. invalid - that is the state after it as been created or reset
 /// 2. recoding - that is the state between begin() and end() calls()
 /// 3. pending - that is the state when recording is done and commands
 ///     are ready for execution.
@@ -223,9 +228,11 @@ enum CommandBufferUsage {
 interface CommandBuffer {
     @property CommandPool pool();
 
+    @property CommandBufferLevel level() const;
+
     void reset();
 
-    /// Begin recording and switches the buffer state from "initial" to "recording"
+    /// Begin recording and switches the buffer state from "invalid" to "recording"
     /// SecondaryCommandBuffer can alternatively call beginWithinRenderPass
     void begin(in CommandBufferUsage usage);
     void end();
@@ -303,6 +310,7 @@ interface CommandBuffer {
 /// If this is needed, SecondaryCommandBuffer (from other CommandPool) can be filled in parallel,
 /// and later executed on a PrimaryCommandBuffer
 interface PrimaryCommandBuffer : CommandBuffer {
+
     /// Place the command buffer into a render pass context
     void beginRenderPass(RenderPass rp, Framebuffer fb, Rect area, ClearValues[] clearValues);
     void nextSubpass();
@@ -320,7 +328,7 @@ interface SecondaryCommandBuffer : CommandBuffer {
 
     /// Switches the buffer to the "recording" state, acknowledging that the buffer
     /// will be executed within a render pass compatible with rp
-    void beginWithinRenderPass(CommandBufferUsage usage, RenderPass rp,
+    void beginWithinRenderPass(in CommandBufferUsage usage, RenderPass rp,
             Framebuffer fb, uint subpass = 0);
 
 }

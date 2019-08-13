@@ -603,7 +603,7 @@ final class ShadowExample : Example
     {
         void recordLight(uint il, ref Light l) {
             auto buf = imgData.cmdBufs[il];
-            buf.begin(No.persistent);
+            buf.begin(CommandBufferUsage.oneTimeSubmit);
 
             buf.beginRenderPass(
                 shadowRenderPass, l.shadowFb, Rect(0, 0, shadowSize, shadowSize),
@@ -631,7 +631,7 @@ final class ShadowExample : Example
         void recordMeshes() {
             auto buf = imgData.cmdBufs[$-1];
 
-            buf.begin(No.persistent);
+            buf.begin(CommandBufferUsage.oneTimeSubmit);
             buf.beginRenderPass(
                 meshRenderPass, imgData.framebuffer, Rect(0, 0, surfaceSize[0], surfaceSize[1]),
                 [

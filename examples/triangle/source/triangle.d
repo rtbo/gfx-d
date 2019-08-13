@@ -163,7 +163,7 @@ class TriangleExample : Example
         auto buf = imgData.cmdBufs[0];
 
         //buf.reset();
-        buf.begin(No.persistent);
+        buf.begin(CommandBufferUsage.oneTimeSubmit);
 
         buf.beginRenderPass(
             renderPass, imgData.framebuffer,

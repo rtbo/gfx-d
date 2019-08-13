@@ -8,8 +8,7 @@ import gfx.gl3 : gfxGlLog;
 import gfx.graal.cmd;
 import gfx.graal.queue;
 
-final class GlQueue : Queue, Disposable
-{
+final class GlQueue : Queue, Disposable {
     import gfx.gl3 : GlInfo, GlShare;
     import gfx.graal.device : Device;
     import gfx.graal.sync : Fence, Semaphore;
@@ -41,13 +40,14 @@ final class GlQueue : Queue, Disposable
         return _device;
     }
 
-    override void waitIdle() {}
+    override void waitIdle() {
+    }
 
     override void submit(Submission[] submissions, Fence fence) {
         auto gl = share.gl;
         foreach (ref s; submissions) {
             foreach (cmdBuf; s.cmdBufs) {
-                auto glCmdBuf = cast(GlCommandBuffer)cmdBuf;
+                auto glCmdBuf = cast(GlCommandBuffer) cmdBuf;
                 foreach (cmd; glCmdBuf._cmds) {
                     cmd.execute(this, gl);
                 }
@@ -61,34 +61,39 @@ final class GlQueue : Queue, Disposable
     override void present(Semaphore[] waitSems, PresentRequest[] prs) {
         import gfx.gl3.resource : GlImage, GlImgType;
         import gfx.gl3.swapchain : GlSurface, GlSwapchain;
+
         auto gl = share.gl;
 
         foreach (i, pr; prs) {
-            auto sc = cast(GlSwapchain)pr.swapChain;
+            auto sc = cast(GlSwapchain) pr.swapChain;
             auto surf = sc.surface;
-            auto img = cast(GlImage)sc.images[pr.imageIndex];
+            auto img = cast(GlImage) sc.images[pr.imageIndex];
             auto size = sc.size;
 
             share.ctx.makeCurrent(surf.handle);
 
-            if (i == prs.length-1) share.ctx.swapInterval = 1;
-            else share.ctx.swapInterval = 0;
+            if (i == prs.length - 1)
+                share.ctx.swapInterval = 1;
+            else
+                share.ctx.swapInterval = 0;
 
             import gfx.gl3.error : glCheck;
 
             gl.BindFramebuffer(GL_READ_FRAMEBUFFER, readFbo);
             final switch (img.glType) {
             case GlImgType.renderBuf:
-                gl.FramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, img.name);
+                gl.FramebufferRenderbuffer(GL_READ_FRAMEBUFFER,
+                        GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, img.name);
                 break;
             case GlImgType.tex:
-                gl.FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, img.name, 0);
+                gl.FramebufferTexture2D(GL_READ_FRAMEBUFFER,
+                        GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, img.name, 0);
                 break;
             }
 
             gl.BindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
             gl.BlitFramebuffer(0, 0, size[0], size[1], 0, 0, size[0], size[1],
-                               GL_COLOR_BUFFER_BIT, GL_NEAREST);
+                    GL_COLOR_BUFFER_BIT, GL_NEAREST);
             glCheck(gl, "blit framebuffer");
 
             share.ctx.swapBuffers(surf.handle);
@@ -96,8 +101,7 @@ final class GlQueue : Queue, Disposable
     }
 }
 
-final class GlCommandPool : CommandPool
-{
+final class GlCommandPool : CommandPool {
     import gfx.core.rc : atomicRcCode;
     import gfx.gl3 : GlShare;
     import gfx.graal.cmd : PrimaryCommandBuffer;
@@ -114,52 +118,57 @@ final class GlCommandPool : CommandPool
         auto gl = share.gl;
         gl.GenFramebuffers(1, &fbo);
     }
+
     override void dispose() {
         auto gl = share.gl;
         gl.DeleteFramebuffers(1, &fbo);
     }
 
-    override void reset() {}
+    override void reset() {
+    }
 
-    override PrimaryCommandBuffer[] allocatePrimary(size_t count) {
+    override PrimaryCommandBuffer[] allocatePrimary(in size_t count) {
         auto bufs = new PrimaryCommandBuffer[count];
         foreach (i; 0 .. count) {
-            bufs[i] = new GlCommandBuffer(this, fbo);
+            bufs[i] = new GlCommandBuffer(this, fbo, CommandBufferLevel.primary);
         }
         return bufs;
     }
 
-    override SecondaryCommandBuffer[] allocateSecondary(size_t count) {
-        assert(false, "not implemented");
+    override SecondaryCommandBuffer[] allocateSecondary(in size_t count) {
+        auto bufs = new SecondaryCommandBuffer[count];
+        foreach (i; 0 .. count) {
+            bufs[i] = new GlCommandBuffer(this, fbo, CommandBufferLevel.secondary);
+        }
+        return bufs;
     }
 
-    override void free(CommandBuffer[] buffers) {}
+    override void free(CommandBuffer[] buffers) {
+    }
 }
 
-final class GlCommandBuffer : PrimaryCommandBuffer
-{
+final class GlCommandBuffer : PrimaryCommandBuffer, SecondaryCommandBuffer {
     import gfx.gl3 : GlShare, GlInfo;
     import gfx.gl3.conv : toGl;
     import gfx.gl3.pipeline : GlPipeline, GlRenderPass;
     import gfx.graal.buffer : Buffer, IndexType;
     import gfx.graal.image : ImageBase, ImageLayout, ImageSubresourceRange;
-    import gfx.graal.pipeline : ColorBlendInfo, DepthInfo, DescriptorSet,
-                                Pipeline, PipelineLayout, Rasterizer,
-                                ShaderStage, VertexInputBinding,
-                                VertexInputAttrib, ViewportConfig;
+    import gfx.graal.pipeline : ColorBlendInfo, DepthInfo, DescriptorSet, Pipeline, PipelineLayout,
+        Rasterizer, ShaderStage, VertexInputBinding, VertexInputAttrib, ViewportConfig;
     import gfx.graal.renderpass : Framebuffer, RenderPass;
     import gfx.graal.types : Rect, Trans, Viewport;
     import std.typecons : Flag;
 
     private enum Dirty {
-        none                = 0x00,
-        vertexBindings      = 0x01,
-        pipeline            = 0x02,
+        none = 0x00,
+        vertexBindings = 0x01,
+        pipeline = 0x02,
 
-        all                 = 0xff,
+        all = 0xff,
     }
 
     private CommandPool _pool;
+    private CommandBufferLevel _level;
     private GLuint _fbo;
     private CommandBufferUsage _usage;
 
@@ -183,14 +192,18 @@ final class GlCommandBuffer : PrimaryCommandBuffer
     // vertex cache
     private VertexBinding[] _vertexBindings;
 
-
-    this (CommandPool pool, GLuint fbo) {
+    this(CommandPool pool, GLuint fbo, CommandBufferLevel level) {
         _pool = pool;
         _fbo = fbo;
+        _level = level;
     }
 
     override @property CommandPool pool() {
         return _pool;
+    }
+
+    override @property CommandBufferLevel level() const {
+        return _level;
     }
 
     override void reset() {
@@ -202,125 +215,105 @@ final class GlCommandBuffer : PrimaryCommandBuffer
     override void begin(in CommandBufferUsage usage) {
         _usage = usage;
     }
-    override void end() {}
+
+    override void end() {
+    }
 
     override void pipelineBarrier(Trans!PipelineStage stageTrans,
-                                  BufferMemoryBarrier[] bufMbs,
-                                  ImageMemoryBarrier[] imgMbs)
-    {
+            BufferMemoryBarrier[] bufMbs, ImageMemoryBarrier[] imgMbs) {
         gfxGlLog.warning("unimplemented GL command");
     }
 
     override void clearColorImage(ImageBase image, ImageLayout layout,
-                                  in ClearColorValues clearValues,
-                                  ImageSubresourceRange[] ranges)
-    {
+            in ClearColorValues clearValues, ImageSubresourceRange[] ranges) {
         import gfx.gl3.resource : GlImage;
-        _cmds ~= new SetupFramebufferCmd(_fbo, cast(GlImage)image);
+
+        _cmds ~= new SetupFramebufferCmd(_fbo, cast(GlImage) image);
         _cmds ~= new ClearColorCmd(clearValues);
     }
 
     override void clearDepthStencilImage(ImageBase image, ImageLayout layout,
-                                         in ClearDepthStencilValues clearValues,
-                                         ImageSubresourceRange[] ranges)
-    {
+            in ClearDepthStencilValues clearValues, ImageSubresourceRange[] ranges) {
         import gfx.gl3.resource : GlImage;
-        _cmds ~= new SetupFramebufferCmd(_fbo, cast(GlImage)image);
+
+        _cmds ~= new SetupFramebufferCmd(_fbo, cast(GlImage) image);
         _cmds ~= new ClearDepthStencilCmd(clearValues, true, true);
     }
 
-    override void fillBuffer(Buffer dst, in size_t offset, in size_t size, uint value)
-    {
+    override void fillBuffer(Buffer dst, in size_t offset, in size_t size, uint value) {
         gfxGlLog.warning("unimplemented GL command");
     }
 
-    override void updateBuffer(Buffer dst, in size_t offset, in uint[] data)
-    {
+    override void updateBuffer(Buffer dst, in size_t offset, in uint[] data) {
         gfxGlLog.warning("unimplemented GL command");
     }
 
-    override void copyBuffer(Trans!Buffer buffers, in CopyRegion[] regions)
-    {
+    override void copyBuffer(Trans!Buffer buffers, in CopyRegion[] regions) {
         import gfx.gl3.resource : GlBuffer;
+
         foreach (r; regions) {
-            _cmds ~= new CopyBufToBufCmd(
-                cast(GlBuffer)buffers.from, cast(GlBuffer)buffers.to, r
-            );
+            _cmds ~= new CopyBufToBufCmd(cast(GlBuffer) buffers.from, cast(GlBuffer) buffers.to, r);
         }
     }
 
     override void copyBufferToImage(Buffer srcBuffer, ImageBase dstImage,
-                                    in ImageLayout dstLayout,
-                                    in BufferImageCopy[] regions)
-    {
+            in ImageLayout dstLayout, in BufferImageCopy[] regions) {
         import gfx.gl3.resource : GlBuffer, GlImage;
+
         foreach (r; regions) {
-            _cmds ~= new CopyBufToImgCmd(
-                cast(GlBuffer)srcBuffer, cast(GlImage)dstImage, r
-            );
+            _cmds ~= new CopyBufToImgCmd(cast(GlBuffer) srcBuffer, cast(GlImage) dstImage, r);
         }
     }
 
-    override void setViewport(in uint firstViewport, in Viewport[] viewports)
-    {
+    override void setViewport(in uint firstViewport, in Viewport[] viewports) {
         _cmds ~= new SetViewportsCmd(firstViewport, viewports);
     }
 
-    override void setScissor(in uint firstScissor, in Rect[] scissors)
-    {
+    override void setScissor(in uint firstScissor, in Rect[] scissors) {
         _cmds ~= new SetScissorsCmd(firstScissor, scissors);
     }
 
-    override void setDepthBounds(in float minDepth, in float maxDepth)
-    {
+    override void setDepthBounds(in float minDepth, in float maxDepth) {
         gfxGlLog.warning("unimplemented GL command");
     }
 
-    void setLineWidth(in float lineWidth)
-    {
+    void setLineWidth(in float lineWidth) {
         _cmds ~= new SetLineWidthCmd(lineWidth);
     }
 
-    override void setDepthBias(in float constFactor, in float clamp, in float slopeFactor)
-    {
+    override void setDepthBias(in float constFactor, in float clamp, in float slopeFactor) {
         _cmds ~= new SetDepthBiasCmd(constFactor, clamp, slopeFactor);
     }
 
-    override void setStencilCompareMask(in StencilFace faceMask, in uint compareMask)
-    {
+    override void setStencilCompareMask(in StencilFace faceMask, in uint compareMask) {
         gfxGlLog.warning("unimplemented GL command");
     }
 
-    override void setStencilWriteMask(in StencilFace faceMask, in uint writeMask)
-    {
+    override void setStencilWriteMask(in StencilFace faceMask, in uint writeMask) {
         gfxGlLog.warning("unimplemented GL command");
     }
 
-    override void setStencilReference(in StencilFace faceMask, in uint reference)
-    {
+    override void setStencilReference(in StencilFace faceMask, in uint reference) {
         gfxGlLog.warning("unimplemented GL command");
     }
 
-    override void setBlendConstants(in float[4] blendConstants)
-    {
+    override void setBlendConstants(in float[4] blendConstants) {
         _cmds ~= new SetBlendConstantsCmd(blendConstants);
     }
 
-    override void beginRenderPass(RenderPass rp, Framebuffer fb,
-                                  Rect area, ClearValues[] clearValues)
-    {
+    override void beginRenderPass(RenderPass rp, Framebuffer fb, Rect area,
+            ClearValues[] clearValues) {
         import gfx.gl3.pipeline : GlFramebuffer;
         import gfx.graal.pipeline : ColorBlendAttachment;
         import std.algorithm : map;
         import std.array : array;
 
-        _renderPass = cast(GlRenderPass)rp;
-        _attachments = _renderPass.attachments.map!(
-            ad => GlColorAttachment(false, ad, ColorBlendAttachment.init)
-        ).array;
+        _renderPass = cast(GlRenderPass) rp;
+        _attachments = _renderPass.attachments.map!(ad => GlColorAttachment(false,
+                ad, ColorBlendAttachment.init)).array;
         setActiveSubpass(0);
 
-        const glFb = cast(GlFramebuffer)fb;
+        const glFb = cast(GlFramebuffer) fb;
         _cmds ~= new BindFramebufferCmd(glFb.name);
         foreach (cv; clearValues) {
             if (cv.type == ClearValues.Type.color) {
@@ -332,17 +325,37 @@ final class GlCommandBuffer : PrimaryCommandBuffer
         }
     }
 
-    override void nextSubpass()
-    {
-        setActiveSubpass(_subpass+1);
+    override void beginWithinRenderPass(in CommandBufferUsage usage,
+            RenderPass rp, Framebuffer fb, uint subpass) {
+        import gfx.core.util : unsafeCast;
+        import gfx.gl3.pipeline : GlFramebuffer;
+        import gfx.graal.pipeline : ColorBlendAttachment;
+        import std.algorithm : map;
+        import std.array : array;
+
+        assert(_level == CommandBufferLevel.secondary);
+        _usage = usage;
+        _renderPass = cast(GlRenderPass) rp;
+        _attachments = _renderPass.attachments.map!(ad => GlColorAttachment(false,
+                ad, ColorBlendAttachment.init)).array;
+        setActiveSubpass(0);
+
+        const glFb = cast(GlFramebuffer) fb;
+        _cmds ~= new BindFramebufferCmd(glFb.name);
+        _subpass = subpass;
     }
 
-    override void endRenderPass()
-    {}
+    override void nextSubpass() {
+        assert(_level == CommandBufferLevel.primary);
+        setActiveSubpass(_subpass + 1);
+    }
 
-    override void bindPipeline(Pipeline pipeline)
-    {
-        auto glPipeline = cast(GlPipeline)pipeline;
+    override void endRenderPass() {
+        assert(_level == CommandBufferLevel.primary);
+    }
+
+    override void bindPipeline(Pipeline pipeline) {
+        auto glPipeline = cast(GlPipeline) pipeline;
 
         _cmds ~= new BindProgramCmd(glPipeline.prog);
         _cmds ~= new SetViewportConfigsCmd(glPipeline.info.viewports);
@@ -366,56 +379,47 @@ final class GlCommandBuffer : PrimaryCommandBuffer
         dirty(Dirty.vertexBindings | Dirty.pipeline);
     }
 
-    override void bindVertexBuffers(uint firstBinding, VertexBinding[] bindings)
-    {
+    override void bindVertexBuffers(uint firstBinding, VertexBinding[] bindings) {
         const minLen = firstBinding + bindings.length;
-        if (_vertexBindings.length < minLen) _vertexBindings.length = minLen;
-        _vertexBindings[firstBinding .. firstBinding+bindings.length] = bindings;
+        if (_vertexBindings.length < minLen)
+            _vertexBindings.length = minLen;
+        _vertexBindings[firstBinding .. firstBinding + bindings.length] = bindings;
         dirty(Dirty.vertexBindings);
     }
 
-    override void bindIndexBuffer(Buffer indexBuf, size_t offset,
-                                  IndexType type)
-    {
+    override void bindIndexBuffer(Buffer indexBuf, size_t offset, IndexType type) {
         import gfx.gl3.resource : GlBuffer;
-        auto glBuf = cast(GlBuffer)indexBuf;
+
+        auto glBuf = cast(GlBuffer) indexBuf;
         _cmds ~= new BindIndexBufCmd(glBuf.name);
         _indexOffset = offset;
         _indexType = toGl(type);
     }
 
-    override void bindDescriptorSets(PipelineBindPoint bindPoint,
-                                     PipelineLayout layout, uint firstSet,
-                                     DescriptorSet[] sets,
-                                     in size_t[] dynamicOffsets)
-    {
+    override void bindDescriptorSets(PipelineBindPoint bindPoint, PipelineLayout layout,
+            uint firstSet, DescriptorSet[] sets, in size_t[] dynamicOffsets) {
         import gfx.gl3.pipeline : GlDescriptorSet;
         import gfx.graal.pipeline : DescriptorType;
 
         size_t dynInd = 0;
 
         foreach (si, ds; sets) {
-            auto glSet = cast(GlDescriptorSet)ds;
+            auto glSet = cast(GlDescriptorSet) ds;
 
-            foreach(bi, b; glSet.bindings) {
+            foreach (bi, b; glSet.bindings) {
 
                 foreach (di, d; b.descriptors) {
 
                     switch (b.layout.descriptorType) {
                     case DescriptorType.uniformBuffer:
-                        _cmds ~= new BindUniformBufferCmd(
-                            b.layout.binding, d.bufferRange, 0
-                        );
+                        _cmds ~= new BindUniformBufferCmd(b.layout.binding, d.bufferRange, 0);
                         break;
                     case DescriptorType.uniformBufferDynamic:
-                        _cmds ~= new BindUniformBufferCmd(
-                            b.layout.binding, d.bufferRange, dynamicOffsets[dynInd++]
-                        );
+                        _cmds ~= new BindUniformBufferCmd(b.layout.binding,
+                                d.bufferRange, dynamicOffsets[dynInd++]);
                         break;
                     case DescriptorType.combinedImageSampler:
-                        _cmds ~= new BindSamplerImageCmd(
-                            b.layout.binding, d.combinedImageSampler
-                        );
+                        _cmds ~= new BindSamplerImageCmd(b.layout.binding, d.combinedImageSampler);
                         break;
                     default:
                         gfxGlLog.warning("unhandled descriptor set");
@@ -427,38 +431,31 @@ final class GlCommandBuffer : PrimaryCommandBuffer
     }
 
     override void pushConstants(PipelineLayout layout, ShaderStage stages,
-                                size_t offset, size_t size, const(void)* data)
-    {
+            size_t offset, size_t size, const(void)* data) {
         gfxGlLog.warning("unimplemented GL command");
     }
 
-    override void draw(uint vertexCount, uint instanceCount, uint firstVertex,
-                       uint firstInstance)
-    {
+    override void draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance) {
         ensureBindings();
-        _cmds ~= new DrawCmd(
-            _primitive, cast(GLint)firstVertex, cast(GLsizei)vertexCount,
-            cast(GLsizei)instanceCount, cast(GLuint)firstInstance
-        );
+        _cmds ~= new DrawCmd(_primitive, cast(GLint) firstVertex, cast(GLsizei) vertexCount,
+                cast(GLsizei) instanceCount, cast(GLuint) firstInstance);
     }
 
     override void drawIndexed(uint indexCount, uint instanceCount,
-                              uint firstVertex, int vertexOffset,
-                              uint firstInstance)
-    {
+            uint firstVertex, int vertexOffset, uint firstInstance) {
         ensureBindings();
 
         const factor = _indexType == GL_UNSIGNED_SHORT ? 2 : 4;
         const offset = factor * firstVertex + _indexOffset;
 
-        _cmds ~= new DrawIndexedCmd(
-            _primitive, cast(GLsizei)indexCount, _indexType, offset, cast(GLint)vertexOffset,
-            cast(GLsizei)instanceCount, cast(GLuint)firstInstance
-        );
+        _cmds ~= new DrawIndexedCmd(_primitive, cast(GLsizei) indexCount, _indexType, offset,
+                cast(GLint) vertexOffset, cast(GLsizei) instanceCount, cast(GLuint) firstInstance);
     }
 
-    override void execute(SecondaryCommandBuffer[] buffers)
-    {}
+    override void execute(SecondaryCommandBuffer[] buffers) {
+        assert(_level == CommandBufferLevel.primary);
+        assert(false, "not implemented");
+    }
 
     private void dirty(Dirty flag) {
         _dirty |= flag;
@@ -501,13 +498,11 @@ final class GlCommandBuffer : PrimaryCommandBuffer
                 const f = ai.format;
                 assert(vertexFormatSupported(f));
 
-                attribs ~= GlVertexAttrib(
-                    ai.location, glVertexFormat(f), vb.offset+ai.offset
-                );
+                attribs ~= GlVertexAttrib(ai.location, glVertexFormat(f), vb.offset + ai.offset);
             }
 
-            auto buf = cast(GlBuffer)vb.buffer;
-            _cmds ~= new BindVertexBufCmd(buf.name, cast(GLsizei)bindingInfo.stride, attribs);
+            auto buf = cast(GlBuffer) vb.buffer;
+            _cmds ~= new BindVertexBufCmd(buf.name, cast(GLsizei) bindingInfo.stride, attribs);
         }
     }
 
@@ -554,8 +549,7 @@ abstract class GlCommand {
     abstract void execute(GlQueue queue, Gl gl);
 }
 
-string allFieldsCtor(T)()
-{
+string allFieldsCtor(T)() {
     import std.array : join;
     import std.traits : FieldNameTuple, Fields;
 
@@ -573,8 +567,7 @@ string allFieldsCtor(T)()
     return code ~ "}";
 }
 
-final class CopyBufToBufCmd : GlCommand
-{
+final class CopyBufToBufCmd : GlCommand {
     import gfx.gl3.resource : GlBuffer;
 
     GlBuffer src;
@@ -586,21 +579,19 @@ final class CopyBufToBufCmd : GlCommand
     override void execute(GlQueue queue, Gl gl) {
         gl.BindBuffer(GL_COPY_READ_BUFFER, src.name);
         gl.BindBuffer(GL_COPY_WRITE_BUFFER, dst.name);
-        gl.CopyBufferSubData(
-            GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER,
-            cast(GLintptr)region.offset.from, cast(GLintptr)region.offset.to,
-            cast(GLsizeiptr)region.size
-        );
+        gl.CopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER,
+                cast(GLintptr) region.offset.from,
+                cast(GLintptr) region.offset.to, cast(GLsizeiptr) region.size);
         gl.BindBuffer(GL_COPY_READ_BUFFER, 0);
         gl.BindBuffer(GL_COPY_WRITE_BUFFER, 0);
 
         import gfx.gl3.error : glCheck;
+
         glCheck(gl, "copy buffer to buffer");
     }
 }
 
-final class CopyBufToImgCmd : GlCommand
-{
+final class CopyBufToImgCmd : GlCommand {
     import gfx.gl3.resource : GlBuffer, GlImage;
 
     GlBuffer buf;
@@ -617,21 +608,23 @@ final class CopyBufToImgCmd : GlCommand
         gl.BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
         import gfx.gl3.error : glCheck;
+
         glCheck(gl, "copy buffer to image");
     }
 }
 
-final class BindFramebufferCmd : GlCommand
-{
+final class BindFramebufferCmd : GlCommand {
     GLuint fbo;
-    this(GLuint fbo) { this.fbo = fbo; }
+    this(GLuint fbo) {
+        this.fbo = fbo;
+    }
+
     override void execute(GlQueue queue, Gl gl) {
         gl.BindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
     }
 }
 
-final class SetupFramebufferCmd : GlCommand
-{
+final class SetupFramebufferCmd : GlCommand {
     import gfx.gl3.resource : GlImage, GlImgType;
 
     GLuint fbo;
@@ -646,10 +639,12 @@ final class SetupFramebufferCmd : GlCommand
         gl.BindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
         final switch (img.glType) {
         case GlImgType.renderBuf:
-            gl.FramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, img.name);
+            gl.FramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER,
+                    GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, img.name);
             break;
         case GlImgType.tex:
-            gl.FramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, img.name, 0);
+            gl.FramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
+                    GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, img.name, 0);
             break;
         }
         const GLenum drawBuf = GL_COLOR_ATTACHMENT0;
@@ -657,93 +652,84 @@ final class SetupFramebufferCmd : GlCommand
     }
 }
 
-final class SetViewportConfigsCmd : GlCommand
-{
+final class SetViewportConfigsCmd : GlCommand {
     import gfx.graal.pipeline : ViewportConfig;
+
     ViewportConfig[] viewports;
-    this (ViewportConfig[] viewports) {
+    this(ViewportConfig[] viewports) {
         this.viewports = viewports;
     }
 
     override void execute(GlQueue queue, Gl gl) {
 
-        if (queue.state.vcs == viewports) return;
+        if (queue.state.vcs == viewports)
+            return;
 
         if (viewports.length > 1 && !queue.info.viewportArray) {
             gfxGlLog.error("ARB_viewport_array not supported");
-            viewports = viewports[0..1];
+            viewports = viewports[0 .. 1];
         }
 
         if (viewports.length > 1) {
             foreach (i, vc; viewports) {
                 const vp = vc.viewport;
-                gl.ViewportIndexedf(cast(GLuint)i, vp.x, vp.y, vp.width, vp.height);
-                gl.DepthRangeIndexed(cast(GLuint)i, vp.minDepth, vp.maxDepth);
+                gl.ViewportIndexedf(cast(GLuint) i, vp.x, vp.y, vp.width, vp.height);
+                gl.DepthRangeIndexed(cast(GLuint) i, vp.minDepth, vp.maxDepth);
 
                 const sc = vc.scissors;
-                gl.ScissorIndexed(
-                    cast(GLuint)i,
-                    cast(GLint)sc.x, cast(GLint)sc.y,
-                    cast(GLsizei)sc.width, cast(GLsizei)sc.height
-                );
+                gl.ScissorIndexed(cast(GLuint) i, cast(GLint) sc.x,
+                        cast(GLint) sc.y, cast(GLsizei) sc.width, cast(GLsizei) sc.height);
             }
-        }
-        else if (viewports.length == 1) {
+        } else if (viewports.length == 1) {
             const vp = viewports[0].viewport;
-            gl.Viewport(
-                cast(GLint)vp.x, cast(GLint)vp.y,
-                cast(GLsizei)vp.width, cast(GLsizei)vp.height
-            );
+            gl.Viewport(cast(GLint) vp.x, cast(GLint) vp.y,
+                    cast(GLsizei) vp.width, cast(GLsizei) vp.height);
             gl.DepthRangef(vp.minDepth, vp.maxDepth);
 
             const sc = viewports[0].scissors;
-            gl.Scissor(
-                cast(GLint)sc.x, cast(GLint)sc.y,
-                cast(GLsizei)sc.width, cast(GLsizei)sc.height
-            );
+            gl.Scissor(cast(GLint) sc.x, cast(GLint) sc.y, cast(GLsizei) sc.width,
+                    cast(GLsizei) sc.height);
         }
 
         queue.state.vcs = viewports;
     }
 }
 
-final class SetViewportsCmd : GlCommand
-{
+final class SetViewportsCmd : GlCommand {
     import gfx.graal.types : Viewport;
 
     uint firstViewport;
     const(Viewport)[] viewports;
 
-    this (in uint firstViewport, const(Viewport)[] viewports) {
+    this(in uint firstViewport, const(Viewport)[] viewports) {
         this.firstViewport = firstViewport;
         this.viewports = viewports;
     }
 
     override void execute(GlQueue queue, Gl gl) {
 
-        if (queue.state.viewports == viewports) return;
+        if (queue.state.viewports == viewports)
+            return;
 
         bool useArray = viewports.length > 1 || firstViewport > 0;
 
         if (useArray && !queue.info.viewportArray) {
             gfxGlLog.error("ARB_viewport_array not supported");
-            viewports = viewports[0..1];
+            viewports = viewports[0 .. 1];
             firstViewport = 0;
             useArray = false;
         }
 
         if (useArray) {
             foreach (i, vp; viewports) {
-                gl.ViewportIndexedf(cast(GLuint)(i+firstViewport), vp.x, vp.y, vp.width, vp.height);
-                gl.DepthRangeIndexed(cast(GLuint)(i+firstViewport), vp.minDepth, vp.maxDepth);
+                gl.ViewportIndexedf(cast(GLuint)(i + firstViewport), vp.x, vp.y,
+                        vp.width, vp.height);
+                gl.DepthRangeIndexed(cast(GLuint)(i + firstViewport), vp.minDepth, vp.maxDepth);
             }
-        }
-        else if (viewports.length == 1) {
+        } else if (viewports.length == 1) {
             const vp = viewports[0];
-            gl.Viewport(
-                cast(GLint)vp.x, cast(GLint)vp.y,
-                cast(GLsizei)vp.width, cast(GLsizei)vp.height
-            );
+            gl.Viewport(cast(GLint) vp.x, cast(GLint) vp.y,
+                    cast(GLsizei) vp.width, cast(GLsizei) vp.height);
             gl.DepthRangef(vp.minDepth, vp.maxDepth);
         }
 
@@ -751,91 +737,80 @@ final class SetViewportsCmd : GlCommand
     }
 }
 
-final class SetScissorsCmd : GlCommand
-{
+final class SetScissorsCmd : GlCommand {
     import gfx.graal.types : Rect;
 
     uint firstScissor;
     const(Rect)[] scissors;
 
-    this (in uint firstScissor, const(Rect)[] scissors) {
+    this(in uint firstScissor, const(Rect)[] scissors) {
         this.firstScissor = firstScissor;
         this.scissors = scissors;
     }
 
-    override void execute(GlQueue queue, Gl gl)
-    {
+    override void execute(GlQueue queue, Gl gl) {
         import std.algorithm : equal, map;
 
-        if (queue.state.scissors == scissors) return;
+        if (queue.state.scissors == scissors)
+            return;
 
         bool useArray = scissors.length > 1 || firstScissor > 0;
         if (useArray && !queue.info.viewportArray) {
             gfxGlLog.error("ARB_viewport_array not supported");
-            scissors = scissors[0..1];
+            scissors = scissors[0 .. 1];
             firstScissor = 0;
             useArray = false;
         }
 
         if (useArray) {
             foreach (i, sc; scissors) {
-                gl.ScissorIndexed(
-                    cast(GLuint)(i+firstScissor),
-                    cast(GLint)sc.x, cast(GLint)sc.y,
-                    cast(GLsizei)sc.width, cast(GLsizei)sc.height
-                );
+                gl.ScissorIndexed(cast(GLuint)(i + firstScissor),
+                        cast(GLint) sc.x, cast(GLint) sc.y,
+                        cast(GLsizei) sc.width, cast(GLsizei) sc.height);
             }
-        }
-        else if (scissors.length == 1) {
+        } else if (scissors.length == 1) {
             const sc = scissors[0];
-            gl.Scissor(
-                cast(GLint)sc.x, cast(GLint)sc.y,
-                cast(GLsizei)sc.width, cast(GLsizei)sc.height
-            );
+            gl.Scissor(cast(GLint) sc.x, cast(GLint) sc.y, cast(GLsizei) sc.width,
+                    cast(GLsizei) sc.height);
         }
 
         queue.state.scissors = scissors;
     }
 }
 
-final class SetLineWidthCmd : GlCommand
-{
+final class SetLineWidthCmd : GlCommand {
     float lineWidth;
-    this (in float lineWidth) {
+    this(in float lineWidth) {
         this.lineWidth = lineWidth;
     }
+
     override void execute(GlQueue queue, Gl gl) {
         gl.LineWidth(this.lineWidth);
     }
 }
 
-final class SetDepthBiasCmd : GlCommand
-{
+final class SetDepthBiasCmd : GlCommand {
     float constFactor;
     float clamp;
     float slopeFactor;
 
     mixin(allFieldsCtor!(typeof(this)));
 
-    override void execute(GlQueue queue, Gl gl)
-    {
+    override void execute(GlQueue queue, Gl gl) {
         if (queue.info.polygonOffsetClamp) {
             gl.PolygonOffsetClamp(slopeFactor, constFactor, clamp);
-        }
-        else {
+        } else {
             gl.PolygonOffset(slopeFactor, constFactor);
         }
     }
 }
 
-final class SetBlendConstantsCmd : GlCommand
-{
+final class SetBlendConstantsCmd : GlCommand {
     float[4] constants;
 
     mixin(allFieldsCtor!(typeof(this)));
 
-    override void execute(GlQueue queue, Gl gl)
-    {
+    override void execute(GlQueue queue, Gl gl) {
         gl.BlendColor(constants[0], constants[1], constants[2], constants[3]);
     }
 }
@@ -844,7 +819,7 @@ final class ClearColorCmd : GlCommand {
 
     ClearColorValues values;
 
-    this (ClearColorValues values) {
+    this(ClearColorValues values) {
         this.values = values;
     }
 
@@ -870,7 +845,7 @@ final class ClearDepthStencilCmd : GlCommand {
     bool depth;
     bool stencil;
 
-    this (ClearDepthStencilValues values, bool depth, bool stencil) {
+    this(ClearDepthStencilValues values, bool depth, bool stencil) {
         this.values = values;
         this.depth = depth;
         this.stencil = stencil;
@@ -882,50 +857,53 @@ final class ClearDepthStencilCmd : GlCommand {
             gl.ClearBufferfv(GL_DEPTH, 0, &values.depth);
         }
         if (stencil) {
-            const val = cast(GLint)values.stencil;
+            const val = cast(GLint) values.stencil;
             gl.StencilMask(GLuint.max);
             gl.ClearBufferiv(GL_STENCIL, 0, &val);
         }
     }
 }
 
-final class BindProgramCmd : GlCommand
-{
+final class BindProgramCmd : GlCommand {
     GLuint prog;
-    this(GLuint prog) { this.prog = prog; }
+    this(GLuint prog) {
+        this.prog = prog;
+    }
+
     override void execute(GlQueue queue, Gl gl) {
-        if (queue.state.prog == prog) return;
+        if (queue.state.prog == prog)
+            return;
         gl.UseProgram(prog);
         queue.state.prog = prog;
     }
 }
 
-final class SetRasterizerCmd : GlCommand
-{
+final class SetRasterizerCmd : GlCommand {
     import gfx.graal.pipeline : Rasterizer;
+
     Rasterizer rasterizer;
-    this(Rasterizer rasterizer) { this.rasterizer = rasterizer; }
+    this(Rasterizer rasterizer) {
+        this.rasterizer = rasterizer;
+    }
 
     override void execute(GlQueue queue, Gl gl) {
         import gfx.gl3.conv : toGl;
         import gfx.graal.pipeline : Cull, PolygonMode;
 
-        if (queue.state.rasterizer == rasterizer) return;
+        if (queue.state.rasterizer == rasterizer)
+            return;
 
-        void polygonBias(GLenum polygonMode, GLenum depthBias)
-        {
+        void polygonBias(GLenum polygonMode, GLenum depthBias) {
             gl.PolygonMode(GL_FRONT_AND_BACK, polygonMode);
             if (rasterizer.depthBias.isSome) {
                 const db = rasterizer.depthBias.get;
                 gl.Enable(depthBias);
                 if (queue.info.polygonOffsetClamp) {
                     gl.PolygonOffsetClamp(db.slopeFactor, db.constantFactor, db.clamp);
-                }
-                else {
+                } else {
                     gl.PolygonOffset(db.slopeFactor, db.constantFactor);
                 }
-            }
-            else {
+            } else {
                 gl.Disable(depthBias);
             }
         }
@@ -945,8 +923,7 @@ final class SetRasterizerCmd : GlCommand
 
         if (rasterizer.cull == Cull.none) {
             gl.Disable(GL_CULL_FACE);
-        }
-        else {
+        } else {
             gl.Enable(GL_CULL_FACE);
             switch (rasterizer.cull) {
             case Cull.back:
@@ -958,15 +935,15 @@ final class SetRasterizerCmd : GlCommand
             case Cull.frontAndBack:
                 gl.CullFace(GL_FRONT_AND_BACK);
                 break;
-            default: break;
+            default:
+                break;
             }
             gl.FrontFace(toGl(rasterizer.front));
         }
 
         if (rasterizer.depthClamp) {
             gl.Enable(GL_DEPTH_CLAMP);
-        }
-        else {
+        } else {
             gl.Disable(GL_DEPTH_CLAMP);
         }
 
@@ -974,27 +951,28 @@ final class SetRasterizerCmd : GlCommand
     }
 }
 
-final class SetDepthInfoCmd : GlCommand
-{
+final class SetDepthInfoCmd : GlCommand {
     import gfx.graal.pipeline : DepthInfo;
 
     DepthInfo info;
-    this (DepthInfo info) { this.info = info; }
+    this(DepthInfo info) {
+        this.info = info;
+    }
 
     override void execute(GlQueue queue, Gl gl) {
         import gfx.gl3.conv : toGl;
 
-        if (queue.state.depthInfo == info) return;
+        if (queue.state.depthInfo == info)
+            return;
 
         if (info.enabled) {
             gl.Enable(GL_DEPTH_TEST);
             gl.DepthFunc(toGl(info.compareOp));
-            gl.DepthMask(cast(GLboolean)info.write);
+            gl.DepthMask(cast(GLboolean) info.write);
             if (info.boundsTest) {
                 gfxGlLog.warning("no support for depth bounds test");
             }
-        }
-        else {
+        } else {
             gl.Disable(GL_DEPTH_TEST);
         }
 
@@ -1002,36 +980,34 @@ final class SetDepthInfoCmd : GlCommand
     }
 }
 
-final class SetStencilInfoCmd : GlCommand
-{
+final class SetStencilInfoCmd : GlCommand {
     import gfx.graal.pipeline : StencilInfo;
 
     StencilInfo info;
-    this(StencilInfo info) { this.info = info; }
+    this(StencilInfo info) {
+        this.info = info;
+    }
 
     override void execute(GlQueue queue, Gl gl) {
         import gfx.gl3.conv : toGl;
         import gfx.graal.pipeline : StencilOpState;
 
-        if (queue.state.stencilInfo == info) return;
+        if (queue.state.stencilInfo == info)
+            return;
 
         if (info.enabled) {
             gl.Enable(GL_STENCIL_TEST);
             void bindFace(GLenum face, StencilOpState state) {
-                gl.StencilOpSeparate(
-                    face, toGl(state.failOp), toGl(state.depthFailOp), toGl(state.passOp)
-                );
-                gl.StencilFuncSeparate(
-                    face, toGl(state.compareOp), state.refMask, state.compareMask
-                );
-                gl.StencilMaskSeparate(
-                    face, state.writeMask
-                );
+                gl.StencilOpSeparate(face, toGl(state.failOp),
+                        toGl(state.depthFailOp), toGl(state.passOp));
+                gl.StencilFuncSeparate(face, toGl(state.compareOp),
+                        state.refMask, state.compareMask);
+                gl.StencilMaskSeparate(face, state.writeMask);
             }
+
             bindFace(GL_FRONT, info.front);
             bindFace(GL_BACK, info.back);
-        }
-        else {
+        } else {
             gl.Disable(GL_STENCIL_TEST);
         }
     }
@@ -1045,8 +1021,7 @@ struct GlVertexAttrib {
     size_t offset;
 }
 
-final class BindVertexBufCmd : GlCommand
-{
+final class BindVertexBufCmd : GlCommand {
     GLuint buffer;
     GLsizei stride;
     GlVertexAttrib[] attribs;
@@ -1057,30 +1032,24 @@ final class BindVertexBufCmd : GlCommand
         this.attribs = attribs;
     }
 
-    override void execute(GlQueue queue, Gl gl)
-    {
+    override void execute(GlQueue queue, Gl gl) {
         import gfx.gl3.conv : VAOAttribFun;
 
         gl.BindBuffer(GL_ARRAY_BUFFER, buffer);
-        foreach(at; attribs) {
+        foreach (at; attribs) {
             final switch (at.format.fun) {
             case VAOAttribFun.f:
-                gl.VertexAttribPointer(
-                    at.index, at.format.size, at.format.type,
-                    at.format.normalized, stride, cast(const(void*))at.offset
-                );
+                gl.VertexAttribPointer(at.index, at.format.size,
+                        at.format.type, at.format.normalized, stride,
+                        cast(const(void*)) at.offset);
                 break;
             case VAOAttribFun.i:
-                gl.VertexAttribIPointer(
-                    at.index, at.format.size, at.format.type, stride,
-                    cast(const(void*))at.offset
-                );
+                gl.VertexAttribIPointer(at.index,
+                        at.format.size, at.format.type, stride, cast(const(void*)) at.offset);
                 break;
             case VAOAttribFun.d:
-                gl.VertexAttribLPointer(
-                    at.index, at.format.size, at.format.type, stride,
-                    cast(const(void*))at.offset
-                );
+                gl.VertexAttribLPointer(at.index,
+                        at.format.size, at.format.type, stride, cast(const(void*)) at.offset);
                 break;
             }
             gl.EnableVertexAttribArray(at.index);
@@ -1089,22 +1058,19 @@ final class BindVertexBufCmd : GlCommand
     }
 }
 
-final class BindIndexBufCmd : GlCommand
-{
+final class BindIndexBufCmd : GlCommand {
     GLuint buf;
 
     this(GLuint buf) {
         this.buf = buf;
     }
 
-    override void execute(GlQueue queue, Gl gl)
-    {
+    override void execute(GlQueue queue, Gl gl) {
         gl.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf);
     }
 }
 
-final class BindUniformBufferCmd : GlCommand
-{
+final class BindUniformBufferCmd : GlCommand {
     import gfx.gl3.resource : GlBuffer;
     import gfx.graal.pipeline : BufferRange;
 
@@ -1112,25 +1078,22 @@ final class BindUniformBufferCmd : GlCommand
     BufferRange bufferRange;
     size_t dynamicOffset;
 
-    this (GLuint binding, BufferRange br, in size_t dynOffset) {
+    this(GLuint binding, BufferRange br, in size_t dynOffset) {
         this.binding = binding;
         this.bufferRange = br;
         this.dynamicOffset = dynOffset;
     }
 
     override void execute(GlQueue queue, Gl gl) {
-        auto glBuf = cast(GlBuffer)bufferRange.buffer;
+        auto glBuf = cast(GlBuffer) bufferRange.buffer;
 
-        gl.BindBufferRange(
-            GL_UNIFORM_BUFFER, binding, glBuf.name,
-            cast(GLintptr)(bufferRange.offset+dynamicOffset),
-            cast(GLintptr)bufferRange.range
-        );
+        gl.BindBufferRange(GL_UNIFORM_BUFFER, binding, glBuf.name,
+                cast(GLintptr)(bufferRange.offset + dynamicOffset), cast(GLintptr) bufferRange
+                .range);
     }
 }
 
-final class BindSamplerImageCmd : GlCommand
-{
+final class BindSamplerImageCmd : GlCommand {
     import gfx.graal.pipeline : CombinedImageSampler;
 
     GLuint binding;
@@ -1138,14 +1101,13 @@ final class BindSamplerImageCmd : GlCommand
 
     mixin(allFieldsCtor!(typeof(this)));
 
-    override void execute(GlQueue queue, Gl gl)
-    {
+    override void execute(GlQueue queue, Gl gl) {
         import gfx.gl3.conv : toGl;
         import gfx.gl3.error : glCheck;
         import gfx.gl3.resource : GlImageView, GlSampler;
 
-        auto view = cast(GlImageView)cis.view;
-        auto sampler = cast(GlSampler)cis.sampler;
+        auto view = cast(GlImageView) cis.view;
+        auto sampler = cast(GlSampler) cis.sampler;
 
         gl.ActiveTexture(GL_TEXTURE0 + binding);
         gl.BindTexture(view.target, view.name);
@@ -1159,8 +1121,7 @@ final class BindSamplerImageCmd : GlCommand
     }
 }
 
-final class BindBlendSlotsCmd : GlCommand
-{
+final class BindBlendSlotsCmd : GlCommand {
     import gfx.graal.pipeline : ColorMask;
 
     GlColorAttachment[] attachments;
@@ -1169,61 +1130,45 @@ final class BindBlendSlotsCmd : GlCommand
         this.attachments = attachments;
     }
 
-    override void execute(GlQueue queue, Gl gl)
-    {
+    override void execute(GlQueue queue, Gl gl) {
         import gfx.gl3.conv : toGl;
 
         foreach (const ind, a; attachments) {
-            const slot = cast(GLuint)ind;
+            const slot = cast(GLuint) ind;
             if (a.enabled) {
                 // TODO logicOp
                 if (a.attachment.enabled) {
                     // TODO
                     gl.Enablei(GL_BLEND, slot);
-                    gl.BlendEquationSeparatei(slot,
-                        toGl(a.attachment.colorBlend.op),
-                        toGl(a.attachment.alphaBlend.op),
-                    );
-                    gl.BlendFuncSeparatei(slot,
-                        toGl(a.attachment.colorBlend.factor.from),
-                        toGl(a.attachment.colorBlend.factor.to),
-                        toGl(a.attachment.alphaBlend.factor.from),
-                        toGl(a.attachment.alphaBlend.factor.to),
-                    );
-                }
-                else {
+                    gl.BlendEquationSeparatei(slot, toGl(a.attachment.colorBlend.op),
+                            toGl(a.attachment.alphaBlend.op),);
+                    gl.BlendFuncSeparatei(slot, toGl(a.attachment.colorBlend.factor.from),
+                            toGl(a.attachment.colorBlend.factor.to), toGl(a.attachment.alphaBlend.factor.from),
+                            toGl(a.attachment.alphaBlend.factor.to),);
+                } else {
                     gl.Disablei(GL_BLEND, slot);
                 }
                 import std.typecons : BitFlags, Yes;
+
                 BitFlags!(ColorMask, Yes.unsafe) cm = a.attachment.colorMask;
-                gl.ColorMaski(
-                    slot,
-                    (cm & ColorMask.r) ? GL_TRUE : GL_FALSE,
-                    (cm & ColorMask.g) ? GL_TRUE : GL_FALSE,
-                    (cm & ColorMask.b) ? GL_TRUE : GL_FALSE,
-                    (cm & ColorMask.a) ? GL_TRUE : GL_FALSE
-                );
-            }
-            else {
-                gl.ColorMaski(
-                    slot, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE
-                );
+                gl.ColorMaski(slot, (cm & ColorMask.r) ? GL_TRUE : GL_FALSE,
+                        (cm & ColorMask.g) ? GL_TRUE : GL_FALSE, (cm & ColorMask.b)
+                        ? GL_TRUE : GL_FALSE, (cm & ColorMask.a) ? GL_TRUE : GL_FALSE);
+            } else {
+                gl.ColorMaski(slot, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
             }
         }
     }
 }
 
-final class DrawCmd : GlCommand
-{
+final class DrawCmd : GlCommand {
     GLenum primitive;
     GLint first;
     GLsizei count;
     GLsizei instanceCount;
     GLuint baseInstance;
 
-    this (GLenum primitive, GLint first, GLsizei count, GLsizei instanceCount,
-            GLuint baseInstance)
-    {
+    this(GLenum primitive, GLint first, GLsizei count, GLsizei instanceCount, GLuint baseInstance) {
         this.primitive = primitive;
         this.first = first;
         this.count = count;
@@ -1238,22 +1183,19 @@ final class DrawCmd : GlCommand
         }
         if (instanceCount <= 1) {
             gl.DrawArrays(primitive, first, count);
-        }
-        else if (instanceCount > 1 && baseInstance == 0) {
+        } else if (instanceCount > 1 && baseInstance == 0) {
             gl.DrawArraysInstanced(primitive, first, count, instanceCount);
-        }
-        else if (instanceCount > 1 && baseInstance != 0) {
-            gl.DrawArraysInstancedBaseInstance(
-                primitive, first, count, instanceCount, baseInstance
-            );
+        } else if (instanceCount > 1 && baseInstance != 0) {
+            gl.DrawArraysInstancedBaseInstance(primitive, first, count,
+                    instanceCount, baseInstance);
         }
         import gfx.gl3.error : glCheck;
+
         glCheck(gl, "draw");
     }
 }
 
-final class DrawIndexedCmd : GlCommand
-{
+final class DrawIndexedCmd : GlCommand {
     GLenum primitive;
     GLsizei count;
     GLenum type;
@@ -1263,8 +1205,7 @@ final class DrawIndexedCmd : GlCommand
     GLuint baseInstance;
 
     this(GLenum primitive, GLsizei count, GLenum type, size_t indexBufOffset,
-            GLint baseVertex, GLsizei instanceCount, GLuint baseInstance)
-    {
+            GLint baseVertex, GLsizei instanceCount, GLuint baseInstance) {
         this.primitive = primitive;
         this.count = count;
         this.type = type;
@@ -1274,9 +1215,8 @@ final class DrawIndexedCmd : GlCommand
         this.baseInstance = baseInstance;
     }
 
-    override void execute(GlQueue queue, Gl gl)
-    {
-        const offset = cast(const(void*))indexBufOffset;
+    override void execute(GlQueue queue, Gl gl) {
+        const offset = cast(const(void*)) indexBufOffset;
 
         if (baseVertex != 0 && !queue.info.drawElementsBaseVertex) {
             gfxGlLog.error("No support for ARB_draw_elements_base_vertex");
@@ -1289,29 +1229,22 @@ final class DrawIndexedCmd : GlCommand
 
         if (instanceCount <= 1 && baseVertex == 0) {
             gl.DrawElements(primitive, count, type, offset);
-        }
-        else if (instanceCount <= 1 && baseVertex != 0) {
+        } else if (instanceCount <= 1 && baseVertex != 0) {
             gl.DrawElementsBaseVertex(primitive, count, type, offset, baseVertex);
-        }
-        else if (instanceCount > 1 && baseInstance == 0 && baseVertex == 0) {
+        } else if (instanceCount > 1 && baseInstance == 0 && baseVertex == 0) {
             gl.DrawElementsInstanced(primitive, count, type, offset, instanceCount);
-        }
-        else if (instanceCount > 1 && baseInstance == 0 && baseVertex != 0) {
-            gl.DrawElementsInstancedBaseVertex(
-                primitive, count, type, offset, instanceCount, baseVertex
-            );
-        }
-        else if (instanceCount > 1 && baseInstance != 0 && baseVertex == 0) {
-            gl.DrawElementsInstancedBaseInstance(
-                primitive, count, type, offset, instanceCount, baseInstance
-            );
-        }
-        else {
-            gl.DrawElementsInstancedBaseVertexBaseInstance(
-                primitive, count, type, offset, instanceCount, baseVertex, baseInstance
-            );
+        } else if (instanceCount > 1 && baseInstance == 0 && baseVertex != 0) {
+            gl.DrawElementsInstancedBaseVertex(primitive, count, type, offset,
+                    instanceCount, baseVertex);
+        } else if (instanceCount > 1 && baseInstance != 0 && baseVertex == 0) {
+            gl.DrawElementsInstancedBaseInstance(primitive, count, type,
+                    offset, instanceCount, baseInstance);
+        } else {
+            gl.DrawElementsInstancedBaseVertexBaseInstance(primitive, count,
+                    type, offset, instanceCount, baseVertex, baseInstance);
         }
         import gfx.gl3.error : glCheck;
+
         glCheck(gl, "draw indexed");
     }
 }

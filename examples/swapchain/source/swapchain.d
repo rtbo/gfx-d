@@ -23,7 +23,7 @@ class SwapchainExample : Example
         auto subrange = ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1);
 
         auto buf = imgData.cmdBufs[0];
-        buf.begin(Yes.persistent);
+        buf.begin(CommandBufferUsage.none);
 
             buf.pipelineBarrier(
                 trans(PipelineStage.transfer, PipelineStage.transfer), [],

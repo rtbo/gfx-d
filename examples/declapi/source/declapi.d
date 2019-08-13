@@ -227,7 +227,7 @@ class DeclAPIExample : Example
 
         PrimaryCommandBuffer buf = imgData.cmdBufs[0];
 
-        buf.begin(No.persistent);
+        buf.begin(CommandBufferUsage.oneTimeSubmit);
 
         buf.setViewport(0, [ Viewport(0f, 0f, cast(float)surfaceSize[0], cast(float)surfaceSize[1]) ]);
         buf.setScissor(0, [ Rect(0, 0, surfaceSize[0], surfaceSize[1]) ]);
