@@ -175,7 +175,7 @@ class StencilExample : Example
         renderPass = device.createRenderPass(attachments, subpasses, dependencies);
     }
 
-    override void prepareFramebuffer(PerImage imgData, CommandBuffer layoutChangeCmdBuf)
+    override void prepareFramebuffer(PerImage imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
     {
         imgData.stencil = createStencilImage(surfaceSize[0], surfaceSize[1]);
 

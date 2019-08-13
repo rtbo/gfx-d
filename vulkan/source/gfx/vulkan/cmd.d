@@ -30,7 +30,7 @@ class VulkanCommandPool : VulkanDevObj!(VkCommandPool, "DestroyCommandPool"), Co
         vulkanEnforce(vk.ResetCommandPool(vkDev, vkObj, 0), "Could not reset command buffer");
     }
 
-    override CommandBuffer[] allocate(size_t count) {
+    override PrimaryCommandBuffer[] allocatePrimary(size_t count) {
         VkCommandBufferAllocateInfo cbai;
         cbai.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         cbai.commandPool = vkObj;
@@ -47,9 +47,33 @@ class VulkanCommandPool : VulkanDevObj!(VkCommandPool, "DestroyCommandPool"), Co
         import std.array : array;
 
         return vkBufs
-                .map!(vkBuf => cast(CommandBuffer)new VulkanCommandBuffer(vkBuf, this))
+                .map!(vkBuf => cast(PrimaryCommandBuffer)new VulkanCommandBuffer(vkBuf, this))
                 .array;
     }
+
+     override SecondaryCommandBuffer[] allocateSecondary(size_t count) {
+         assert(false, "not implemented");
+     }
+    // override SecondaryCommandBuffer[] allocateSecondary(size_t count) {
+    //     VkCommandBufferAllocateInfo cbai;
+    //     cbai.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    //     cbai.commandPool = vkObj;
+    //     cbai.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+    //     cbai.commandBufferCount = cast(uint)count;
+
+    //     auto vkBufs = new VkCommandBuffer[count];
+    //     vulkanEnforce(
+    //         vk.AllocateCommandBuffers(vkDev, &cbai, &vkBufs[0]),
+    //         "Could not allocate command buffers"
+    //     );
+
+    //     import std.algorithm : map;
+    //     import std.array : array;
+
+    //     return vkBufs
+    //             .map!(vkBuf => cast(SecondaryCommandBuffer)new VulkanCommandBuffer(vkBuf, this))
+    //             .array;
+    // }
 
     override void free(CommandBuffer[] bufs) {
         import std.algorithm : map;
@@ -62,7 +86,7 @@ class VulkanCommandPool : VulkanDevObj!(VkCommandPool, "DestroyCommandPool"), Co
     }
 }
 
-final class VulkanCommandBuffer : CommandBuffer
+final class VulkanCommandBuffer : PrimaryCommandBuffer
 {
     this (VkCommandBuffer vkObj, VulkanCommandPool pool) {
         _vkObj = vkObj;
@@ -88,12 +112,10 @@ final class VulkanCommandBuffer : CommandBuffer
         );
     }
 
-    override void begin(Flag!"persistent" persistent) {
+    override void begin(const CommandBufferUsage usage) {
         VkCommandBufferBeginInfo cbbi;
         cbbi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        cbbi.flags = persistent ?
-            VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT :
-            VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        cbbi.flags = cast(VkCommandBufferUsageFlags)usage;
         vulkanEnforce(
             vk.BeginCommandBuffer(vkObj, &cbbi), "Could not begin vulkan command buffer"
         );
@@ -204,7 +226,7 @@ final class VulkanCommandBuffer : CommandBuffer
         );
     }
 
-    void copyBufferToImage(Buffer srcBuffer, ImageBase dstImage,
+    override void copyBufferToImage(Buffer srcBuffer, ImageBase dstImage,
                            in ImageLayout dstLayout, in BufferImageCopy[] regions)
     {
         import gfx.core.util : transmute;
@@ -388,6 +410,11 @@ final class VulkanCommandBuffer : CommandBuffer
     override void drawIndexed(uint indexCount, uint instanceCount, uint firstVertex, int vertexOffset, uint firstInstance)
     {
         vk.CmdDrawIndexed(vkObj, indexCount, instanceCount, firstVertex, vertexOffset, firstInstance);
+    }
+
+    override void execute(SecondaryCommandBuffer[] buffers)
+    {
+        assert(false, "not implemented");
     }
 
     private VkCommandBuffer _vkObj;

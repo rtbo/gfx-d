@@ -165,7 +165,7 @@ class DepthExample : Example
         renderPass = device.createRenderPass(attachments, subpasses, []);
     }
 
-    override void prepareFramebuffer(PerImage imgData, CommandBuffer layoutChangeCmdBuf)
+    override void prepareFramebuffer(PerImage imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
     {
         imgData.depth = createDepthImage(surfaceSize[0], surfaceSize[1]);
 
@@ -280,9 +280,9 @@ class DepthExample : Example
         const ccv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         const dcv = ClearDepthStencilValues(1f, 0);
 
-        CommandBuffer buf = imgData.cmdBufs[0];
+        PrimaryCommandBuffer buf = imgData.cmdBufs[0];
 
-        buf.begin(No.persistent);
+        buf.begin(CommandBufferUsage.oneTimeSubmit);
 
         buf.setViewport(0, [ Viewport(0f, 0f, cast(float)surfaceSize[0], cast(float)surfaceSize[1]) ]);
         buf.setScissor(0, [ Rect(0, 0, surfaceSize[0], surfaceSize[1]) ]);

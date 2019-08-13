@@ -106,15 +106,20 @@ class Example : Disposable
         Rc!Framebuffer framebuffer;
         Rc!Fence fence; // to keep track of when command processing is done
         Rc!CommandPool cmdPool; // keeping track here to delete the command bufs
-        CommandBuffer[] cmdBufs;
+        PrimaryCommandBuffer[] cmdBufs;
 
         override void dispose()
         {
+            import std.algorithm : map;
+            import std.array : array;
+
             depth.unload();
             stencil.unload();
             framebuffer.unload();
             fence.unload();
-            if (cmdBufs.length) cmdPool.free(cmdBufs);
+            if (cmdBufs.length) {
+                cmdPool.free(cmdBufs.map!(b => cast(CommandBuffer)b).array);
+            }
             cmdPool.unload();
         }
     }
@@ -315,7 +320,7 @@ class Example : Disposable
 
         auto scImages = swapchain.images;
         imgDatas = new PerImage[scImages.length];
-        auto cmdBufs = cmdPool.allocate(scImages.length * numCmdBufPerFrame);
+        auto cmdBufs = cmdPool.allocatePrimary(scImages.length * numCmdBufPerFrame);
 
         foreach(i, img; scImages) {
             auto imgData = new PerImage;
@@ -365,7 +370,7 @@ class Example : Disposable
         }
     }
 
-    void prepareFramebuffer(PerImage imgData, CommandBuffer layoutChangeCmdBuf)
+    void prepareFramebuffer(PerImage imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
     {}
 
     abstract void recordCmds(PerImage imgData);
@@ -704,14 +709,14 @@ class Example : Disposable
 
     /// copy the content of one buffer to another
     /// srcBuf and dstBuf must support transferSrc and transferDst respectively.
-    final void copyBuffer(Buffer srcBuf, Buffer dstBuf, size_t size, CommandBuffer cmdBuf)
+    final void copyBuffer(Buffer srcBuf, Buffer dstBuf, size_t size, PrimaryCommandBuffer cmdBuf)
     {
         cmdBuf.copyBuffer(trans(srcBuf, dstBuf), [CopyRegion(trans!size_t(0, 0), size)]);
     }
 
     /// copy the content of one buffer to an image.
     /// the image layout must be transferDstOptimal buffer the call
-    final void copyBufferToImage(Buffer srcBuf, Image dstImg, CommandBuffer cmdBuf)
+    final void copyBufferToImage(Buffer srcBuf, Image dstImg, PrimaryCommandBuffer cmdBuf)
     {
         const dims = dstImg.info.dims;
 
@@ -742,14 +747,14 @@ class AutoCmdBuf : AtomicRefCounted
     Rc!CommandPool pool;
     Queue queue;
     Rc!Device device; // device holds queue,
-    CommandBuffer cmdBuf;
+    PrimaryCommandBuffer cmdBuf;
 
     this(CommandPool pool, Queue queue) {
         this.pool = pool;
         this.queue = queue;
         this.device = queue.device;
-        this.cmdBuf = this.pool.allocate(1)[0];
-        this.cmdBuf.begin(No.persistent);
+        this.cmdBuf = this.pool.allocatePrimary(1)[0];
+        this.cmdBuf.begin(CommandBufferUsage.oneTimeSubmit);
     }
 
     override void dispose() {

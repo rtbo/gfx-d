@@ -92,7 +92,7 @@ class TriangleExample : Example
         renderPass = device.createRenderPass(attachments, subpasses, []);
     }
 
-    override void prepareFramebuffer(PerImage fb, CommandBuffer layoutChangeCmdBuf)
+    override void prepareFramebuffer(PerImage fb, PrimaryCommandBuffer layoutChangeCmdBuf)
     {
         fb.framebuffer = device.createFramebuffer(renderPass, [
             fb.color.createView(

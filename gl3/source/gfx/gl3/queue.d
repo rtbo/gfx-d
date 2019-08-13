@@ -51,7 +51,7 @@ final class GlQueue : Queue, Disposable
                 foreach (cmd; glCmdBuf._cmds) {
                     cmd.execute(this, gl);
                 }
-                if (!glCmdBuf._persistent) {
+                if (glCmdBuf._usage & CommandBufferUsage.oneTimeSubmit) {
                     glCmdBuf._cmds.length = 0;
                 }
             }
@@ -100,7 +100,7 @@ final class GlCommandPool : CommandPool
 {
     import gfx.core.rc : atomicRcCode;
     import gfx.gl3 : GlShare;
-    import gfx.graal.cmd : CommandBuffer;
+    import gfx.graal.cmd : PrimaryCommandBuffer;
 
     mixin(atomicRcCode);
 
@@ -121,18 +121,22 @@ final class GlCommandPool : CommandPool
 
     override void reset() {}
 
-    override CommandBuffer[] allocate(size_t count) {
-        auto bufs = new CommandBuffer[count];
+    override PrimaryCommandBuffer[] allocatePrimary(size_t count) {
+        auto bufs = new PrimaryCommandBuffer[count];
         foreach (i; 0 .. count) {
             bufs[i] = new GlCommandBuffer(this, fbo);
         }
         return bufs;
     }
 
+    override SecondaryCommandBuffer[] allocateSecondary(size_t count) {
+        assert(false, "not implemented");
+    }
+
     override void free(CommandBuffer[] buffers) {}
 }
 
-final class GlCommandBuffer : CommandBuffer
+final class GlCommandBuffer : PrimaryCommandBuffer
 {
     import gfx.gl3 : GlShare, GlInfo;
     import gfx.gl3.conv : toGl;
@@ -157,7 +161,7 @@ final class GlCommandBuffer : CommandBuffer
 
     private CommandPool _pool;
     private GLuint _fbo;
-    private bool _persistent;
+    private CommandBufferUsage _usage;
 
     private GlCommand[] _cmds;
     private Dirty _dirty;
@@ -195,8 +199,8 @@ final class GlCommandBuffer : CommandBuffer
         _vertexBindings.length = 0;
     }
 
-    override void begin(Flag!"persistent" persistent) {
-        _persistent = persistent;
+    override void begin(in CommandBufferUsage usage) {
+        _usage = usage;
     }
     override void end() {}
 
@@ -452,6 +456,9 @@ final class GlCommandBuffer : CommandBuffer
             cast(GLsizei)instanceCount, cast(GLuint)firstInstance
         );
     }
+
+    override void execute(SecondaryCommandBuffer[] buffers)
+    {}
 
     private void dirty(Dirty flag) {
         _dirty |= flag;
@@ -1166,7 +1173,8 @@ final class BindBlendSlotsCmd : GlCommand
     {
         import gfx.gl3.conv : toGl;
 
-        foreach (GLuint slot, a; attachments) {
+        foreach (const ind, a; attachments) {
+            const slot = cast(GLuint)ind;
             if (a.enabled) {
                 // TODO logicOp
                 if (a.attachment.enabled) {

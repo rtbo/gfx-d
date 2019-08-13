@@ -178,7 +178,7 @@ class TextureExample : Example
         renderPass = device.createRenderPass(attachments, subpasses, []);
     }
 
-    override void prepareFramebuffer(PerImage imgData, CommandBuffer layoutChangeCmdBuf)
+    override void prepareFramebuffer(PerImage imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
     {
         imgData.framebuffer = device.createFramebuffer(renderPass, [
             imgData.color.createView(

@@ -377,7 +377,7 @@ final class ShadowExample : Example
         }
     }
 
-    override void prepareFramebuffer(PerImage imgData, CommandBuffer layoutChangeCmdBuf)
+    override void prepareFramebuffer(PerImage imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
     {
         imgData.depth = createDepthImage(surfaceSize[0], surfaceSize[1]);
 

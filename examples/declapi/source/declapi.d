@@ -165,7 +165,7 @@ class DeclAPIExample : Example
         renderPass = declEng.store.expect!RenderPass("rp");
     }
 
-    override void prepareFramebuffer(PerImage imgData, CommandBuffer layoutChangeCmdBuf)
+    override void prepareFramebuffer(PerImage imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
     {
         imgData.depth = createDepthImage(surfaceSize[0], surfaceSize[1]);
 
@@ -225,7 +225,7 @@ class DeclAPIExample : Example
         const ccv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         const dcv = ClearDepthStencilValues(1f, 0);
 
-        CommandBuffer buf = imgData.cmdBufs[0];
+        PrimaryCommandBuffer buf = imgData.cmdBufs[0];
 
         buf.begin(No.persistent);
 

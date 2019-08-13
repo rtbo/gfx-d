@@ -25,7 +25,7 @@ struct StageWait {
 struct Submission {
     StageWait[] stageWaits;
     Semaphore[] sigSems;
-    CommandBuffer[] cmdBufs;
+    PrimaryCommandBuffer[] cmdBufs;
 }
 
 struct PresentRequest {
