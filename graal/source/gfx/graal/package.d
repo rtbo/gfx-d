@@ -1,6 +1,19 @@
 module gfx.graal;
 
-import gfx.graal.device : PhysicalDevice;
+public import gfx.graal.buffer;
+public import gfx.graal.cmd;
+public import gfx.graal.device;
+public import gfx.graal.error;
+public import gfx.graal.format;
+public import gfx.graal.image;
+public import gfx.graal.memory;
+public import gfx.graal.pipeline;
+public import gfx.graal.presentation;
+public import gfx.graal.queue;
+public import gfx.graal.renderpass;
+public import gfx.graal.sync;
+public import gfx.graal.types;
+
 import gfx.core.rc : IAtomicRefCounted;
 import gfx.math : NDC;
 
