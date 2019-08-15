@@ -7,14 +7,15 @@
     "copyright": "Copyright © 2018, Remi Thebault",
     "license": "MIT",
     "dependencies": {
-        "gfx":          { "path": ".." },
-        "spirv_cross":  "~>0.3.1"
+        "gfx:graal": {
+            "path": "../graal"
+        },
+        "spirv_cross": "~>0.3.1"
     },
 
     "-ddoxFilterArgs": ["--min-protection=Protected"],
     "-ddoxTool": "scod",
-    "configurations": [
-        {
+    "configurations": [{
             "name": "linux",
             "platforms": ["linux"],
             "dependencies": {
@@ -24,8 +25,8 @@
         {
             "name": "windows",
             "platforms": ["windows"],
-            "buildRequirements": [ "noDefaultFlags" ],
-            "buildOptions": [ "releaseMode", "inline", "optimize" ]
+            "buildRequirements": ["noDefaultFlags"],
+            "buildOptions": ["releaseMode", "inline", "optimize"]
         }
     ]
 }

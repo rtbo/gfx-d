@@ -1,7 +1,7 @@
 module gfx.graal;
 
-import gfx.core.rc;
-import gfx.graal.device;
+import gfx.graal.device : PhysicalDevice;
+import gfx.core.rc : IAtomicRefCounted;
 import gfx.math : NDC;
 
 /// Backend identifier

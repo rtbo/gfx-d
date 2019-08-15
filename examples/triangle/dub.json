@@ -1,20 +1,24 @@
 {
-	"name": "triangle",
-	"authors": [
-		"Remi Thebault"
-	],
-	"description": "gfx-d triangle example",
-	"copyright": "Copyright © 2016, Remi Thebault",
-	"license": "MIT",
-	"targetType": "executable",
-	"sourcePaths": [
-		"source", "../common"
-	],
+    "name": "triangle",
+    "authors": [
+        "Remi Thebault"
+    ],
+    "description": "gfx-d triangle example",
+    "copyright": "Copyright © 2016, Remi Thebault",
+    "license": "MIT",
+    "targetType": "executable",
+    "sourcePaths": [
+        "source", "../common"
+    ],
     "dependencies": {
-        "gfx" : { "path": "../../"  },
-		"gfx:window" : { "path": "../../window" }
-	},
-	"preGenerateCommands-linux": [
-		"bash $PACKAGE_DIR/../gen_example_spirv.sh $PACKAGE_DIR"
-	]
+        "gfx:graal": {
+            "path": "../../graal"
+        },
+        "gfx:window": {
+            "path": "../../window"
+        }
+    },
+    "preGenerateCommands-linux": [
+        "bash $PACKAGE_DIR/../gen_example_spirv.sh $PACKAGE_DIR"
+    ]
 }

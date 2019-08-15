@@ -11,8 +11,12 @@
         "source", "../common"
     ],
     "dependencies": {
-        "gfx":        { "path": "../.."  },
-        "gfx:window": { "path": "../../window" }
+        "gfx:graal": {
+            "path": "../../graal"
+        },
+        "gfx:window": {
+            "path": "../../window"
+        }
     },
     "preGenerateCommands-linux": [
         "bash $PACKAGE_DIR/../gen_example_spirv.sh $PACKAGE_DIR"

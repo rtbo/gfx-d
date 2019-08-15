@@ -1,0 +1,18 @@
+{
+    "name": "graal",
+    "authors": [
+        "Remi Thebault"
+    ],
+    "description": "Graphics API abstraction layer",
+    "copyright": "Copyright © 2018, Remi Thebault",
+    "license": "MIT",
+    "targetType": "library",
+    "dependencies": {
+        "gfx:core": {
+            "path": "../core"
+        },
+        "gfx:math": {
+            "path": "../math"
+        }
+    }
+}

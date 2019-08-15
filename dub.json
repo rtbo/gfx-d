@@ -6,28 +6,25 @@
     "description": "D graphics rendering library",
     "copyright": "Copyright © 2016-2018, Rémi Thebault",
     "license": "MIT",
-
+    "targetType": "none",
     "subPackages": [
         "bindings",
         "core",
         "decl",
         "genmesh",
         "gl3",
+        "graal",
         "math",
         "memalloc",
         "window",
         "vulkan",
 
-        "examples/swapchain",
-        "examples/triangle",
-        "examples/texture",
+        "examples/declapi",
         "examples/depth",
-        "examples/stencil",
         "examples/shadow",
-        "examples/declapi"
-    ],
-    "dependencies": {
-        "gfx:core": "*",
-        "gfx:math": "*"
-    }
+        "examples/stencil",
+        "examples/swapchain",
+        "examples/texture",
+        "examples/triangle"
+    ]
 }

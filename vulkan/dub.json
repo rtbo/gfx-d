@@ -7,13 +7,14 @@
     "copyright": "Copyright © 2018, Remi Thebault",
     "license": "MIT",
     "dependencies": {
-        "gfx": { "path": ".." }
+        "gfx:graal": {
+            "path": "../graal"
+        }
     },
 
     "-ddoxFilterArgs": ["--min-protection=Protected"],
     "-ddoxTool": "scod",
-    "configurations": [
-        {
+    "configurations": [{
             "name": "linux",
             "platforms": ["linux"],
             "dependencies": {

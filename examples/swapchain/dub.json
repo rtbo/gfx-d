@@ -1,21 +1,21 @@
 {
-	"name": "swapchain",
-	"authors": [
-		"Remi Thebault"
-	],
-	"description": "gfx-d swapchain example",
-	"copyright": "Copyright © 2016, Remi Thebault",
-	"license": "MIT",
-	"sourcePaths": [
-		"source", "../common"
-	],
-	"targetType": "executable",
-	"dependencies": {
-		"gfx": {
-			"path": "../../"
-		},
-		"gfx:window": {
-			"path": "../../window"
-		}
-	}
+    "name": "swapchain",
+    "authors": [
+        "Remi Thebault"
+    ],
+    "description": "gfx-d swapchain example",
+    "copyright": "Copyright © 2016, Remi Thebault",
+    "license": "MIT",
+    "sourcePaths": [
+        "source", "../common"
+    ],
+    "targetType": "executable",
+    "dependencies": {
+        "gfx:graal": {
+            "path": "../../graal"
+        },
+        "gfx:window": {
+            "path": "../../window"
+        }
+    }
 }

@@ -11,11 +11,21 @@
         "source", "../common"
     ],
     "dependencies": {
-        "gfx":         { "path": "../.."  },
-        "gfx:decl":    { "path": "../../decl"  },
-        "gfx:math":    { "path": "../../math"  },
-        "gfx:window":  { "path": "../../window" },
-        "gfx:genmesh": { "path": "../../genmesh" }
+        "gfx:graal": {
+            "path": "../../graal"
+        },
+        "gfx:decl": {
+            "path": "../../decl"
+        },
+        "gfx:math": {
+            "path": "../../math"
+        },
+        "gfx:window": {
+            "path": "../../window"
+        },
+        "gfx:genmesh": {
+            "path": "../../genmesh"
+        }
     },
     "preGenerateCommands-linux": [
         "bash $PACKAGE_DIR/../gen_example_spirv.sh $PACKAGE_DIR"
