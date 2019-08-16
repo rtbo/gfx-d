@@ -36,6 +36,7 @@ struct PresentRequest {
 interface Queue
 {
     @property Device device();
+    @property uint index();
     void waitIdle();
     void submit(Submission[] submissions, Fence fence);
     void present(Semaphore[] waitSems, PresentRequest[] prs);

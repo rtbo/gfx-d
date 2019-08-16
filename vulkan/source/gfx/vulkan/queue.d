@@ -15,10 +15,11 @@ import gfx.vulkan.wsi;
 
 final class VulkanQueue : Queue
 {
-    this (VkQueue vkObj, VulkanDevice dev) {
+    this (VkQueue vkObj, VulkanDevice dev, uint index) {
         _vkObj = vkObj;
         _dev = dev; // weak reference, no retain
         _vk = dev.vk;
+        _index = index;
     }
 
     @property VkQueue vkObj() {
@@ -34,6 +35,11 @@ final class VulkanQueue : Queue
         auto dev = lockObj(_dev);
         if (!dev) return null;
         return giveAwayObj(dev);
+    }
+
+    @property uint index()
+    {
+        return _index;
     }
 
     void waitIdle() {
@@ -132,4 +138,5 @@ final class VulkanQueue : Queue
     private VkQueue _vkObj;
     private VulkanDevice _dev; // device is kept as weak reference
     private VkDeviceCmds _vk;
+    private uint _index;
 }

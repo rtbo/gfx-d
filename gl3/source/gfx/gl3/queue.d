@@ -19,11 +19,13 @@ final class GlQueue : Queue, Disposable {
     private GLuint readFbo;
     private GLuint vao;
     private GlState state;
+    private uint _index;
 
-    this(GlShare share, Device device) {
+    this(GlShare share, Device device, uint index) {
         this.share = share;
         this.info = share.info;
         _device = device;
+        this._index = index;
         auto gl = share.gl;
         gl.GenFramebuffers(1, &readFbo);
         gl.GenVertexArrays(1, &vao);
@@ -38,6 +40,10 @@ final class GlQueue : Queue, Disposable {
 
     override @property Device device() {
         return _device;
+    }
+
+    override @property uint index() {
+        return _index;
     }
 
     override void waitIdle() {

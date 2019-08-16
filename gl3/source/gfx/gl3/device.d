@@ -47,7 +47,7 @@ class GlDevice : Device
         _inst = inst;
         _share = inst.share;
         _memProps = phd.memoryProperties;
-        _queue = new GlQueue(_share, this);
+        _queue = new GlQueue(_share, this, 0);
     }
 
     override void dispose() {
