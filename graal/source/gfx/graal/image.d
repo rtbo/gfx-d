@@ -168,12 +168,13 @@ enum ImageAspect {
     depth           = 0x02,
     stencil         = 0x04,
     depthStencil    = depth | stencil,
+    none            = 0x00,
 }
 
 
 struct ImageSubresourceLayer
 {
-    ImageAspect aspect;
+    ImageAspect aspect  = ImageAspect.color;
     uint mipLevel       = 0;
     uint firstLayer     = 0;
     uint layers         = 1;
@@ -181,7 +182,7 @@ struct ImageSubresourceLayer
 
 struct ImageSubresourceRange
 {
-    ImageAspect aspect;
+    ImageAspect aspect  = ImageAspect.color;
     size_t firstLevel   = 0;
     size_t levels       = 1;
     size_t firstLayer   = 0;

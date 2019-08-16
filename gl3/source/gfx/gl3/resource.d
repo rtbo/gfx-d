@@ -483,9 +483,10 @@ final class GlImageView : ImageView
                 GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
                 GL_TEXTURE_1D, GL_TEXTURE_2D, GL_TEXTURE_3D;
         import gfx.graal.image : ImageAspect;
+        import std.format : format;
 
         GLenum glAttachment;
-        final switch (isr.aspect) {
+        switch (isr.aspect) {
         case ImageAspect.color:
             glAttachment = GL_COLOR_ATTACHMENT0 + colorNum++;
             break;
@@ -498,6 +499,8 @@ final class GlImageView : ImageView
         case ImageAspect.depthStencil:
             glAttachment = GL_DEPTH_STENCIL_ATTACHMENT;
             break;
+        default:
+            assert(false, format("unsupported image aspect: %s", isr.aspect));
         }
 
         final switch(glType) {
