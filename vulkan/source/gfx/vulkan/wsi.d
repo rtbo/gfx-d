@@ -139,12 +139,14 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "DestroySwapchainKHR"), Sw
 {
     mixin(atomicRcCode);
 
-    this(VkSwapchainKHR vkObj, VulkanDevice dev, Surface surf, uint[2] size, Format format)
+    this(VkSwapchainKHR vkObj, VulkanDevice dev, Surface surf, uint[2] size,
+            Format format, ImageUsage usage)
     {
         super(vkObj, dev);
         _surf = surf;
         _size = size;
         _format = format;
+        _usage = usage;
     }
 
     override void dispose() {
@@ -184,7 +186,9 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "DestroySwapchainKHR"), Sw
             import std.array : array;
             _images = vkImgs
                     .map!((VkImage vkImg) {
-                        const info = ImageInfo.d2(_size[0], _size[1]).withFormat(_format);
+                        const info = ImageInfo.d2(_size[0], _size[1])
+                            .withFormat(_format)
+                            .withUsage(_usage);
                         auto img = new VulkanImageBase(vkImg, dev, info);
                         return cast(ImageBase)img;
                     })
@@ -232,4 +236,5 @@ class VulkanSwapchain : VulkanDevObj!(VkSwapchainKHR, "DestroySwapchainKHR"), Sw
     private ImageBase[] _images;
     private uint[2] _size;
     private Format _format;
+    private ImageUsage _usage;
 }
