@@ -165,20 +165,49 @@ class DepthExample : Example
         renderPass = device.createRenderPass(attachments, subpasses, []);
     }
 
-    override void prepareFramebuffer(FrameData imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
+    class DepthFrameData : FrameData
     {
-        imgData.depth = createDepthImage(surfaceSize[0], surfaceSize[1]);
+        PrimaryCommandBuffer cmdBuf;
+        Rc!Image depth;
+        Rc!Framebuffer framebuffer;
 
-        auto colorView = imgData.color.createView(
-            ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
-        ).rc;
-        auto depthView = imgData.depth.createView(
-            ImageType.d2, ImageSubresourceRange(ImageAspect.depth), Swizzle.identity
-        ).rc;
+        this(ImageBase swcColor, CommandBuffer tempBuf)
+        {
+            super(swcColor);
+            cmdBuf = cmdPool.allocatePrimary(1)[0];
+            depth = this.outer.createDepthImage(size[0], size[1]);
 
-        imgData.framebuffer = device.createFramebuffer(renderPass, [
-            colorView.obj, depthView.obj
-        ], surfaceSize[0], surfaceSize[1], 1);
+            auto colorView = swcColor.createView(
+                ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
+            ).rc;
+            auto depthView = depth.createView(
+                ImageType.d2, ImageSubresourceRange(ImageAspect.depth), Swizzle.identity
+            ).rc;
+
+            this.framebuffer = this.outer.device.createFramebuffer(this.outer.renderPass, [
+                colorView.obj, depthView.obj
+            ], size[0], size[1], 1);
+
+            recordImageLayoutBarrier(
+                tempBuf, depth, trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal)
+            );
+            recordImageLayoutBarrier(
+                tempBuf, swcColor, trans(ImageLayout.undefined, ImageLayout.presentSrc)
+            );
+        }
+
+        override void dispose()
+        {
+            framebuffer.unload();
+            depth.unload();
+            cmdPool.free([ cast(CommandBuffer)cmdBuf ]);
+            super.dispose();
+        }
+    }
+
+    override FrameData makeFrameData(ImageBase swcColor, CommandBuffer tempBuf)
+    {
+        return new DepthFrameData(swcColor, tempBuf);
     }
 
     void preparePipeline()
@@ -273,14 +302,16 @@ class DepthExample : Example
         device.flushMappedMemory(mms);
     }
 
-    override void recordCmds(FrameData imgData)
+    override Submission[] recordCmds(FrameData frameData)
     {
         import gfx.graal.types : trans;
+
+        auto dfd = cast(DepthFrameData)frameData;
 
         const ccv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         const dcv = ClearDepthStencilValues(1f, 0);
 
-        PrimaryCommandBuffer buf = imgData.cmdBufs[0];
+        PrimaryCommandBuffer buf = dfd.cmdBuf;
 
         buf.begin(CommandBufferUsage.oneTimeSubmit);
 
@@ -288,7 +319,7 @@ class DepthExample : Example
         buf.setScissor(0, [ Rect(0, 0, surfaceSize[0], surfaceSize[1]) ]);
 
         buf.beginRenderPass(
-            renderPass, imgData.framebuffer,
+            renderPass, dfd.framebuffer,
             Rect(0, 0, surfaceSize[0], surfaceSize[1]),
             [ ClearValues(ccv), ClearValues(dcv) ]
         );
@@ -304,6 +335,8 @@ class DepthExample : Example
         buf.endRenderPass();
 
         buf.end();
+
+        return simpleSubmission([ buf ]);
     }
 
 }

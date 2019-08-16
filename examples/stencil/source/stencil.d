@@ -2,21 +2,9 @@ module stencil;
 
 import example;
 
-import gfx.core.rc;
-import gfx.core.typecons;
-import gfx.graal.buffer;
-import gfx.graal.cmd;
-import gfx.graal.device;
-import gfx.graal.format;
-import gfx.graal.image;
-import gfx.graal.memory;
-import gfx.graal.pipeline;
-import gfx.graal.presentation;
-import gfx.graal.queue;
-import gfx.graal.renderpass;
-import gfx.graal.types;
+import gfx.core;
+import gfx.graal;
 import gfx.window;
-import gfx.window.keys;
 
 import std.exception;
 import std.stdio;
@@ -65,7 +53,6 @@ class StencilExample : Example
         VertexP2C3([ 0.0, -1.0], [0.0, 0.0, 1.0]),
     ];
     immutable triangleLen = triangle.length * VertexP2C3.sizeof;
-
 
     this(string[] args) {
         super("Stencil", args);
@@ -175,19 +162,52 @@ class StencilExample : Example
         renderPass = device.createRenderPass(attachments, subpasses, dependencies);
     }
 
-    override void prepareFramebuffer(FrameData imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
+    class StencilFrameData : FrameData
     {
-        imgData.stencil = createStencilImage(surfaceSize[0], surfaceSize[1]);
+        PrimaryCommandBuffer cmdBuf;
+        Rc!Image stencil;
+        Rc!Framebuffer framebuffer;
 
-        auto colorView = imgData.color.createView(
-            ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
-        ).rc;
-        auto stencilView = imgData.stencil.createView(
-            ImageType.d2, ImageSubresourceRange(ImageAspect.stencil), Swizzle.identity
-        ).rc;
-        imgData.framebuffer = device.createFramebuffer(renderPass, [
-            colorView.obj, stencilView.obj
-        ], surfaceSize[0], surfaceSize[1], 1);
+        this(ImageBase swcColor, CommandBuffer tempBuf)
+        {
+            super(swcColor);
+            cmdBuf = cmdPool.allocatePrimary(1)[0];
+            stencil = this.outer.createStencilImage(size[0], size[1]);
+
+            import std.stdio;
+            writefln("stencil format: %s", stencil.info.format);
+
+            auto colorView = swcColor.createView(
+                ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
+            ).rc;
+            auto stencilView = stencil.createView(
+                ImageType.d2, ImageSubresourceRange(ImageAspect.stencil), Swizzle.identity
+            ).rc;
+
+            this.framebuffer = this.outer.device.createFramebuffer(this.outer.renderPass, [
+                colorView.obj, stencilView.obj
+            ], size[0], size[1], 1);
+
+            recordImageLayoutBarrier(
+                tempBuf, stencil, trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal)
+            );
+            recordImageLayoutBarrier(
+                tempBuf, swcColor, trans(ImageLayout.undefined, ImageLayout.presentSrc)
+            );
+        }
+
+        override void dispose()
+        {
+            framebuffer.unload();
+            stencil.unload();
+            cmdPool.free([ cast(CommandBuffer)cmdBuf ]);
+            super.dispose();
+        }
+    }
+
+    override FrameData makeFrameData(ImageBase swcColor, CommandBuffer tempBuf)
+    {
+        return new StencilFrameData(swcColor, tempBuf);
     }
 
     void preparePipeline()
@@ -300,19 +320,19 @@ class StencilExample : Example
     }
 
 
-    override void recordCmds(FrameData imgData)
+    override Submission[] recordCmds(FrameData frameData)
     {
-        import gfx.graal.types : trans;
+        auto sfd = cast(StencilFrameData)frameData;
 
         const cv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         const dsv = ClearDepthStencilValues(0f, 0);
 
-        auto buf = imgData.cmdBufs[0];
+        auto buf = sfd.cmdBuf;
 
         buf.begin(CommandBufferUsage.oneTimeSubmit);
 
         buf.beginRenderPass(
-            renderPass, imgData.framebuffer,
+            renderPass, sfd.framebuffer,
             Rect(0, 0, surfaceSize[0], surfaceSize[1]),
             [ ClearValues(cv), ClearValues(dsv) ]
         );
@@ -335,6 +355,8 @@ class StencilExample : Example
         buf.endRenderPass();
 
         buf.end();
+
+        return simpleSubmission([ buf ]);
     }
 
 }

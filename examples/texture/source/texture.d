@@ -2,21 +2,9 @@ module texture;
 
 import example;
 
-import gfx.core.rc;
-import gfx.core.typecons;
-import gfx.graal.buffer;
-import gfx.graal.cmd;
-import gfx.graal.device;
-import gfx.graal.format;
-import gfx.graal.image;
-import gfx.graal.memory;
-import gfx.graal.pipeline;
-import gfx.graal.presentation;
-import gfx.graal.queue;
-import gfx.graal.renderpass;
-import gfx.graal.types;
+import gfx.core;
+import gfx.graal;
 import gfx.window;
-import gfx.window.keys;
 
 import gl3n.linalg : mat4, mat3, vec3, vec4;
 
@@ -178,15 +166,35 @@ class TextureExample : Example
         renderPass = device.createRenderPass(attachments, subpasses, []);
     }
 
-    override void prepareFramebuffer(FrameData imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
+    class TextureFrameData : FrameData
     {
-        imgData.framebuffer = device.createFramebuffer(renderPass, [
-            imgData.color.createView(
-                ImageType.d2,
-                ImageSubresourceRange(ImageAspect.color),
-                Swizzle.identity
-            )
-        ], surfaceSize[0], surfaceSize[1], 1);
+        PrimaryCommandBuffer cmdBuf;
+        Rc!Framebuffer framebuffer;
+
+        this(ImageBase swcColor, CommandBuffer tempBuf)
+        {
+            super(swcColor);
+            cmdBuf = cmdPool.allocatePrimary(1)[0];
+
+            auto colorView = swcColor.createView(
+                ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
+            ).rc;
+
+            this.framebuffer = this.outer.device.createFramebuffer(this.outer.renderPass, [
+                colorView.obj
+            ], size[0], size[1], 1);
+
+            recordImageLayoutBarrier(
+                tempBuf, swcColor, trans(ImageLayout.undefined, ImageLayout.presentSrc)
+            );
+        }
+
+        override void dispose()
+        {
+            framebuffer.unload();
+            cmdPool.free([ cast(CommandBuffer)cmdBuf ]);
+            super.dispose();
+        }
     }
 
     void preparePipeline()
@@ -280,20 +288,24 @@ class TextureExample : Example
         device.flushMappedMemory(mms);
     }
 
-    override void recordCmds(FrameData imgData)
+    override FrameData makeFrameData(ImageBase swcColor, CommandBuffer tempBuf)
     {
-        import gfx.graal.types : trans;
+        return new TextureFrameData(swcColor, tempBuf);
+    }
+
+    override Submission[] recordCmds(FrameData frameData)
+    {
+        auto tfd = cast(TextureFrameData)frameData;
 
         const cv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
-        auto subrange = ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1);
 
-        auto buf = imgData.cmdBufs[0];
+        auto buf = tfd.cmdBuf;
 
         //buf.reset();
         buf.begin(CommandBufferUsage.oneTimeSubmit);
 
         buf.beginRenderPass(
-            renderPass, imgData.framebuffer,
+            renderPass, tfd.framebuffer,
             Rect(0, 0, surfaceSize[0], surfaceSize[1]), [ ClearValues(cv) ]
         );
 
@@ -306,6 +318,8 @@ class TextureExample : Example
         buf.endRenderPass();
 
         buf.end();
+
+        return simpleSubmission([ buf ]);
     }
 
 }

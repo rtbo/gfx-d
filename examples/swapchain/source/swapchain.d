@@ -2,11 +2,8 @@ module swapchain;
 
 import example;
 
-import gfx.graal.cmd;
-import gfx.graal.image;
-import gfx.graal.types;
+import gfx.graal;
 import gfx.window;
-import gfx.window.keys;
 
 import std.typecons;
 
@@ -17,12 +14,39 @@ class SwapchainExample : Example
         super("Swapchain", args);
     }
 
-    override void recordCmds(FrameData imgData)
+    class SwapchainFrameData : FrameData
     {
+        PrimaryCommandBuffer cmdBuf;
+
+        this(ImageBase swcColor, CommandBuffer tempBuf)
+        {
+            super(swcColor);
+            cmdBuf = cmdPool.allocatePrimary(1)[0];
+
+            this.outer.recordImageLayoutBarrier(
+                tempBuf, swcColor, trans(ImageLayout.undefined, ImageLayout.presentSrc)
+            );
+        }
+
+        override void dispose()
+        {
+            cmdPool.free([ cast(CommandBuffer)cmdBuf ]);
+            super.dispose();
+        }
+    }
+
+    override FrameData makeFrameData(ImageBase swcColor, CommandBuffer tempBuf)
+    {
+        return new SwapchainFrameData(swcColor, tempBuf);
+    }
+
+    override Submission[] recordCmds(FrameData frameData)
+    {
+        auto sfd = cast(SwapchainFrameData)frameData;
         const clearValues = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         auto subrange = ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1);
 
-        auto buf = imgData.cmdBufs[0];
+        auto buf = sfd.cmdBuf;
         buf.begin(CommandBufferUsage.none);
 
             buf.pipelineBarrier(
@@ -30,13 +54,13 @@ class SwapchainExample : Example
                 [ ImageMemoryBarrier(
                     trans(Access.memoryRead, Access.transferWrite),
                     trans(ImageLayout.presentSrc, ImageLayout.transferDstOptimal),
-                    trans(graphicsQueueIndex, presentQueueIndex),
-                    imgData.color, subrange
+                    trans(presentQueue.index, graphicsQueue.index),
+                    sfd.swcColor, subrange
                 ) ]
             );
 
             buf.clearColorImage(
-                imgData.color, ImageLayout.transferDstOptimal, clearValues, [ subrange ]
+                sfd.swcColor, ImageLayout.transferDstOptimal, clearValues, [ subrange ]
             );
 
             buf.pipelineBarrier(
@@ -44,12 +68,14 @@ class SwapchainExample : Example
                 [ ImageMemoryBarrier(
                     trans(Access.transferWrite, Access.memoryRead),
                     trans(ImageLayout.transferDstOptimal, ImageLayout.presentSrc),
-                    trans(graphicsQueueIndex, presentQueueIndex),
-                    imgData.color, subrange
+                    trans(graphicsQueue.index, presentQueue.index),
+                    sfd.swcColor, subrange
                 ) ]
             );
 
         buf.end();
+
+        return simpleSubmission([ buf ]);
     }
 }
 

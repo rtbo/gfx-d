@@ -80,8 +80,6 @@ class Example : Disposable
     Window window;
     Rc!Instance instance;
     NDC ndc;
-    uint graphicsQueueIndex;
-    uint presentQueueIndex;
     PhysicalDevice physicalDevice;
     Rc!Device device;
     Queue graphicsQueue;
@@ -91,38 +89,9 @@ class Example : Disposable
     Rc!Swapchain swapchain;
     Rc!Semaphore imageAvailableSem;
     Rc!Semaphore renderingFinishSem;
-    Rc!CommandPool cmdPool;
-    size_t numCmdBufPerFrame = 1;
     uint frameNumber;
-    FrameData[] imgDatas;
+    FrameData[] frameDatas;
     FpsProbe probe;
-
-    /// one of these per swapchain image
-    static class FrameData : AtomicRefCounted
-    {
-        ImageBase color;
-        Rc!Image depth;
-        Rc!Image stencil;
-        Rc!Framebuffer framebuffer;
-        Rc!Fence fence; // to keep track of when command processing is done
-        Rc!CommandPool cmdPool; // keeping track here to delete the command bufs
-        PrimaryCommandBuffer[] cmdBufs;
-
-        override void dispose()
-        {
-            import std.algorithm : map;
-            import std.array : array;
-
-            depth.unload();
-            stencil.unload();
-            framebuffer.unload();
-            fence.unload();
-            if (cmdBufs.length) {
-                cmdPool.free(cmdBufs.map!(b => cast(CommandBuffer)b).array);
-            }
-            cmdPool.unload();
-        }
-    }
 
     // garbage collection
     // it is sometimes desirable to delete objects still in use in a command
@@ -162,8 +131,7 @@ class Example : Disposable
             releaseObj(garbageEntries.resource);
             garbageEntries = garbageEntries.next;
         }
-        cmdPool.unload();
-        releaseArr(imgDatas);
+        releaseArr(frameDatas);
         // the rest is checked with Rc, so it is safe to call unload even
         // if object is invalid
         imageAvailableSem.unload();
@@ -224,7 +192,6 @@ class Example : Disposable
         // The rest of the preparation.
         prepareDevice();
         prepareSync();
-        prepareCmds();
         prepareSwapchain(null);
         prepareRenderPass();
         prepareFramebuffers();
@@ -234,9 +201,10 @@ class Example : Disposable
 
     void prepareDevice()
     {
+        auto graphicsQueueIndex = uint.max;
+        auto presentQueueIndex = uint.max;
+
         bool checkDevice(PhysicalDevice dev) {
-            graphicsQueueIndex = uint.max;
-            presentQueueIndex = uint.max;
             if (dev.softwareRendering) return false;
             foreach (size_t i, qf; dev.queueFamilies) {
                 const qi = cast(uint)i;
@@ -271,10 +239,6 @@ class Example : Disposable
     {
         imageAvailableSem = device.createSemaphore();
         renderingFinishSem = device.createSemaphore();
-    }
-
-    void prepareCmds() {
-        cmdPool = device.createCommandPool(graphicsQueueIndex);
     }
 
     void prepareSwapchain(Swapchain former=null)
@@ -315,66 +279,67 @@ class Example : Disposable
     void prepareRenderPass()
     {}
 
-    void prepareFramebuffers()
+    /// Data that is duplicated for every frame in the swapchain
+    /// This typically include framebuffer and command pool.
+    abstract class FrameData : AtomicRefCounted
     {
-        auto layoutChange = autoCmdBuf.rc;
+        Rc!Fence fence; // to keep track of when command processing is done
+        Rc!CommandPool cmdPool;
 
-        auto scImages = swapchain.images;
-        imgDatas = new FrameData[scImages.length];
-        auto cmdBufs = cmdPool.allocatePrimary(scImages.length * numCmdBufPerFrame);
+        ImageBase swcColor;
+        uint[2] size;
 
-        foreach(i, img; scImages) {
-            auto imgData = new FrameData;
-            imgData.color = img;
-            imgData.fence = device.createFence(Yes.signaled);
-            imgData.cmdPool = cmdPool;
-            imgData.cmdBufs = cmdBufs[i*numCmdBufPerFrame .. (i+1)*numCmdBufPerFrame];
+        this(ImageBase swcColor)
+        {
+            this.fence = device.createFence(Yes.signaled);
+            this.cmdPool = device.createCommandPool(graphicsQueue.index);
 
-            prepareFramebuffer(imgData, layoutChange.cmdBuf);
+            this.swcColor = swcColor;
+            const dims = swcColor.info.dims;
+            size = [dims.width, dims.height];
+        }
 
-            layoutChange.cmdBuf.pipelineBarrier(
-                trans(PipelineStage.colorAttachmentOutput, PipelineStage.colorAttachmentOutput), [],
-                [ ImageMemoryBarrier(
-                    trans(Access.none, Access.colorAttachmentWrite),
-                    trans(ImageLayout.undefined, ImageLayout.presentSrc),
-                    trans(queueFamilyIgnored, queueFamilyIgnored),
-                    img, ImageSubresourceRange(ImageAspect.color)
-                ) ]
-            );
-            if (imgData.depth) {
-                const hasStencil = formatDesc(imgData.depth.info.format).surfaceType.stencilBits > 0;
-                const aspect = hasStencil ? ImageAspect.depthStencil : ImageAspect.depth;
-                layoutChange.cmdBuf.pipelineBarrier(
-                    trans(PipelineStage.topOfPipe, PipelineStage.earlyFragmentTests), [], [
-                        ImageMemoryBarrier(
-                            trans(Access.none, Access.depthStencilAttachmentRead | Access.depthStencilAttachmentWrite),
-                            trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
-                            trans(queueFamilyIgnored, queueFamilyIgnored),
-                            imgData.depth.obj, ImageSubresourceRange(aspect)
-                        )
-                    ]
-                );
-            }
-            if (imgData.stencil) {
-                layoutChange.cmdBuf.pipelineBarrier(
-                    trans(PipelineStage.topOfPipe, PipelineStage.earlyFragmentTests), [], [
-                        ImageMemoryBarrier(
-                            trans(Access.none, Access.depthStencilAttachmentRead | Access.depthStencilAttachmentWrite),
-                            trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
-                            trans(queueFamilyIgnored, queueFamilyIgnored),
-                            imgData.stencil, ImageSubresourceRange(ImageAspect.stencil)
-                        )
-                    ]
-                );
-            }
-            imgDatas[i] = retainObj(imgData);
+        override void dispose()
+        {
+            fence.unload();
+            cmdPool.unload();
         }
     }
 
-    void prepareFramebuffer(FrameData imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
-    {}
+    /// Instantiate FrameData implementation for the given swapchain color image.
+    /// tempBuf is a helper that can be used to transfer data, change images layout...
+    /// it is submitted and waited for shortly after FrameData is built.
+    abstract FrameData makeFrameData(ImageBase swcColor, CommandBuffer tempBuf);
 
-    abstract void recordCmds(FrameData imgData);
+    void prepareFramebuffers()
+    {
+        auto swcImages = swapchain.images;
+        frameDatas = new FrameData[swcImages.length];
+
+        auto tempBuf = rc(new RaiiCmdBuf);
+
+        foreach(i, img; swcImages) {
+            frameDatas[i] = retainObj(makeFrameData(img, tempBuf.get));
+        }
+    }
+
+    /// Record buffer implementation for the current frame.
+    /// Returns the submissions for the graphics queue
+    /// the first submission that renders to the swapchain image must
+    /// wait for imageAvailableSem
+    /// the last submission must signal renderingFinishSem
+    abstract Submission[] recordCmds(FrameData frameData);
+
+    /// build a submission for the simplest cases with one submission
+    final Submission[] simpleSubmission(PrimaryCommandBuffer[] cmdBufs)
+    {
+        return [
+            Submission (
+                [ StageWait(imageAvailableSem, PipelineStage.transfer) ],
+                [ renderingFinishSem.obj ], cmdBufs
+            )
+        ];
+    }
 
     void render()
     {
@@ -383,20 +348,18 @@ class Example : Disposable
         const acq = swapchain.acquireNextImage(imageAvailableSem.obj);
 
         if (acq.hasIndex) {
-            const imgInd = acq.index;
+            auto frameData = frameDatas[acq.index];
+            frameData.fence.wait();
+            frameData.fence.reset();
 
-            auto imgData = imgDatas[imgInd];
-            imgData.fence.wait();
-            imgData.fence.reset();
+            auto submissions = recordCmds(frameData);
 
-            recordCmds(imgData);
-
-            submit(imgData);
+            graphicsQueue.submit(submissions, frameData.fence);
 
             try {
                 presentQueue.present(
                     [ renderingFinishSem.obj ],
-                    [ PresentRequest(swapchain, imgInd) ]
+                    [ PresentRequest(swapchain, acq.index) ]
                 );
             }
             catch (OutOfDateException ex) {
@@ -414,24 +377,12 @@ class Example : Disposable
         }
     }
 
-    /// default submission when there is one command buffer per frame
-    void submit(FrameData imgData)
-    {
-        graphicsQueue.submit([
-            Submission (
-                [ StageWait(imageAvailableSem, PipelineStage.transfer) ],
-                [ renderingFinishSem.obj ], imgData.cmdBufs[0 .. 1]
-            )
-        ], imgData.fence );
-    }
-
-
     void rebuildSwapchain()
     {
-        foreach (imgData; imgDatas) {
+        foreach (imgData; frameDatas) {
             gc(imgData, imgData.fence);
         }
-        releaseArr(imgDatas);
+        releaseArr(frameDatas);
         prepareSwapchain(swapchain.obj);
         prepareFramebuffers();
     }
@@ -596,7 +547,7 @@ class Example : Disposable
             dataSize, usage | BufferUsage.transferDst, MemProps.deviceLocal
         )).rc;
 
-        auto b = autoCmdBuf().rc;
+        auto b = rc(new RaiiCmdBuf);
 
         // copy from staging buffer
         copyBuffer(stagingBuf, buf, dataSize, b.cmdBuf);
@@ -657,7 +608,7 @@ class Example : Disposable
         if (!bindImageMemory(img)) return null;
 
         {
-            auto b = autoCmdBuf().rc;
+            auto b = rc(new RaiiCmdBuf);
 
             b.cmdBuf.pipelineBarrier(
                 trans(PipelineStage.topOfPipe, PipelineStage.transfer), [], [
@@ -708,16 +659,61 @@ class Example : Disposable
         return img.giveAway();
     }
 
+    final void recordImageLayoutBarrier(CommandBuffer cmdBuf, ImageBase img, Trans!ImageLayout layout)
+    {
+        const info = img.info;
+
+        if (info.usage & ImageUsage.colorAttachment)
+        {
+            cmdBuf.pipelineBarrier(
+                trans(PipelineStage.colorAttachmentOutput, PipelineStage.colorAttachmentOutput), [],
+                [ ImageMemoryBarrier(
+                    trans(Access.none, Access.colorAttachmentWrite),
+                    layout,
+                    trans(queueFamilyIgnored, queueFamilyIgnored),
+                    img, ImageSubresourceRange(ImageAspect.color)
+                ) ]
+            );
+        }
+        else if (info.usage & ImageUsage.depthStencilAttachment)
+        {
+            const hasDepth = formatDesc(info.format).surfaceType.depthBits > 0;
+            const hasStencil = formatDesc(info.format).surfaceType.stencilBits > 0;
+            auto aspect = ImageAspect.none;
+            if (hasDepth) aspect |= ImageAspect.depth;
+            if (hasStencil) aspect |= ImageAspect.stencil;
+            cmdBuf.pipelineBarrier(
+                trans(PipelineStage.topOfPipe, PipelineStage.earlyFragmentTests), [], [
+                    ImageMemoryBarrier(
+                        trans(
+                            Access.none,
+                            Access.depthStencilAttachmentRead | Access.depthStencilAttachmentWrite
+                        ),
+                        layout,
+                        trans(queueFamilyIgnored, queueFamilyIgnored),
+                        img, ImageSubresourceRange(aspect)
+                    )
+                ]
+            );
+        }
+        else {
+            import std.format : format;
+            throw new Exception(
+                format("don't know how to record memory barrier for image usage %s", info.usage)
+            );
+        }
+    }
+
     /// copy the content of one buffer to another
     /// srcBuf and dstBuf must support transferSrc and transferDst respectively.
-    final void copyBuffer(Buffer srcBuf, Buffer dstBuf, size_t size, PrimaryCommandBuffer cmdBuf)
+    final void copyBuffer(Buffer srcBuf, Buffer dstBuf, size_t size, CommandBuffer cmdBuf)
     {
         cmdBuf.copyBuffer(trans(srcBuf, dstBuf), [CopyRegion(trans!size_t(0, 0), size)]);
     }
 
     /// copy the content of one buffer to an image.
     /// the image layout must be transferDstOptimal buffer the call
-    final void copyBufferToImage(Buffer srcBuf, Image dstImg, PrimaryCommandBuffer cmdBuf)
+    final void copyBufferToImage(Buffer srcBuf, Image dstImg, CommandBuffer cmdBuf)
     {
         const dims = dstImg.info.dims;
 
@@ -727,48 +723,36 @@ class Example : Disposable
         cmdBuf.copyBufferToImage(srcBuf, dstImg, ImageLayout.transferDstOptimal, regions);
     }
 
-    /// Get a RAII command buffer that is meant to be trashed after usage.
-    /// Returned buffer is ready to record data, and execute commands on the graphics queue
-    /// at end of scope.
-    AutoCmdBuf autoCmdBuf(CommandPool pool=null)
+    /// Utility command buffer for a one time submission that automatically submit
+    /// when disposed.
+    /// Generally used for transfer operations, or image layout change.
+    final class RaiiCmdBuf : AtomicRefCounted
     {
-        Rc!CommandPool cmdPool = pool;
-        if (!cmdPool) {
-            cmdPool = enforce(this.cmdPool);
+        Rc!CommandPool pool;
+        PrimaryCommandBuffer cmdBuf;
+
+        this() {
+            this.pool = device.createCommandPool(graphicsQueue.index);
+            this.cmdBuf = this.pool.allocatePrimary(1)[0];
+            this.cmdBuf.begin(CommandBufferUsage.oneTimeSubmit);
         }
-        return new AutoCmdBuf(cmdPool, graphicsQueue);
+
+        override void dispose() {
+            this.cmdBuf.end();
+            graphicsQueue.submit([
+                Submission([], [], (&this.cmdBuf)[0 .. 1])
+            ], null);
+            graphicsQueue.waitIdle();
+            auto cb = cast(CommandBuffer)this.cmdBuf;
+            this.pool.free((&cb)[0 .. 1]);
+            this.pool.unload();
+        }
+
+        @property CommandBuffer get()
+        {
+            return cmdBuf;
+        }
     }
-}
-
-/// Utility command buffer for a one time submission that automatically submit
-/// when disposed.
-/// Generally used for transfer operations, or image layout change.
-class AutoCmdBuf : AtomicRefCounted
-{
-    Rc!CommandPool pool;
-    Queue queue;
-    Rc!Device device; // device holds queue,
-    PrimaryCommandBuffer cmdBuf;
-
-    this(CommandPool pool, Queue queue) {
-        this.pool = pool;
-        this.queue = queue;
-        this.device = queue.device;
-        this.cmdBuf = this.pool.allocatePrimary(1)[0];
-        this.cmdBuf.begin(CommandBufferUsage.oneTimeSubmit);
-    }
-
-    override void dispose() {
-        this.cmdBuf.end();
-        this.queue.submit([
-            Submission([], [], [ this.cmdBuf ])
-        ], null);
-        this.queue.waitIdle();
-        this.pool.free([ this.cmdBuf ]);
-        this.pool.unload();
-        this.device.unload();
-    }
-
 }
 
 /// Return a format suitable for the surface.

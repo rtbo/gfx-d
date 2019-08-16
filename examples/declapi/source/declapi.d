@@ -2,22 +2,10 @@ module declapi;
 
 import example;
 
-import gfx.core.rc;
-import gfx.core.typecons;
+import gfx.core;
 import gfx.decl.engine;
-import gfx.graal.buffer;
-import gfx.graal.cmd;
-import gfx.graal.device;
-import gfx.graal.format;
-import gfx.graal.image;
-import gfx.graal.memory;
-import gfx.graal.pipeline;
-import gfx.graal.presentation;
-import gfx.graal.queue;
-import gfx.graal.renderpass;
-import gfx.graal.types;
+import gfx.graal;
 import gfx.window;
-import gfx.window.keys;
 
 import gfx.math;
 
@@ -26,7 +14,7 @@ import std.stdio;
 import std.typecons;
 import std.math;
 
-class DeclAPIExample : Example
+class DeclApiExample : Example
 {
     Rc!RenderPass renderPass;
     Rc!Pipeline pipeline;
@@ -165,20 +153,49 @@ class DeclAPIExample : Example
         renderPass = declEng.store.expect!RenderPass("rp");
     }
 
-    override void prepareFramebuffer(FrameData imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
+    class DeclApiFrameData : FrameData
     {
-        imgData.depth = createDepthImage(surfaceSize[0], surfaceSize[1]);
+        PrimaryCommandBuffer cmdBuf;
+        Rc!Image depth;
+        Rc!Framebuffer framebuffer;
 
-        auto colorView = imgData.color.createView(
-            ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
-        ).rc;
-        auto depthView = imgData.depth.createView(
-            ImageType.d2, ImageSubresourceRange(ImageAspect.depth), Swizzle.identity
-        ).rc;
+        this(ImageBase swcColor, CommandBuffer tempBuf)
+        {
+            super(swcColor);
+            cmdBuf = cmdPool.allocatePrimary(1)[0];
+            depth = this.outer.createDepthImage(size[0], size[1]);
 
-        imgData.framebuffer = device.createFramebuffer(renderPass, [
-            colorView.obj, depthView.obj
-        ], surfaceSize[0], surfaceSize[1], 1);
+            auto colorView = swcColor.createView(
+                ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
+            ).rc;
+            auto depthView = depth.createView(
+                ImageType.d2, ImageSubresourceRange(ImageAspect.depth), Swizzle.identity
+            ).rc;
+
+            this.framebuffer = this.outer.device.createFramebuffer(this.outer.renderPass, [
+                colorView.obj, depthView.obj
+            ], size[0], size[1], 1);
+
+            recordImageLayoutBarrier(
+                tempBuf, depth, trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal)
+            );
+            recordImageLayoutBarrier(
+                tempBuf, swcColor, trans(ImageLayout.undefined, ImageLayout.presentSrc)
+            );
+        }
+
+        override void dispose()
+        {
+            framebuffer.unload();
+            depth.unload();
+            cmdPool.free([ cast(CommandBuffer)cmdBuf ]);
+            super.dispose();
+        }
+    }
+
+    override FrameData makeFrameData(ImageBase swcColor, CommandBuffer tempBuf)
+    {
+        return new DeclApiFrameData(swcColor, tempBuf);
     }
 
     void preparePipeline()
@@ -218,14 +235,14 @@ class DeclAPIExample : Example
         device.flushMappedMemory(mms);
     }
 
-    override void recordCmds(FrameData imgData)
+    override Submission[] recordCmds(FrameData frameData)
     {
-        import gfx.graal.types : trans;
+        auto fd = cast(DeclApiFrameData)frameData;
 
         const ccv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
         const dcv = ClearDepthStencilValues(1f, 0);
 
-        PrimaryCommandBuffer buf = imgData.cmdBufs[0];
+        PrimaryCommandBuffer buf = fd.cmdBuf;
 
         buf.begin(CommandBufferUsage.oneTimeSubmit);
 
@@ -233,7 +250,7 @@ class DeclAPIExample : Example
         buf.setScissor(0, [ Rect(0, 0, surfaceSize[0], surfaceSize[1]) ]);
 
         buf.beginRenderPass(
-            renderPass, imgData.framebuffer,
+            renderPass, fd.framebuffer,
             Rect(0, 0, surfaceSize[0], surfaceSize[1]),
             [ ClearValues(ccv), ClearValues(dcv) ]
         );
@@ -249,6 +266,8 @@ class DeclAPIExample : Example
         buf.endRenderPass();
 
         buf.end();
+
+        return simpleSubmission([ buf ]);
     }
 
 }
@@ -256,7 +275,7 @@ class DeclAPIExample : Example
 int main(string[] args)
 {
     try {
-        auto example = new DeclAPIExample(args);
+        auto example = new DeclApiExample(args);
         example.prepare();
         scope(exit) example.dispose();
 
@@ -274,7 +293,7 @@ int main(string[] args)
         const proj = perspective!float(example.ndc, 45, 4f/3f, 1f, 10f);
         const viewProj = proj*view;
 
-        DeclAPIExample.Matrices[3] matrices;
+        DeclApiExample.Matrices[3] matrices;
 
         while (!example.window.closeFlag) {
 
@@ -286,7 +305,7 @@ int main(string[] args)
                         * translation(2f, 0f, 0f)
                         * rotation(-angle, fvec(0, 0, 1));
                 const mvp = viewProj*model;
-                matrices[m] = DeclAPIExample.Matrices(
+                matrices[m] = DeclApiExample.Matrices(
                     mvp.transpose(),
                     model.affineInverse(), // need the transpose of model inverse
                 );

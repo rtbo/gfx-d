@@ -92,15 +92,40 @@ class TriangleExample : Example
         renderPass = device.createRenderPass(attachments, subpasses, []);
     }
 
-    override void prepareFramebuffer(FrameData fb, PrimaryCommandBuffer layoutChangeCmdBuf)
+    class TriangleFrameData : FrameData
     {
-        fb.framebuffer = device.createFramebuffer(renderPass, [
-            fb.color.createView(
-                ImageType.d2,
-                ImageSubresourceRange(ImageAspect.color),
-                Swizzle.identity
-            )
-        ], surfaceSize[0], surfaceSize[1], 1);
+        PrimaryCommandBuffer cmdBuf;
+        Rc!Framebuffer framebuffer;
+
+        this(ImageBase swcColor, CommandBuffer tempBuf)
+        {
+            super(swcColor);
+            cmdBuf = cmdPool.allocatePrimary(1)[0];
+
+            framebuffer = device.createFramebuffer(this.outer.renderPass.obj, [
+                swcColor.createView(
+                    ImageType.d2,
+                    ImageSubresourceRange(ImageAspect.color),
+                    Swizzle.identity
+                )
+            ], size[0], size[1], 1);
+
+            this.outer.recordImageLayoutBarrier(
+                tempBuf, swcColor, trans(ImageLayout.undefined, ImageLayout.presentSrc)
+            );
+        }
+
+        override void dispose()
+        {
+            cmdPool.free([ cast(CommandBuffer)cmdBuf ]);
+            framebuffer.unload();
+            super.dispose();
+        }
+    }
+
+    override FrameData makeFrameData(ImageBase swcColor, CommandBuffer tempBuf)
+    {
+        return new TriangleFrameData(swcColor, tempBuf);
     }
 
     void preparePipeline()
@@ -153,20 +178,19 @@ class TriangleExample : Example
     }
 
 
-    override void recordCmds(FrameData imgData)
+    override Submission[] recordCmds(FrameData frameData)
     {
         import gfx.graal.types : trans;
 
+        auto tfd = cast(TriangleFrameData)frameData;
+        auto buf = tfd.cmdBuf;
+
         const cv = ClearColorValues(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f);
-        auto subrange = ImageSubresourceRange(ImageAspect.color, 0, 1, 0, 1);
 
-        auto buf = imgData.cmdBufs[0];
-
-        //buf.reset();
         buf.begin(CommandBufferUsage.oneTimeSubmit);
 
         buf.beginRenderPass(
-            renderPass, imgData.framebuffer,
+            renderPass, tfd.framebuffer,
             Rect(0, 0, surfaceSize[0], surfaceSize[1]), [ ClearValues(cv) ]
         );
 
@@ -177,6 +201,8 @@ class TriangleExample : Example
         buf.endRenderPass();
 
         buf.end();
+
+        return simpleSubmission([ buf ]);
     }
 
 }

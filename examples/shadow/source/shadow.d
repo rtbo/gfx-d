@@ -2,19 +2,9 @@ module shadow;
 
 import example;
 
-import gfx.core.rc;
-import gfx.core.typecons;
-import gfx.graal.buffer;
-import gfx.graal.cmd;
-import gfx.graal.format;
-import gfx.graal.image;
-import gfx.graal.pipeline;
-import gfx.graal.renderpass;
-import gfx.graal.sync;
-import gfx.graal.types;
+import gfx.core;
+import gfx.graal;
 import gfx.window;
-import gfx.window.keys;
-
 import gfx.math;
 
 import std.math : PI;
@@ -151,7 +141,6 @@ final class ShadowExample : Example
 
     override void prepare()
     {
-        numCmdBufPerFrame = numLights + 1;
         super.prepare();
         prepareSceneAndResources();
         prepareShadowFramebuffers();
@@ -177,8 +166,8 @@ final class ShadowExample : Example
             Swizzle.identity
         );
         {
-            auto b = autoCmdBuf().rc;
-            b.cmdBuf.pipelineBarrier(
+            auto b = rc(new RaiiCmdBuf);
+            b.get.pipelineBarrier(
                 trans(PipelineStage.topOfPipe, PipelineStage.earlyFragmentTests), [], [
                     ImageMemoryBarrier(
                         trans(Access.none, Access.depthStencilAttachmentRead | Access.depthStencilAttachmentWrite),
@@ -377,19 +366,53 @@ final class ShadowExample : Example
         }
     }
 
-    override void prepareFramebuffer(FrameData imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
+    class ShadowFrameData : FrameData
     {
-        imgData.depth = createDepthImage(surfaceSize[0], surfaceSize[1]);
+        PrimaryCommandBuffer[] cmdBufs;
+        Rc!Image depth;
+        Rc!Framebuffer framebuffer;
 
-        auto colorView = imgData.color.createView(
-            ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
-        ).rc;
-        auto depthView = imgData.depth.createView(
-            ImageType.d2, ImageSubresourceRange(ImageAspect.depth), Swizzle.identity
-        ).rc;
-        imgData.framebuffer = device.createFramebuffer(meshRenderPass, [
-            colorView.obj, depthView.obj
-        ], surfaceSize[0], surfaceSize[1], 1);
+        this(ImageBase swcColor, CommandBuffer tempBuf)
+        {
+            super(swcColor);
+            cmdBufs = cmdPool.allocatePrimary(numLights + 1);
+
+            depth = createDepthImage(size[0], size[1]);
+
+            auto colorView = swcColor.createView(
+                ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
+            ).rc;
+            auto depthView = depth.createView(
+                ImageType.d2, ImageSubresourceRange(ImageAspect.depth), Swizzle.identity
+            ).rc;
+
+            this.framebuffer = this.outer.device.createFramebuffer(this.outer.meshRenderPass, [
+                colorView.obj, depthView.obj
+            ], size[0], size[1], 1);
+
+            recordImageLayoutBarrier(
+                tempBuf, depth, trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal)
+            );
+            recordImageLayoutBarrier(
+                tempBuf, swcColor, trans(ImageLayout.undefined, ImageLayout.presentSrc)
+            );
+        }
+
+        override void dispose()
+        {
+            import std.algorithm : map;
+            import std.array : array;
+
+            framebuffer.unload();
+            depth.unload();
+            cmdPool.free(cmdBufs.map!(b => cast(CommandBuffer)b).array);
+            super.dispose();
+        }
+    }
+
+    override FrameData makeFrameData(ImageBase swcColor, CommandBuffer tempBuf)
+    {
+        return new ShadowFrameData(swcColor, tempBuf);
     }
 
     void prepareDescriptors() {
@@ -599,10 +622,12 @@ final class ShadowExample : Example
         device.flushMappedMemory(mms);
     }
 
-    override void recordCmds(FrameData imgData)
+    override Submission[] recordCmds(FrameData frameData)
     {
-        void recordLight(uint il, ref Light l) {
-            auto buf = imgData.cmdBufs[il];
+        auto sfd = cast(ShadowFrameData)frameData;
+
+        void recordLight(size_t il, ref Light l) {
+            auto buf = sfd.cmdBufs[il];
             buf.begin(CommandBufferUsage.oneTimeSubmit);
 
             buf.beginRenderPass(
@@ -629,11 +654,11 @@ final class ShadowExample : Example
         }
 
         void recordMeshes() {
-            auto buf = imgData.cmdBufs[$-1];
+            auto buf = sfd.cmdBufs[$-1];
 
             buf.begin(CommandBufferUsage.oneTimeSubmit);
             buf.beginRenderPass(
-                meshRenderPass, imgData.framebuffer, Rect(0, 0, surfaceSize[0], surfaceSize[1]),
+                meshRenderPass, sfd.framebuffer, Rect(0, 0, surfaceSize[0], surfaceSize[1]),
                 [
                     ClearValues.color(0.6f, 0.6f, 0.6f, hasAlpha ? 0.5f : 1f),
                     ClearValues.depthStencil(1f, 0)
@@ -657,36 +682,25 @@ final class ShadowExample : Example
             buf.end();
         }
 
-        foreach (uint il, ref l; lights) {
+        foreach (size_t il, ref l; lights) {
             recordLight(il, l);
         }
         recordMeshes();
-    }
-
-    override void submit (FrameData imgData)
-    {
-        import gfx.graal.queue : StageWait, Submission;
 
         auto shadowSubmission = Submission(
             [],
             [ shadowFinishedSem.obj ],
-            imgData.cmdBufs[0 .. lights.length],
+            sfd.cmdBufs[0 .. lights.length],
         );
         auto meshSubmission = Submission(
             [
                 StageWait(shadowFinishedSem, PipelineStage.fragmentShader),
                 StageWait(imageAvailableSem, PipelineStage.transfer)
             ],
-            [ renderingFinishSem.obj ], imgData.cmdBufs[lights.length .. $]
+            [ renderingFinishSem.obj ], sfd.cmdBufs[lights.length .. $]
         );
 
-        graphicsQueue.submit(
-            [
-                shadowSubmission,
-                meshSubmission
-            ],
-            imgData.fence
-        );
+        return [ shadowSubmission, meshSubmission ];
     }
 
     override void rebuildSwapchain()
