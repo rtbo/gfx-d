@@ -26,7 +26,7 @@ class TriangleExample : Example
 {
     Rc!RenderPass renderPass;
     Rc!Pipeline pipeline;
-    PerImage[] perImages;
+    FrameData[] perImages;
     Rc!Buffer vertBuf;
 
     struct Vertex {
@@ -92,7 +92,7 @@ class TriangleExample : Example
         renderPass = device.createRenderPass(attachments, subpasses, []);
     }
 
-    override void prepareFramebuffer(PerImage fb, PrimaryCommandBuffer layoutChangeCmdBuf)
+    override void prepareFramebuffer(FrameData fb, PrimaryCommandBuffer layoutChangeCmdBuf)
     {
         fb.framebuffer = device.createFramebuffer(renderPass, [
             fb.color.createView(
@@ -153,7 +153,7 @@ class TriangleExample : Example
     }
 
 
-    override void recordCmds(PerImage imgData)
+    override void recordCmds(FrameData imgData)
     {
         import gfx.graal.types : trans;
 

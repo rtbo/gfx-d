@@ -165,7 +165,7 @@ class DeclAPIExample : Example
         renderPass = declEng.store.expect!RenderPass("rp");
     }
 
-    override void prepareFramebuffer(PerImage imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
+    override void prepareFramebuffer(FrameData imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
     {
         imgData.depth = createDepthImage(surfaceSize[0], surfaceSize[1]);
 
@@ -218,7 +218,7 @@ class DeclAPIExample : Example
         device.flushMappedMemory(mms);
     }
 
-    override void recordCmds(PerImage imgData)
+    override void recordCmds(FrameData imgData)
     {
         import gfx.graal.types : trans;
 

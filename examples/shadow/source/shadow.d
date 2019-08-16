@@ -377,7 +377,7 @@ final class ShadowExample : Example
         }
     }
 
-    override void prepareFramebuffer(PerImage imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
+    override void prepareFramebuffer(FrameData imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
     {
         imgData.depth = createDepthImage(surfaceSize[0], surfaceSize[1]);
 
@@ -599,7 +599,7 @@ final class ShadowExample : Example
         device.flushMappedMemory(mms);
     }
 
-    override void recordCmds(PerImage imgData)
+    override void recordCmds(FrameData imgData)
     {
         void recordLight(uint il, ref Light l) {
             auto buf = imgData.cmdBufs[il];
@@ -663,7 +663,7 @@ final class ShadowExample : Example
         recordMeshes();
     }
 
-    override void submit (PerImage imgData)
+    override void submit (FrameData imgData)
     {
         import gfx.graal.queue : StageWait, Submission;
 

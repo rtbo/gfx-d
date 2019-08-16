@@ -94,11 +94,11 @@ class Example : Disposable
     Rc!CommandPool cmdPool;
     size_t numCmdBufPerFrame = 1;
     uint frameNumber;
-    PerImage[] imgDatas;
+    FrameData[] imgDatas;
     FpsProbe probe;
 
     /// one of these per swapchain image
-    static class PerImage : AtomicRefCounted
+    static class FrameData : AtomicRefCounted
     {
         ImageBase color;
         Rc!Image depth;
@@ -320,11 +320,11 @@ class Example : Disposable
         auto layoutChange = autoCmdBuf.rc;
 
         auto scImages = swapchain.images;
-        imgDatas = new PerImage[scImages.length];
+        imgDatas = new FrameData[scImages.length];
         auto cmdBufs = cmdPool.allocatePrimary(scImages.length * numCmdBufPerFrame);
 
         foreach(i, img; scImages) {
-            auto imgData = new PerImage;
+            auto imgData = new FrameData;
             imgData.color = img;
             imgData.fence = device.createFence(Yes.signaled);
             imgData.cmdPool = cmdPool;
@@ -371,10 +371,10 @@ class Example : Disposable
         }
     }
 
-    void prepareFramebuffer(PerImage imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
+    void prepareFramebuffer(FrameData imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
     {}
 
-    abstract void recordCmds(PerImage imgData);
+    abstract void recordCmds(FrameData imgData);
 
     void render()
     {
@@ -415,7 +415,7 @@ class Example : Disposable
     }
 
     /// default submission when there is one command buffer per frame
-    void submit(PerImage imgData)
+    void submit(FrameData imgData)
     {
         graphicsQueue.submit([
             Submission (

@@ -178,7 +178,7 @@ class TextureExample : Example
         renderPass = device.createRenderPass(attachments, subpasses, []);
     }
 
-    override void prepareFramebuffer(PerImage imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
+    override void prepareFramebuffer(FrameData imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
     {
         imgData.framebuffer = device.createFramebuffer(renderPass, [
             imgData.color.createView(
@@ -280,7 +280,7 @@ class TextureExample : Example
         device.flushMappedMemory(mms);
     }
 
-    override void recordCmds(PerImage imgData)
+    override void recordCmds(FrameData imgData)
     {
         import gfx.graal.types : trans;
 

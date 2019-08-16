@@ -175,7 +175,7 @@ class StencilExample : Example
         renderPass = device.createRenderPass(attachments, subpasses, dependencies);
     }
 
-    override void prepareFramebuffer(PerImage imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
+    override void prepareFramebuffer(FrameData imgData, PrimaryCommandBuffer layoutChangeCmdBuf)
     {
         imgData.stencil = createStencilImage(surfaceSize[0], surfaceSize[1]);
 
@@ -300,7 +300,7 @@ class StencilExample : Example
     }
 
 
-    override void recordCmds(PerImage imgData)
+    override void recordCmds(FrameData imgData)
     {
         import gfx.graal.types : trans;
 
