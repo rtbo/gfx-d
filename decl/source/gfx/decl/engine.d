@@ -233,13 +233,13 @@ class DeclarativeEngine : Disposable
                 }
             }
             if (adt.name == "color" || adt.name == "depth") {
-                ad.colorDepthOps = parseAttachmentOps(adt.expectTag("ops"));
+                ad.ops = parseAttachmentOps(adt.expectTag("ops"));
             }
             else if (adt.name == "stencil") {
                 ad.stencilOps = parseAttachmentOps(adt.expectTag("ops"));
             }
             else if (adt.name == "depthStencil") {
-                ad.colorDepthOps = parseAttachmentOps(adt.expectTag("depthOps"));
+                ad.ops = parseAttachmentOps(adt.expectTag("depthOps"));
                 ad.stencilOps = parseAttachmentOps(adt.expectTag("stencilOps"));
             }
             else {

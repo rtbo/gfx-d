@@ -370,8 +370,8 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
                 vkAd.flags = VK_ATTACHMENT_DESCRIPTION_MAY_ALIAS_BIT;
             }
             vkAd.format = ad.format.toVk();
-            vkAd.loadOp = ad.colorDepthOps.load.toVk();
-            vkAd.storeOp = ad.colorDepthOps.store.toVk();
+            vkAd.loadOp = ad.ops.load.toVk();
+            vkAd.storeOp = ad.ops.store.toVk();
             vkAd.stencilLoadOp = ad.stencilOps.load.toVk();
             vkAd.stencilStoreOp = ad.stencilOps.store.toVk();
             vkAd.initialLayout = ad.layoutTrans.from.toVk();

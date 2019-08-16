@@ -25,8 +25,8 @@ struct AttachmentOps {
 struct AttachmentDescription
 {
     Format format;
-    uint samples=1;
-    AttachmentOps colorDepthOps = AttachmentOps(LoadOp.dontCare, StoreOp.dontCare);
+    uint samples = 1;
+    AttachmentOps ops = AttachmentOps(LoadOp.dontCare, StoreOp.dontCare);
     AttachmentOps stencilOps = AttachmentOps(LoadOp.dontCare, StoreOp.dontCare);
     Trans!ImageLayout layoutTrans;
     Flag!"mayAlias" mayAlias;
