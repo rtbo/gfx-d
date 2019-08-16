@@ -4,7 +4,7 @@ module gfx.window;
 import gfx.core.rc : IAtomicRefCounted;
 import gfx.core.log : LogTag;
 import gfx.graal : Backend, Instance;
-import gfx.window.keys;
+public import gfx.window.keys;
 
 enum gfxWindowLogMask = 0x0800_0000;
 package immutable gfxWindowLog = LogTag("GFX-WINDOW", gfxWindowLogMask);
