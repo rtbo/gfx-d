@@ -238,16 +238,17 @@ class Example : Disposable
             graphicsQueueIndex = uint.max;
             presentQueueIndex = uint.max;
             if (dev.softwareRendering) return false;
-            foreach (uint i, qf; dev.queueFamilies) {
+            foreach (size_t i, qf; dev.queueFamilies) {
+                const qi = cast(uint)i;
                 const graphics = qf.cap & QueueCap.graphics;
-                const present = dev.supportsSurface(i, window.surface);
+                const present = dev.supportsSurface(qi, window.surface);
                 if (graphics && present) {
-                    graphicsQueueIndex = i;
-                    presentQueueIndex = i;
+                    graphicsQueueIndex = qi;
+                    presentQueueIndex = qi;
                     return true;
                 }
-                if (graphics) graphicsQueueIndex = i;
-                if (present) presentQueueIndex = i;
+                if (graphics) graphicsQueueIndex = qi;
+                if (present) presentQueueIndex = qi;
             }
             return graphicsQueueIndex != uint.max && presentQueueIndex != uint.max;
         }
@@ -605,14 +606,14 @@ class Example : Disposable
     }
 
     /// ditto
-    final Buffer createStaticBuffer(T)(const(T)[] data, BufferUsage usage)
+    Buffer createStaticBuffer(T)(const(T)[] data, BufferUsage usage)
     if (!is(T == void))
     {
         return createStaticBuffer(untypeSlice(data), usage);
     }
 
     /// ditto
-    final Buffer createStaticBuffer(T)(in T data, BufferUsage usage)
+    Buffer createStaticBuffer(T)(in T data, BufferUsage usage)
     if (!isArray!T)
     {
         const start = cast(const(void)*)&data;
@@ -621,7 +622,7 @@ class Example : Disposable
 
     bool bindImageMemory(Image img, MemProps props=MemProps.deviceLocal) {
         const mr = img.memoryRequirements;
-        const memTypeInd = findMemType(mr, MemProps.deviceLocal);
+        const memTypeInd = findMemType(mr, props);
         if (memTypeInd == uint.max) return false;
 
         auto mem = device.allocateMemory(memTypeInd, mr.size).rc;
