@@ -15,7 +15,7 @@ graal:RenderPass {
         color samples=1 mayAlias=false {
             format "store:sc_format"
             ops load="clear" store="store"
-            layout from="presentSrc" to="presentSrc"
+            layout from="undefined" to="presentSrc"
         }
         depth {
             format "store:depth_format"

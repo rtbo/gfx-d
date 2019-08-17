@@ -144,7 +144,7 @@ class DepthExample : Example
             AttachmentDescription(swapchain.format, 1,
                 AttachmentOps(LoadOp.clear, StoreOp.store),
                 AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
-                trans(ImageLayout.presentSrc, ImageLayout.presentSrc),
+                trans(ImageLayout.undefined, ImageLayout.presentSrc),
                 No.mayAlias
             ),
             AttachmentDescription(findDepthFormat(), 1,
@@ -187,13 +187,6 @@ class DepthExample : Example
             this.framebuffer = this.outer.device.createFramebuffer(this.outer.renderPass, [
                 colorView.obj, depthView.obj
             ], size[0], size[1], 1);
-
-            recordImageLayoutBarrier(
-                tempBuf, depth, trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal)
-            );
-            recordImageLayoutBarrier(
-                tempBuf, swcColor, trans(ImageLayout.undefined, ImageLayout.presentSrc)
-            );
         }
 
         override void dispose()

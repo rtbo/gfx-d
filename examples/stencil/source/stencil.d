@@ -129,14 +129,14 @@ class StencilExample : Example
                 swapchain.format, 1,
                 AttachmentOps(LoadOp.clear, StoreOp.store),
                 AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
-                trans(ImageLayout.presentSrc, ImageLayout.presentSrc),
+                trans(ImageLayout.undefined, ImageLayout.presentSrc),
                 No.mayAlias
             ),
             AttachmentDescription(
                 Format.s8_uInt, 1,
                 AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
                 AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
-                trans(ImageLayout.depthStencilAttachmentOptimal, ImageLayout.depthStencilAttachmentOptimal),
+                trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
                 No.mayAlias
             ),
         ];
@@ -174,9 +174,6 @@ class StencilExample : Example
             cmdBuf = cmdPool.allocatePrimary(1)[0];
             stencil = this.outer.createStencilImage(size[0], size[1]);
 
-            import std.stdio;
-            writefln("stencil format: %s", stencil.info.format);
-
             auto colorView = swcColor.createView(
                 ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
             ).rc;
@@ -187,13 +184,6 @@ class StencilExample : Example
             this.framebuffer = this.outer.device.createFramebuffer(this.outer.renderPass, [
                 colorView.obj, stencilView.obj
             ], size[0], size[1], 1);
-
-            recordImageLayoutBarrier(
-                tempBuf, stencil, trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal)
-            );
-            recordImageLayoutBarrier(
-                tempBuf, swcColor, trans(ImageLayout.undefined, ImageLayout.presentSrc)
-            );
         }
 
         override void dispose()

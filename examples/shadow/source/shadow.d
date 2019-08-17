@@ -165,19 +165,6 @@ final class ShadowExample : Example
             ImageSubresourceRange(ImageAspect.depth, 0, 1, 0, numLights),
             Swizzle.identity
         );
-        {
-            auto b = rc(new RaiiCmdBuf);
-            b.get.pipelineBarrier(
-                trans(PipelineStage.topOfPipe, PipelineStage.earlyFragmentTests), [], [
-                    ImageMemoryBarrier(
-                        trans(Access.none, Access.depthStencilAttachmentRead | Access.depthStencilAttachmentWrite),
-                        trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
-                        trans(queueFamilyIgnored, queueFamilyIgnored),
-                        shadowTex, ImageSubresourceRange(ImageAspect.depth, 0, 1, 0, numLights)
-                    )
-                ]
-            );
-        }
 
         shadowSampler = device.createSampler(SamplerInfo(
             Filter.linear, Filter.linear, Filter.nearest,
@@ -317,7 +304,7 @@ final class ShadowExample : Example
                 Format.d32_sFloat, 1,
                 AttachmentOps(LoadOp.clear, StoreOp.store),
                 AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
-                trans(ImageLayout.depthStencilAttachmentOptimal, ImageLayout.depthStencilAttachmentOptimal),
+                trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
                 No.mayAlias
             ),
         ];
@@ -336,7 +323,7 @@ final class ShadowExample : Example
             AttachmentDescription(swapchain.format, 1,
                 AttachmentOps(LoadOp.clear, StoreOp.store),
                 AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
-                trans(ImageLayout.presentSrc, ImageLayout.presentSrc),
+                trans(ImageLayout.undefined, ImageLayout.presentSrc),
                 No.mayAlias
             ),
             AttachmentDescription(findDepthFormat(), 1,
@@ -389,13 +376,6 @@ final class ShadowExample : Example
             this.framebuffer = this.outer.device.createFramebuffer(this.outer.meshRenderPass, [
                 colorView.obj, depthView.obj
             ], size[0], size[1], 1);
-
-            recordImageLayoutBarrier(
-                tempBuf, depth, trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal)
-            );
-            recordImageLayoutBarrier(
-                tempBuf, swcColor, trans(ImageLayout.undefined, ImageLayout.presentSrc)
-            );
         }
 
         override void dispose()

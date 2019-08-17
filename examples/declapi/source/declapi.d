@@ -175,13 +175,6 @@ class DeclApiExample : Example
             this.framebuffer = this.outer.device.createFramebuffer(this.outer.renderPass, [
                 colorView.obj, depthView.obj
             ], size[0], size[1], 1);
-
-            recordImageLayoutBarrier(
-                tempBuf, depth, trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal)
-            );
-            recordImageLayoutBarrier(
-                tempBuf, swcColor, trans(ImageLayout.undefined, ImageLayout.presentSrc)
-            );
         }
 
         override void dispose()
