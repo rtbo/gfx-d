@@ -425,6 +425,50 @@ unittest
     assert (approxUlp(expected, result));
 }
 
+/// Build a rotation matrix from Euler angles
+/// The convention taken is Xa, Zb, Xc
+Mat3!T eulerAngles(T) (in T a, in T b, in T c)
+if (isFloatingPoint!T)
+{
+    import std.math : cos, sin;
+
+    immutable sa = sin(a);
+    immutable sb = sin(b);
+    immutable sc = sin(c);
+
+    immutable ca = cos(a);
+    immutable cb = cos(b);
+    immutable cc = cos(c);
+
+    return Mat3!T (
+        cb,     -cc*sb,             sb*sc,
+        ca*sb,  ca*cb*cc - sa*sc,   -cc*sa - ca*cb*sc,
+        sa*sb,  ca*sc + cb*cc*sa,   ca*cc - cb*sa*sc,
+    );
+}
+
+auto eulerAngles(V) (in V angles)
+if (isVec!(3, V) && isFloatingPoint!(V.Component))
+{
+    return eulerAngles(angles[0], angles[1], angles[2]);
+}
+
+/// ditto
+
+///
+unittest {
+    import gfx.math.approx : approxUlpAndAbs;
+    import std.math : PI;
+
+    const v = fvec(0, 0, 1);
+    // rotate PI/2 around X, then no rotation around Z, then again PI/2 around X
+    const m = eulerAngles(float(PI / 2), 0f, float(PI / 2));
+    const result = m * v;
+    const expected = fvec(0, 0, -1);
+
+    assert(approxUlpAndAbs(result, expected));
+}
+
 
 /// Build a scale matrix.
 Mat3!(CommonType!(X, Y)) scale(X, Y) (in X x, in Y y)
