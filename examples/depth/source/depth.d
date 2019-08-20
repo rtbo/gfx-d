@@ -297,7 +297,6 @@ class DepthExample : Example
 
     override Submission[] recordCmds(FrameData frameData)
     {
-        import gfx.graal.types : trans;
 
         auto dfd = cast(DepthFrameData)frameData;
 

@@ -16,10 +16,11 @@
         "graal",
         "math",
         "memalloc",
-        "window",
         "vulkan",
+        "window",
 
         "examples/declapi",
+        "examples/deferred",
         "examples/depth",
         "examples/shadow",
         "examples/stencil",

@@ -21,6 +21,7 @@ import std.exception;
 import std.stdio;
 import std.typecons;
 import std.traits : isArray;
+import std.datetime : Duration;
 
 immutable log = LogTag("GFX-EX");
 
@@ -197,6 +198,12 @@ class Example : Disposable
         prepareFramebuffers();
 
         probe.start();
+    }
+
+    Duration timeElapsed()
+    {
+        assert(probe.sw.running(), "stopwatch isn't running!!");
+        return probe.sw.peek();
     }
 
     void prepareDevice()
