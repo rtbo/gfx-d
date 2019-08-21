@@ -103,6 +103,7 @@ struct DeferredScene
                 const z = uniform(0.8, 1, rnd);
                 body.transform = scale(fvec(xy, xy, z));
                 body.color = bodyCol * 0.8;
+                body.shininess = uniform(3.0, 8.0, rnd);
             }
             {
                 const s = uniform(0.5, 1, rnd);
@@ -111,15 +112,17 @@ struct DeferredScene
                 cockpit.transform = translation(fvec(x, 0, z))
                         * scale(FVec3(s));
                 cockpit.color = bodyCol;
+                cockpit.shininess = uniform(10.0, 16.0, rnd);
             }
             {
                 const s = uniform(0.1, 0.3, rnd);
-                const x = uniform(1, 2, rnd);
+                const x = uniform(1.0, 2.0, rnd);
                 const z = uniform(1.5, 2.5, rnd);
                 bulbPos = fvec(x, 0, z);
                 bulb.transform = translation(bulbPos)
                         * scale(FVec3(s));
                 bulb.color = bulbCol;
+                bulb.shininess = uniform(10.0, 16.0, rnd);
             }
 
             return Saucer(
@@ -195,6 +198,7 @@ struct SaucerBody
 {
     FMat4 transform = FMat4.identity;
     FVec3 color = fvec(0, 0, 0);
+    float shininess = 1f;
 }
 
 struct Saucer

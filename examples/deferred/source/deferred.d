@@ -25,7 +25,8 @@ class DeferredExample : Example
     {
         FMat4 model = FMat4.identity;
         FVec4 color = fvec(0, 0, 0, 1);
-        float[4] pad; // 32 bytes alignment for dynamic offset
+        float shininess = 1f;
+        float[3] pad; // 32 bytes alignment for dynamic offset
     }
     /// ditto
     struct GeomModelUbo
@@ -224,6 +225,7 @@ class DeferredExample : Example
             worldPos,
             normal,
             color,
+            shininess,
             depth,
             swcColor,
 
@@ -252,6 +254,10 @@ class DeferredExample : Example
             Format.rgba8_uNorm, AttachmentOps(LoadOp.clear, StoreOp.store),
             trans(ImageLayout.undefined, ImageLayout.colorAttachmentOptimal)
         );
+        attachments[Attachment.shininess] = AttachmentDescription.color(
+            Format.r16_sFloat, AttachmentOps(LoadOp.clear, StoreOp.store),
+            trans(ImageLayout.undefined, ImageLayout.colorAttachmentOptimal)
+        );
         attachments[Attachment.depth] = AttachmentDescription.depth(
             Format.d16_uNorm, AttachmentOps(LoadOp.clear, StoreOp.store),
             trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal)
@@ -269,6 +275,7 @@ class DeferredExample : Example
                 AttachmentRef(Attachment.worldPos, ImageLayout.colorAttachmentOptimal),
                 AttachmentRef(Attachment.normal, ImageLayout.colorAttachmentOptimal),
                 AttachmentRef(Attachment.color, ImageLayout.colorAttachmentOptimal),
+                AttachmentRef(Attachment.shininess, ImageLayout.colorAttachmentOptimal),
             ],
             // depth
             some(AttachmentRef(Attachment.depth, ImageLayout.depthStencilAttachmentOptimal))
@@ -279,6 +286,7 @@ class DeferredExample : Example
                 AttachmentRef(Attachment.worldPos, ImageLayout.shaderReadOnlyOptimal),
                 AttachmentRef(Attachment.normal, ImageLayout.shaderReadOnlyOptimal),
                 AttachmentRef(Attachment.color, ImageLayout.shaderReadOnlyOptimal),
+                AttachmentRef(Attachment.shininess, ImageLayout.shaderReadOnlyOptimal),
             ],
             // outputs
             [
@@ -329,9 +337,11 @@ class DeferredExample : Example
         Rc!Image worldPos;
         Rc!Image normal;
         Rc!Image color;
+        Rc!Image shininess;
         Rc!ImageView worldPosView;
         Rc!ImageView normalView;
         Rc!ImageView colorView;
+        Rc!ImageView shininessView;
 
         /// depth buffer
         Rc!Image depth;
@@ -362,12 +372,17 @@ class DeferredExample : Example
                     .withFormat(Format.rgba8_uNorm).withUsage(
                         ImageUsage.colorAttachment | ImageUsage.inputAttachment
                     ));
+            shininess = device.createImage(ImageInfo.d2(size[0], size[1])
+                    .withFormat(Format.r16_sFloat).withUsage(
+                        ImageUsage.colorAttachment | ImageUsage.inputAttachment
+                    ));
             depth = device.createImage(ImageInfo.d2(size[0], size[1])
                     .withFormat(Format.d16_uNorm).withUsage(ImageUsage.depthStencilAttachment));
 
             enforce(bindImageMemory(worldPos.obj));
             enforce(bindImageMemory(normal.obj));
             enforce(bindImageMemory(color.obj));
+            enforce(bindImageMemory(shininess.obj));
             enforce(bindImageMemory(depth.obj));
 
             worldPosView = worldPos.createView(
@@ -379,6 +394,9 @@ class DeferredExample : Example
             colorView = color.createView(
                 ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
             );
+            shininessView = shininess.createView(
+                ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
+            );
             auto depthView = depth.createView(
                 ImageType.d2, ImageSubresourceRange(ImageAspect.depth), Swizzle.identity
             ).rc;
@@ -387,17 +405,20 @@ class DeferredExample : Example
             ).rc;
 
             this.framebuffer = this.outer.device.createFramebuffer(this.outer.renderPass, [
-                worldPosView.obj, normalView.obj, colorView.obj, depthView.obj, swcColorView.obj
+                worldPosView.obj, normalView.obj, colorView.obj, shininessView.obj,
+                depthView.obj, swcColorView.obj
             ], size[0], size[1], 1);
         }
 
         override void dispose()
         {
             framebuffer.unload();
+            shininessView.unload();
             colorView.unload();
             normalView.unload();
             worldPosView.unload();
             depth.unload();
+            shininess.unload();
             color.unload();
             normal.unload();
             worldPos.unload();
@@ -416,7 +437,7 @@ class DeferredExample : Example
         const poolSizes = [
             DescriptorPoolSize(DescriptorType.uniformBuffer, 2),
             DescriptorPoolSize(DescriptorType.uniformBufferDynamic, 2),
-            DescriptorPoolSize(DescriptorType.inputAttachment, 3),
+            DescriptorPoolSize(DescriptorType.inputAttachment, 4),
         ];
 
         descriptorPool = device.createDescriptorPool(3, poolSizes);
@@ -454,6 +475,7 @@ class DeferredExample : Example
                 ImageViewLayout(dfd.worldPosView.obj, ImageLayout.shaderReadOnlyOptimal),
                 ImageViewLayout(dfd.normalView.obj, ImageLayout.shaderReadOnlyOptimal),
                 ImageViewLayout(dfd.colorView.obj, ImageLayout.shaderReadOnlyOptimal),
+                ImageViewLayout(dfd.shininessView.obj, ImageLayout.shaderReadOnlyOptimal),
             ]))
         ];
         device.updateDescriptorSets(writes, []);
@@ -476,6 +498,7 @@ class DeferredExample : Example
                     geomModelUbo.data[s.saucerIdx].data[bi] = GeomModelData(
                         (M3 * s.bodies[bi].transform).transpose(),
                         fvec(s.bodies[bi].color, 1),
+                        s.bodies[bi].shininess,
                     );
                 }
 
@@ -536,6 +559,7 @@ class DeferredExample : Example
                     ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // world-pos
                     ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // normal
                     ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // color
+                    ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // shininess
                     ClearValues(ClearDepthStencilValues( 1f, 0 )), // depth
                     ClearValues(ClearColorValues( 0f, 0f, 0f, 1f )), // swapchain image
                 ]

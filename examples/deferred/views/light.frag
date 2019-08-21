@@ -13,7 +13,7 @@ layout(std140, set = 0, binding = 1) uniform Model {
     float lightRad;
 } model;
 
-layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput inputs[3];
+layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput inputs[4];
 
 layout(location = 0) out vec4 o_Color;
 
@@ -30,6 +30,7 @@ void main() {
     vec3 worldPos = worldPosA.rgb;
     vec3 normal = subpassLoad(inputs[1]).rgb;
     vec3 color = subpassLoad(inputs[2]).rgb;
+    float shininess = subpassLoad(inputs[3]).r;
 
     vec3 to_light = model.lightPos.xyz - worldPos;
     float dist = length(to_light);
@@ -45,7 +46,7 @@ void main() {
     // specular part
     vec3 reflection = reflect(-to_light, normal);
     float spec_factor = max(0.0, dot(reflection, to_viewer));
-    vec3 spec = model.lightCol.rgb * pow(spec_factor, 16.0) * atten;
+    vec3 spec = model.lightCol.rgb * pow(spec_factor, shininess) * atten;
 
     o_Color = vec4(ambient*color + diff + spec, 1.0);
 }
