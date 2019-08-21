@@ -220,93 +220,101 @@ class DeferredExample : Example
 
     override void prepareRenderPass()
     {
-        const attachments = [
-            // G-buffer attachment
-            //      world pos
-            AttachmentDescription.color(
-                Format.rgba32_sFloat, AttachmentOps(LoadOp.clear, StoreOp.store),
-                trans(ImageLayout.undefined, ImageLayout.colorAttachmentOptimal)
-            ),
-            //      normal
-            AttachmentDescription.color(
-                Format.rgba16_sFloat, AttachmentOps(LoadOp.clear, StoreOp.store),
-                trans(ImageLayout.undefined, ImageLayout.colorAttachmentOptimal)
-            ),
-            //      color
-            AttachmentDescription.color(
-                Format.rgba8_uNorm, AttachmentOps(LoadOp.clear, StoreOp.store),
-                trans(ImageLayout.undefined, ImageLayout.colorAttachmentOptimal)
-            ),
-            // depth image
-            AttachmentDescription.depth(
-                Format.d16_uNorm, AttachmentOps(LoadOp.clear, StoreOp.store),
-                trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal)
-            ),
-            // swapchain image
-            AttachmentDescription.color(
-                swapchain.format, AttachmentOps(LoadOp.clear, StoreOp.store),
-                trans(ImageLayout.undefined, ImageLayout.presentSrc)
-            )
-        ];
-        const subpasses = [
-            // geometry pass
-            SubpassDescription(
-                // inputs
-                [],
-                // outputs
-                [
-                    AttachmentRef(0, ImageLayout.colorAttachmentOptimal),
-                    AttachmentRef(1, ImageLayout.colorAttachmentOptimal),
-                    AttachmentRef(2, ImageLayout.colorAttachmentOptimal),
-                ],
-                // depth
-                some(AttachmentRef(3, ImageLayout.depthStencilAttachmentOptimal))
-            ),
-            // lighting pass
-            SubpassDescription(
-                // inputs
-                [
-                    AttachmentRef(0, ImageLayout.shaderReadOnlyOptimal),
-                    AttachmentRef(1, ImageLayout.shaderReadOnlyOptimal),
-                    AttachmentRef(2, ImageLayout.shaderReadOnlyOptimal),
-                ],
-                // outputs
-                [
-                    AttachmentRef(4, ImageLayout.colorAttachmentOptimal)
-                ],
-                // depth
-                none!AttachmentRef
-            ),
-            // bulb pass
-            SubpassDescription(
-                // inputs
-                [],
-                // outputs
-                [
-                    AttachmentRef(4, ImageLayout.colorAttachmentOptimal)
-                ],
-                // depth
-                some(AttachmentRef(3, ImageLayout.depthStencilAttachmentOptimal))
-            ),
-        ];
+        enum Attachment {
+            worldPos,
+            normal,
+            color,
+            depth,
+            swcColor,
+
+            count,
+        }
+        enum Subpass {
+            geom,
+            light,
+            bulb,
+
+            count,
+        }
+
+        auto attachments = new AttachmentDescription[Attachment.count];
+        auto subpasses = new SubpassDescription[Subpass.count];
+
+        attachments[Attachment.worldPos] = AttachmentDescription.color(
+            Format.rgba32_sFloat, AttachmentOps(LoadOp.clear, StoreOp.store),
+            trans(ImageLayout.undefined, ImageLayout.colorAttachmentOptimal)
+        );
+        attachments[Attachment.normal] = AttachmentDescription.color(
+            Format.rgba16_sFloat, AttachmentOps(LoadOp.clear, StoreOp.store),
+            trans(ImageLayout.undefined, ImageLayout.colorAttachmentOptimal)
+        );
+        attachments[Attachment.color] = AttachmentDescription.color(
+            Format.rgba8_uNorm, AttachmentOps(LoadOp.clear, StoreOp.store),
+            trans(ImageLayout.undefined, ImageLayout.colorAttachmentOptimal)
+        );
+        attachments[Attachment.depth] = AttachmentDescription.depth(
+            Format.d16_uNorm, AttachmentOps(LoadOp.clear, StoreOp.store),
+            trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal)
+        );
+        attachments[Attachment.swcColor] = AttachmentDescription.color(
+            swapchain.format, AttachmentOps(LoadOp.clear, StoreOp.store),
+            trans(ImageLayout.undefined, ImageLayout.presentSrc)
+        );
+
+        subpasses[Subpass.geom] = SubpassDescription(
+            // inputs
+            [],
+            // outputs
+            [
+                AttachmentRef(Attachment.worldPos, ImageLayout.colorAttachmentOptimal),
+                AttachmentRef(Attachment.normal, ImageLayout.colorAttachmentOptimal),
+                AttachmentRef(Attachment.color, ImageLayout.colorAttachmentOptimal),
+            ],
+            // depth
+            some(AttachmentRef(Attachment.depth, ImageLayout.depthStencilAttachmentOptimal))
+        );
+        subpasses[Subpass.light] = SubpassDescription(
+            // inputs
+            [
+                AttachmentRef(Attachment.worldPos, ImageLayout.shaderReadOnlyOptimal),
+                AttachmentRef(Attachment.normal, ImageLayout.shaderReadOnlyOptimal),
+                AttachmentRef(Attachment.color, ImageLayout.shaderReadOnlyOptimal),
+            ],
+            // outputs
+            [
+                AttachmentRef(Attachment.swcColor, ImageLayout.colorAttachmentOptimal)
+            ],
+            // depth
+            none!AttachmentRef
+        );
+        subpasses[Subpass.bulb] = SubpassDescription(
+            // inputs
+            [],
+            // outputs
+            [
+                AttachmentRef(Attachment.swcColor, ImageLayout.colorAttachmentOptimal)
+            ],
+            // depth
+            some(AttachmentRef(Attachment.depth, ImageLayout.depthStencilAttachmentOptimal))
+        );
         const dependencies = [
             SubpassDependency(
-                trans(subpassExternal, 0),
+                trans(subpassExternal, Subpass.geom),
                 trans(PipelineStage.bottomOfPipe, PipelineStage.colorAttachmentOutput),
                 trans(Access.memoryRead, Access.colorAttachmentWrite)
             ),
             SubpassDependency(
-                trans!uint(0, 1), // from geometry to lighting pass
+                trans!uint(Subpass.geom, Subpass.light), // from geometry to lighting pass
                 trans(PipelineStage.colorAttachmentOutput, PipelineStage.fragmentShader),
                 trans(Access.colorAttachmentWrite, Access.colorAttachmentRead)
             ),
             SubpassDependency(
-                trans!uint(1, 2), // from lighting to bulb pass
+                trans!uint(Subpass.light, Subpass.bulb), // from lighting to bulb pass
                 trans(PipelineStage.colorAttachmentOutput, PipelineStage.fragmentShader),
                 trans(Access.colorAttachmentWrite, Access.colorAttachmentRead)
             ),
             SubpassDependency(
-                trans(2, subpassExternal),
+                trans(Subpass.bulb, subpassExternal),
                 trans(PipelineStage.bottomOfPipe, PipelineStage.topOfPipe),
                 trans(Access.colorAttachmentWrite, Access.memoryRead)
             ),
