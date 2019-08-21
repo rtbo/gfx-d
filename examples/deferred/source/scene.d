@@ -94,10 +94,10 @@ struct DeferredScene
 
             SaucerBody body;
             SaucerBody cockpit;
-            SaucerBody antenna;
+            SaucerBody bulb;
             const bodyCol = color();
-            const antennaCol = color();
-            FVec3 antennaPos;
+            const bulbCol = color();
+            FVec3 bulbPos;
             {
                 const xy = uniform(2.5, 3, rnd);
                 const z = uniform(0.8, 1, rnd);
@@ -116,16 +116,16 @@ struct DeferredScene
                 const s = uniform(0.1, 0.3, rnd);
                 const x = uniform(1, 2, rnd);
                 const z = uniform(1.5, 2.5, rnd);
-                antennaPos = fvec(x, 0, z);
-                antenna.transform = translation(antennaPos)
+                bulbPos = fvec(x, 0, z);
+                bulb.transform = translation(bulbPos)
                         * scale(FVec3(s));
-                antenna.color = antennaCol;
+                bulb.color = bulbCol;
             }
 
             return Saucer(
-                mov, saucerIdx++, [body, cockpit, antenna],
-                antennaCol,
-                antennaPos,
+                mov, saucerIdx++, [body, cockpit, bulb],
+                bulbCol,
+                bulbPos,
                 timeOnOff,
                 uniform(3f, 9f, rnd), // light radius
                 uniform(0.0, time, rnd), // initial phase

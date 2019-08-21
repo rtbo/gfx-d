@@ -277,6 +277,17 @@ class DeferredExample : Example
                 // depth
                 none!AttachmentRef
             ),
+            // bulb pass
+            SubpassDescription(
+                // inputs
+                [],
+                // outputs
+                [
+                    AttachmentRef(4, ImageLayout.colorAttachmentOptimal)
+                ],
+                // depth
+                some(AttachmentRef(3, ImageLayout.depthStencilAttachmentOptimal))
+            ),
         ];
         const dependencies = [
             SubpassDependency(
@@ -285,12 +296,17 @@ class DeferredExample : Example
                 trans(Access.memoryRead, Access.colorAttachmentWrite)
             ),
             SubpassDependency(
-                trans!uint(0, 1), // from geometry to lighting passes
+                trans!uint(0, 1), // from geometry to lighting pass
                 trans(PipelineStage.colorAttachmentOutput, PipelineStage.fragmentShader),
                 trans(Access.colorAttachmentWrite, Access.colorAttachmentRead)
             ),
             SubpassDependency(
-                trans(1, subpassExternal),
+                trans!uint(1, 2), // from lighting to bulb pass
+                trans(PipelineStage.colorAttachmentOutput, PipelineStage.fragmentShader),
+                trans(Access.colorAttachmentWrite, Access.colorAttachmentRead)
+            ),
+            SubpassDependency(
+                trans(2, subpassExternal),
                 trans(PipelineStage.bottomOfPipe, PipelineStage.topOfPipe),
                 trans(Access.colorAttachmentWrite, Access.memoryRead)
             ),
@@ -517,6 +533,8 @@ class DeferredExample : Example
                 ]
             );
 
+                // geometry pass
+
                 buf.bindPipeline(pipelines.geom.pipeline);
                 hiResSphere.bindIndex(buf);
                 buf.bindVertexBuffers(0, [ hiResSphere.vertexBinding() ]);
@@ -538,6 +556,8 @@ class DeferredExample : Example
 
             buf.nextSubpass();
 
+                // light pass
+
                 buf.bindPipeline(pipelines.light.pipeline);
                 loResSphere.bindIndex(buf);
                 buf.bindVertexBuffers(0, [ loResSphere.vertexBinding() ]);
@@ -558,6 +578,31 @@ class DeferredExample : Example
                         );
                         buf.drawIndexed(
                             cast(uint)loResSphere.indicesCount, 1, 0, 0, 0
+                        );
+                    }
+                }
+
+            buf.nextSubpass();
+
+                // bulb pass
+
+                buf.bindPipeline(pipelines.bulb.pipeline);
+                hiResSphere.bindIndex(buf);
+                buf.bindVertexBuffers(0, [ hiResSphere.vertexBinding() ]);
+
+                foreach (ref ss; scene.subStructs) {
+                    foreach (ref s; ss.saucers) {
+
+                        if (!s.lightOn) continue;
+
+                        buf.bindDescriptorSets(
+                            PipelineBindPoint.graphics,
+                            pipelines.bulb.layout, 0, [ geomDescriptorSet ],
+                            [ s.saucerIdx * GeomModelUbo.sizeof ]
+                        );
+                        // draw only the bulb (instance 2)
+                        buf.drawIndexed(
+                            cast(uint)hiResSphere.indicesCount, 1, 0, 0, 2
                         );
                     }
                 }
