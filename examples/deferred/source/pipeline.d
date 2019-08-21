@@ -23,34 +23,28 @@ class DeferredPipelines : AtomicRefCounted
 
     Pl geom;
     Pl light;
-    Pl bulb;
 
     this(Device device, RenderPass renderPass)
     {
         auto infos = [
             geomInfo(device, renderPass),
             lightInfo(device, renderPass),
-            bulbInfo(device, renderPass),
         ];
 
         auto pls = device.createPipelines(infos);
         geom.pipeline = retainObj(pls[0]);
         light.pipeline = retainObj(pls[1]);
-        bulb.pipeline = retainObj(pls[2]);
 
         releaseObj(infos[0].shaders.vertex);
         releaseObj(infos[0].shaders.fragment);
         releaseObj(infos[1].shaders.vertex);
         releaseObj(infos[1].shaders.fragment);
-        releaseObj(infos[2].shaders.vertex);
-        releaseObj(infos[2].shaders.fragment);
     }
 
     override void dispose()
     {
         geom.release();
         light.release();
-        bulb.release();
     }
 
     final PipelineInfo geomInfo(Device device, RenderPass renderPass)
@@ -174,58 +168,6 @@ class DeferredPipelines : AtomicRefCounted
         info.layout = light.layout;
         info.renderPass = renderPass;
         info.subpassIndex = 1;
-
-        return info;
-    }
-
-    final PipelineInfo bulbInfo(Device device, RenderPass renderPass)
-    {
-        import std.typecons : No, Yes;
-
-        const shaderSpv = [
-            import("bulb.vert.spv"), import("bulb.frag.spv"),
-        ];
-
-
-        bulb.descriptorLayouts = geom.descriptorLayouts;
-        retainArr(bulb.descriptorLayouts);
-        bulb.layout = retainObj(geom.layout);
-
-        PipelineInfo info;
-        info.shaders.vertex = retainObj(device.createShaderModule(
-            cast(immutable(uint)[])shaderSpv[0], "main"
-        ));
-        info.shaders.fragment = retainObj(device.createShaderModule(
-            cast(immutable(uint)[])shaderSpv[1], "main"
-        ));
-        info.inputBindings = [
-            VertexInputBinding(0, Vertex.sizeof, No.instanced)
-        ];
-        info.inputAttribs = [
-            VertexInputAttrib(0, 0, Format.rgb32_sFloat, 0),
-        ];
-        info.assembly = InputAssembly(Primitive.triangleList, No.primitiveRestart);
-        info.rasterizer = Rasterizer(
-            PolygonMode.fill, Cull.back, FrontFace.ccw, No.depthClamp,
-            none!DepthBias, 1f
-        );
-        info.depthInfo = DepthInfo(
-            Yes.enabled, Yes.write, CompareOp.less, No.boundsTest, 0f, 1f
-        );
-        info.blendInfo = ColorBlendInfo(
-            none!LogicOp, [
-                ColorBlendAttachment.blend(
-                    BlendState(
-                        trans(BlendFactor.one, BlendFactor.one),
-                        BlendOp.add,
-                    ),
-                ),
-            ],
-        );
-        info.dynamicStates = [ DynamicState.viewport, DynamicState.scissor ];
-        info.layout = bulb.layout;
-        info.renderPass = renderPass;
-        info.subpassIndex = 2;
 
         return info;
     }

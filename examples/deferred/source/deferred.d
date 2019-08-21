@@ -121,7 +121,10 @@ class DeferredExample : Example
     DescriptorSet lightAttachDescriptorSet;
 
     MeshBuffer hiResSphere;
+    // normals pointing inwards to render "bulbs" with point light inside
+    MeshBuffer invertedSphere;
     MeshBuffer loResSphere;
+
     UboBuffer!GeomFrameUbo geomFrameUbo;
     UboBuffer!GeomModelUbo geomModelUbo;
     UboBuffer!LightFrameUbo lightFrameUbo;
@@ -146,6 +149,7 @@ class DeferredExample : Example
         descriptorPool.unload();
         pipelines.unload();
         hiResSphere.release();
+        invertedSphere.release();
         loResSphere.release();
         geomFrameUbo.release();
         geomModelUbo.release();
@@ -183,25 +187,39 @@ class DeferredExample : Example
         const hiRes = buildUvSpheroid(fvec(0, 0, 0), 1f, 1f, 15);
         const loRes = buildUvSpheroid(fvec(0, 0, 0), 1f, 1f, 6);
 
+        const invertedVtx = hiRes.vertices.map!(v => Vertex(v.pos, -v.normal)).array;
+
         Rc!Buffer indexBuf = createStaticBuffer(hiRes.indices ~ loRes.indices, BufferUsage.index);
 
         const hiResData = cast(const(ubyte)[])hiRes.vertices;
-        const loResTemp = loRes.vertices.map!(v => v.pos).array;
-        const loResData = cast(const(ubyte)[])loResTemp;
-        Rc!Buffer vertexBuf = createStaticBuffer(hiResData ~ loResData, BufferUsage.vertex);
+        const invertedData = cast(const(ubyte)[])invertedVtx;
+        const loResData = cast(const(ubyte)[])loRes.vertices.map!(v => v.pos).array;
+        Rc!Buffer vertexBuf = createStaticBuffer(
+            hiResData ~ invertedData ~ loResData,
+            BufferUsage.vertex);
 
         const hiResI = hiRes.indices.length * ushort.sizeof;
+        const invertedI = hiResI;
+        const loResI = invertedI + loRes.indices.length * ushort.sizeof;
+
         const hiResV = hiRes.vertices.length * Vertex.sizeof;
+        const invertedV = 2 * hiResV;
+        const loResV = invertedV + loRes.vertices.length * FVec3.sizeof;
 
         hiResSphere.indexBuf = indexBuf;
         hiResSphere.vertexBuf = vertexBuf;
         hiResSphere.indices = interval(0, hiResI);
         hiResSphere.vertices = interval(0, hiResV);
 
+        invertedSphere.indexBuf = indexBuf;
+        invertedSphere.vertexBuf = vertexBuf;
+        invertedSphere.indices = interval(0, hiResI);
+        invertedSphere.vertices = interval(hiResV, invertedV);
+
         loResSphere.indexBuf = indexBuf;
         loResSphere.vertexBuf = vertexBuf;
-        loResSphere.indices = interval(hiResI, hiResI + loRes.indices.length * ushort.sizeof);
-        loResSphere.vertices = interval(hiResV, hiResV + loRes.vertices.length * FVec3.sizeof);
+        loResSphere.indices = interval(hiResI, loResI);
+        loResSphere.vertices = interval(invertedV, loResV);
     }
 
     final void prepareUboBuffers()
@@ -234,7 +252,6 @@ class DeferredExample : Example
         enum Subpass {
             geom,
             light,
-            bulb,
 
             count,
         }
@@ -295,16 +312,6 @@ class DeferredExample : Example
             // depth
             none!AttachmentRef
         );
-        subpasses[Subpass.bulb] = SubpassDescription(
-            // inputs
-            [],
-            // outputs
-            [
-                AttachmentRef(Attachment.swcColor, ImageLayout.colorAttachmentOptimal)
-            ],
-            // depth
-            some(AttachmentRef(Attachment.depth, ImageLayout.depthStencilAttachmentOptimal))
-        );
         const dependencies = [
             SubpassDependency(
                 trans(subpassExternal, Subpass.geom),
@@ -317,12 +324,7 @@ class DeferredExample : Example
                 trans(Access.colorAttachmentWrite, Access.colorAttachmentRead)
             ),
             SubpassDependency(
-                trans!uint(Subpass.light, Subpass.bulb), // from lighting to bulb pass
-                trans(PipelineStage.colorAttachmentOutput, PipelineStage.fragmentShader),
-                trans(Access.colorAttachmentWrite, Access.colorAttachmentRead)
-            ),
-            SubpassDependency(
-                trans(Subpass.bulb, subpassExternal),
+                trans(Subpass.light, subpassExternal),
                 trans(PipelineStage.bottomOfPipe, PipelineStage.topOfPipe),
                 trans(Access.colorAttachmentWrite, Access.memoryRead)
             ),
@@ -578,7 +580,7 @@ class DeferredExample : Example
                             pipelines.geom.layout, 0, [ geomDescriptorSet ],
                             [ s.saucerIdx * GeomModelUbo.sizeof ]
                         );
-                        // do not draw the bulb yet if it is on
+                        // only draw the bulbs that are off
                         const numInstances = s.lightOn ? 2 : 3;
                         buf.drawIndexed(
                             cast(uint)hiResSphere.indicesCount, numInstances, 0, 0, 0
@@ -586,6 +588,24 @@ class DeferredExample : Example
                     }
                 }
 
+                // now draw the "on" bulbs with inverted normals
+                invertedSphere.bindIndex(buf);
+                buf.bindVertexBuffers(0, [ invertedSphere.vertexBinding() ]);
+
+                foreach (ref ss; scene.subStructs) {
+                    foreach (ref s; ss.saucers) {
+                        if (!s.lightOn) continue;
+
+                        buf.bindDescriptorSets(
+                            PipelineBindPoint.graphics,
+                            pipelines.geom.layout, 0, [ geomDescriptorSet ],
+                            [ s.saucerIdx * GeomModelUbo.sizeof ]
+                        );
+                        buf.drawIndexed(
+                            cast(uint)hiResSphere.indicesCount, 1, 0, 0, 2
+                        );
+                    }
+                }
             buf.nextSubpass();
 
                 // light pass
@@ -610,31 +630,6 @@ class DeferredExample : Example
                         );
                         buf.drawIndexed(
                             cast(uint)loResSphere.indicesCount, 1, 0, 0, 0
-                        );
-                    }
-                }
-
-            buf.nextSubpass();
-
-                // bulb pass
-
-                buf.bindPipeline(pipelines.bulb.pipeline);
-                hiResSphere.bindIndex(buf);
-                buf.bindVertexBuffers(0, [ hiResSphere.vertexBinding() ]);
-
-                foreach (ref ss; scene.subStructs) {
-                    foreach (ref s; ss.saucers) {
-
-                        if (!s.lightOn) continue;
-
-                        buf.bindDescriptorSets(
-                            PipelineBindPoint.graphics,
-                            pipelines.bulb.layout, 0, [ geomDescriptorSet ],
-                            [ s.saucerIdx * GeomModelUbo.sizeof ]
-                        );
-                        // draw only the bulb (instance 2)
-                        buf.drawIndexed(
-                            cast(uint)hiResSphere.indicesCount, 1, 0, 0, 2
                         );
                     }
                 }
