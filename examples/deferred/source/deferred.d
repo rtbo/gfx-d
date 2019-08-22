@@ -1,5 +1,6 @@
 module deferred;
 
+import buffer;
 import example;
 import pipeline;
 import scene;
@@ -12,107 +13,12 @@ import gfx.window;
 import std.datetime : Duration;
 import std.stdio;
 
-
 class DeferredExample : Example
 {
-    /// per frame UBO for the geom pipeline
-    struct GeomFrameUbo
-    {
-        FMat4 viewProj = FMat4.identity;
-    }
-    /// per draw call UBO for the geom pipeline
-    struct GeomModelData
-    {
-        FMat4 model = FMat4.identity;
-        FVec4 color = fvec(0, 0, 0, 1);
-        float shininess = 1f;
-        float[3] pad; // 32 bytes alignment for dynamic offset
-    }
-    /// ditto
-    struct GeomModelUbo
-    {
-        GeomModelData[3] data;
-    }
-    /// per frame UBO for the light pipeline
-    struct LightFrameUbo
-    {
-        FVec4 viewerPos = fvec(0, 0, 0, 1);
-    }
-    /// per draw call UBO for the light pipeline
-    struct LightModelUbo
-    {
-        FMat4 modelViewProj = FMat4.identity;
-        FVec4 position = fvec(0, 0, 0, 1);
-        FVec4 color = fvec(0, 0, 0, 1);
-        float radius = 1f;
-        float[7] pad; // 32 bytes alignment for dynamic offset
-    }
-    static assert(LightModelUbo.sizeof == FMat4.sizeof + 4*FVec4.sizeof);
-
-    struct UboBuffer(T)
-    {
-        T[] data; // copy on host
-        Rc!Buffer buffer;
-        MemoryMap mmap;
-
-        void initBuffer(DeferredExample ex)
-        {
-            buffer = ex.createDynamicBuffer(data.length * T.sizeof, BufferUsage.uniform);
-            mmap = buffer.boundMemory.map();
-        }
-
-        void updateBuffer(ref MappedMemorySet mms)
-        {
-            auto v = mmap.view!(T[])(0, data.length);
-            v[] = data;
-            mmap.addToSet(mms);
-        }
-
-
-        void release()
-        {
-            import std.algorithm : move;
-
-            move(mmap);
-            buffer.unload();
-        }
-    }
-
-    struct MeshBuffer
-    {
-        Rc!Buffer indexBuf;
-        Rc!Buffer vertexBuf;
-        Interval!size_t indices;
-        Interval!size_t vertices;
-
-        @property uint indicesCount()
-        {
-            return cast(uint)indices.length / ushort.sizeof;
-        }
-
-        void bindIndex(CommandBuffer cmd)
-        {
-            cmd.bindIndexBuffer(indexBuf, indices.start, IndexType.u16);
-        }
-
-        VertexBinding vertexBinding()
-        {
-            return VertexBinding(
-                vertexBuf.obj, vertices.start,
-            );
-        }
-
-        void release()
-        {
-            indexBuf.unload();
-            vertexBuf.unload();
-        }
-    }
-
-
     Rc!RenderPass renderPass;
     Rc!DescriptorPool descriptorPool;
 
+    Rc!DeferredBuffers buffers;
     Rc!DeferredPipelines pipelines;
 
     DescriptorSet geomDescriptorSet;
@@ -121,17 +27,6 @@ class DeferredExample : Example
     DescriptorSet lightAttachDescriptorSet;
 
     DescriptorSet toneMapDescriptorSet;
-
-    MeshBuffer hiResSphere;
-    // normals pointing inwards to render "bulbs" with point light inside
-    MeshBuffer invertedSphere;
-    MeshBuffer loResSphere;
-    MeshBuffer square;
-
-    UboBuffer!GeomFrameUbo geomFrameUbo;
-    UboBuffer!GeomModelUbo geomModelUbo;
-    UboBuffer!LightFrameUbo lightFrameUbo;
-    UboBuffer!LightModelUbo lightModelUbo;
 
     Duration lastTimeElapsed;
 
@@ -151,14 +46,7 @@ class DeferredExample : Example
         descriptorPool.reset();
         descriptorPool.unload();
         pipelines.unload();
-        hiResSphere.release();
-        invertedSphere.release();
-        loResSphere.release();
-        square.release();
-        geomFrameUbo.release();
-        geomModelUbo.release();
-        lightFrameUbo.release();
-        lightModelUbo.release();
+        buffers.unload();
 
         super.dispose();
     }
@@ -167,7 +55,7 @@ class DeferredExample : Example
     {
         super.prepare();
         const rad = scene.prepare();
-        prepareBuffers();
+        buffers = new DeferredBuffers(this, scene.saucerCount);
         pipelines = new DeferredPipelines(device, renderPass);
         prepareDescriptors();
 
@@ -177,88 +65,6 @@ class DeferredExample : Example
         viewProj = proj * view;
     }
 
-    final void prepareBuffers()
-    {
-        prepareMeshBuffers();
-        prepareUboBuffers();
-    }
-
-    final void prepareMeshBuffers()
-    {
-        import std.algorithm : map;
-        import std.array : array;
-
-        const hiRes = buildUvSpheroid(fvec(0, 0, 0), 1f, 1f, 15);
-        const loRes = buildUvSpheroid(fvec(0, 0, 0), 1f, 1f, 6);
-
-        const invertedVtx = hiRes.vertices.map!(v => Vertex(v.pos, -v.normal)).array;
-
-        const ushort[] squareIndices = [ 0, 1, 2, 0, 2, 3 ];
-        const squareVertices = [
-            fvec(-1, -1),
-            fvec(-1, 1),
-            fvec(1, 1),
-            fvec(1, -1),
-        ];
-
-        Rc!Buffer indexBuf = createStaticBuffer(
-            hiRes.indices ~ loRes.indices ~ squareIndices,
-            BufferUsage.index
-        );
-
-        const hiResVData = cast(const(ubyte)[])hiRes.vertices;
-        const invertedVData = cast(const(ubyte)[])invertedVtx;
-        const loResVData = cast(const(ubyte)[])loRes.vertices.map!(v => v.pos).array;
-        const squareVData = cast(const(ubyte)[])squareVertices;
-        Rc!Buffer vertexBuf = createStaticBuffer(
-            hiResVData ~ invertedVData ~ loResVData ~ squareVData,
-            BufferUsage.vertex);
-
-        const hiResI = hiRes.indices.length * ushort.sizeof;
-        const invertedI = hiResI;
-        const loResI = invertedI + loRes.indices.length * ushort.sizeof;
-        const squareI = loResI + squareIndices.length * ushort.sizeof;
-
-        const hiResV = hiRes.vertices.length * Vertex.sizeof;
-        const invertedV = 2 * hiResV;
-        const loResV = invertedV + loRes.vertices.length * FVec3.sizeof;
-        const squareV = loResV + squareVertices.length * FVec2.sizeof;
-
-        hiResSphere.indexBuf = indexBuf;
-        hiResSphere.vertexBuf = vertexBuf;
-        hiResSphere.indices = interval(0, hiResI);
-        hiResSphere.vertices = interval(0, hiResV);
-
-        invertedSphere.indexBuf = indexBuf;
-        invertedSphere.vertexBuf = vertexBuf;
-        invertedSphere.indices = interval(0, hiResI);
-        invertedSphere.vertices = interval(hiResV, invertedV);
-
-        loResSphere.indexBuf = indexBuf;
-        loResSphere.vertexBuf = vertexBuf;
-        loResSphere.indices = interval(hiResI, loResI);
-        loResSphere.vertices = interval(invertedV, loResV);
-
-        square.indexBuf = indexBuf;
-        square.vertexBuf = vertexBuf;
-        square.indices = interval(loResI, squareI);
-        square.vertices = interval(loResV, squareV);
-    }
-
-    final void prepareUboBuffers()
-    {
-        const count = scene.saucerCount();
-
-        geomFrameUbo.data = new GeomFrameUbo[1];
-        geomModelUbo.data = new GeomModelUbo[count];
-        lightFrameUbo.data = new LightFrameUbo[1];
-        lightModelUbo.data = new LightModelUbo[count];
-
-        geomFrameUbo.initBuffer(this);
-        geomModelUbo.initBuffer(this);
-        lightFrameUbo.initBuffer(this);
-        lightModelUbo.initBuffer(this);
-    }
 
     // Deferred render pass
     //  - subpass 1: geom
@@ -522,17 +328,17 @@ class DeferredExample : Example
 
         auto writes = [
             WriteDescriptorSet(geomDescriptorSet, 0, 0, new UniformBufferDescWrites([
-                BufferRange(geomFrameUbo.buffer.obj, 0, GeomFrameUbo.sizeof),
+                BufferRange(buffers.geomFrameUbo.buffer.obj, 0, GeomFrameUbo.sizeof),
             ])),
             WriteDescriptorSet(geomDescriptorSet, 1, 0, new UniformBufferDynamicDescWrites([
-                BufferRange(geomModelUbo.buffer.obj, 0, GeomModelUbo.sizeof),
+                BufferRange(buffers.geomModelUbo.buffer.obj, 0, GeomModelUbo.sizeof),
             ])),
 
             WriteDescriptorSet(lightBufDescriptorSet, 0, 0, new UniformBufferDescWrites([
-                BufferRange(lightFrameUbo.buffer.obj, 0, LightFrameUbo.sizeof),
+                BufferRange(buffers.lightFrameUbo.buffer.obj, 0, LightFrameUbo.sizeof),
             ])),
             WriteDescriptorSet(lightBufDescriptorSet, 1, 0, new UniformBufferDynamicDescWrites([
-                BufferRange(lightModelUbo.buffer.obj, 0, LightModelUbo.sizeof),
+                BufferRange(buffers.lightModelUbo.buffer.obj, 0, LightModelUbo.sizeof),
             ])),
         ];
         device.updateDescriptorSets(writes, []);
@@ -568,35 +374,30 @@ class DeferredExample : Example
                 const M3 = M2 * s.mov.transform();
 
                 foreach (bi; 0 .. 3) {
-                    geomModelUbo.data[s.saucerIdx].data[bi] = GeomModelData(
+                    buffers.geomModelUbo.data[s.saucerIdx].data[bi] = GeomModelData(
                         (M3 * s.bodies[bi].transform).transpose(),
                         fvec(s.bodies[bi].color, 1),
                         s.bodies[bi].shininess,
                     );
                 }
 
-                lightModelUbo.data[s.saucerIdx].modelViewProj = (
+                buffers.lightModelUbo.data[s.saucerIdx].modelViewProj = (
                     viewProj
                     * M3
                     * translation(s.lightPos)
                     * scale(FVec3(s.lightRadius * 1.5f)) // sphere slightly bigger than light radius
                 ).transpose();
-                lightModelUbo.data[s.saucerIdx].position =
+                buffers.lightModelUbo.data[s.saucerIdx].position =
                         M3 * translation(s.lightPos) * fvec(0, 0, 0, 1);
-                lightModelUbo.data[s.saucerIdx].color = fvec(s.lightCol, 1);
-                lightModelUbo.data[s.saucerIdx].radius = s.lightRadius;
+                buffers.lightModelUbo.data[s.saucerIdx].color = fvec(s.lightCol, 1);
+                buffers.lightModelUbo.data[s.saucerIdx].radius = s.lightRadius;
             }
         }
 
-        geomFrameUbo.data[0].viewProj = viewProj.transpose();
-        lightFrameUbo.data[0].viewerPos = fvec(viewerPos, 1.0);
+        buffers.geomFrameUbo.data[0].viewProj = viewProj.transpose();
+        buffers.lightFrameUbo.data[0].viewerPos = fvec(viewerPos, 1.0);
 
-        MappedMemorySet mms;
-        geomModelUbo.updateBuffer(mms);
-        geomFrameUbo.updateBuffer(mms);
-        lightModelUbo.updateBuffer(mms);
-        lightFrameUbo.updateBuffer(mms);
-        device.flushMappedMemory(mms);
+        buffers.updateAll(device.obj);
     }
 
     override Submission[] recordCmds(FrameData frameData)
@@ -647,8 +448,8 @@ class DeferredExample : Example
                 // geometry pass
 
                 buf.bindPipeline(pipelines.geom.pipeline);
-                hiResSphere.bindIndex(buf);
-                buf.bindVertexBuffers(0, [ hiResSphere.vertexBinding() ]);
+                buffers.hiResSphere.bindIndex(buf);
+                buf.bindVertexBuffers(0, [ buffers.hiResSphere.vertexBinding() ]);
 
                 foreach (ref ss; scene.subStructs) {
                     foreach (ref s; ss.saucers) {
@@ -660,14 +461,14 @@ class DeferredExample : Example
                         // only draw the bulbs that are off
                         const numInstances = s.lightOn ? 2 : 3;
                         buf.drawIndexed(
-                            cast(uint)hiResSphere.indicesCount, numInstances, 0, 0, 0
+                            cast(uint)buffers.hiResSphere.indicesCount, numInstances, 0, 0, 0
                         );
                     }
                 }
 
                 // now draw the "on" bulbs with inverted normals
-                invertedSphere.bindIndex(buf);
-                buf.bindVertexBuffers(0, [ invertedSphere.vertexBinding() ]);
+                buffers.invertedSphere.bindIndex(buf);
+                buf.bindVertexBuffers(0, [ buffers.invertedSphere.vertexBinding() ]);
 
                 foreach (ref ss; scene.subStructs) {
                     foreach (ref s; ss.saucers) {
@@ -679,7 +480,7 @@ class DeferredExample : Example
                             [ s.saucerIdx * GeomModelUbo.sizeof ]
                         );
                         buf.drawIndexed(
-                            cast(uint)hiResSphere.indicesCount, 1, 0, 0, 2
+                            cast(uint)buffers.hiResSphere.indicesCount, 1, 0, 0, 2
                         );
                     }
                 }
@@ -689,8 +490,8 @@ class DeferredExample : Example
                 // light pass
 
                 buf.bindPipeline(pipelines.light.pipeline);
-                loResSphere.bindIndex(buf);
-                buf.bindVertexBuffers(0, [ loResSphere.vertexBinding() ]);
+                buffers.loResSphere.bindIndex(buf);
+                buf.bindVertexBuffers(0, [ buffers.loResSphere.vertexBinding() ]);
                 buf.bindDescriptorSets(
                     PipelineBindPoint.graphics,
                     pipelines.light.layout, 1, [ lightAttachDescriptorSet ], []
@@ -707,7 +508,7 @@ class DeferredExample : Example
                             [ s.saucerIdx * LightModelUbo.sizeof ]
                         );
                         buf.drawIndexed(
-                            cast(uint)loResSphere.indicesCount, 1, 0, 0, 0
+                            cast(uint)buffers.loResSphere.indicesCount, 1, 0, 0, 0
                         );
                     }
                 }
@@ -717,14 +518,14 @@ class DeferredExample : Example
                 // tone map pass
 
                 buf.bindPipeline(pipelines.toneMap.pipeline);
-                square.bindIndex(buf);
-                buf.bindVertexBuffers(0, [ square.vertexBinding() ]);
+                buffers.square.bindIndex(buf);
+                buf.bindVertexBuffers(0, [ buffers.square.vertexBinding() ]);
                 buf.bindDescriptorSets(
                     PipelineBindPoint.graphics,
                     pipelines.toneMap.layout, 0, [ toneMapDescriptorSet ], []
                 );
 
-                buf.drawIndexed(cast(uint)square.indicesCount, 1, 0, 0, 0);
+                buf.drawIndexed(cast(uint)buffers.square.indicesCount, 1, 0, 0, 0);
 
             buf.endRenderPass();
 

@@ -1,6 +1,6 @@
 module pipeline;
 
-import scene;
+import buffer;
 
 import gfx.core;
 import gfx.graal;

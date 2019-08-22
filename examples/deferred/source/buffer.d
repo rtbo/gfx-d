@@ -1,0 +1,326 @@
+module buffer;
+
+import deferred;
+
+import gfx.core;
+import gfx.graal;
+import gfx.math;
+
+struct Vertex
+{
+    FVec3 pos;
+    FVec3 normal;
+}
+
+/// per frame UBO for the geom pipeline
+struct GeomFrameUbo
+{
+    FMat4 viewProj = FMat4.identity;
+}
+/// per draw call UBO for the geom pipeline
+struct GeomModelData
+{
+    FMat4 model = FMat4.identity;
+    FVec4 color = fvec(0, 0, 0, 1);
+    float shininess = 1f;
+    float[3] pad; // 32 bytes alignment for dynamic offset
+}
+/// ditto
+struct GeomModelUbo
+{
+    GeomModelData[3] data;
+}
+/// per frame UBO for the light pipeline
+struct LightFrameUbo
+{
+    FVec4 viewerPos = fvec(0, 0, 0, 1);
+}
+/// per draw call UBO for the light pipeline
+struct LightModelUbo
+{
+    FMat4 modelViewProj = FMat4.identity;
+    FVec4 position = fvec(0, 0, 0, 1);
+    FVec4 color = fvec(0, 0, 0, 1);
+    float radius = 1f;
+    float[7] pad; // 32 bytes alignment for dynamic offset
+}
+static assert(LightModelUbo.sizeof == FMat4.sizeof + 4*FVec4.sizeof);
+
+struct MeshBuffer
+{
+    Rc!Buffer indexBuf;
+    Rc!Buffer vertexBuf;
+    Interval!size_t indices;
+    Interval!size_t vertices;
+
+    @property uint indicesCount()
+    {
+        return cast(uint)indices.length / ushort.sizeof;
+    }
+
+    void bindIndex(CommandBuffer cmd)
+    {
+        cmd.bindIndexBuffer(indexBuf, indices.start, IndexType.u16);
+    }
+
+    VertexBinding vertexBinding()
+    {
+        return VertexBinding(
+            vertexBuf.obj, vertices.start,
+        );
+    }
+
+    void release()
+    {
+        indexBuf.unload();
+        vertexBuf.unload();
+    }
+}
+
+
+struct UboBuffer(T)
+{
+    T[] data; // copy on host
+    Rc!Buffer buffer;
+    MemoryMap mmap;
+
+    void initBuffer(DeferredExample ex)
+    {
+        buffer = ex.createDynamicBuffer(data.length * T.sizeof, BufferUsage.uniform);
+        mmap = buffer.boundMemory.map();
+    }
+
+    void updateBuffer(ref MappedMemorySet mms)
+    {
+        auto v = mmap.view!(T[])(0, data.length);
+        v[] = data;
+        mmap.addToSet(mms);
+    }
+
+    void release()
+    {
+        import std.algorithm : move;
+
+        move(mmap);
+        buffer.unload();
+    }
+}
+
+class DeferredBuffers : AtomicRefCounted
+{
+    MeshBuffer hiResSphere;
+    // normals pointing inwards to render "bulbs" with point light inside
+    MeshBuffer invertedSphere;
+    MeshBuffer loResSphere;
+    MeshBuffer square;
+
+    UboBuffer!GeomFrameUbo geomFrameUbo;
+    UboBuffer!GeomModelUbo geomModelUbo;
+    UboBuffer!LightFrameUbo lightFrameUbo;
+    UboBuffer!LightModelUbo lightModelUbo;
+
+    this(DeferredExample ex, size_t saucerCount)
+    {
+        prepareMeshBuffers(ex);
+        prepareUboBuffers(ex, saucerCount);
+    }
+
+    override void dispose()
+    {
+        hiResSphere.release();
+        invertedSphere.release();
+        loResSphere.release();
+        square.release();
+        geomFrameUbo.release();
+        geomModelUbo.release();
+        lightFrameUbo.release();
+        lightModelUbo.release();
+    }
+
+    final void prepareMeshBuffers(DeferredExample ex)
+    {
+        import std.algorithm : map;
+        import std.array : array;
+
+        const hiRes = buildUvSpheroid(fvec(0, 0, 0), 1f, 1f, 15);
+        const loRes = buildUvSpheroid(fvec(0, 0, 0), 1f, 1f, 6);
+
+        const invertedVtx = hiRes.vertices.map!(v => Vertex(v.pos, -v.normal)).array;
+
+        const ushort[] squareIndices = [ 0, 1, 2, 0, 2, 3 ];
+        const squareVertices = [
+            fvec(-1, -1),
+            fvec(-1, 1),
+            fvec(1, 1),
+            fvec(1, -1),
+        ];
+
+        Rc!Buffer indexBuf = ex.createStaticBuffer(
+            hiRes.indices ~ loRes.indices ~ squareIndices,
+            BufferUsage.index
+        );
+
+        const hiResVData = cast(const(ubyte)[])hiRes.vertices;
+        const invertedVData = cast(const(ubyte)[])invertedVtx;
+        const loResVData = cast(const(ubyte)[])loRes.vertices.map!(v => v.pos).array;
+        const squareVData = cast(const(ubyte)[])squareVertices;
+        Rc!Buffer vertexBuf = ex.createStaticBuffer(
+            hiResVData ~ invertedVData ~ loResVData ~ squareVData,
+            BufferUsage.vertex);
+
+        const hiResI = hiRes.indices.length * ushort.sizeof;
+        const invertedI = hiResI;
+        const loResI = invertedI + loRes.indices.length * ushort.sizeof;
+        const squareI = loResI + squareIndices.length * ushort.sizeof;
+
+        const hiResV = hiRes.vertices.length * Vertex.sizeof;
+        const invertedV = 2 * hiResV;
+        const loResV = invertedV + loRes.vertices.length * FVec3.sizeof;
+        const squareV = loResV + squareVertices.length * FVec2.sizeof;
+
+        hiResSphere.indexBuf = indexBuf;
+        hiResSphere.vertexBuf = vertexBuf;
+        hiResSphere.indices = interval(0, hiResI);
+        hiResSphere.vertices = interval(0, hiResV);
+
+        invertedSphere.indexBuf = indexBuf;
+        invertedSphere.vertexBuf = vertexBuf;
+        invertedSphere.indices = interval(0, hiResI);
+        invertedSphere.vertices = interval(hiResV, invertedV);
+
+        loResSphere.indexBuf = indexBuf;
+        loResSphere.vertexBuf = vertexBuf;
+        loResSphere.indices = interval(hiResI, loResI);
+        loResSphere.vertices = interval(invertedV, loResV);
+
+        square.indexBuf = indexBuf;
+        square.vertexBuf = vertexBuf;
+        square.indices = interval(loResI, squareI);
+        square.vertices = interval(loResV, squareV);
+    }
+
+    final void prepareUboBuffers(DeferredExample ex, size_t saucerCount)
+    {
+        geomFrameUbo.data = new GeomFrameUbo[1];
+        geomModelUbo.data = new GeomModelUbo[saucerCount];
+        lightFrameUbo.data = new LightFrameUbo[1];
+        lightModelUbo.data = new LightModelUbo[saucerCount];
+
+        geomFrameUbo.initBuffer(ex);
+        geomModelUbo.initBuffer(ex);
+        lightFrameUbo.initBuffer(ex);
+        lightModelUbo.initBuffer(ex);
+    }
+
+    final void updateAll(Device device)
+    {
+        MappedMemorySet mms;
+        geomModelUbo.updateBuffer(mms);
+        geomFrameUbo.updateBuffer(mms);
+        lightModelUbo.updateBuffer(mms);
+        lightFrameUbo.updateBuffer(mms);
+        device.flushMappedMemory(mms);
+    }
+}
+
+struct Mesh
+{
+    ushort[] indices;
+    Vertex[] vertices;
+}
+
+Mesh buildUvSpheroid(in FVec3 center, in float radius, in float height,
+        in uint latDivs = 8)
+{
+    import std.array : uninitializedArray;
+    import std.math : PI, cos, sin;
+
+    const longDivs = latDivs * 2;
+    const totalVertices = 2 + (latDivs - 1) * longDivs;
+    const totalIndices = 3 * longDivs * (2 + 2 * (latDivs - 2));
+
+    auto vertices = uninitializedArray!(Vertex[])(totalVertices);
+
+    size_t ind = 0;
+    void unitVertex(in FVec3 pos)
+    {
+        const v = fvec(radius * pos.xy, height * pos.z);
+        vertices[ind++] = Vertex(center + v, normalize(v));
+    }
+
+    const latAngle = PI / latDivs;
+    const longAngle = 2 * PI / longDivs;
+
+    // north pole
+    unitVertex(fvec(0, 0, 1));
+    // latitudes
+    foreach (lat; 1 .. latDivs)
+    {
+        const alpha = latAngle * lat;
+        const z = cos(alpha);
+        const sa = sin(alpha);
+        foreach (lng; 0 .. longDivs)
+        {
+            const beta = longAngle * lng;
+            const x = cos(beta) * sa;
+            const y = sin(beta) * sa;
+
+            unitVertex(fvec(x, y, z));
+        }
+    }
+    // south pole
+    unitVertex(fvec(0, 0, -1));
+    assert(ind == totalVertices);
+
+    // build ccw triangle faces
+    auto indices = uninitializedArray!(ushort[])(totalIndices);
+    ind = 0;
+    void face(in size_t v0, in size_t v1, in size_t v2)
+    {
+        indices[ind++] = cast(ushort) v0;
+        indices[ind++] = cast(ushort) v1;
+        indices[ind++] = cast(ushort) v2;
+    }
+
+    size_t left(size_t lng)
+    {
+        return lng;
+    }
+
+    size_t right(size_t lng)
+    {
+        return lng == longDivs - 1 ? 0 : lng + 1;
+    }
+
+    // northern div triangles
+    foreach (lng; 0 .. longDivs)
+    {
+        const pole = 0;
+        const bot = 1;
+        face(pole, bot + left(lng), bot + right(lng));
+    }
+    // middle divs rectangles
+    foreach (lat; 0 .. latDivs - 2)
+    {
+        const top = 1 + lat * longDivs;
+        const bot = top + longDivs;
+        foreach (lng; 0 .. longDivs)
+        {
+            const l = left(lng);
+            const r = right(lng);
+
+            face(top + l, bot + l, bot + r);
+            face(top + l, bot + r, top + r);
+        }
+    }
+    // southern div triangles
+    foreach (lng; 0 .. longDivs)
+    {
+        const pole = totalVertices - 1;
+        const top = 1 + (latDivs - 2) * longDivs;
+        face(pole, top + right(lng), top + left(lng));
+    }
+    assert(ind == totalIndices);
+
+    return Mesh(indices, vertices);
+}

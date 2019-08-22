@@ -2,16 +2,73 @@ module scene;
 
 import gfx.math;
 
-struct Vertex
+struct MovingObj
 {
-    FVec3 pos;
-    FVec3 normal;
+    /// position of the object relative to its parent
+    FVec3 position = fvec(0, 0, 0);
+    /// rotation speed of the object around itself
+    /// using Euler angles, in rad/s
+    FVec3 spin = fvec(0, 0, 0);
+    /// current rotation of the object
+    FMat3 rotation = FMat3.identity;
+
+    /// rotate the rotation matrix with the spin euler vector
+    /// over dt secs
+    void rotate(in float dt)
+    {
+        const euler = spin * dt;
+        rotation *= eulerAngles(euler);
+    }
+
+    /// Compute the full transform
+    FMat4 transform()
+    {
+        return translate(
+            mat(
+                vec(rotation[0], 0),
+                vec(rotation[1], 0),
+                vec(rotation[2], 0),
+                vec(0, 0, 0, 1),
+            ),
+            position,
+        );
+    }
 }
 
-struct Mesh
+struct SaucerBody
 {
-    ushort[] indices;
-    Vertex[] vertices;
+    FMat4 transform = FMat4.identity;
+    FVec3 color = fvec(0, 0, 0);
+    float shininess = 1f;
+}
+
+struct Saucer
+{
+    MovingObj mov;
+    size_t saucerIdx;
+    SaucerBody[] bodies;
+
+    FVec3 lightCol;
+    FVec3 lightPos;
+    float[2] lightTimeOnOff; // time with light spent on and off each cycle
+    float lightRadius;
+
+    float phase;
+    bool lightOn;
+
+    void anim(in float dt) {
+        mov.rotate(dt);
+        const period = lightTimeOnOff[0] + lightTimeOnOff[1];
+        phase += dt;
+        while (phase >= period) phase -= period;
+        lightOn = phase <= lightTimeOnOff[0];
+    }
+}
+
+struct SaucerSubStruct
+{
+    MovingObj mov;
+    Saucer[] saucers;
 }
 
 struct DeferredScene
@@ -159,169 +216,4 @@ struct DeferredScene
             .map!(ss => ss.saucers.length)
             .sum();
     }
-}
-
-struct MovingObj
-{
-    /// position of the object relative to its parent
-    FVec3 position = fvec(0, 0, 0);
-    /// rotation speed of the object around itself
-    /// using Euler angles, in rad/s
-    FVec3 spin = fvec(0, 0, 0);
-    /// current rotation of the object
-    FMat3 rotation = FMat3.identity;
-
-    /// rotate the rotation matrix with the spin euler vector
-    /// over dt secs
-    void rotate(in float dt)
-    {
-        const euler = spin * dt;
-        rotation *= eulerAngles(euler);
-    }
-
-    /// Compute the full transform
-    FMat4 transform()
-    {
-        return translate(
-            mat(
-                vec(rotation[0], 0),
-                vec(rotation[1], 0),
-                vec(rotation[2], 0),
-                vec(0, 0, 0, 1),
-            ),
-            position,
-        );
-    }
-}
-
-struct SaucerBody
-{
-    FMat4 transform = FMat4.identity;
-    FVec3 color = fvec(0, 0, 0);
-    float shininess = 1f;
-}
-
-struct Saucer
-{
-    MovingObj mov;
-    size_t saucerIdx;
-    SaucerBody[] bodies;
-
-    FVec3 lightCol;
-    FVec3 lightPos;
-    float[2] lightTimeOnOff; // time with light spent on and off each cycle
-    float lightRadius;
-
-    float phase;
-    bool lightOn;
-
-    void anim(in float dt) {
-        mov.rotate(dt);
-        const period = lightTimeOnOff[0] + lightTimeOnOff[1];
-        phase += dt;
-        while (phase >= period) phase -= period;
-        lightOn = phase <= lightTimeOnOff[0];
-    }
-}
-
-struct SaucerSubStruct
-{
-    MovingObj mov;
-    Saucer[] saucers;
-}
-
-Mesh buildUvSpheroid(in FVec3 center, in float radius, in float height,
-        in uint latDivs = 8)
-{
-    import std.array : uninitializedArray;
-    import std.math : PI, cos, sin;
-
-    const longDivs = latDivs * 2;
-    const totalVertices = 2 + (latDivs - 1) * longDivs;
-    const totalIndices = 3 * longDivs * (2 + 2 * (latDivs - 2));
-
-    auto vertices = uninitializedArray!(Vertex[])(totalVertices);
-
-    size_t ind = 0;
-    void unitVertex(in FVec3 pos)
-    {
-        const v = fvec(radius * pos.xy, height * pos.z);
-        vertices[ind++] = Vertex(center + v, normalize(v));
-    }
-
-    const latAngle = PI / latDivs;
-    const longAngle = 2 * PI / longDivs;
-
-    // north pole
-    unitVertex(fvec(0, 0, 1));
-    // latitudes
-    foreach (lat; 1 .. latDivs)
-    {
-        const alpha = latAngle * lat;
-        const z = cos(alpha);
-        const sa = sin(alpha);
-        foreach (lng; 0 .. longDivs)
-        {
-            const beta = longAngle * lng;
-            const x = cos(beta) * sa;
-            const y = sin(beta) * sa;
-
-            unitVertex(fvec(x, y, z));
-        }
-    }
-    // south pole
-    unitVertex(fvec(0, 0, -1));
-    assert(ind == totalVertices);
-
-    // build ccw triangle faces
-    auto indices = uninitializedArray!(ushort[])(totalIndices);
-    ind = 0;
-    void face(in size_t v0, in size_t v1, in size_t v2)
-    {
-        indices[ind++] = cast(ushort) v0;
-        indices[ind++] = cast(ushort) v1;
-        indices[ind++] = cast(ushort) v2;
-    }
-
-    size_t left(size_t lng)
-    {
-        return lng;
-    }
-
-    size_t right(size_t lng)
-    {
-        return lng == longDivs - 1 ? 0 : lng + 1;
-    }
-
-    // northern div triangles
-    foreach (lng; 0 .. longDivs)
-    {
-        const pole = 0;
-        const bot = 1;
-        face(pole, bot + left(lng), bot + right(lng));
-    }
-    // middle divs rectangles
-    foreach (lat; 0 .. latDivs - 2)
-    {
-        const top = 1 + lat * longDivs;
-        const bot = top + longDivs;
-        foreach (lng; 0 .. longDivs)
-        {
-            const l = left(lng);
-            const r = right(lng);
-
-            face(top + l, bot + l, bot + r);
-            face(top + l, bot + r, top + r);
-        }
-    }
-    // southern div triangles
-    foreach (lng; 0 .. longDivs)
-    {
-        const pole = totalVertices - 1;
-        const top = 1 + (latDivs - 2) * longDivs;
-        face(pole, top + right(lng), top + left(lng));
-    }
-    assert(ind == totalIndices);
-
-    return Mesh(indices, vertices);
 }
