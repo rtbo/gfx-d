@@ -32,14 +32,39 @@ class VulkanShaderModule : VulkanDevObj!(VkShaderModule, "DestroyShaderModule"),
 class VulkanPipelineLayout : VulkanDevObj!(VkPipelineLayout, "DestroyPipelineLayout"), PipelineLayout
 {
     mixin(atomicRcCode);
-    this(VkPipelineLayout vkObj, VulkanDevice dev)
+
+    this(VkPipelineLayout vkObj, VulkanDevice dev,
+            DescriptorSetLayout[] descriptorLayouts,
+            PushConstantRange[] pushConstantRanges)
     {
         super(vkObj, dev);
+        _descriptorLayouts = descriptorLayouts;
+        _pushConstantRanges = pushConstantRanges;
+        retainArr(_descriptorLayouts);
+    }
+
+    override void dispose()
+    {
+        releaseArr(_descriptorLayouts);
+        super.dispose();
     }
 
     override @property Device device() {
         return dev;
     }
+
+    override @property DescriptorSetLayout[] descriptorLayouts()
+    {
+        return _descriptorLayouts;
+    }
+
+    override @property PushConstantRange[] pushConstantRanges()
+    {
+        return _pushConstantRanges;
+    }
+
+    private DescriptorSetLayout[] _descriptorLayouts;
+    private PushConstantRange[] _pushConstantRanges;
 }
 
 class VulkanPipeline : VulkanDevObj!(VkPipeline, "DestroyPipeline"), Pipeline

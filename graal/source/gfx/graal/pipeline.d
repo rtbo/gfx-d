@@ -26,6 +26,12 @@ interface PipelineLayout : IAtomicRefCounted
 
     /// Get the parent device
     @property Device device();
+
+    /// Get the descriptor set layouts used to create this pipeline layout
+    @property DescriptorSetLayout[] descriptorLayouts();
+
+    /// Get the push constant ranges in this layout
+    @property PushConstantRange[] pushConstantRanges();
 }
 
 interface Pipeline : IAtomicRefCounted

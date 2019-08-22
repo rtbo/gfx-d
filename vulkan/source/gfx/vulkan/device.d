@@ -528,7 +528,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
             vk.CreatePipelineLayout(vkObj, &ci, null, &vkPl),
             "Could not create Vulkan pipeline layout"
         );
-        return new VulkanPipelineLayout(vkPl, this);
+        return new VulkanPipelineLayout(vkPl, this, layouts, ranges);
     }
 
     override DescriptorPool createDescriptorPool(in uint maxSets, in DescriptorPoolSize[] sizes)

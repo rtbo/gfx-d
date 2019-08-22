@@ -160,6 +160,16 @@ final class GlPipelineLayout : PipelineLayout
     override @property Device device() {
         return _dev;
     }
+
+    override @property DescriptorSetLayout[] descriptorLayouts()
+    {
+        return _layouts;
+    }
+
+    override @property PushConstantRange[] pushConstantRanges()
+    {
+        return _push;
+    }
 }
 
 
