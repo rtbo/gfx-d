@@ -120,10 +120,13 @@ class DeferredExample : Example
     DescriptorSet lightBufDescriptorSet;
     DescriptorSet lightAttachDescriptorSet;
 
+    DescriptorSet toneMapDescriptorSet;
+
     MeshBuffer hiResSphere;
     // normals pointing inwards to render "bulbs" with point light inside
     MeshBuffer invertedSphere;
     MeshBuffer loResSphere;
+    MeshBuffer square;
 
     UboBuffer!GeomFrameUbo geomFrameUbo;
     UboBuffer!GeomModelUbo geomModelUbo;
@@ -151,6 +154,7 @@ class DeferredExample : Example
         hiResSphere.release();
         invertedSphere.release();
         loResSphere.release();
+        square.release();
         geomFrameUbo.release();
         geomModelUbo.release();
         lightFrameUbo.release();
@@ -189,22 +193,36 @@ class DeferredExample : Example
 
         const invertedVtx = hiRes.vertices.map!(v => Vertex(v.pos, -v.normal)).array;
 
-        Rc!Buffer indexBuf = createStaticBuffer(hiRes.indices ~ loRes.indices, BufferUsage.index);
+        const ushort[] squareIndices = [ 0, 1, 2, 0, 2, 3 ];
+        const squareVertices = [
+            fvec(-1, -1),
+            fvec(-1, 1),
+            fvec(1, 1),
+            fvec(1, -1),
+        ];
 
-        const hiResData = cast(const(ubyte)[])hiRes.vertices;
-        const invertedData = cast(const(ubyte)[])invertedVtx;
-        const loResData = cast(const(ubyte)[])loRes.vertices.map!(v => v.pos).array;
+        Rc!Buffer indexBuf = createStaticBuffer(
+            hiRes.indices ~ loRes.indices ~ squareIndices,
+            BufferUsage.index
+        );
+
+        const hiResVData = cast(const(ubyte)[])hiRes.vertices;
+        const invertedVData = cast(const(ubyte)[])invertedVtx;
+        const loResVData = cast(const(ubyte)[])loRes.vertices.map!(v => v.pos).array;
+        const squareVData = cast(const(ubyte)[])squareVertices;
         Rc!Buffer vertexBuf = createStaticBuffer(
-            hiResData ~ invertedData ~ loResData,
+            hiResVData ~ invertedVData ~ loResVData ~ squareVData,
             BufferUsage.vertex);
 
         const hiResI = hiRes.indices.length * ushort.sizeof;
         const invertedI = hiResI;
         const loResI = invertedI + loRes.indices.length * ushort.sizeof;
+        const squareI = loResI + squareIndices.length * ushort.sizeof;
 
         const hiResV = hiRes.vertices.length * Vertex.sizeof;
         const invertedV = 2 * hiResV;
         const loResV = invertedV + loRes.vertices.length * FVec3.sizeof;
+        const squareV = loResV + squareVertices.length * FVec2.sizeof;
 
         hiResSphere.indexBuf = indexBuf;
         hiResSphere.vertexBuf = vertexBuf;
@@ -220,6 +238,11 @@ class DeferredExample : Example
         loResSphere.vertexBuf = vertexBuf;
         loResSphere.indices = interval(hiResI, loResI);
         loResSphere.vertices = interval(invertedV, loResV);
+
+        square.indexBuf = indexBuf;
+        square.vertexBuf = vertexBuf;
+        square.indices = interval(loResI, squareI);
+        square.vertices = interval(loResV, squareV);
     }
 
     final void prepareUboBuffers()
@@ -237,6 +260,13 @@ class DeferredExample : Example
         lightModelUbo.initBuffer(this);
     }
 
+    // Deferred render pass
+    //  - subpass 1: geom
+    //      renders geometry into 4 images (position, normal, color, shininess)
+    //  - subpass 2: light
+    //      render lighted scene into HDR image
+    //  - subpass 3: tone mapping
+    //      tone map lighted scene into final target
     override void prepareRenderPass()
     {
         enum Attachment {
@@ -245,6 +275,9 @@ class DeferredExample : Example
             color,
             shininess,
             depth,
+
+            hdrScene,
+
             swcColor,
 
             count,
@@ -252,6 +285,7 @@ class DeferredExample : Example
         enum Subpass {
             geom,
             light,
+            toneMap,
 
             count,
         }
@@ -278,6 +312,10 @@ class DeferredExample : Example
         attachments[Attachment.depth] = AttachmentDescription.depth(
             Format.d16_uNorm, AttachmentOps(LoadOp.clear, StoreOp.store),
             trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal)
+        );
+        attachments[Attachment.hdrScene] = AttachmentDescription.color(
+            Format.rgba16_sFloat, AttachmentOps(LoadOp.clear, StoreOp.store),
+            trans(ImageLayout.undefined, ImageLayout.colorAttachmentOptimal)
         );
         attachments[Attachment.swcColor] = AttachmentDescription.color(
             swapchain.format, AttachmentOps(LoadOp.clear, StoreOp.store),
@@ -307,7 +345,19 @@ class DeferredExample : Example
             ],
             // outputs
             [
-                AttachmentRef(Attachment.swcColor, ImageLayout.colorAttachmentOptimal)
+                AttachmentRef(Attachment.hdrScene, ImageLayout.colorAttachmentOptimal),
+            ],
+            // depth
+            none!AttachmentRef
+        );
+        subpasses[Subpass.toneMap] = SubpassDescription(
+            // inputs
+            [
+                AttachmentRef(Attachment.hdrScene, ImageLayout.shaderReadOnlyOptimal),
+            ],
+            // outputs
+            [
+                AttachmentRef(Attachment.swcColor, ImageLayout.colorAttachmentOptimal),
             ],
             // depth
             none!AttachmentRef
@@ -324,7 +374,12 @@ class DeferredExample : Example
                 trans(Access.colorAttachmentWrite, Access.colorAttachmentRead)
             ),
             SubpassDependency(
-                trans(Subpass.light, subpassExternal),
+                trans!uint(Subpass.light, Subpass.toneMap), // from geometry to lighting pass
+                trans(PipelineStage.colorAttachmentOutput, PipelineStage.fragmentShader),
+                trans(Access.colorAttachmentWrite, Access.colorAttachmentRead)
+            ),
+            SubpassDependency(
+                trans(Subpass.toneMap, subpassExternal),
                 trans(PipelineStage.bottomOfPipe, PipelineStage.topOfPipe),
                 trans(Access.colorAttachmentWrite, Access.memoryRead)
             ),
@@ -335,20 +390,49 @@ class DeferredExample : Example
 
     class DeferredFrameData : FrameData
     {
-        /// G-buffer images and views
-        Rc!Image worldPos;
-        Rc!Image normal;
-        Rc!Image color;
-        Rc!Image shininess;
-        Rc!ImageView worldPosView;
-        Rc!ImageView normalView;
-        Rc!ImageView colorView;
-        Rc!ImageView shininessView;
+        struct FbImage
+        {
+            Image img;
+            ImageView view;
+
+            this(Device device, DeferredExample ex, ImageInfo info) {
+                img = retainObj(device.createImage(info));
+                ex.bindImageMemory(img);
+                const aspect = info.usage & ImageUsage.depthStencilAttachment ?
+                    ImageAspect.depth :
+                    ImageAspect.color;
+                view = retainObj(img.createView(
+                    ImageType.d2, ImageSubresourceRange(aspect), Swizzle.identity
+                ));
+            }
+
+            this(this) {
+                if (img) {
+                    retainObj(img);
+                    retainObj(view);
+                }
+            }
+
+            ~this() {
+                if (img) {
+                    releaseObj(view);
+                    releaseObj(img);
+                }
+            }
+        }
+        // G-buffer images and views
+        FbImage worldPos;
+        FbImage normal;
+        FbImage color;
+        FbImage shininess;
 
         /// depth buffer
-        Rc!Image depth;
+        FbImage depth;
 
-        /// Framebuffer
+        // HDR image the scene is rendered to
+        FbImage hdrScene;
+
+        /// Main Framebuffer
         Rc!Framebuffer framebuffer;
 
         /// Command buffer
@@ -362,68 +446,50 @@ class DeferredExample : Example
 
             cmdBuf = cmdPool.allocatePrimary(1)[0];
 
-            worldPos = device.createImage(ImageInfo.d2(size[0], size[1])
-                    .withFormat(Format.rgba32_sFloat).withUsage(
-                        ImageUsage.colorAttachment | ImageUsage.inputAttachment
-                    ));
-            normal = device.createImage(ImageInfo.d2(size[0], size[1])
-                    .withFormat(Format.rgba16_sFloat).withUsage(
-                        ImageUsage.colorAttachment | ImageUsage.inputAttachment
-                    ));
-            color = device.createImage(ImageInfo.d2(size[0], size[1])
-                    .withFormat(Format.rgba8_uNorm).withUsage(
-                        ImageUsage.colorAttachment | ImageUsage.inputAttachment
-                    ));
-            shininess = device.createImage(ImageInfo.d2(size[0], size[1])
-                    .withFormat(Format.r16_sFloat).withUsage(
-                        ImageUsage.colorAttachment | ImageUsage.inputAttachment
-                    ));
-            depth = device.createImage(ImageInfo.d2(size[0], size[1])
-                    .withFormat(Format.d16_uNorm).withUsage(ImageUsage.depthStencilAttachment));
+            worldPos = FbImage(device, this.outer, ImageInfo.d2(size[0], size[1])
+                    .withFormat(Format.rgba32_sFloat)
+                    .withUsage(ImageUsage.colorAttachment | ImageUsage.inputAttachment)
+                );
+            normal = FbImage(device, this.outer, ImageInfo.d2(size[0], size[1])
+                    .withFormat(Format.rgba16_sFloat)
+                    .withUsage(ImageUsage.colorAttachment | ImageUsage.inputAttachment)
+                );
+            color = FbImage(device, this.outer, ImageInfo.d2(size[0], size[1])
+                    .withFormat(Format.rgba8_uNorm)
+                    .withUsage(ImageUsage.colorAttachment | ImageUsage.inputAttachment)
+                );
+            shininess = FbImage(device, this.outer, ImageInfo.d2(size[0], size[1])
+                    .withFormat(Format.r16_sFloat)
+                    .withUsage(ImageUsage.colorAttachment | ImageUsage.inputAttachment)
+                );
+            depth = FbImage(device, this.outer, ImageInfo.d2(size[0], size[1])
+                    .withFormat(Format.d16_uNorm)
+                    .withUsage(ImageUsage.depthStencilAttachment)
+                );
+            hdrScene = FbImage(device, this.outer, ImageInfo.d2(size[0], size[1])
+                    .withFormat(Format.rgba16_sFloat)
+                    .withUsage(ImageUsage.colorAttachment | ImageUsage.inputAttachment)
+                );
 
-            enforce(bindImageMemory(worldPos.obj));
-            enforce(bindImageMemory(normal.obj));
-            enforce(bindImageMemory(color.obj));
-            enforce(bindImageMemory(shininess.obj));
-            enforce(bindImageMemory(depth.obj));
-
-            worldPosView = worldPos.createView(
-                ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
-            );
-            normalView = normal.createView(
-                ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
-            );
-            colorView = color.createView(
-                ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
-            );
-            shininessView = shininess.createView(
-                ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
-            );
-            auto depthView = depth.createView(
-                ImageType.d2, ImageSubresourceRange(ImageAspect.depth), Swizzle.identity
-            ).rc;
             auto swcColorView = swcColor.createView(
                 ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
             ).rc;
 
             this.framebuffer = this.outer.device.createFramebuffer(this.outer.renderPass, [
-                worldPosView.obj, normalView.obj, colorView.obj, shininessView.obj,
-                depthView.obj, swcColorView.obj
+                worldPos.view, normal.view, color.view, shininess.view,
+                depth.view, hdrScene.view, swcColorView.obj
             ], size[0], size[1], 1);
         }
 
         override void dispose()
         {
             framebuffer.unload();
-            shininessView.unload();
-            colorView.unload();
-            normalView.unload();
-            worldPosView.unload();
-            depth.unload();
-            shininess.unload();
-            color.unload();
-            normal.unload();
-            worldPos.unload();
+            depth = FbImage.init;
+            hdrScene = FbImage.init;
+            shininess = FbImage.init;
+            color = FbImage.init;
+            normal = FbImage.init;
+            worldPos = FbImage.init;
             cmdPool.free([ cast(CommandBuffer)cmdBuf ]);
             super.dispose();
         }
@@ -439,18 +505,20 @@ class DeferredExample : Example
         const poolSizes = [
             DescriptorPoolSize(DescriptorType.uniformBuffer, 2),
             DescriptorPoolSize(DescriptorType.uniformBufferDynamic, 2),
-            DescriptorPoolSize(DescriptorType.inputAttachment, 4),
+            DescriptorPoolSize(DescriptorType.inputAttachment, 5),
         ];
 
-        descriptorPool = device.createDescriptorPool(3, poolSizes);
+        descriptorPool = device.createDescriptorPool(4, poolSizes);
         auto sets = descriptorPool.allocate([
             pipelines.geom.descriptorLayouts[0],
             pipelines.light.descriptorLayouts[0],
             pipelines.light.descriptorLayouts[1],
+            pipelines.toneMap.descriptorLayouts[0],
         ]);
         geomDescriptorSet = sets[0];
         lightBufDescriptorSet = sets[1];
         lightAttachDescriptorSet = sets[2];
+        toneMapDescriptorSet = sets[3];
 
         auto writes = [
             WriteDescriptorSet(geomDescriptorSet, 0, 0, new UniformBufferDescWrites([
@@ -474,11 +542,14 @@ class DeferredExample : Example
     {
         auto writes = [
             WriteDescriptorSet(lightAttachDescriptorSet, 0, 0, new InputAttachmentDescWrites([
-                ImageViewLayout(dfd.worldPosView.obj, ImageLayout.shaderReadOnlyOptimal),
-                ImageViewLayout(dfd.normalView.obj, ImageLayout.shaderReadOnlyOptimal),
-                ImageViewLayout(dfd.colorView.obj, ImageLayout.shaderReadOnlyOptimal),
-                ImageViewLayout(dfd.shininessView.obj, ImageLayout.shaderReadOnlyOptimal),
-            ]))
+                ImageViewLayout(dfd.worldPos.view, ImageLayout.shaderReadOnlyOptimal),
+                ImageViewLayout(dfd.normal.view, ImageLayout.shaderReadOnlyOptimal),
+                ImageViewLayout(dfd.color.view, ImageLayout.shaderReadOnlyOptimal),
+                ImageViewLayout(dfd.shininess.view, ImageLayout.shaderReadOnlyOptimal),
+            ])),
+            WriteDescriptorSet(toneMapDescriptorSet, 0, 0, new InputAttachmentDescWrites([
+                ImageViewLayout(dfd.hdrScene.view, ImageLayout.shaderReadOnlyOptimal),
+            ])),
         ];
         device.updateDescriptorSets(writes, []);
     }
@@ -555,16 +626,22 @@ class DeferredExample : Example
             buf.setViewport(0, [ Viewport(0f, 0f, cast(float)surfaceSize[0], cast(float)surfaceSize[1]) ]);
             buf.setScissor(0, [ Rect(0, 0, surfaceSize[0], surfaceSize[1]) ]);
 
+            const(ClearValues[7]) cvs = [
+                // clearing all attachments in the framebuffer
+                ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // world-pos
+                ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // normal
+                ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // color
+                ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // shininess
+                ClearValues(ClearDepthStencilValues( 1f, 0 )), // depth
+                ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // hdrScene
+                ClearValues(ClearColorValues( 0f, 0f, 0f, 1f )), // swapchain image
+            ];
+
             buf.beginRenderPass(
-                renderPass, dfd.framebuffer, Rect(0, 0, surfaceSize[0], surfaceSize[1]), [
-                    // clearing all 5 attachments in the framebuffer
-                    ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // world-pos
-                    ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // normal
-                    ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // color
-                    ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // shininess
-                    ClearValues(ClearDepthStencilValues( 1f, 0 )), // depth
-                    ClearValues(ClearColorValues( 0f, 0f, 0f, 1f )), // swapchain image
-                ]
+                renderPass,
+                dfd.framebuffer,
+                Rect(0, 0, surfaceSize[0], surfaceSize[1]),
+                cvs[],
             );
 
                 // geometry pass
@@ -606,6 +683,7 @@ class DeferredExample : Example
                         );
                     }
                 }
+
             buf.nextSubpass();
 
                 // light pass
@@ -633,6 +711,20 @@ class DeferredExample : Example
                         );
                     }
                 }
+
+            buf.nextSubpass();
+
+                // tone map pass
+
+                buf.bindPipeline(pipelines.toneMap.pipeline);
+                square.bindIndex(buf);
+                buf.bindVertexBuffers(0, [ square.vertexBinding() ]);
+                buf.bindDescriptorSets(
+                    PipelineBindPoint.graphics,
+                    pipelines.toneMap.layout, 0, [ toneMapDescriptorSet ], []
+                );
+
+                buf.drawIndexed(cast(uint)square.indicesCount, 1, 0, 0, 0);
 
             buf.endRenderPass();
 

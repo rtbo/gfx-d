@@ -21,30 +21,53 @@ class DeferredPipelines : AtomicRefCounted
         }
     }
 
-    Pl geom;
-    Pl light;
+    Pl[] pls;
 
     this(Device device, RenderPass renderPass)
     {
+        import std.algorithm : map;
+        import std.array : array;
+
         auto infos = [
             geomInfo(device, renderPass),
             lightInfo(device, renderPass),
+            toneMapInfo(device, renderPass),
         ];
 
-        auto pls = device.createPipelines(infos);
-        geom.pipeline = retainObj(pls[0]);
-        light.pipeline = retainObj(pls[1]);
+        pls = device.createPipelines(infos)
+            .map!(pl => Pl([], null, retainObj(pl)))
+            .array;
 
-        releaseObj(infos[0].shaders.vertex);
-        releaseObj(infos[0].shaders.fragment);
-        releaseObj(infos[1].shaders.vertex);
-        releaseObj(infos[1].shaders.fragment);
+        foreach(i; 0 .. infos.length)
+        {
+            pls[i].layout = infos[i].layout;
+            pls[i].descriptorLayouts = infos[i].layout.descriptorLayouts;
+            releaseObj(infos[i].shaders.vertex);
+            releaseObj(infos[i].shaders.fragment);
+        }
     }
 
     override void dispose()
     {
-        geom.release();
-        light.release();
+        foreach(ref pl; pls) {
+            pl.release();
+        }
+        pls = [];
+    }
+
+    @property Pl geom()
+    {
+        return pls[0];
+    }
+
+    @property Pl light()
+    {
+        return pls[1];
+    }
+
+    @property Pl toneMap()
+    {
+        return pls[2];
     }
 
     final PipelineInfo geomInfo(Device device, RenderPass renderPass)
@@ -64,10 +87,10 @@ class DeferredPipelines : AtomicRefCounted
             ),
         ];
 
-        geom.descriptorLayouts = [
+        auto descriptorLayouts = [
             retainObj(device.createDescriptorSetLayout(layoutBindings))
         ];
-        geom.layout = retainObj(device.createPipelineLayout( geom.descriptorLayouts, [] ));
+        auto layout = retainObj(device.createPipelineLayout( descriptorLayouts, [] ));
 
         PipelineInfo info;
         info.shaders.vertex = retainObj(device.createShaderModule(
@@ -100,7 +123,7 @@ class DeferredPipelines : AtomicRefCounted
             ],
         );
         info.dynamicStates = [ DynamicState.viewport, DynamicState.scissor ];
-        info.layout = geom.layout;
+        info.layout = layout;
         info.renderPass = renderPass;
         info.subpassIndex = 0;
 
@@ -129,11 +152,11 @@ class DeferredPipelines : AtomicRefCounted
             ),
         ];
 
-        light.descriptorLayouts = [
+        auto descriptorLayouts = [
             retainObj(device.createDescriptorSetLayout(bufLayoutBindings)),
             retainObj(device.createDescriptorSetLayout(attachLayoutBindings)),
         ];
-        light.layout = retainObj(device.createPipelineLayout( light.descriptorLayouts, [] ));
+        auto layout = retainObj(device.createPipelineLayout( descriptorLayouts, [] ));
 
         PipelineInfo info;
         info.shaders.vertex = retainObj(device.createShaderModule(
@@ -165,9 +188,60 @@ class DeferredPipelines : AtomicRefCounted
             ],
         );
         info.dynamicStates = [ DynamicState.viewport, DynamicState.scissor ];
-        info.layout = light.layout;
+        info.layout = layout;
         info.renderPass = renderPass;
         info.subpassIndex = 1;
+
+        return info;
+    }
+
+    final PipelineInfo toneMapInfo(Device device, RenderPass renderPass)
+    {
+        import std.typecons : No, Yes;
+
+        const shaderSpv = [
+            import("toneMap.vert.spv"), import("toneMap.frag.spv"),
+        ];
+
+        const layoutBindings = [
+            PipelineLayoutBinding(
+                0, DescriptorType.inputAttachment, 1, ShaderStage.fragment
+            ),
+        ];
+
+        auto descriptorLayouts = [
+            retainObj(device.createDescriptorSetLayout(layoutBindings)),
+        ];
+        auto layout = retainObj(device.createPipelineLayout( descriptorLayouts, [] ));
+
+        PipelineInfo info;
+        info.shaders.vertex = retainObj(device.createShaderModule(
+            cast(immutable(uint)[])shaderSpv[0], "main"
+        ));
+        info.shaders.fragment = retainObj(device.createShaderModule(
+            cast(immutable(uint)[])shaderSpv[1], "main"
+        ));
+        info.inputBindings = [
+            VertexInputBinding(0, FVec2.sizeof, No.instanced)
+        ];
+        info.inputAttribs = [
+            VertexInputAttrib(0, 0, Format.rg32_sFloat, 0),
+        ];
+        info.assembly = InputAssembly(Primitive.triangleList, No.primitiveRestart);
+        // culling so that we run the shader once per fragment
+        // front instead of back culling to also run the shader if the camera is within a sphere
+        info.rasterizer = Rasterizer(
+            PolygonMode.fill, Cull.none, FrontFace.ccw
+        );
+        info.blendInfo = ColorBlendInfo(
+            none!LogicOp, [
+                ColorBlendAttachment.solid(),
+            ],
+        );
+        info.dynamicStates = [ DynamicState.viewport, DynamicState.scissor ];
+        info.layout = layout;
+        info.renderPass = renderPass;
+        info.subpassIndex = 2;
 
         return info;
     }
