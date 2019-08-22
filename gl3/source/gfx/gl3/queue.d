@@ -307,8 +307,8 @@ final class GlCommandBuffer : PrimaryCommandBuffer, SecondaryCommandBuffer {
         _cmds ~= new SetBlendConstantsCmd(blendConstants);
     }
 
-    override void beginRenderPass(RenderPass rp, Framebuffer fb, Rect area,
-            ClearValues[] clearValues) {
+    override void beginRenderPass(RenderPass rp, Framebuffer fb, in Rect area,
+            in ClearValues[] clearValues) {
         import gfx.gl3.pipeline : GlFramebuffer;
         import gfx.graal.pipeline : ColorBlendAttachment;
         import std.algorithm : map;

@@ -312,7 +312,7 @@ interface CommandBuffer {
 interface PrimaryCommandBuffer : CommandBuffer {
 
     /// Place the command buffer into a render pass context
-    void beginRenderPass(RenderPass rp, Framebuffer fb, Rect area, ClearValues[] clearValues);
+    void beginRenderPass(RenderPass rp, Framebuffer fb, in Rect area, in ClearValues[] clearValues);
     void nextSubpass();
     void endRenderPass();
 

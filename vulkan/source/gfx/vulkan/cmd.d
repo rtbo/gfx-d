@@ -286,8 +286,8 @@ final class VulkanCommandBuffer : PrimaryCommandBuffer, SecondaryCommandBuffer {
         vk.CmdSetBlendConstants(vkObj, blendConstants);
     }
 
-    override void beginRenderPass(RenderPass rp, Framebuffer fb, Rect area,
-            ClearValues[] clearValues) {
+    override void beginRenderPass(RenderPass rp, Framebuffer fb, in Rect area,
+            in ClearValues[] clearValues) {
         import std.algorithm : map;
         import std.array : array;
 
