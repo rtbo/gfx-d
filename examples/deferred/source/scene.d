@@ -51,7 +51,7 @@ struct Saucer
     FVec3 lightCol;
     FVec3 lightPos;
     float[2] lightTimeOnOff; // time with light spent on and off each cycle
-    float lightRadius;
+    float lightBrightness;
 
     float phase;
     bool lightOn;
@@ -102,7 +102,7 @@ struct DeferredScene
         enum subDist = (superStructSz / 2f) - (subStructBound / 2f);
         enum saucerDist = (subStructSz / 2f) - (saucerBound / 2f);
 
-        auto rnd = Random(12);
+        auto rnd = Random(43);
         size_t saucerIdx = 0;
 
         FVec3 spin(in float minRpm, in float maxRpm)
@@ -160,7 +160,7 @@ struct DeferredScene
                 const z = uniform(0.8, 1, rnd);
                 body.transform = scale(fvec(xy, xy, z));
                 body.color = bodyCol * 0.8;
-                body.shininess = uniform(3.0, 8.0, rnd);
+                body.shininess = uniform(6.0, 16.0, rnd);
             }
             {
                 const s = uniform(0.5, 1, rnd);
@@ -169,10 +169,10 @@ struct DeferredScene
                 cockpit.transform = translation(fvec(x, 0, z))
                         * scale(FVec3(s));
                 cockpit.color = bodyCol;
-                cockpit.shininess = uniform(10.0, 16.0, rnd);
+                cockpit.shininess = uniform(20.0, 32.0, rnd);
             }
             {
-                const s = uniform(0.1, 0.3, rnd);
+                const s = uniform(0.2, 0.3, rnd);
                 const x = uniform(1.0, 2.0, rnd);
                 const z = uniform(1.5, 2.5, rnd);
                 bulbPos = fvec(x, 0, z);
@@ -187,7 +187,7 @@ struct DeferredScene
                 bulbCol,
                 bulbPos,
                 timeOnOff,
-                uniform(3f, 9f, rnd), // light radius
+                uniform(2f, 12f, rnd), // light brightness
                 uniform(0.0, time, rnd), // initial phase
             );
         }
@@ -208,7 +208,7 @@ struct DeferredScene
         return superStructSz / 2f;
     }
 
-    size_t saucerCount()
+    @property size_t saucerCount()
     {
         import std.algorithm : map, sum;
 

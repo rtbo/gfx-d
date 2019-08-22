@@ -41,7 +41,7 @@ struct LightModelUbo
     FMat4 modelViewProj = FMat4.identity;
     FVec4 position = fvec(0, 0, 0, 1);
     FVec4 color = fvec(0, 0, 0, 1);
-    float radius = 1f;
+    float brightness = 1f;
     float[7] pad; // 32 bytes alignment for dynamic offset
 }
 static assert(LightModelUbo.sizeof == FMat4.sizeof + 4*FVec4.sizeof);

@@ -385,12 +385,12 @@ class DeferredExample : Example
                     viewProj
                     * M3
                     * translation(s.lightPos)
-                    * scale(FVec3(s.lightRadius * 1.5f)) // sphere slightly bigger than light radius
+                    * scale(FVec3(s.lightBrightness * 1.5f)) // sphere slightly bigger than light radius
                 ).transpose();
                 buffers.lightModelUbo.data[s.saucerIdx].position =
                         M3 * translation(s.lightPos) * fvec(0, 0, 0, 1);
                 buffers.lightModelUbo.data[s.saucerIdx].color = fvec(s.lightCol, 1);
-                buffers.lightModelUbo.data[s.saucerIdx].radius = s.lightRadius;
+                buffers.lightModelUbo.data[s.saucerIdx].brightness = s.lightBrightness;
             }
         }
 

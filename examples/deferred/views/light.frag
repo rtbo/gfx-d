@@ -10,14 +10,12 @@ layout(std140, set = 0, binding = 1) uniform Model {
     mat4 modelViewProjMat;
     vec4 lightPos;
     vec4 lightCol;
-    float lightRad;
+    float lightBrightness;
 } model;
 
 layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput inputs[4];
 
 layout(location = 0) out vec4 o_Color;
-
-#define ambient 0.0
 
 void main() {
     vec4 worldPosA = subpassLoad(inputs[0]).rgba;
@@ -37,16 +35,24 @@ void main() {
     to_light = normalize(to_light);
 
     vec3 to_viewer = normalize(frame.viewPos.xyz - worldPos);
-    float atten = model.lightRad / (pow(dist, 2.0) + 1.0);
+
+    float atten = model.lightBrightness / (dist * dist + 1.0);
 
     // diffuse part
     float diff_factor = max(0.0, dot(normal, to_light));
     vec3 diff = model.lightCol.rgb * color * diff_factor * atten;
 
     // specular part
+#if true
+    // blinn-phong
+    vec3 halfway = normalize(to_light + to_viewer);
+    float spec_factor = pow(max(0.0, dot(normal, halfway)), shininess);
+#else
+    // phong
     vec3 reflection = reflect(-to_light, normal);
-    float spec_factor = max(0.0, dot(reflection, to_viewer));
-    vec3 spec = model.lightCol.rgb * pow(spec_factor, shininess) * atten;
+    float spec_factor = pow(max(0.0, dot(reflection, to_viewer)), shininess);
+#endif
+    vec3 spec = model.lightCol.rgb * spec_factor * atten;
 
-    o_Color = vec4(ambient*color + diff + spec, 1.0);
+    o_Color = vec4(diff + spec, 1.0);
 }

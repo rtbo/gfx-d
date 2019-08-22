@@ -4,7 +4,7 @@ layout(input_attachment_index = 0, binding = 0) uniform subpassInput hdrInput;
 
 layout(location = 0) out vec4 o_Color;
 
-#define exposure 1.0
+#define exposure 0.5
 #define gamma 2.2
 
 void main() {
