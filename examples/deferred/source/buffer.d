@@ -6,10 +6,16 @@ import gfx.core;
 import gfx.graal;
 import gfx.math;
 
-struct Vertex
+struct P3N3Vertex
 {
     FVec3 pos;
     FVec3 normal;
+}
+
+struct P2T2Vertex
+{
+    FVec2 pos;
+    FVec2 texCoord;
 }
 
 /// per frame UBO for the geom pipeline
@@ -145,14 +151,14 @@ class DeferredBuffers : AtomicRefCounted
         const hiRes = buildUvSpheroid(fvec(0, 0, 0), 1f, 1f, 15);
         const loRes = buildUvSpheroid(fvec(0, 0, 0), 1f, 1f, 6);
 
-        const invertedVtx = hiRes.vertices.map!(v => Vertex(v.pos, -v.normal)).array;
+        const invertedVtx = hiRes.vertices.map!(v => P3N3Vertex(v.pos, -v.normal)).array;
 
         const ushort[] squareIndices = [ 0, 1, 2, 0, 2, 3 ];
         const squareVertices = [
-            fvec(-1, -1),
-            fvec(-1, 1),
-            fvec(1, 1),
-            fvec(1, -1),
+            P2T2Vertex(fvec(-1, -1), fvec(0, 0)),
+            P2T2Vertex(fvec(-1, 1), fvec(0, 1)),
+            P2T2Vertex(fvec(1, 1), fvec(1, 1)),
+            P2T2Vertex(fvec(1, -1), fvec(1, 0)),
         ];
 
         Rc!Buffer indexBuf = ex.createStaticBuffer(
@@ -173,10 +179,10 @@ class DeferredBuffers : AtomicRefCounted
         const loResI = invertedI + loRes.indices.length * ushort.sizeof;
         const squareI = loResI + squareIndices.length * ushort.sizeof;
 
-        const hiResV = hiRes.vertices.length * Vertex.sizeof;
+        const hiResV = hiRes.vertices.length * P3N3Vertex.sizeof;
         const invertedV = 2 * hiResV;
         const loResV = invertedV + loRes.vertices.length * FVec3.sizeof;
-        const squareV = loResV + squareVertices.length * FVec2.sizeof;
+        const squareV = loResV + squareVertices.length * P2T2Vertex.sizeof;
 
         hiResSphere.indexBuf = indexBuf;
         hiResSphere.vertexBuf = vertexBuf;
@@ -226,7 +232,7 @@ class DeferredBuffers : AtomicRefCounted
 struct Mesh
 {
     ushort[] indices;
-    Vertex[] vertices;
+    P3N3Vertex[] vertices;
 }
 
 Mesh buildUvSpheroid(in FVec3 center, in float radius, in float height,
@@ -239,13 +245,13 @@ Mesh buildUvSpheroid(in FVec3 center, in float radius, in float height,
     const totalVertices = 2 + (latDivs - 1) * longDivs;
     const totalIndices = 3 * longDivs * (2 + 2 * (latDivs - 2));
 
-    auto vertices = uninitializedArray!(Vertex[])(totalVertices);
+    auto vertices = uninitializedArray!(P3N3Vertex[])(totalVertices);
 
     size_t ind = 0;
     void unitVertex(in FVec3 pos)
     {
         const v = fvec(radius * pos.xy, height * pos.z);
-        vertices[ind++] = Vertex(center + v, normalize(v));
+        vertices[ind++] = P3N3Vertex(center + v, normalize(v));
     }
 
     const latAngle = PI / latDivs;

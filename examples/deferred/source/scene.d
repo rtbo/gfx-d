@@ -194,14 +194,14 @@ struct DeferredScene
         SaucerSubStruct makeSubStruct(MovingObj mov) {
             return SaucerSubStruct(
                 mov,
-                buildMovingObjs(numSaucers, saucerDist, 6f, 7f)
+                buildMovingObjs(numSaucers, saucerDist, -7f, -2f)
                     .map!(mov => makeSaucer(mov))
                     .array
             );
         }
 
         mov.spin = spin(2f, 3f);
-        subStructs = buildMovingObjs(numSubStructs, subDist, 4f, 5f)
+        subStructs = buildMovingObjs(numSubStructs, subDist, 1f, 5f)
             .map!(mov => makeSubStruct(mov))
             .array;
 

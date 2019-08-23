@@ -16,6 +16,7 @@ layout(std140, set = 0, binding = 1) uniform Model {
 layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput inputs[4];
 
 layout(location = 0) out vec4 o_Color;
+layout(location = 1) out vec4 o_BloomBase;
 
 void main() {
     vec4 worldPosA = subpassLoad(inputs[0]).rgba;
@@ -55,4 +56,11 @@ void main() {
     vec3 spec = model.lightCol.rgb * spec_factor * atten;
 
     o_Color = vec4(diff + spec, 1.0);
+
+    float brightness = dot(o_Color.rgb, vec3(0.2126, 0.7152, 0.0722));
+    if(brightness > 1.0) {
+        o_BloomBase = o_Color;
+    } else {
+        o_BloomBase = vec4(0.0, 0.0, 0.0, 1.0);
+    }
 }

@@ -23,15 +23,16 @@ class DeferredPipelines : AtomicRefCounted
 
     Pl[] pls;
 
-    this(Device device, RenderPass renderPass)
+    this(Device device, RenderPass deferredRp, RenderPass bloomRp, RenderPass blendRp)
     {
         import std.algorithm : map;
         import std.array : array;
 
         auto infos = [
-            geomInfo(device, renderPass),
-            lightInfo(device, renderPass),
-            toneMapInfo(device, renderPass),
+            geomInfo(device, deferredRp),
+            lightInfo(device, deferredRp),
+            bloomInfo(device, bloomRp),
+            blendInfo(device, blendRp),
         ];
 
         pls = device.createPipelines(infos)
@@ -65,9 +66,14 @@ class DeferredPipelines : AtomicRefCounted
         return pls[1];
     }
 
-    @property Pl toneMap()
+    @property Pl bloom()
     {
         return pls[2];
+    }
+
+    @property Pl blend()
+    {
+        return pls[3];
     }
 
     final PipelineInfo geomInfo(Device device, RenderPass renderPass)
@@ -100,11 +106,11 @@ class DeferredPipelines : AtomicRefCounted
             cast(immutable(uint)[])shaderSpv[1], "main"
         ));
         info.inputBindings = [
-            VertexInputBinding(0, Vertex.sizeof, No.instanced)
+            VertexInputBinding(0, P3N3Vertex.sizeof, No.instanced)
         ];
         info.inputAttribs = [
             VertexInputAttrib(0, 0, Format.rgb32_sFloat, 0),
-            VertexInputAttrib(1, 0, Format.rgb32_sFloat, Vertex.normal.offsetof),
+            VertexInputAttrib(1, 0, Format.rgb32_sFloat, P3N3Vertex.normal.offsetof),
         ];
         info.assembly = InputAssembly(Primitive.triangleList, No.primitiveRestart);
         info.rasterizer = Rasterizer(
@@ -185,6 +191,12 @@ class DeferredPipelines : AtomicRefCounted
                         BlendOp.add,
                     ),
                 ),
+                ColorBlendAttachment.blend(
+                    BlendState(
+                        trans(BlendFactor.one, BlendFactor.one),
+                        BlendOp.add,
+                    ),
+                ),
             ],
         );
         info.dynamicStates = [ DynamicState.viewport, DynamicState.scissor ];
@@ -195,17 +207,71 @@ class DeferredPipelines : AtomicRefCounted
         return info;
     }
 
-    final PipelineInfo toneMapInfo(Device device, RenderPass renderPass)
+    final PipelineInfo bloomInfo(Device device, RenderPass renderPass)
     {
         import std.typecons : No, Yes;
 
         const shaderSpv = [
-            import("toneMap.vert.spv"), import("toneMap.frag.spv"),
+            import("bloom.vert.spv"), import("bloom.frag.spv"),
         ];
 
         const layoutBindings = [
             PipelineLayoutBinding(
-                0, DescriptorType.inputAttachment, 1, ShaderStage.fragment
+                0, DescriptorType.combinedImageSampler, 1, ShaderStage.fragment
+            ),
+        ];
+
+        auto descriptorLayouts = [
+            retainObj(device.createDescriptorSetLayout(layoutBindings)),
+        ];
+        // pc holds horizontal-vertical boolean
+        const pushConstants = [
+            PushConstantRange(ShaderStage.fragment, 0, uint.sizeof),
+        ];
+        auto layout = retainObj(device.createPipelineLayout( descriptorLayouts, pushConstants ));
+
+        PipelineInfo info;
+        info.shaders.vertex = retainObj(device.createShaderModule(
+            cast(immutable(uint)[])shaderSpv[0], "main"
+        ));
+        info.shaders.fragment = retainObj(device.createShaderModule(
+            cast(immutable(uint)[])shaderSpv[1], "main"
+        ));
+        info.inputBindings = [
+            VertexInputBinding(0, P2T2Vertex.sizeof, No.instanced)
+        ];
+        info.inputAttribs = [
+            VertexInputAttrib(0, 0, Format.rg32_sFloat, 0),
+            VertexInputAttrib(1, 0, Format.rg32_sFloat, P2T2Vertex.texCoord.offsetof),
+        ];
+        info.assembly = InputAssembly(Primitive.triangleList, No.primitiveRestart);
+        info.rasterizer = Rasterizer(
+            PolygonMode.fill, Cull.none, FrontFace.ccw
+        );
+        info.blendInfo = ColorBlendInfo(
+            none!LogicOp, [
+                ColorBlendAttachment.solid(),
+            ],
+        );
+        info.dynamicStates = [ DynamicState.viewport, DynamicState.scissor ];
+        info.layout = layout;
+        info.renderPass = renderPass;
+        info.subpassIndex = 0;
+
+        return info;
+    }
+
+    final PipelineInfo blendInfo(Device device, RenderPass renderPass)
+    {
+        import std.typecons : No, Yes;
+
+        const shaderSpv = [
+            import("blend.vert.spv"), import("blend.frag.spv"),
+        ];
+
+        const layoutBindings = [
+            PipelineLayoutBinding(
+                0, DescriptorType.inputAttachment, 2, ShaderStage.fragment
             ),
         ];
 
@@ -222,14 +288,12 @@ class DeferredPipelines : AtomicRefCounted
             cast(immutable(uint)[])shaderSpv[1], "main"
         ));
         info.inputBindings = [
-            VertexInputBinding(0, FVec2.sizeof, No.instanced)
+            VertexInputBinding(0, P2T2Vertex.sizeof, No.instanced)
         ];
         info.inputAttribs = [
             VertexInputAttrib(0, 0, Format.rg32_sFloat, 0),
         ];
         info.assembly = InputAssembly(Primitive.triangleList, No.primitiveRestart);
-        // culling so that we run the shader once per fragment
-        // front instead of back culling to also run the shader if the camera is within a sphere
         info.rasterizer = Rasterizer(
             PolygonMode.fill, Cull.none, FrontFace.ccw
         );
@@ -241,7 +305,7 @@ class DeferredPipelines : AtomicRefCounted
         info.dynamicStates = [ DynamicState.viewport, DynamicState.scissor ];
         info.layout = layout;
         info.renderPass = renderPass;
-        info.subpassIndex = 2;
+        info.subpassIndex = 0;
 
         return info;
     }

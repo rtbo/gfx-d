@@ -15,7 +15,10 @@ import std.stdio;
 
 class DeferredExample : Example
 {
-    Rc!RenderPass renderPass;
+    Rc!RenderPass deferredRenderPass;
+    Rc!RenderPass bloomRenderPass;
+    Rc!RenderPass blendRenderPass;
+
     Rc!DescriptorPool descriptorPool;
 
     Rc!DeferredBuffers buffers;
@@ -26,7 +29,10 @@ class DeferredExample : Example
     DescriptorSet lightBufDescriptorSet;
     DescriptorSet lightAttachDescriptorSet;
 
-    DescriptorSet toneMapDescriptorSet;
+    Rc!Sampler bloomSampler;
+    DescriptorSet[3] bloomDescriptorSets;
+
+    DescriptorSet blendDescriptorSet;
 
     Duration lastTimeElapsed;
 
@@ -42,7 +48,10 @@ class DeferredExample : Example
     {
         if (device)
             device.waitIdle();
-        renderPass.unload();
+        bloomSampler.unload();
+        deferredRenderPass.unload();
+        bloomRenderPass.unload();
+        blendRenderPass.unload();
         descriptorPool.reset();
         descriptorPool.unload();
         pipelines.unload();
@@ -56,7 +65,13 @@ class DeferredExample : Example
         super.prepare();
         const rad = scene.prepare();
         buffers = new DeferredBuffers(this, scene.saucerCount);
-        pipelines = new DeferredPipelines(device, renderPass);
+        pipelines = new DeferredPipelines(device, deferredRenderPass,
+                bloomRenderPass, blendRenderPass);
+
+        bloomSampler = device.createSampler(
+            SamplerInfo.bilinear().withWrapMode(WrapMode.clamp)
+        );
+
         prepareDescriptors();
 
         viewerPos = fvec(rad, rad, rad);
@@ -65,15 +80,36 @@ class DeferredExample : Example
         viewProj = proj * view;
     }
 
-
-    // Deferred render pass
-    //  - subpass 1: geom
-    //      renders geometry into 4 images (position, normal, color, shininess)
-    //  - subpass 2: light
-    //      render lighted scene into HDR image
-    //  - subpass 3: tone mapping
-    //      tone map lighted scene into final target
     override void prepareRenderPass()
+    {
+        // Deferred render pass
+        //  - subpass 1: geom
+        //      renders geometry into 4 images (position, normal, color, shininess)
+        //  - subpass 2: light
+        //      render lighted scene into HDR image
+        //      the brightest areas are extracted into the bloomBase image at the same time
+        prepareDeferredRenderPass();
+
+        // Bloom render pass
+        //  - done successively with flipping attachments
+        //    in order to perform horizontal and vertical
+        //    blur ping pong passes
+        //     - the first pass blurs the bloomBase image horizontally into
+        //       the blurH image
+        //     - the second pass blurs the blurH image vertically into
+        //       the blurV image
+        //     - the third pass blurs the blurV image horizontally into
+        //       the blurH image
+        //     - and so on...
+        //    a descriptor set is prepared for each case
+        prepareBloomRenderPass();
+
+        // Blend render pass
+        //  - blend the lighted
+        prepareBlendRenderPass();
+    }
+
+    final void prepareDeferredRenderPass()
     {
         enum Attachment {
             worldPos,
@@ -83,15 +119,13 @@ class DeferredExample : Example
             depth,
 
             hdrScene,
-
-            swcColor,
+            bloomBase,
 
             count,
         }
         enum Subpass {
             geom,
             light,
-            toneMap,
 
             count,
         }
@@ -100,32 +134,32 @@ class DeferredExample : Example
         auto subpasses = new SubpassDescription[Subpass.count];
 
         attachments[Attachment.worldPos] = AttachmentDescription.color(
-            Format.rgba32_sFloat, AttachmentOps(LoadOp.clear, StoreOp.store),
+            Format.rgba32_sFloat, AttachmentOps(LoadOp.clear, StoreOp.dontCare),
             trans(ImageLayout.undefined, ImageLayout.colorAttachmentOptimal)
         );
         attachments[Attachment.normal] = AttachmentDescription.color(
-            Format.rgba16_sFloat, AttachmentOps(LoadOp.clear, StoreOp.store),
+            Format.rgba16_sFloat, AttachmentOps(LoadOp.clear, StoreOp.dontCare),
             trans(ImageLayout.undefined, ImageLayout.colorAttachmentOptimal)
         );
         attachments[Attachment.color] = AttachmentDescription.color(
-            Format.rgba8_uNorm, AttachmentOps(LoadOp.clear, StoreOp.store),
+            Format.rgba8_uNorm, AttachmentOps(LoadOp.clear, StoreOp.dontCare),
             trans(ImageLayout.undefined, ImageLayout.colorAttachmentOptimal)
         );
         attachments[Attachment.shininess] = AttachmentDescription.color(
-            Format.r16_sFloat, AttachmentOps(LoadOp.clear, StoreOp.store),
+            Format.r16_sFloat, AttachmentOps(LoadOp.clear, StoreOp.dontCare),
             trans(ImageLayout.undefined, ImageLayout.colorAttachmentOptimal)
         );
         attachments[Attachment.depth] = AttachmentDescription.depth(
-            Format.d16_uNorm, AttachmentOps(LoadOp.clear, StoreOp.store),
+            Format.d16_uNorm, AttachmentOps(LoadOp.clear, StoreOp.dontCare),
             trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal)
         );
         attachments[Attachment.hdrScene] = AttachmentDescription.color(
             Format.rgba16_sFloat, AttachmentOps(LoadOp.clear, StoreOp.store),
-            trans(ImageLayout.undefined, ImageLayout.colorAttachmentOptimal)
+            trans(ImageLayout.undefined, ImageLayout.shaderReadOnlyOptimal)
         );
-        attachments[Attachment.swcColor] = AttachmentDescription.color(
-            swapchain.format, AttachmentOps(LoadOp.clear, StoreOp.store),
-            trans(ImageLayout.undefined, ImageLayout.presentSrc)
+        attachments[Attachment.bloomBase] = AttachmentDescription.color(
+            Format.rgba16_sFloat, AttachmentOps(LoadOp.clear, StoreOp.store),
+            trans(ImageLayout.undefined, ImageLayout.shaderReadOnlyOptimal)
         );
 
         subpasses[Subpass.geom] = SubpassDescription(
@@ -152,18 +186,7 @@ class DeferredExample : Example
             // outputs
             [
                 AttachmentRef(Attachment.hdrScene, ImageLayout.colorAttachmentOptimal),
-            ],
-            // depth
-            none!AttachmentRef
-        );
-        subpasses[Subpass.toneMap] = SubpassDescription(
-            // inputs
-            [
-                AttachmentRef(Attachment.hdrScene, ImageLayout.shaderReadOnlyOptimal),
-            ],
-            // outputs
-            [
-                AttachmentRef(Attachment.swcColor, ImageLayout.colorAttachmentOptimal),
+                AttachmentRef(Attachment.bloomBase, ImageLayout.colorAttachmentOptimal),
             ],
             // depth
             none!AttachmentRef
@@ -180,18 +203,121 @@ class DeferredExample : Example
                 trans(Access.colorAttachmentWrite, Access.colorAttachmentRead)
             ),
             SubpassDependency(
-                trans!uint(Subpass.light, Subpass.toneMap), // from geometry to lighting pass
-                trans(PipelineStage.colorAttachmentOutput, PipelineStage.fragmentShader),
-                trans(Access.colorAttachmentWrite, Access.colorAttachmentRead)
-            ),
-            SubpassDependency(
-                trans(Subpass.toneMap, subpassExternal),
+                trans(Subpass.light, subpassExternal),
                 trans(PipelineStage.bottomOfPipe, PipelineStage.topOfPipe),
                 trans(Access.colorAttachmentWrite, Access.memoryRead)
             ),
         ];
 
-        renderPass = device.createRenderPass(attachments, subpasses, dependencies);
+        deferredRenderPass = device.createRenderPass(attachments, subpasses, dependencies);
+    }
+
+    final void prepareBloomRenderPass()
+    {
+        enum Attachment {
+            blurOutput,
+
+            count,
+        }
+        enum Subpass {
+            blur,
+
+            count,
+        }
+
+        auto attachments = new AttachmentDescription[Attachment.count];
+        auto subpasses = new SubpassDescription[Subpass.count];
+
+        attachments[Attachment.blurOutput] = AttachmentDescription.color(
+            Format.rgba16_sFloat, AttachmentOps(LoadOp.clear, StoreOp.store),
+            trans(ImageLayout.undefined, ImageLayout.shaderReadOnlyOptimal)
+        );
+
+        subpasses[Subpass.blur] = SubpassDescription(
+            // inputs
+            [],
+            // outputs
+            [
+                AttachmentRef(Attachment.blurOutput, ImageLayout.colorAttachmentOptimal),
+            ],
+            // depth
+            none!AttachmentRef
+        );
+        const dependencies = [
+            SubpassDependency(
+                trans(subpassExternal, Subpass.blur),
+                trans(PipelineStage.bottomOfPipe, PipelineStage.colorAttachmentOutput),
+                trans(Access.memoryRead, Access.colorAttachmentWrite)
+            ),
+            SubpassDependency(
+                trans(Subpass.blur, subpassExternal),
+                trans(PipelineStage.bottomOfPipe, PipelineStage.topOfPipe),
+                trans(Access.colorAttachmentWrite, Access.memoryRead)
+            ),
+        ];
+
+        bloomRenderPass = device.createRenderPass(attachments, subpasses, dependencies);
+    }
+
+    final void prepareBlendRenderPass()
+    {
+        enum Attachment {
+            hdrScene,
+            bloom,
+
+            swcColor,
+
+            count,
+        }
+        enum Subpass {
+            blend,
+
+            count,
+        }
+
+        auto attachments = new AttachmentDescription[Attachment.count];
+        auto subpasses = new SubpassDescription[Subpass.count];
+
+        attachments[Attachment.hdrScene] = AttachmentDescription.color(
+            Format.rgba16_sFloat, AttachmentOps(LoadOp.load, StoreOp.dontCare),
+            trans(ImageLayout.shaderReadOnlyOptimal, ImageLayout.colorAttachmentOptimal)
+        );
+        attachments[Attachment.bloom] = AttachmentDescription.color(
+            Format.rgba16_sFloat, AttachmentOps(LoadOp.load, StoreOp.dontCare),
+            trans(ImageLayout.shaderReadOnlyOptimal, ImageLayout.colorAttachmentOptimal)
+        );
+        attachments[Attachment.swcColor] = AttachmentDescription.color(
+            swapchain.format, AttachmentOps(LoadOp.clear, StoreOp.store),
+            trans(ImageLayout.undefined, ImageLayout.presentSrc)
+        );
+
+        subpasses[Subpass.blend] = SubpassDescription(
+            // inputs
+            [
+                AttachmentRef(Attachment.hdrScene, ImageLayout.shaderReadOnlyOptimal),
+                AttachmentRef(Attachment.bloom, ImageLayout.shaderReadOnlyOptimal),
+            ],
+            // outputs
+            [
+                AttachmentRef(Attachment.swcColor, ImageLayout.colorAttachmentOptimal),
+            ],
+            // depth
+            none!AttachmentRef
+        );
+        const dependencies = [
+            SubpassDependency(
+                trans(subpassExternal, Subpass.blend),
+                trans(PipelineStage.bottomOfPipe, PipelineStage.colorAttachmentOutput),
+                trans(Access.memoryRead, Access.colorAttachmentWrite)
+            ),
+            SubpassDependency(
+                trans(Subpass.blend, subpassExternal),
+                trans(PipelineStage.bottomOfPipe, PipelineStage.topOfPipe),
+                trans(Access.colorAttachmentWrite, Access.memoryRead)
+            ),
+        ];
+
+        blendRenderPass = device.createRenderPass(attachments, subpasses, dependencies);
     }
 
     class DeferredFrameData : FrameData
@@ -226,7 +352,7 @@ class DeferredExample : Example
                 }
             }
         }
-        // G-buffer images and views
+        // G-buffer
         FbImage worldPos;
         FbImage normal;
         FbImage color;
@@ -237,9 +363,19 @@ class DeferredExample : Example
 
         // HDR image the scene is rendered to
         FbImage hdrScene;
+        FbImage bloomBase;
 
-        /// Main Framebuffer
-        Rc!Framebuffer framebuffer;
+        // Framebuffer for deferred pass
+        Rc!Framebuffer deferredFramebuffer;
+
+        // ping pong blur framebuffers for blooming
+        FbImage blurH;
+        FbImage blurV;
+        Rc!Framebuffer blurHFramebuffer;
+        Rc!Framebuffer blurVFramebuffer;
+
+        // final blend framebuffer
+        Rc!Framebuffer blendFramebuffer;
 
         /// Command buffer
         PrimaryCommandBuffer cmdBuf;
@@ -276,21 +412,58 @@ class DeferredExample : Example
                     .withFormat(Format.rgba16_sFloat)
                     .withUsage(ImageUsage.colorAttachment | ImageUsage.inputAttachment)
                 );
+            bloomBase = FbImage(device, this.outer, ImageInfo.d2(size[0], size[1])
+                    .withFormat(Format.rgba16_sFloat)
+                    .withUsage(ImageUsage.colorAttachment | ImageUsage.sampled )
+                );
+            blurH = FbImage(device, this.outer, ImageInfo.d2(size[0], size[1])
+                    .withFormat(Format.rgba16_sFloat)
+                    .withUsage(ImageUsage.colorAttachment | ImageUsage.sampled)
+                );
+            blurV = FbImage(device, this.outer, ImageInfo.d2(size[0], size[1])
+                    .withFormat(Format.rgba16_sFloat)
+                    .withUsage(ImageUsage.colorAttachment | ImageUsage.inputAttachment | ImageUsage.sampled)
+                );
 
             auto swcColorView = swcColor.createView(
                 ImageType.d2, ImageSubresourceRange(ImageAspect.color), Swizzle.identity
             ).rc;
 
-            this.framebuffer = this.outer.device.createFramebuffer(this.outer.renderPass, [
-                worldPos.view, normal.view, color.view, shininess.view,
-                depth.view, hdrScene.view, swcColorView.obj
-            ], size[0], size[1], 1);
+            deferredFramebuffer = this.outer.device.createFramebuffer(
+                this.outer.deferredRenderPass, [
+                    worldPos.view, normal.view, color.view, shininess.view,
+                    depth.view, hdrScene.view, bloomBase.view
+                ], size[0], size[1], 1
+            );
+
+            blurHFramebuffer = this.outer.device.createFramebuffer(
+                this.outer.bloomRenderPass, [
+                    blurH.view,
+                ], size[0], size[1], 1
+            );
+            blurVFramebuffer = this.outer.device.createFramebuffer(
+                this.outer.bloomRenderPass, [
+                    blurV.view,
+                ], size[0], size[1], 1
+            );
+
+            blendFramebuffer = this.outer.device.createFramebuffer(
+                this.outer.blendRenderPass, [
+                    hdrScene.view, blurV.view, swcColorView.obj,
+                ], size[0], size[1], 1
+            );
         }
 
         override void dispose()
         {
-            framebuffer.unload();
+            blendFramebuffer.unload();
+            blurVFramebuffer.unload();
+            blurHFramebuffer.unload();
+            deferredFramebuffer.unload();
+            blurH = FbImage.init;
+            blurV = FbImage.init;
             depth = FbImage.init;
+            bloomBase = FbImage.init;
             hdrScene = FbImage.init;
             shininess = FbImage.init;
             color = FbImage.init;
@@ -311,20 +484,25 @@ class DeferredExample : Example
         const poolSizes = [
             DescriptorPoolSize(DescriptorType.uniformBuffer, 2),
             DescriptorPoolSize(DescriptorType.uniformBufferDynamic, 2),
-            DescriptorPoolSize(DescriptorType.inputAttachment, 5),
+            DescriptorPoolSize(DescriptorType.inputAttachment, 6),
+            DescriptorPoolSize(DescriptorType.combinedImageSampler, 3),
         ];
 
-        descriptorPool = device.createDescriptorPool(4, poolSizes);
+        descriptorPool = device.createDescriptorPool(7, poolSizes);
         auto sets = descriptorPool.allocate([
             pipelines.geom.descriptorLayouts[0],
             pipelines.light.descriptorLayouts[0],
             pipelines.light.descriptorLayouts[1],
-            pipelines.toneMap.descriptorLayouts[0],
+            pipelines.bloom.descriptorLayouts[0],
+            pipelines.bloom.descriptorLayouts[0],
+            pipelines.bloom.descriptorLayouts[0],
+            pipelines.blend.descriptorLayouts[0],
         ]);
         geomDescriptorSet = sets[0];
         lightBufDescriptorSet = sets[1];
         lightAttachDescriptorSet = sets[2];
-        toneMapDescriptorSet = sets[3];
+        bloomDescriptorSets = sets[3 .. 6];
+        blendDescriptorSet = sets[6];
 
         auto writes = [
             WriteDescriptorSet(geomDescriptorSet, 0, 0, new UniformBufferDescWrites([
@@ -353,8 +531,18 @@ class DeferredExample : Example
                 ImageViewLayout(dfd.color.view, ImageLayout.shaderReadOnlyOptimal),
                 ImageViewLayout(dfd.shininess.view, ImageLayout.shaderReadOnlyOptimal),
             ])),
-            WriteDescriptorSet(toneMapDescriptorSet, 0, 0, new InputAttachmentDescWrites([
+            WriteDescriptorSet(bloomDescriptorSets[0], 0, 0, new CombinedImageSamplerDescWrites([
+                CombinedImageSampler(bloomSampler.obj, dfd.blurH.view, ImageLayout.shaderReadOnlyOptimal),
+            ])),
+            WriteDescriptorSet(bloomDescriptorSets[1], 0, 0, new CombinedImageSamplerDescWrites([
+                CombinedImageSampler(bloomSampler.obj, dfd.blurV.view, ImageLayout.shaderReadOnlyOptimal),
+            ])),
+            WriteDescriptorSet(bloomDescriptorSets[2], 0, 0, new CombinedImageSamplerDescWrites([
+                CombinedImageSampler(bloomSampler.obj, dfd.bloomBase.view, ImageLayout.shaderReadOnlyOptimal),
+            ])),
+            WriteDescriptorSet(blendDescriptorSet, 0, 0, new InputAttachmentDescWrites([
                 ImageViewLayout(dfd.hdrScene.view, ImageLayout.shaderReadOnlyOptimal),
+                ImageViewLayout(dfd.blurV.view, ImageLayout.shaderReadOnlyOptimal),
             ])),
         ];
         device.updateDescriptorSets(writes, []);
@@ -427,111 +615,170 @@ class DeferredExample : Example
             buf.setViewport(0, [ Viewport(0f, 0f, cast(float)surfaceSize[0], cast(float)surfaceSize[1]) ]);
             buf.setScissor(0, [ Rect(0, 0, surfaceSize[0], surfaceSize[1]) ]);
 
-            const(ClearValues[7]) cvs = [
-                // clearing all attachments in the framebuffer
-                ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // world-pos
-                ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // normal
-                ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // color
-                ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // shininess
-                ClearValues(ClearDepthStencilValues( 1f, 0 )), // depth
-                ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // hdrScene
-                ClearValues(ClearColorValues( 0f, 0f, 0f, 1f )), // swapchain image
-            ];
+            deferredPass(buf, dfd);
 
-            buf.beginRenderPass(
-                renderPass,
-                dfd.framebuffer,
-                Rect(0, 0, surfaceSize[0], surfaceSize[1]),
-                cvs[],
-            );
+            bloomPasses(buf, dfd);
 
-                // geometry pass
-
-                buf.bindPipeline(pipelines.geom.pipeline);
-                buffers.hiResSphere.bindIndex(buf);
-                buf.bindVertexBuffers(0, [ buffers.hiResSphere.vertexBinding() ]);
-
-                foreach (ref ss; scene.subStructs) {
-                    foreach (ref s; ss.saucers) {
-                        buf.bindDescriptorSets(
-                            PipelineBindPoint.graphics,
-                            pipelines.geom.layout, 0, [ geomDescriptorSet ],
-                            [ s.saucerIdx * GeomModelUbo.sizeof ]
-                        );
-                        // only draw the bulbs that are off
-                        const numInstances = s.lightOn ? 2 : 3;
-                        buf.drawIndexed(
-                            cast(uint)buffers.hiResSphere.indicesCount, numInstances, 0, 0, 0
-                        );
-                    }
-                }
-
-                // now draw the "on" bulbs with inverted normals
-                buffers.invertedSphere.bindIndex(buf);
-                buf.bindVertexBuffers(0, [ buffers.invertedSphere.vertexBinding() ]);
-
-                foreach (ref ss; scene.subStructs) {
-                    foreach (ref s; ss.saucers) {
-                        if (!s.lightOn) continue;
-
-                        buf.bindDescriptorSets(
-                            PipelineBindPoint.graphics,
-                            pipelines.geom.layout, 0, [ geomDescriptorSet ],
-                            [ s.saucerIdx * GeomModelUbo.sizeof ]
-                        );
-                        buf.drawIndexed(
-                            cast(uint)buffers.hiResSphere.indicesCount, 1, 0, 0, 2
-                        );
-                    }
-                }
-
-            buf.nextSubpass();
-
-                // light pass
-
-                buf.bindPipeline(pipelines.light.pipeline);
-                buffers.loResSphere.bindIndex(buf);
-                buf.bindVertexBuffers(0, [ buffers.loResSphere.vertexBinding() ]);
-                buf.bindDescriptorSets(
-                    PipelineBindPoint.graphics,
-                    pipelines.light.layout, 1, [ lightAttachDescriptorSet ], []
-                );
-
-                foreach (ref ss; scene.subStructs) {
-                    foreach (ref s; ss.saucers) {
-
-                        if (!s.lightOn) continue;
-
-                        buf.bindDescriptorSets(
-                            PipelineBindPoint.graphics,
-                            pipelines.light.layout, 0, [ lightBufDescriptorSet ],
-                            [ s.saucerIdx * LightModelUbo.sizeof ]
-                        );
-                        buf.drawIndexed(
-                            cast(uint)buffers.loResSphere.indicesCount, 1, 0, 0, 0
-                        );
-                    }
-                }
-
-            buf.nextSubpass();
-
-                // tone map pass
-
-                buf.bindPipeline(pipelines.toneMap.pipeline);
-                buffers.square.bindIndex(buf);
-                buf.bindVertexBuffers(0, [ buffers.square.vertexBinding() ]);
-                buf.bindDescriptorSets(
-                    PipelineBindPoint.graphics,
-                    pipelines.toneMap.layout, 0, [ toneMapDescriptorSet ], []
-                );
-
-                buf.drawIndexed(cast(uint)buffers.square.indicesCount, 1, 0, 0, 0);
-
-            buf.endRenderPass();
+            blendPass(buf, dfd);
 
         buf.end();
 
         return simpleSubmission([ buf ]);
+    }
+
+    void deferredPass(PrimaryCommandBuffer buf, DeferredFrameData dfd)
+    {
+        const(ClearValues[7]) cvs = [
+            // clearing all attachments in the framebuffer
+            ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // world-pos
+            ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // normal
+            ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // color
+            ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // shininess
+            ClearValues(ClearDepthStencilValues( 1f, 0 )), // depth
+            ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // hdrScene
+            ClearValues(ClearColorValues( 0f, 0f, 0f, 1f )), // bloom base
+        ];
+
+        buf.beginRenderPass(
+            deferredRenderPass,
+            dfd.deferredFramebuffer,
+            Rect(0, 0, surfaceSize[0], surfaceSize[1]),
+            cvs[],
+        );
+
+            // geometry pass
+
+            buf.bindPipeline(pipelines.geom.pipeline);
+            buffers.hiResSphere.bindIndex(buf);
+            buf.bindVertexBuffers(0, [ buffers.hiResSphere.vertexBinding() ]);
+
+            foreach (ref ss; scene.subStructs) {
+                foreach (ref s; ss.saucers) {
+                    buf.bindDescriptorSets(
+                        PipelineBindPoint.graphics,
+                        pipelines.geom.layout, 0, [ geomDescriptorSet ],
+                        [ s.saucerIdx * GeomModelUbo.sizeof ]
+                    );
+                    // only draw the bulbs that are off
+                    const numInstances = s.lightOn ? 2 : 3;
+                    buf.drawIndexed(
+                        cast(uint)buffers.hiResSphere.indicesCount, numInstances, 0, 0, 0
+                    );
+                }
+            }
+
+            // now draw the "on" bulbs with inverted normals as the light is from within
+            buffers.invertedSphere.bindIndex(buf);
+            buf.bindVertexBuffers(0, [ buffers.invertedSphere.vertexBinding() ]);
+
+            foreach (ref ss; scene.subStructs) {
+                foreach (ref s; ss.saucers) {
+                    if (!s.lightOn) continue;
+
+                    buf.bindDescriptorSets(
+                        PipelineBindPoint.graphics,
+                        pipelines.geom.layout, 0, [ geomDescriptorSet ],
+                        [ s.saucerIdx * GeomModelUbo.sizeof ]
+                    );
+                    buf.drawIndexed(
+                        cast(uint)buffers.hiResSphere.indicesCount, 1, 0, 0, 2
+                    );
+                }
+            }
+
+        buf.nextSubpass();
+
+            // light pass
+
+            buf.bindPipeline(pipelines.light.pipeline);
+            buffers.loResSphere.bindIndex(buf);
+            buf.bindVertexBuffers(0, [ buffers.loResSphere.vertexBinding() ]);
+            buf.bindDescriptorSets(
+                PipelineBindPoint.graphics,
+                pipelines.light.layout, 1, [ lightAttachDescriptorSet ], []
+            );
+
+            foreach (ref ss; scene.subStructs) {
+                foreach (ref s; ss.saucers) {
+
+                    if (!s.lightOn) continue;
+
+                    buf.bindDescriptorSets(
+                        PipelineBindPoint.graphics,
+                        pipelines.light.layout, 0, [ lightBufDescriptorSet ],
+                        [ s.saucerIdx * LightModelUbo.sizeof ]
+                    );
+                    buf.drawIndexed(
+                        cast(uint)buffers.loResSphere.indicesCount, 1, 0, 0, 0
+                    );
+                }
+            }
+
+        buf.endRenderPass();
+
+    }
+
+    void bloomPasses(PrimaryCommandBuffer buf, DeferredFrameData dfd)
+    {
+        buf.bindPipeline(pipelines.bloom.pipeline);
+        buffers.square.bindIndex(buf);
+        buf.bindVertexBuffers(0, [ buffers.square.vertexBinding() ]);
+
+        const cv = ClearValues(ClearColorValues( 0f, 0f, 0f, 1f ));
+
+        foreach(i; 0 .. 5) {
+            foreach(v; 0 .. 2) {
+                const h = 1 - v;
+                // input descriptor sets:
+                //  0: blurH, 1: blurV, 2: bloomBase (result of previous pass)
+                auto dsInd = (i+v == 0) ? 2 : h;
+                // output
+                auto fb = v == 0 ? dfd.blurHFramebuffer.obj : dfd.blurVFramebuffer.obj;
+
+                buf.bindDescriptorSets(
+                    PipelineBindPoint.graphics,
+                    pipelines.bloom.layout, 0, bloomDescriptorSets[dsInd .. dsInd+1],
+                    []
+                );
+
+                buf.beginRenderPass(bloomRenderPass, fb,
+                        Rect(0, 0, surfaceSize[0], surfaceSize[1]),
+                        (&cv)[0 .. 1]);
+
+                    buf.pushConstants(pipelines.bloom.layout, ShaderStage.fragment,
+                        0, int.sizeof, &h
+                    );
+
+                    buf.drawIndexed(buffers.square.indicesCount, 1, 0, 0, 0);
+
+                buf.endRenderPass();
+            }
+        }
+    }
+
+
+    void blendPass(PrimaryCommandBuffer buf, DeferredFrameData dfd)
+    {
+        buf.bindPipeline(pipelines.blend.pipeline);
+        // square mesh already bound in bloom pass
+        buf.bindDescriptorSets(
+            PipelineBindPoint.graphics,
+            pipelines.blend.layout, 0, [ blendDescriptorSet ],
+            []
+        );
+
+        const cvs = [
+            ClearValues(ClearColorValues( 0f, 0f, 0f, 1f )),
+            ClearValues(ClearColorValues( 0f, 0f, 0f, 1f )),
+            ClearValues(ClearColorValues( 0f, 0f, 0f, 1f )),
+        ];
+
+        buf.beginRenderPass(blendRenderPass, dfd.blendFramebuffer.obj,
+                Rect(0, 0, surfaceSize[0], surfaceSize[1]), cvs);
+
+            buf.drawIndexed(buffers.square.indicesCount, 1, 0, 0, 0);
+
+        buf.endRenderPass();
     }
 }
 
