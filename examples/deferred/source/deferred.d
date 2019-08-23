@@ -577,7 +577,7 @@ class DeferredExample : Example
                 ).transpose();
                 buffers.lightModelUbo.data[s.saucerIdx].position =
                         M3 * translation(s.lightPos) * fvec(0, 0, 0, 1);
-                buffers.lightModelUbo.data[s.saucerIdx].color = fvec(s.lightCol, 1);
+                buffers.lightModelUbo.data[s.saucerIdx].color = fvec(s.lightAnim.color, 1);
                 buffers.lightModelUbo.data[s.saucerIdx].brightness = s.lightBrightness;
             }
         }
@@ -660,7 +660,7 @@ class DeferredExample : Example
                         [ s.saucerIdx * GeomModelUbo.sizeof ]
                     );
                     // only draw the bulbs that are off
-                    const numInstances = s.lightOn ? 2 : 3;
+                    const numInstances = s.lightAnim.on ? 2 : 3;
                     buf.drawIndexed(
                         cast(uint)buffers.hiResSphere.indicesCount, numInstances, 0, 0, 0
                     );
@@ -673,7 +673,7 @@ class DeferredExample : Example
 
             foreach (ref ss; scene.subStructs) {
                 foreach (ref s; ss.saucers) {
-                    if (!s.lightOn) continue;
+                    if (!s.lightAnim.on) continue;
 
                     buf.bindDescriptorSets(
                         PipelineBindPoint.graphics,
@@ -701,7 +701,7 @@ class DeferredExample : Example
             foreach (ref ss; scene.subStructs) {
                 foreach (ref s; ss.saucers) {
 
-                    if (!s.lightOn) continue;
+                    if (!s.lightAnim.on) continue;
 
                     buf.bindDescriptorSets(
                         PipelineBindPoint.graphics,

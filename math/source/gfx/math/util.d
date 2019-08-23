@@ -22,3 +22,5 @@ auto lookAt(V)(in V eye, in V target, in V up) if (isVec!V)
 }
 
 // TODO: test lookAt
+
+// TODO: min, max, abs, clamp, smoothstep...

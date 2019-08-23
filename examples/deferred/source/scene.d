@@ -2,6 +2,108 @@ module scene;
 
 import gfx.math;
 
+interface LightAnim
+{
+    void anim(in float dt);
+    @property FVec3 color();
+    @property bool on();
+}
+
+/// constant light without animation
+class ConstantLight : LightAnim
+{
+    FVec3 _color;
+
+    this(FVec3 color)
+    {
+        _color = color;
+    }
+
+    override void anim(in float) {}
+    override @property FVec3 color()
+    {
+        return _color;
+    }
+    override @property bool on()
+    {
+        return true;
+    }
+}
+
+private float smoothstep(float edge0, float edge1, float x) {
+  // Scale, bias and saturate x to 0..1 range
+  x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+  // Evaluate polynomial
+  return x * x * (3 - 2 * x);
+}
+
+private float clamp(float x, float lowerlimit, float upperlimit) {
+  if (x < lowerlimit)
+    x = lowerlimit;
+  if (x > upperlimit)
+    x = upperlimit;
+  return x;
+}
+
+/// blinking light
+class BlinkLight : LightAnim
+{
+    LightAnim _anim;
+    float _on;
+    float _period;
+    float _step;
+    float _phase;
+    float _level;
+
+    this(LightAnim anim, in float on, in float off, in float step, in float phase)
+    in (on > step && off > step, "Blink light on or off is smaller than step")
+    in (phase >= 0f && phase < (on + off), "Blink light initial phase out of period")
+    {
+        _anim = anim;
+        _on = on;
+        _period = on + off;
+        _step = step;
+        _phase = phase;
+        computeLevel();
+    }
+
+    final void computeLevel()
+    {
+        if (_phase < (_on-_step)) {
+            _level = 1f;
+        }
+        else if (_phase < _on) {
+            // step down
+            _level = 1f - smoothstep(_on - _step, _on, _phase);
+        }
+        else if (_phase < (_period-_step)) {
+            _level = 0f;
+        }
+        else {
+            // step up
+            _level = smoothstep(_period - _step, _period, _phase);
+        }
+    }
+
+    override void anim(in float dt)
+    {
+        _anim.anim(dt);
+        _phase += dt;
+        while (_phase >= _period) _phase -= _period;
+        computeLevel();
+    }
+
+    override @property FVec3 color()
+    {
+        return _anim.color * _level;
+    }
+
+    override @property bool on()
+    {
+        return _level > 0f && _anim.on;
+    }
+}
+
 struct MovingObj
 {
     /// position of the object relative to its parent
@@ -48,20 +150,14 @@ struct Saucer
     size_t saucerIdx;
     SaucerBody[] bodies;
 
-    FVec3 lightCol;
     FVec3 lightPos;
-    float[2] lightTimeOnOff; // time with light spent on and off each cycle
     float lightBrightness;
+    LightAnim lightAnim;
 
-    float phase;
-    bool lightOn;
-
-    void anim(in float dt) {
+    void anim(in float dt)
+    {
         mov.rotate(dt);
-        const period = lightTimeOnOff[0] + lightTimeOnOff[1];
-        phase += dt;
-        while (phase >= period) phase -= period;
-        lightOn = phase <= lightTimeOnOff[0];
+        lightAnim.anim(dt);
     }
 }
 
@@ -88,7 +184,7 @@ struct DeferredScene
         import std.algorithm : map;
         import std.array : array;
         import std.math : PI, sqrt;
-        import std.random : Random, uniform;
+        import std.random : choice, Random, uniform;
 
         enum margin = 1f;
         enum saucerSz = 3f;
@@ -107,8 +203,15 @@ struct DeferredScene
 
         FVec3 spin(in float minRpm, in float maxRpm)
         {
+            const float[2] sign = [-1f, 1f];
+            const signs = fvec(
+                choice(sign[], rnd),
+                choice(sign[], rnd),
+                choice(sign[], rnd),
+            );
+
             enum RPM = 2*PI / 60;
-            return fvec(
+            return signs * fvec(
                 uniform(minRpm * RPM, maxRpm * RPM, rnd),
                 uniform(minRpm * RPM, maxRpm * RPM, rnd),
                 uniform(minRpm * RPM, maxRpm * RPM, rnd),
@@ -144,10 +247,22 @@ struct DeferredScene
             );
         }
 
-        Saucer makeSaucer(MovingObj mov) {
-            const float time = uniform(1.0, 10.0, rnd);
+        LightAnim makeAnim()
+        {
+            import std.algorithm : max;
+
+            auto base = new ConstantLight(color());
+            const float period = uniform(1.0, 10.0, rnd);
             const float onOff = uniform(0.1, 0.6, rnd); // on 10% to 60%
-            const float[2] timeOnOff = [time * onOff, time * (1 - onOff)];
+            const float on = max(0.5f, period * onOff);
+            const float off = period - on;
+            const float step = 0.3f;
+            const float phase = uniform(0f, period, rnd);
+            return new BlinkLight(base, on, off, step, phase);
+        }
+
+
+        Saucer makeSaucer(MovingObj mov) {
 
             SaucerBody body;
             SaucerBody cockpit;
@@ -184,17 +299,16 @@ struct DeferredScene
 
             return Saucer(
                 mov, saucerIdx++, [body, cockpit, bulb],
-                bulbCol,
                 bulbPos,
-                timeOnOff,
                 uniform(2f, 12f, rnd), // light brightness
-                uniform(0.0, time, rnd), // initial phase
+                makeAnim(),
             );
         }
+
         SaucerSubStruct makeSubStruct(MovingObj mov) {
             return SaucerSubStruct(
                 mov,
-                buildMovingObjs(numSaucers, saucerDist, -7f, -2f)
+                buildMovingObjs(numSaucers, saucerDist, 3f, 7f)
                     .map!(mov => makeSaucer(mov))
                     .array
             );
