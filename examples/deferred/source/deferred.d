@@ -74,7 +74,7 @@ class DeferredExample : Example
 
         prepareDescriptors();
 
-        viewerPos = fvec(rad, rad, rad);
+        viewerPos = 1.2 * fvec(rad, rad, rad);
         const view = lookAt(viewerPos, fvec(0, 0, 0), fvec(0, 0, 1));
         const proj = perspective!float(this.ndc, 45, 4f/3f, 1f, rad * 3f);
         viewProj = proj * view;
@@ -550,6 +550,8 @@ class DeferredExample : Example
 
     void updateScene(in float dt)
     {
+        import std.math : sqrt;
+
         scene.mov.rotate(dt);
         const M1 = scene.mov.transform();
 
@@ -569,11 +571,15 @@ class DeferredExample : Example
                     );
                 }
 
+                // set the light sphere volume as a function of luminosity on the edge
+                // luminosity = brightness / (distance ^ 2 + 1)
+                enum edgeLum = 0.03;
+                const lightRadius = sqrt(s.lightBrightness / edgeLum + 1.0);
                 buffers.lightModelUbo.data[s.saucerIdx].modelViewProj = (
                     viewProj
                     * M3
                     * translation(s.lightPos)
-                    * scale(FVec3(s.lightBrightness * 1.5f)) // sphere slightly bigger than light radius
+                    * scale(FVec3(lightRadius))
                 ).transpose();
                 buffers.lightModelUbo.data[s.saucerIdx].position =
                         M3 * translation(s.lightPos) * fvec(0, 0, 0, 1);
@@ -726,7 +732,9 @@ class DeferredExample : Example
 
         const cv = ClearValues(ClearColorValues( 0f, 0f, 0f, 1f ));
 
-        foreach(i; 0 .. 5) {
+        enum numBlurPasses = 4;
+
+        foreach(i; 0 .. numBlurPasses) {
             foreach(v; 0 .. 2) {
                 const h = 1 - v;
                 // input descriptor sets:

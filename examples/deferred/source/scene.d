@@ -186,17 +186,17 @@ struct DeferredScene
         import std.math : PI, sqrt;
         import std.random : choice, Random, uniform;
 
-        enum margin = 1f;
-        enum saucerSz = 3f;
-        enum saucerBound = saucerSz + 2 * margin;
-        enum subStructSz = saucerBound * 3;
-        enum subStructBound = subStructSz + 2 * margin;
-        enum superStructSz = subStructBound * 3;
-        enum numSubStructs = 9;
-        enum numSaucers = 9;
+        const margin = 1f;
+        const saucerSz = 3f;
+        const saucerBound = saucerSz + 2 * margin;          // 5
+        const subStructSz = 3 * saucerBound;                // 15
+        const subStructBound = subStructSz + 2 * margin;    // 17
+        const sceneSz = subStructBound * 3;                 // 51
+        const numSubStructs = 9;
+        const numSaucers = 9;
 
-        enum subDist = (superStructSz / 2f) - (subStructBound / 2f);
-        enum saucerDist = (subStructSz / 2f) - (saucerBound / 2f);
+        const subDist = (sceneSz / 2f) - (subStructSz / 2f);
+        const saucerDist = (subStructBound / 2f) - (saucerSz / 2f);
 
         auto rnd = Random(43);
         size_t saucerIdx = 0;
@@ -319,7 +319,7 @@ struct DeferredScene
             .map!(mov => makeSubStruct(mov))
             .array;
 
-        return superStructSz / 2f;
+        return sceneSz / 2f;
     }
 
     @property size_t saucerCount()
