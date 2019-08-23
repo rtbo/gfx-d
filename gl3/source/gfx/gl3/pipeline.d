@@ -141,9 +141,9 @@ final class GlPipelineLayout : PipelineLayout
 
     private Rc!Device _dev;
     private DescriptorSetLayout[] _layouts;
-    private PushConstantRange[] _push;
+    private const(PushConstantRange)[] _push;
 
-    this (Device device, DescriptorSetLayout[] layouts, PushConstantRange[] push) {
+    this (Device device, DescriptorSetLayout[] layouts, in PushConstantRange[] push) {
         import gfx.core.rc : retainArr;
         _dev = device;
         _layouts = layouts;
@@ -166,7 +166,7 @@ final class GlPipelineLayout : PipelineLayout
         return _layouts;
     }
 
-    override @property PushConstantRange[] pushConstantRanges()
+    override @property const(PushConstantRange)[] pushConstantRanges()
     {
         return _push;
     }

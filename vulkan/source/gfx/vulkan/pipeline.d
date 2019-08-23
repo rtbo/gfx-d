@@ -35,7 +35,7 @@ class VulkanPipelineLayout : VulkanDevObj!(VkPipelineLayout, "DestroyPipelineLay
 
     this(VkPipelineLayout vkObj, VulkanDevice dev,
             DescriptorSetLayout[] descriptorLayouts,
-            PushConstantRange[] pushConstantRanges)
+            in PushConstantRange[] pushConstantRanges)
     {
         super(vkObj, dev);
         _descriptorLayouts = descriptorLayouts;
@@ -58,13 +58,13 @@ class VulkanPipelineLayout : VulkanDevObj!(VkPipelineLayout, "DestroyPipelineLay
         return _descriptorLayouts;
     }
 
-    override @property PushConstantRange[] pushConstantRanges()
+    override @property const(PushConstantRange)[] pushConstantRanges()
     {
         return _pushConstantRanges;
     }
 
     private DescriptorSetLayout[] _descriptorLayouts;
-    private PushConstantRange[] _pushConstantRanges;
+    private const(PushConstantRange)[] _pushConstantRanges;
 }
 
 class VulkanPipeline : VulkanDevObj!(VkPipeline, "DestroyPipeline"), Pipeline

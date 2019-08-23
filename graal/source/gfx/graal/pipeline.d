@@ -31,7 +31,7 @@ interface PipelineLayout : IAtomicRefCounted
     @property DescriptorSetLayout[] descriptorLayouts();
 
     /// Get the push constant ranges in this layout
-    @property PushConstantRange[] pushConstantRanges();
+    @property const(PushConstantRange)[] pushConstantRanges();
 }
 
 interface Pipeline : IAtomicRefCounted

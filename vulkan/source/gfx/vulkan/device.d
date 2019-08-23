@@ -501,7 +501,7 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
     }
 
     override PipelineLayout createPipelineLayout(DescriptorSetLayout[] layouts,
-                                                 PushConstantRange[] ranges)
+                                                 in PushConstantRange[] ranges)
     {
         import std.algorithm : map;
         import std.array : array;

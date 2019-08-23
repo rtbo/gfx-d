@@ -180,7 +180,7 @@ interface Device : IAtomicRefCounted
 
     DescriptorSetLayout createDescriptorSetLayout(in PipelineLayoutBinding[] bindings);
 
-    PipelineLayout createPipelineLayout(DescriptorSetLayout[] layouts, PushConstantRange[] ranges);
+    PipelineLayout createPipelineLayout(DescriptorSetLayout[] layouts, in PushConstantRange[] ranges);
 
     DescriptorPool createDescriptorPool(in uint maxSets, in DescriptorPoolSize[] sizes);
 

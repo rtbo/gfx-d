@@ -148,7 +148,7 @@ class GlDevice : Device
         return new GlDescriptorSetLayout(this, bindings);
     }
 
-    PipelineLayout createPipelineLayout(DescriptorSetLayout[] layouts, PushConstantRange[] ranges) {
+    PipelineLayout createPipelineLayout(DescriptorSetLayout[] layouts, in PushConstantRange[] ranges) {
         import gfx.gl3.pipeline : GlPipelineLayout;
         return new GlPipelineLayout(this, layouts, ranges);
     }
