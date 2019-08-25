@@ -10,7 +10,7 @@ layout(std140, set = 0, binding = 1) uniform Model {
     mat4 modelViewProjMat;
     vec4 lightPos;
     vec4 lightCol;
-    float lightBrightness;
+    float lightLuminosity;
 } model;
 
 layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput inputs[4];
@@ -37,7 +37,7 @@ void main() {
 
     vec3 to_viewer = normalize(frame.viewPos.xyz - worldPos);
 
-    float atten = model.lightBrightness / (dist * dist + 1.0);
+    float atten = model.lightLuminosity / (dist * dist + 1.0);
 
     // diffuse part
     float diff_factor = max(0.0, dot(normal, to_light));

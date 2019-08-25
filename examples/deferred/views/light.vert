@@ -8,7 +8,7 @@ layout(std140, set = 0, binding = 1) uniform Model {
     mat4 modelViewProjMat;
     vec4 lightPos;
     vec4 lightCol;
-    float lightBrightness;
+    float lightLuminosity;
 } model;
 
 out gl_PerVertex {

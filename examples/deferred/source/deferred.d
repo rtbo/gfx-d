@@ -571,20 +571,17 @@ class DeferredExample : Example
                     );
                 }
 
-                // set the light sphere volume as a function of luminosity on the edge
-                // luminosity = brightness / (distance ^ 2 + 1)
-                enum edgeLum = 0.03;
-                const lightRadius = sqrt(s.lightBrightness / edgeLum + 1.0);
-                buffers.lightModelUbo.data[s.saucerIdx].modelViewProj = (
-                    viewProj
-                    * M3
-                    * translation(s.lightPos)
-                    * scale(FVec3(lightRadius))
-                ).transpose();
-                buffers.lightModelUbo.data[s.saucerIdx].position =
-                        M3 * translation(s.lightPos) * fvec(0, 0, 0, 1);
-                buffers.lightModelUbo.data[s.saucerIdx].color = fvec(s.lightAnim.color, 1);
-                buffers.lightModelUbo.data[s.saucerIdx].brightness = s.lightBrightness;
+                const lightPosMat = M3 * translation(s.lightPos);
+                // set the light sphere volume as a function of brightness on the edge
+                // brightness = luminosity / (distance ^ 2 + 1)
+                enum edgeBrightness = 0.02;
+                const lightRadius = sqrt(s.lightLuminosity / edgeBrightness - 1.0);
+                buffers.lightModelUbo.data[s.saucerIdx] = LightModelUbo(
+                    transpose(viewProj * lightPosMat * scale(FVec3(lightRadius))),
+                    lightPosMat * fvec(0, 0, 0, 1),
+                    fvec(s.lightAnim.color, 1),
+                    s.lightLuminosity,
+                );
             }
         }
 

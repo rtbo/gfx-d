@@ -151,7 +151,7 @@ struct Saucer
     SaucerBody[] bodies;
 
     FVec3 lightPos;
-    float lightBrightness;
+    float lightLuminosity;
     LightAnim lightAnim;
 
     void anim(in float dt)
@@ -294,13 +294,13 @@ struct DeferredScene
                 bulb.transform = translation(bulbPos)
                         * scale(FVec3(s));
                 bulb.color = bulbCol;
-                bulb.shininess = uniform(10.0, 16.0, rnd);
+                bulb.shininess = uniform(20.0, 32.0, rnd);
             }
 
             return Saucer(
                 mov, saucerIdx++, [body, cockpit, bulb],
                 bulbPos,
-                uniform(2f, 12f, rnd), // light brightness
+                uniform(2f, 12f, rnd), // light luminosity
                 makeAnim(),
             );
         }
