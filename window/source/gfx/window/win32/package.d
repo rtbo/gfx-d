@@ -36,10 +36,19 @@ class Win32Display : Display
             final switch (b) {
             case Backend.vulkan:
                 try {
+                    import gfx.vulkan : createVulkanInstance, debugReportExtensions,
+                            lunarGValidationLayers, VulkanCreateInfo, vulkanInit;
+                    import gfx.vulkan.wsi : win32SurfaceExtensions;
+
                     gfxW32Log.trace("Attempting to instantiate Vulkan");
-                    import gfx.vulkan : createVulkanInstance, vulkanInit;
                     vulkanInit();
-                    _instance = createVulkanInstance();
+                    VulkanCreateInfo vci;
+                    vci.mandatoryExtensions = win32SurfaceExtensions;
+                    vci.optionalExtensions = createInfo.debugCallbackEnabled ?
+                            debugReportExtensions : [];
+                    vci.optionalLayers = createInfo.validationEnabled ?
+                            lunarGValidationLayers : [];
+                    _instance = createVulkanInstance(vci);
                     gfxW32Log.info("Creating a Vulkan instance");
                 }
                 catch (Exception ex) {
@@ -275,7 +284,7 @@ class Win32Window : Window
     {
         return tit;
     }
-    
+
     override void setTitle(string title)
     {
         import std.utf : toUTF16z;
@@ -333,7 +342,7 @@ class Win32Window : Window
         }
     }
 
-    private bool handleMouse(UINT msg, WPARAM wParam, LPARAM lParam) 
+    private bool handleMouse(UINT msg, WPARAM wParam, LPARAM lParam)
     {
         const x = GET_X_LPARAM(lParam);
         const y = GET_Y_LPARAM(lParam);
@@ -384,7 +393,7 @@ class Win32Window : Window
         return false;
     }
 
-    private bool handleKey(UINT msg, WPARAM wParam, LPARAM lParam) 
+    private bool handleKey(UINT msg, WPARAM wParam, LPARAM lParam)
     {
         import gfx.window.win32.keymap : getKeysym, getKeycode;
         import std.conv : to;
@@ -417,17 +426,17 @@ class Win32Window : Window
             break;
         default:
             break;
-        }   
+        }
 
         if (handler) {
-            handler(KeyEvent(sym, code, keyMods, text)); 
+            handler(KeyEvent(sym, code, keyMods, text));
             return true;
         }
         else {
             return false;
         }
-    }        
-    
+    }
+
     wstring peekCharMsg()
     {
         MSG msg;

@@ -4,7 +4,7 @@ module gfx.window.wayland;
 version(linux):
 
 import gfx.core.log : LogTag;
-import gfx.graal : Instance;
+import gfx.graal : Backend, Instance;
 import gfx.graal.presentation;
 import gfx.vulkan.wsi;
 import gfx.window;
@@ -47,16 +47,34 @@ class WaylandDisplay : Display
     private WaylandWindowBase kbdFocus;
     private Window[] _windows;
 
-    this()
+    this(DisplayCreateInfo createInfo)
     {
         import std.exception : enforce;
 
         {
-            // Only vulkan is supported. Let failure throw it.
-            import gfx.vulkan : createVulkanInstance, vulkanInit;
-            vulkanInit();
-            _instance = createVulkanInstance();
+            // Only vulkan is supported.
+            import gfx.vulkan : createVulkanInstance, debugReportInstanceExtensions,
+                    lunarGValidationLayers, VulkanCreateInfo, vulkanInit;
+            import gfx.vulkan.wsi : waylandSurfaceInstanceExtensions;
+
+            foreach (b; createInfo.backendCreateOrder) {
+                if (b != Backend.vulkan) {
+                    gfxWlLog.warningf("Backend %s is not supported with Wayland.");
+                    continue;
+                }
+                vulkanInit();
+                VulkanCreateInfo vci;
+                vci.mandatoryExtensions = waylandSurfaceInstanceExtensions;
+                vci.optionalExtensions = createInfo.debugCallbackEnabled ?
+                        debugReportInstanceExtensions : [];
+                vci.optionalLayers = createInfo.validationEnabled ?
+                        lunarGValidationLayers : [];
+                _instance = createVulkanInstance(vci);
+                break;
+            }
         }
+
+        gfxWlLog.info("Opening Wayland display");
 
         display = WlDisplay.connect();
         auto reg = display.getRegistry();

@@ -19,102 +19,118 @@ import std.exception : enforce;
 
 // instance level extensions
 
-enum surfaceExtension = "VK_KHR_surface";
+enum surfaceInstanceExtension = "VK_KHR_surface";
 
 version(Windows) {
-    enum win32SurfaceExtension = "VK_KHR_win32_surface";
+    enum win32SurfaceInstanceExtension = "VK_KHR_win32_surface";
 }
 version(linux) {
-    enum waylandSurfaceExtension = "VK_KHR_wayland_surface";
-    enum xcbSurfaceExtension = "VK_KHR_xcb_surface";
+    enum waylandSurfaceInstanceExtension = "VK_KHR_wayland_surface";
+    enum xcbSurfaceInstanceExtension = "VK_KHR_xcb_surface";
 }
 
 // device level extensions
 
-enum swapChainExtension = "VK_KHR_swapchain";
+enum swapChainDeviceExtension = "VK_KHR_swapchain";
 
-version(linux) {
-    import wayland.client : WlDisplay, WlSurface;
-    import xcb.xcb : xcb_connection_t, xcb_window_t;
-
-    // TODO: fall back from wayland to XCB
-    immutable string[] surfaceInstanceExtensions = [
-        surfaceExtension, waylandSurfaceExtension, xcbSurfaceExtension
-    ];
-
-    Surface createVulkanWaylandSurface(Instance graalInst, WlDisplay wlDpy, WlSurface wlSurf)
-    {
-        auto inst = enforce(
-            cast(VulkanInstance)graalInst,
-            "createVulkanWaylandSurface called with non-vulkan instance"
-        );
-
-        VkWaylandSurfaceCreateInfoKHR sci;
-        sci.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
-        sci.display = wlDpy.native;
-        sci.surface = wlSurf.proxy;
-
-        VkSurfaceKHR vkSurf;
-        vulkanEnforce(
-            inst.vk.CreateWaylandSurfaceKHR(inst.vkObj, &sci, null, &vkSurf),
-            "Could not create Vulkan Wayland Surface"
-        );
-
-        return new VulkanSurface(vkSurf, inst);
-    }
-
-    Surface createVulkanXcbSurface(Instance graalInst, xcb_connection_t* conn, xcb_window_t win)
-    {
-        auto inst = enforce(
-            cast(VulkanInstance)graalInst,
-            "createVulkanXcbSurface called with non-vulkan instance"
-        );
-
-        VkXcbSurfaceCreateInfoKHR sci;
-        sci.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-        sci.connection = conn;
-        sci.window = win;
-
-        VkSurfaceKHR vkSurf;
-        vulkanEnforce(
-            inst.vk.CreateXcbSurfaceKHR(inst.vkObj, &sci, null, &vkSurf),
-            "Could not create Vulkan Xcb Surface"
-        );
-
-        return new VulkanSurface(vkSurf, inst);
-    }
-}
-
-version(Windows) {
-
-    import core.sys.windows.windef : HINSTANCE, HWND;
-
-    immutable string[] surfaceInstanceExtensions = [
-        surfaceExtension, win32SurfaceExtension
-    ];
-
-    Surface createVulkanWin32Surface(Instance graalInst, HINSTANCE hinstance, HWND hwnd) {
-        auto inst = enforce(
-            cast(VulkanInstance)graalInst,
-            "createVulkanXcbSurface called with non-vulkan instance"
-        );
-
-        VkWin32SurfaceCreateInfoKHR sci;
-        sci.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-        sci.hinstance = hinstance;
-        sci.hwnd = hwnd;
-
-        VkSurfaceKHR vkSurf;
-        vulkanEnforce(
-            inst.vk.CreateWin32SurfaceKHR(inst.vkObj, &sci, null, &vkSurf),
-            "Could not create Vulkan Xcb Surface"
-        );
-
-        return new VulkanSurface(vkSurf, inst);
-    }
-}
 version(GfxOffscreen) {
+    /// Extensions to open Vulkan surfaces on the platform window system
     immutable string[] surfaceInstanceExtensions = [];
+}
+else {
+    version(linux) {
+        import wayland.client : WlDisplay, WlSurface;
+        import xcb.xcb : xcb_connection_t, xcb_window_t;
+
+        /// Extensions to open Vulkan surfaces on the platform window system
+        immutable string[] surfaceInstanceExtensions = [
+            surfaceInstanceExtension, waylandSurfaceInstanceExtension, xcbSurfaceInstanceExtension
+        ];
+        /// Extensions necessary to open a Wayland Vulkan surface
+        immutable string[] waylandSurfaceInstanceExtensions = [
+            surfaceInstanceExtension, waylandSurfaceInstanceExtension
+        ];
+        /// Extensions necessary to open an XCB Vulkan surface
+        immutable string[] xcbSurfaceInstanceExtensions = [
+            surfaceInstanceExtension, xcbSurfaceInstanceExtension
+        ];
+
+        Surface createVulkanWaylandSurface(Instance graalInst, WlDisplay wlDpy, WlSurface wlSurf)
+        {
+            auto inst = enforce(
+                cast(VulkanInstance)graalInst,
+                "createVulkanWaylandSurface called with non-vulkan instance"
+            );
+
+            VkWaylandSurfaceCreateInfoKHR sci;
+            sci.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
+            sci.display = wlDpy.native;
+            sci.surface = wlSurf.proxy;
+
+            VkSurfaceKHR vkSurf;
+            vulkanEnforce(
+                inst.vk.CreateWaylandSurfaceKHR(inst.vkObj, &sci, null, &vkSurf),
+                "Could not create Vulkan Wayland Surface"
+            );
+
+            return new VulkanSurface(vkSurf, inst);
+        }
+
+        Surface createVulkanXcbSurface(Instance graalInst, xcb_connection_t* conn, xcb_window_t win)
+        {
+            auto inst = enforce(
+                cast(VulkanInstance)graalInst,
+                "createVulkanXcbSurface called with non-vulkan instance"
+            );
+
+            VkXcbSurfaceCreateInfoKHR sci;
+            sci.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+            sci.connection = conn;
+            sci.window = win;
+
+            VkSurfaceKHR vkSurf;
+            vulkanEnforce(
+                inst.vk.CreateXcbSurfaceKHR(inst.vkObj, &sci, null, &vkSurf),
+                "Could not create Vulkan Xcb Surface"
+            );
+
+            return new VulkanSurface(vkSurf, inst);
+        }
+    }
+
+    version(Windows) {
+
+        import core.sys.windows.windef : HINSTANCE, HWND;
+
+        /// Extensions to open Vulkan surfaces on the platform window system
+        immutable string[] surfaceInstanceExtensions = [
+            surfaceInstanceExtension, waylandSurfaceInstanceExtension, xcbSurfaceInstanceExtension
+        ];
+        /// Extensions necessary to open an Win32 Vulkan surface
+        immutable string[] win32SurfaceInstanceExtensions = [
+            surfaceInstanceExtension, win32SurfaceInstanceExtension
+        ];
+
+        Surface createVulkanWin32Surface(Instance graalInst, HINSTANCE hinstance, HWND hwnd) {
+            auto inst = enforce(
+                cast(VulkanInstance)graalInst,
+                "createVulkanXcbSurface called with non-vulkan instance"
+            );
+
+            VkWin32SurfaceCreateInfoKHR sci;
+            sci.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+            sci.hinstance = hinstance;
+            sci.hwnd = hwnd;
+
+            VkSurfaceKHR vkSurf;
+            vulkanEnforce(
+                inst.vk.CreateWin32SurfaceKHR(inst.vkObj, &sci, null, &vkSurf),
+                "Could not create Vulkan Xcb Surface"
+            );
+
+            return new VulkanSurface(vkSurf, inst);
+        }
+    }
 }
 
 

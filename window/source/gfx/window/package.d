@@ -6,6 +6,8 @@ import gfx.core.log : LogTag;
 import gfx.graal : Backend, Instance;
 public import gfx.window.keys;
 
+import std.typecons : Flag, No, Yes;
+
 enum gfxWindowLogMask = 0x0800_0000;
 package immutable gfxWindowLog = LogTag("GFX-WINDOW", gfxWindowLogMask);
 
@@ -59,34 +61,72 @@ interface Window
     @property void onClose(CloseHandler handler);
 }
 
-/// The backend load order is the order into which backend load attempts
-/// will be performed.
-/// This array provides a default value for createDisplay parameter
-immutable Backend[] defaultBackendLoadOrder = [
-    Backend.vulkan,
-    Backend.gl3,
-];
+/// Identifier of the display to use on linux
+enum LinuxDisplay {
+    /// Instantiate a wayland display
+    /// (no Client Side Decorations at this point)
+    wayland,
+    /// Instantiate an XCB display (X windowing system)
+    xcb,
+}
 
+debug {
+    private enum defaultDebugCb = Yes.debugCallback;
+    private enum defaultValidation = Yes.validation;
+}
+else {
+    private enum defaultDebugCb = No.debugCallback;
+    private enum defaultValidation = No.validation;
+}
+
+/// Options that influence how the display is created, and how it will create
+/// a Gfx-D instance.
+struct DisplayCreateInfo
+{
+    /// Order into which backend creation is tried.
+    /// The first successfully created backend is used.
+    Backend[] backendCreateOrder = [ Backend.vulkan, Backend.gl3 ];
+    /// Order into which display creation is tried on linux.
+    /// The first successfully created display is used.
+    LinuxDisplay[] linuxDisplayCreateOrder = [ LinuxDisplay.wayland, LinuxDisplay.xcb ];
+    /// Whether DebugCallback should be available. Only meaningful with Vulkan backend.
+    Flag!"debugCallback" debugCallbackEnabled = defaultDebugCb;
+    /// Whether validation should be enabled. Only meaningful with Vulkan backend.
+    Flag!"validation" validationEnabled = defaultValidation;
+}
 
 /// Create a display for the running platform.
 /// The display will load a backend instance during startup.
-/// It will try the backends in the provided loadOrder
-Display createDisplay(in Backend[] loadOrder=defaultBackendLoadOrder)
+/// It will try the backends in the provided loadOrder.
+/// On linux, more than one display implementation are provided. You may
+/// use linuxDisplayOrder to choose. The first succesfully created display is returned.
+Display createDisplay(DisplayCreateInfo createInfo)
 {
     version(linux) {
-        enum useWayland = true;
-        static if (useWayland) {
-            import gfx.window.wayland : WaylandDisplay;
-            return new WaylandDisplay;
+        import gfx.window.wayland : WaylandDisplay;
+        import gfx.window.xcb : XcbDisplay;
+
+        foreach (ld; createInfo.linuxDisplayCreateOrder) {
+            try {
+                final switch (ld)
+                {
+                case LinuxDisplay.wayland:
+                    return new WaylandDisplay(createInfo);
+                case LinuxDisplay.xcb:
+                    return new XcbDisplay(createInfo);
+                }
+            }
+            catch (Exception ex) {
+                gfxWindowLog.warningf(
+                    "Failed to create %s linux display:\n%s", ld, ex.msg
+                );
+            }
         }
-        else {
-            import gfx.window.xcb : XcbDisplay;
-            return new XcbDisplay(loadOrder);
-        }
+        throw new Exception("Could not create a functional display");
     }
     else version(Windows) {
         import gfx.window.win32 : Win32Display;
-        return new Win32Display(loadOrder);
+        return new Win32Display(createInfo);
     }
     else {
         pragma(msg, "Unsupported platform");

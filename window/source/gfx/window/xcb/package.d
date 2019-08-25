@@ -66,7 +66,7 @@ class XcbDisplay : Display
     private Window[] _windows;
     private XcbWindow[] _xcbWindows;
 
-    this(in Backend[] loadOrder)
+    this(DisplayCreateInfo createInfo)
     {
         import std.exception : enforce;
         import X11.Xlib : XCloseDisplay, XDefaultScreen, XOpenDisplay;
@@ -83,7 +83,7 @@ class XcbDisplay : Display
 
         initializeAtoms();
         initializeScreens();
-        initializeInstance(loadOrder);
+        initializeInstance(createInfo);
 
         _xkb = new XcbKeyboard(_conn, _xkbFirstEv);
     }
@@ -151,19 +151,27 @@ class XcbDisplay : Display
         }
     }
 
-    private void initializeInstance(in Backend[] loadOrder)
+    private void initializeInstance(DisplayCreateInfo createInfo)
     {
         assert(!_instance);
 
-        foreach (b; loadOrder) {
+        foreach (b; createInfo.backendCreateOrder) {
             final switch (b) {
             case Backend.vulkan:
                 try {
+                    import gfx.vulkan : createVulkanInstance, debugReportInstanceExtensions,
+                            lunarGValidationLayers, VulkanCreateInfo, vulkanInit;
+                    import gfx.vulkan.wsi : xcbSurfaceInstanceExtensions;
+
                     gfxXcbLog.trace("Attempting to instantiate Vulkan");
-                    import gfx.vulkan : createVulkanInstance, vulkanInit;
                     vulkanInit();
-                    _instance = createVulkanInstance();
-                    gfxXcbLog.info("Creating a Vulkan instance");
+                    VulkanCreateInfo vci;
+                    vci.mandatoryExtensions = xcbSurfaceInstanceExtensions;
+                    vci.optionalExtensions = createInfo.debugCallbackEnabled ?
+                            debugReportInstanceExtensions : [];
+                    vci.optionalLayers = createInfo.validationEnabled ?
+                            lunarGValidationLayers : [];
+                    _instance = createVulkanInstance(vci);
                 }
                 catch (Exception ex) {
                     gfxXcbLog.warningf("Vulkan is not available. %s", ex.msg);

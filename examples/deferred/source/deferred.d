@@ -41,7 +41,7 @@ class DeferredExample : Example
     FVec3 viewerPos;
 
     this(string[] args) {
-        super("Deferred", args);
+        super("Deferred", args ~ "--no-gl3");
     }
 
     override void dispose()

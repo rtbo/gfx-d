@@ -10,10 +10,14 @@ package(gfx) immutable gfxVkLog = LogTag("GFX-VK", gfxVkLogMask);
 
 // some standard layers
 
-enum lunarGValidationLayers = [
+immutable lunarGValidationLayers = [
     "VK_LAYER_LUNARG_core_validation",
     "VK_LAYER_LUNARG_standard_validation",
     "VK_LAYER_LUNARG_parameter_validation",
+];
+
+immutable debugReportInstanceExtensions = [
+    "VK_KHR_debug_report", "VK_EXT_debug_report"
 ];
 
 @property ApiProps vulkanApiProps()
@@ -29,11 +33,9 @@ enum lunarGValidationLayers = [
 /// This function must be called before any other in this module
 void vulkanInit()
 {
-    synchronized {
-        _globCmds = loadVulkanGlobalCmds();
-        _instanceLayers = loadInstanceLayers();
-        _instanceExtensions = loadInstanceExtensions();
-    }
+    _globCmds = loadVulkanGlobalCmds();
+    _instanceLayers = loadInstanceLayers();
+    _instanceExtensions = loadInstanceExtensions();
 }
 
 struct VulkanVersion
@@ -105,74 +107,93 @@ struct VulkanExtensionProperties
     return _instanceExtensions;
 }
 
-/// Creates a vulkan instance with default layers and extensions
-VulkanInstance createVulkanInstance(in string appName=null,
-                                    in VulkanVersion appVersion=VulkanVersion(0, 0, 0))
-{
-    debug {
-        const wantedLayers = lunarGValidationLayers;
-        const wantedExts = [ "VK_KHR_debug_report", "VK_EXT_debug_report" ];
-    }
-    else {
-        const string[] wantedLayers = [];
-        const string[] wantedExts = [];
-    }
-
-    import gfx.vulkan.wsi : surfaceInstanceExtensions;
-
-    import std.algorithm : canFind, filter, map;
-    import std.array : array;
-    import std.range : chain;
-
-    const layers = wantedLayers
-            .filter!(l => _instanceLayers.map!(il => il.layerName).canFind(l))
-            .array;
-    const exts = wantedExts
-            .filter!(e => _instanceExtensions.map!(ie => ie.extensionName).canFind(e))
-            .array
-        ~ surfaceInstanceExtensions;
-
-    return createVulkanInstance(layers, exts, appName, appVersion);
+debug {
+    private immutable defaultLayers = lunarGValidationLayers;
+    private immutable defaultExts = debugReportInstanceExtensions ~ surfaceInstanceExtensions;
+}
+else {
+    private immutable string[] defaultLayers = [];
+    private immutable string[] defaultExts = surfaceInstanceExtensions;
 }
 
-/// Creates an Instance object with Vulkan backend with user specified layers and extensions
-VulkanInstance createVulkanInstance(in string[] layers, in string[] extensions,
-                                    in string appName=null,
-                                    in VulkanVersion appVersion=VulkanVersion(0, 0, 0))
+/// Options to create a Vulkan instance.
+struct VulkanCreateInfo
+{
+    /// Application name and version.
+    string appName;
+    /// ditto
+    VulkanVersion appVersion = VulkanVersion(0, 0, 0);
+
+    /// Mandatory layers that are needed by the application.
+    /// Instance creation will fail if one is not present.
+    const(string)[] mandatoryLayers;
+    /// Optional layers that will be enabled if present.
+    const(string)[] optionalLayers = defaultLayers;
+
+    /// Mandatory extensions that are needed by the application.
+    /// Instance creation will fail if one is not present.
+    const(string)[] mandatoryExtensions;
+    /// Optional extensions that will be enabled if present.
+    const(string)[] optionalExtensions = defaultExts;
+}
+
+/// Creates an Instance object with Vulkan backend with options
+VulkanInstance createVulkanInstance(VulkanCreateInfo createInfo=VulkanCreateInfo.init)
 {
     import gfx : gfxVersionMaj, gfxVersionMin, gfxVersionMic;
     import std.algorithm : all, canFind, map;
     import std.array : array;
     import std.exception : enforce;
+    import std.range : chain;
     import std.string : toStringz;
 
     // throw if some requested layers or extensions are not available
     // TODO: specific exception
-    foreach (l; layers) {
+    foreach (l; createInfo.mandatoryLayers) {
         enforce(
             _instanceLayers.map!(il => il.layerName).canFind(l),
             "Could not find layer " ~ l ~ " when creating Vulkan instance"
         );
     }
-    foreach (e; extensions) {
+    foreach (e; createInfo.mandatoryExtensions) {
         enforce(
             _instanceExtensions.map!(ie => ie.extensionName).canFind(e),
             "Could not find extension " ~ e ~ " when creating Vulkan instance"
         );
     }
 
+    const(string)[] layers = createInfo.mandatoryLayers;
+    foreach (l; createInfo.optionalLayers) {
+        if (_instanceLayers.map!(il => il.layerName).canFind(l)) {
+            layers ~= l;
+        }
+        else {
+            gfxVkLog.warningf("Optional layer %s is not present and won't be enabled", l);
+        }
+    }
+
+    const(string)[] extensions = createInfo.mandatoryExtensions;
+    foreach (e; createInfo.optionalExtensions) {
+        if (_instanceExtensions.map!(ie => ie.extensionName).canFind(e)) {
+            extensions ~= e;
+        }
+        else {
+            gfxVkLog.warningf("Optional extension %s is not present and won't be enabled", e);
+        }
+    }
+
     VkApplicationInfo ai;
     ai.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    if (appName.length) {
-        ai.pApplicationName = toStringz(appName);
+    if (createInfo.appName.length) {
+        ai.pApplicationName = toStringz(createInfo.appName);
     }
-    ai.applicationVersion = appVersion.toUint();
+    ai.applicationVersion = createInfo.appVersion.toUint();
     ai.pEngineName = "gfx-d\0".ptr;
     ai.engineVersion = VK_MAKE_VERSION(gfxVersionMaj, gfxVersionMin, gfxVersionMic);
     ai.apiVersion = VK_API_VERSION_1_0;
 
-    auto vkLayers = layers.map!toStringz.array;
-    auto vkExts = extensions.map!toStringz.array;
+    const vkLayers = layers.map!toStringz.array;
+    const vkExts = extensions.map!toStringz.array;
 
     gfxVkLog.info("Opening Vulkan instance.");
     gfxVkLog.infof("Vulkan layers:%s", layers.length?"":" none");
@@ -180,11 +201,12 @@ VulkanInstance createVulkanInstance(in string[] layers, in string[] extensions,
         gfxVkLog.infof("    %s", l);
     }
     gfxVkLog.infof("Vulkan extensions:%s", extensions.length?"":" none");
+    import std.algorithm : canFind, filter, map;
+    import std.array : array;
+    import std.range : chain;
     foreach (e; extensions) {
         gfxVkLog.infof("    %s", e);
     }
-
-
 
     VkInstanceCreateInfo ici;
     ici.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -198,7 +220,7 @@ VulkanInstance createVulkanInstance(in string[] layers, in string[] extensions,
     VkInstance vkInst;
     vulkanEnforce(vk.CreateInstance(&ici, null, &vkInst), "Could not create Vulkan instance");
 
-    return new VulkanInstance(vkInst);
+    return new VulkanInstance(vkInst, layers, extensions);
 }
 
 /// Retrieve available device level layers
@@ -442,9 +464,11 @@ final class VulkanInstance : VulkanObj!(VkInstance), Instance
 {
     mixin(atomicRcCode);
 
-    this(VkInstance vkObj) {
+    this(VkInstance vkObj, in string[] layers, in string[] extensions) {
         super(vkObj);
         _vk = new VkInstanceCmds(vkObj, _globCmds);
+        this.layers = layers;
+        this.extensions = extensions;
     }
 
     override void dispose() {
@@ -499,18 +523,23 @@ final class VulkanInstance : VulkanObj!(VkInstance), Instance
         _callback = callback;
     }
 
-    VkInstanceCmds _vk;
-    PhysicalDevice[] _phDs;
-    VkDebugReportCallbackEXT _vkCb;
-    DebugCallback _callback;
+    /// The layers enabled with this instance
+    public const(string[]) layers;
+    /// The extensions enabled with this instance
+    public const(string[]) extensions;
+
+    private VkInstanceCmds _vk;
+    private PhysicalDevice[] _phDs;
+    private VkDebugReportCallbackEXT _vkCb;
+    private DebugCallback _callback;
 }
 
 extern(C) nothrow {
     VkBool32 gfxd_vk_DebugReportCallback(VkDebugReportFlagsEXT flags,
-                                         VkDebugReportObjectTypeEXT objectType,
-                                         ulong object,
-                                         size_t location,
-                                         int messageCode,
+                                         VkDebugReportObjectTypeEXT /+objectType+/,
+                                         ulong /+object+/,
+                                         size_t /+location+/,
+                                         int /+messageCode+/,
                                          const(char)* pLayerPrefix,
                                          const(char)* pMessage,
                                          void* pUserData)
@@ -558,9 +587,9 @@ final class VulkanPhysicalDevice : PhysicalDevice
         }
         version(GfxOffscreen) {}
         else {
-            import gfx.vulkan.wsi : swapChainExtension;
-            enforce(_availableExtensions.map!"a.extensionName".canFind(swapChainExtension));
-            _openExtensions ~= swapChainExtension;
+            import gfx.vulkan.wsi : swapChainDeviceExtension;
+            enforce(_availableExtensions.map!"a.extensionName".canFind(swapChainDeviceExtension));
+            _openExtensions ~= swapChainDeviceExtension;
         }
     }
 
@@ -588,7 +617,7 @@ final class VulkanPhysicalDevice : PhysicalDevice
     }
     override @property DeviceFeatures features() {
         import std.algorithm : canFind, map;
-        import gfx.vulkan.wsi : swapChainExtension;
+        import gfx.vulkan.wsi : swapChainDeviceExtension;
 
         VkPhysicalDeviceFeatures vkFeats;
         vk.GetPhysicalDeviceFeatures(vkObj, &vkFeats);
@@ -597,7 +626,7 @@ final class VulkanPhysicalDevice : PhysicalDevice
         features.anisotropy = vkFeats.samplerAnisotropy == VK_TRUE;
         features.presentation = vulkanDeviceExtensions(this)
                 .map!(e => e.extensionName)
-                .canFind(swapChainExtension);
+                .canFind(swapChainDeviceExtension);
         return features;
     }
     override @property DeviceLimits limits()
@@ -741,7 +770,7 @@ final class VulkanPhysicalDevice : PhysicalDevice
         import std.array : array;
         import std.exception : enforce;
         import std.string : toStringz;
-        import gfx.vulkan.wsi : swapChainExtension;
+        import gfx.vulkan.wsi : swapChainDeviceExtension;
 
         if (!queues.length) {
             return null;
@@ -758,7 +787,7 @@ final class VulkanPhysicalDevice : PhysicalDevice
 
         const layers = _openLayers.map!toStringz.array;
         const extensions = _openExtensions
-                .filter!(e => e != swapChainExtension || features.presentation)
+                .filter!(e => e != swapChainDeviceExtension || features.presentation)
                 .map!toStringz.array;
         VkPhysicalDeviceFeatures vkFeats;
         vkFeats.samplerAnisotropy = features.anisotropy ? VK_TRUE : VK_FALSE;

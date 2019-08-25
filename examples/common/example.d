@@ -147,21 +147,43 @@ class Example : Disposable
     void prepare()
     {
         bool noVulkan = false;
+        bool noGl3 = false;
+        bool noWayland = false;
         foreach (a; args) {
             if (a == "--no-vulkan" || a == "nv") {
                 noVulkan = true;
                 break;
             }
+            else if (a == "--no-gl3" || a == "ng") {
+                noGl3 = true;
+                break;
+            }
+            else if (a == "--no-wayland" || a == "nw") {
+                noWayland = true;
+                break;
+            }
         }
-        Backend[] backendLoadOrder;
-        if (!noVulkan) {
-            backendLoadOrder ~= Backend.vulkan;
+
+        import std.algorithm : remove;
+
+        DisplayCreateInfo createInfo;
+        if (noVulkan) {
+            createInfo.backendCreateOrder =
+                    createInfo.backendCreateOrder.remove(Backend.vulkan);
         }
-        backendLoadOrder ~= Backend.gl3;
+        if (noGl3) {
+            createInfo.backendCreateOrder =
+                    createInfo.backendCreateOrder.remove(Backend.gl3);
+        }
+        if (noWayland) {
+            createInfo.linuxDisplayCreateOrder =
+                    createInfo.linuxDisplayCreateOrder.remove(LinuxDisplay.wayland);
+        }
+
         // Create a display for the running platform
         // The instance is created by the display. Backend is chosen at runtime
         // depending on detected API support. (i.e. Vulkan is preferred)
-        display = createDisplay(backendLoadOrder);
+        display = createDisplay(createInfo);
         instance = display.instance;
         ndc = instance.apiProps.ndc;
 
@@ -178,17 +200,19 @@ class Example : Disposable
             }
         };
 
-        alias Sev = gfx.graal.Severity;
-        instance.setDebugCallback((Sev sev, string msg) {
-            import std.stdio : writefln;
-            if (sev >= Sev.warning) {
-                writefln("Gfx backend %s message: %s", sev, msg);
-            }
-            if (sev == Sev.error) {
-                // debug break;
-                asm { int 0x03; }
-            }
-        });
+        debug {
+            alias Sev = gfx.graal.Severity;
+            instance.setDebugCallback((Sev sev, string msg) {
+                import std.stdio : writefln;
+                if (sev >= Sev.warning) {
+                    writefln("Gfx backend %s message: %s", sev, msg);
+                }
+                if (sev == Sev.error) {
+                    // debug break;
+                    asm { int 0x03; }
+                }
+            });
+        }
 
         // The rest of the preparation.
         prepareDevice();
