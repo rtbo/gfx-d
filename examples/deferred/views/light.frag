@@ -13,7 +13,7 @@ layout(std140, set = 0, binding = 1) uniform Model {
     float lightLuminosity;
 } model;
 
-layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput inputs[4];
+layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput inputs[3];
 
 layout(location = 0) out vec4 o_Color;
 layout(location = 1) out vec4 o_BloomBase;
@@ -28,8 +28,9 @@ void main() {
 
     vec3 worldPos = worldPosA.rgb;
     vec3 normal = subpassLoad(inputs[1]).rgb;
-    vec3 color = subpassLoad(inputs[2]).rgb;
-    float shininess = subpassLoad(inputs[3]).r;
+    vec4 colorShininess = subpassLoad(inputs[2]);
+    vec3 color = colorShininess.rgb;
+    float shininess = colorShininess.a * 64.0;
 
     vec3 to_light = model.lightPos.xyz - worldPos;
     float dist = length(to_light);

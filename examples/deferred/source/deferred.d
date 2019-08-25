@@ -115,7 +115,6 @@ class DeferredExample : Example
             worldPos,
             normal,
             color,
-            shininess,
             depth,
 
             hdrScene,
@@ -145,10 +144,6 @@ class DeferredExample : Example
             Format.rgba8_uNorm, AttachmentOps(LoadOp.clear, StoreOp.dontCare),
             trans(ImageLayout.undefined, ImageLayout.colorAttachmentOptimal)
         );
-        attachments[Attachment.shininess] = AttachmentDescription.color(
-            Format.r16_sFloat, AttachmentOps(LoadOp.clear, StoreOp.dontCare),
-            trans(ImageLayout.undefined, ImageLayout.colorAttachmentOptimal)
-        );
         attachments[Attachment.depth] = AttachmentDescription.depth(
             Format.d16_uNorm, AttachmentOps(LoadOp.clear, StoreOp.dontCare),
             trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal)
@@ -170,7 +165,6 @@ class DeferredExample : Example
                 AttachmentRef(Attachment.worldPos, ImageLayout.colorAttachmentOptimal),
                 AttachmentRef(Attachment.normal, ImageLayout.colorAttachmentOptimal),
                 AttachmentRef(Attachment.color, ImageLayout.colorAttachmentOptimal),
-                AttachmentRef(Attachment.shininess, ImageLayout.colorAttachmentOptimal),
             ],
             // depth
             some(AttachmentRef(Attachment.depth, ImageLayout.depthStencilAttachmentOptimal))
@@ -181,7 +175,6 @@ class DeferredExample : Example
                 AttachmentRef(Attachment.worldPos, ImageLayout.shaderReadOnlyOptimal),
                 AttachmentRef(Attachment.normal, ImageLayout.shaderReadOnlyOptimal),
                 AttachmentRef(Attachment.color, ImageLayout.shaderReadOnlyOptimal),
-                AttachmentRef(Attachment.shininess, ImageLayout.shaderReadOnlyOptimal),
             ],
             // outputs
             [
@@ -356,7 +349,6 @@ class DeferredExample : Example
         FbImage worldPos;
         FbImage normal;
         FbImage color;
-        FbImage shininess;
 
         /// depth buffer
         FbImage depth;
@@ -400,10 +392,6 @@ class DeferredExample : Example
                     .withFormat(Format.rgba8_uNorm)
                     .withUsage(ImageUsage.colorAttachment | ImageUsage.inputAttachment)
                 );
-            shininess = FbImage(device, this.outer, ImageInfo.d2(size[0], size[1])
-                    .withFormat(Format.r16_sFloat)
-                    .withUsage(ImageUsage.colorAttachment | ImageUsage.inputAttachment)
-                );
             depth = FbImage(device, this.outer, ImageInfo.d2(size[0], size[1])
                     .withFormat(Format.d16_uNorm)
                     .withUsage(ImageUsage.depthStencilAttachment)
@@ -431,7 +419,7 @@ class DeferredExample : Example
 
             deferredFramebuffer = this.outer.device.createFramebuffer(
                 this.outer.deferredRenderPass, [
-                    worldPos.view, normal.view, color.view, shininess.view,
+                    worldPos.view, normal.view, color.view,
                     depth.view, hdrScene.view, bloomBase.view
                 ], size[0], size[1], 1
             );
@@ -465,7 +453,6 @@ class DeferredExample : Example
             depth = FbImage.init;
             bloomBase = FbImage.init;
             hdrScene = FbImage.init;
-            shininess = FbImage.init;
             color = FbImage.init;
             normal = FbImage.init;
             worldPos = FbImage.init;
@@ -484,7 +471,7 @@ class DeferredExample : Example
         const poolSizes = [
             DescriptorPoolSize(DescriptorType.uniformBuffer, 2),
             DescriptorPoolSize(DescriptorType.uniformBufferDynamic, 2),
-            DescriptorPoolSize(DescriptorType.inputAttachment, 6),
+            DescriptorPoolSize(DescriptorType.inputAttachment, 5),
             DescriptorPoolSize(DescriptorType.combinedImageSampler, 3),
         ];
 
@@ -529,7 +516,6 @@ class DeferredExample : Example
                 ImageViewLayout(dfd.worldPos.view, ImageLayout.shaderReadOnlyOptimal),
                 ImageViewLayout(dfd.normal.view, ImageLayout.shaderReadOnlyOptimal),
                 ImageViewLayout(dfd.color.view, ImageLayout.shaderReadOnlyOptimal),
-                ImageViewLayout(dfd.shininess.view, ImageLayout.shaderReadOnlyOptimal),
             ])),
             WriteDescriptorSet(bloomDescriptorSets[0], 0, 0, new CombinedImageSamplerDescWrites([
                 CombinedImageSampler(bloomSampler.obj, dfd.blurH.view, ImageLayout.shaderReadOnlyOptimal),
@@ -566,8 +552,10 @@ class DeferredExample : Example
                 foreach (bi; 0 .. 3) {
                     buffers.geomModelUbo.data[s.saucerIdx].data[bi] = GeomModelData(
                         (M3 * s.bodies[bi].transform).transpose(),
-                        fvec(s.bodies[bi].color, 1),
-                        s.bodies[bi].shininess,
+                        fvec(
+                            s.bodies[bi].color,
+                            s.bodies[bi].shininess,
+                        ),
                     );
                 }
 
@@ -631,12 +619,11 @@ class DeferredExample : Example
 
     void deferredPass(PrimaryCommandBuffer buf, DeferredFrameData dfd)
     {
-        const(ClearValues[7]) cvs = [
+        const(ClearValues[6]) cvs = [
             // clearing all attachments in the framebuffer
             ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // world-pos
             ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // normal
             ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // color
-            ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // shininess
             ClearValues(ClearDepthStencilValues( 1f, 0 )), // depth
             ClearValues(ClearColorValues( 0f, 0f, 0f, 0f )), // hdrScene
             ClearValues(ClearColorValues( 0f, 0f, 0f, 1f )), // bloom base

@@ -28,14 +28,16 @@ struct GeomModelData
 {
     FMat4 model = FMat4.identity;
     FVec4 color = fvec(0, 0, 0, 1);
-    float shininess = 1f;
-    float[3] pad; // 32 bytes alignment for dynamic offset
+    float[4] pad; // 32 bytes alignment for dynamic offset
 }
+static assert(GeomModelData.alignof / 32 == 0);
 /// ditto
 struct GeomModelUbo
 {
     GeomModelData[3] data;
 }
+static assert(GeomModelUbo.alignof / 32 == 0);
+
 /// per frame UBO for the light pipeline
 struct LightFrameUbo
 {
@@ -50,7 +52,7 @@ struct LightModelUbo
     float luminosity = 1f;
     float[7] pad; // 32 bytes alignment for dynamic offset
 }
-static assert(LightModelUbo.sizeof == FMat4.sizeof + 4*FVec4.sizeof);
+static assert(LightModelUbo.alignof / 32 == 0);
 
 struct MeshBuffer
 {

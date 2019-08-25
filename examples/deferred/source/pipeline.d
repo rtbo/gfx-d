@@ -125,7 +125,6 @@ class DeferredPipelines : AtomicRefCounted
                 ColorBlendAttachment.solid(),
                 ColorBlendAttachment.solid(),
                 ColorBlendAttachment.solid(),
-                ColorBlendAttachment.solid(),
             ],
         );
         info.dynamicStates = [ DynamicState.viewport, DynamicState.scissor ];
@@ -154,7 +153,7 @@ class DeferredPipelines : AtomicRefCounted
         ];
         const attachLayoutBindings = [
             PipelineLayoutBinding(
-                0, DescriptorType.inputAttachment, 4, ShaderStage.fragment
+                0, DescriptorType.inputAttachment, 3, ShaderStage.fragment
             ),
         ];
 
