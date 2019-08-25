@@ -534,7 +534,7 @@ class DeferredExample : Example
         device.updateDescriptorSets(writes, []);
     }
 
-    void updateScene(in float dt)
+    void updateSceneAndBuffers(in float dt)
     {
         import std.math : sqrt;
 
@@ -567,8 +567,10 @@ class DeferredExample : Example
                 buffers.lightModelUbo.data[s.saucerIdx] = LightModelUbo(
                     transpose(viewProj * lightPosMat * scale(FVec3(lightRadius))),
                     lightPosMat * fvec(0, 0, 0, 1),
-                    fvec(s.lightAnim.color, 1),
-                    s.lightLuminosity,
+                    fvec(
+                        s.lightAnim.color,
+                        s.lightLuminosity,
+                    ),
                 );
             }
         }
@@ -595,7 +597,7 @@ class DeferredExample : Example
         const time = timeElapsed();
         if (time > lastTimeElapsed) {
             const dt = (time - lastTimeElapsed).total!"hnsecs" / 10_000_000.0;
-            updateScene(dt);
+            updateSceneAndBuffers(dt);
             lastTimeElapsed = time;
         }
 

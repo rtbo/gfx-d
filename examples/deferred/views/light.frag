@@ -9,8 +9,8 @@ layout(std140, set = 0, binding = 0) uniform Frame {
 layout(std140, set = 0, binding = 1) uniform Model {
     mat4 modelViewProjMat;
     vec4 lightPos;
-    vec4 lightCol;
-    float lightLuminosity;
+    // color in RGB, luminosity in A
+    vec4 lightColAndLum;
 } model;
 
 layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput inputs[3];
@@ -38,11 +38,11 @@ void main() {
 
     vec3 to_viewer = normalize(frame.viewPos.xyz - worldPos);
 
-    float atten = model.lightLuminosity / (dist * dist + 1.0);
+    float atten = model.lightColAndLum.a / (dist * dist + 1.0);
 
     // diffuse part
     float diff_factor = max(0.0, dot(normal, to_light));
-    vec3 diff = model.lightCol.rgb * color * diff_factor * atten;
+    vec3 diff = model.lightColAndLum.rgb * color * diff_factor * atten;
 
     // specular part
 #if true
@@ -54,7 +54,7 @@ void main() {
     vec3 reflection = reflect(-to_light, normal);
     float spec_factor = pow(max(0.0, dot(reflection, to_viewer)), shininess);
 #endif
-    vec3 spec = model.lightCol.rgb * spec_factor * atten;
+    vec3 spec = model.lightColAndLum.rgb * spec_factor * atten;
 
     o_Color = vec4(diff + spec, 1.0);
 
