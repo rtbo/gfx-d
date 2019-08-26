@@ -318,7 +318,29 @@ struct Rc(T) if (isAtomicRefCounted!T)
     ~this()
     {
         if(_obj) {
-            releaseObj(_obj, Yes.disposeOnZero);
+            debug {
+                import core.exception : InvalidMemoryOperationError;
+
+                try {
+                    releaseObj(_obj, Yes.disposeOnZero);
+                }
+                catch(InvalidMemoryOperationError error)
+                {
+                    import core.stdc.stdio : stderr, printf;
+
+                    enum fmtString = "InvalidMemoryOperationError thrown when releasing %s."
+                        ~ " This is almost certainly due to release during garbage"
+                        ~ " collection through field destructor because the object"
+                        ~ " was not properly released before.\n";
+
+                    printf(fmtString, T.stringof.ptr);
+
+                    throw error;
+                }
+            }
+            else {
+                releaseObj(_obj, Yes.disposeOnZero);
+            }
             _obj = null;
         }
     }
