@@ -23,7 +23,7 @@ import std.typecons;
 import std.traits : isArray;
 import std.datetime : Duration;
 
-immutable log = LogTag("GFX-EX");
+immutable gfxExLog = LogTag("GFX-EX");
 
 struct FpsProbe
 {
@@ -56,6 +56,52 @@ struct FpsProbe
         lastFc = fc;
         lastUsecs = usecs;
         return fps;
+    }
+}
+
+struct Timer
+{
+    import std.datetime.stopwatch : StopWatch;
+
+    private StopWatch sw;
+    private size_t fc;
+
+    void start() { sw.start(); }
+    void stop() { sw.stop(); }
+
+    auto frame() {
+        static struct FrameTimer
+        {
+            StopWatch* sw;
+            this(StopWatch* sw)
+            {
+                this.sw = sw;
+                sw.start();
+            }
+            ~this()
+            {
+                if (this.sw) {
+                    sw.stop();
+                }
+            }
+        }
+        ++fc;
+        return FrameTimer(&sw);
+    }
+
+    @property Duration totalDur()
+    {
+        return sw.peek;
+    }
+
+    @property Duration avgDur()
+    {
+        return sw.peek / fc;
+    }
+
+    @property size_t framecount()
+    {
+        return fc;
     }
 }
 
@@ -274,7 +320,7 @@ class Example : Disposable
 
     void prepareSwapchain(Swapchain former=null)
     {
-        log.infof("building swapchain %sx%s", surfaceSize[0], surfaceSize[1]);
+        gfxExLog.infof("building swapchain %sx%s", surfaceSize[0], surfaceSize[1]);
 
         const surfCaps = physicalDevice.surfaceCaps(window.surface);
         enforce(surfCaps.usage & ImageUsage.transferDst, "TransferDst not supported by surface");
@@ -396,8 +442,8 @@ class Example : Disposable
             catch (OutOfDateException ex) {
                 // The swapchain became out of date between acquire and present.
                 // Rare, but can happen
-                log.errorf("error during presentation: %s", ex.msg);
-                log.errorf("acquisition was %s", acq.state);
+                gfxExLog.errorf("error during presentation: %s", ex.msg);
+                gfxExLog.errorf("acquisition was %s", acq.state);
                 rebuildSwapchain();
                 return;
             }
@@ -426,7 +472,7 @@ class Example : Disposable
         enum reportPeriod = 300;
         probe.tick();
         if (probe.framecount % reportPeriod == 0) {
-            log.infof("FPS = %s", probe.computeFps());
+            gfxExLog.infof("FPS = %s", probe.computeFps());
         }
     }
 

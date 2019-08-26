@@ -35,6 +35,9 @@ class DeferredExample : Example
     FMat4 viewProj;
     FVec3 viewerPos;
 
+    Timer bufUpdateTimer;
+    Timer recordTimer;
+
     this(string[] args) {
         super("Deferred", args ~ "--no-gl3");
     }
@@ -562,6 +565,8 @@ class DeferredExample : Example
     {
         import std.math : sqrt;
 
+        auto ft = bufUpdateTimer.frame();
+
         scene.mov.rotate(dt);
         const M1 = scene.mov.transform();
 
@@ -619,6 +624,8 @@ class DeferredExample : Example
             updateSceneAndBuffers(dt);
             lastTimeElapsed = time;
         }
+
+        auto ft = recordTimer.frame();
 
         PrimaryCommandBuffer buf = dfd.cmdBuf;
 
@@ -812,6 +819,12 @@ int main(string[] args)
         while (!example.window.closeFlag) {
             example.render();
             example.frameTick();
+
+            enum timerReportFreq = 300;
+            if (example.recordTimer.framecount % timerReportFreq == 0) {
+                gfxExLog.infof("buf update  = %s µs", example.bufUpdateTimer.avgDur.total!"usecs");
+                gfxExLog.infof("record cmds = %s µs", example.recordTimer.avgDur.total!"usecs");
+            }
 
             example.display.pollAndDispatch();
         }
