@@ -418,14 +418,14 @@ final class GlCommandBuffer : PrimaryCommandBuffer, SecondaryCommandBuffer {
 
                     switch (b.layout.descriptorType) {
                     case DescriptorType.uniformBuffer:
-                        _cmds ~= new BindUniformBufferCmd(b.layout.binding, d.bufferRange, 0);
+                        _cmds ~= new BindUniformBufferCmd(b.layout.binding, d.buffer, 0);
                         break;
                     case DescriptorType.uniformBufferDynamic:
                         _cmds ~= new BindUniformBufferCmd(b.layout.binding,
-                                d.bufferRange, dynamicOffsets[dynInd++]);
+                                d.buffer, dynamicOffsets[dynInd++]);
                         break;
                     case DescriptorType.combinedImageSampler:
-                        _cmds ~= new BindSamplerImageCmd(b.layout.binding, d.combinedImageSampler);
+                        _cmds ~= new BindSamplerImageCmd(b.layout.binding, d.imageSampler);
                         break;
                     default:
                         gfxGlLog.warning("unhandled descriptor set");
@@ -1078,32 +1078,32 @@ final class BindIndexBufCmd : GlCommand {
 
 final class BindUniformBufferCmd : GlCommand {
     import gfx.gl3.resource : GlBuffer;
-    import gfx.graal.pipeline : BufferRange;
+    import gfx.graal.pipeline : BufferDescriptor;
 
     GLuint binding;
-    BufferRange bufferRange;
+    BufferDescriptor bufferDesc;
     size_t dynamicOffset;
 
-    this(GLuint binding, BufferRange br, in size_t dynOffset) {
+    this(GLuint binding, BufferDescriptor bd, in size_t dynOffset) {
         this.binding = binding;
-        this.bufferRange = br;
+        this.bufferDesc = bd;
         this.dynamicOffset = dynOffset;
     }
 
     override void execute(GlQueue queue, Gl gl) {
-        auto glBuf = cast(GlBuffer) bufferRange.buffer;
+        auto glBuf = cast(GlBuffer) bufferDesc.buffer;
 
         gl.BindBufferRange(GL_UNIFORM_BUFFER, binding, glBuf.name,
-                cast(GLintptr)(bufferRange.offset + dynamicOffset), cast(GLintptr) bufferRange
-                .range);
+                cast(GLintptr)(bufferDesc.offset + dynamicOffset),
+                cast(GLintptr)bufferDesc.size);
     }
 }
 
 final class BindSamplerImageCmd : GlCommand {
-    import gfx.graal.pipeline : CombinedImageSampler;
+    import gfx.graal.pipeline : ImageSamplerDescriptor;
 
     GLuint binding;
-    CombinedImageSampler cis;
+    ImageSamplerDescriptor sid;
 
     mixin(allFieldsCtor!(typeof(this)));
 
@@ -1112,8 +1112,8 @@ final class BindSamplerImageCmd : GlCommand {
         import gfx.gl3.error : glCheck;
         import gfx.gl3.resource : GlImageView, GlSampler;
 
-        auto view = cast(GlImageView) cis.view;
-        auto sampler = cast(GlSampler) cis.sampler;
+        auto view = cast(GlImageView) sid.view;
+        auto sampler = cast(GlSampler) sid.sampler;
 
         gl.ActiveTexture(GL_TEXTURE0 + binding);
         gl.BindTexture(view.target, view.name);

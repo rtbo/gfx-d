@@ -567,26 +567,26 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
             vkWds.dstSet = enforce(cast(VulkanDescriptorSet)wds.dstSet).vkObj;
             vkWds.dstBinding = wds.dstBinding;
             vkWds.dstArrayElement = wds.dstArrayElem;
-            vkWds.descriptorCount = cast(uint)wds.writes.count;
-            vkWds.descriptorType = wds.writes.type.toVk();
+            vkWds.descriptorCount = cast(uint)wds.write.count;
+            vkWds.descriptorType = wds.write.type.toVk();
 
-            switch (wds.writes.type) {
+            final switch (wds.write.type) {
             case DescriptorType.sampler:
-                auto w = unsafeCast!(SamplerDescWrites)(wds.writes);
-                auto vkArr = w.descs.map!((Sampler s) {
+                auto sds = wds.write.samplers;
+                auto vkArr = sds.map!((SamplerDescriptor sd) {
                     VkDescriptorImageInfo dii;
-                    dii.sampler = enforce(cast(VulkanSampler)s).vkObj;
+                    dii.sampler = unsafeCast!(VulkanSampler)(sd.sampler).vkObj;
                     return dii;
                 }).array;
                 vkWds.pImageInfo = vkArr.ptr;
                 break;
             case DescriptorType.combinedImageSampler:
-                auto w = unsafeCast!(CombinedImageSamplerDescWrites)(wds.writes);
-                auto vkArr = w.descs.map!((CombinedImageSampler cis) {
+                auto sids = wds.write.imageSamplers;
+                auto vkArr = sids.map!((ImageSamplerDescriptor sid) {
                     VkDescriptorImageInfo dii;
-                    dii.sampler = enforce(cast(VulkanSampler)cis.sampler).vkObj;
-                    dii.imageView = enforce(cast(VulkanImageView)cis.view).vkObj;
-                    dii.imageLayout = cis.layout.toVk();
+                    dii.sampler = unsafeCast!(VulkanSampler)(sid.sampler).vkObj;
+                    dii.imageView = unsafeCast!(VulkanImageView)(sid.view).vkObj;
+                    dii.imageLayout = sid.layout.toVk();
                     return dii;
                 }).array;
                 vkWds.pImageInfo = vkArr.ptr;
@@ -594,11 +594,11 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
             case DescriptorType.sampledImage:
             case DescriptorType.storageImage:
             case DescriptorType.inputAttachment:
-                auto w = unsafeCast!(TDescWritesBase!(ImageViewLayout))(wds.writes);
-                auto vkArr = w.descs.map!((ImageViewLayout ivl) {
+                auto ids = wds.write.images;
+                auto vkArr = ids.map!((ImageDescriptor id) {
                     VkDescriptorImageInfo dii;
-                    dii.imageView = enforce(cast(VulkanImageView)ivl.view).vkObj;
-                    dii.imageLayout = ivl.layout.toVk();
+                    dii.imageView = unsafeCast!(VulkanImageView)(id.view).vkObj;
+                    dii.imageLayout = id.layout.toVk();
                     return dii;
                 }).array;
                 vkWds.pImageInfo = vkArr.ptr;
@@ -607,26 +607,26 @@ final class VulkanDevice : VulkanObj!(VkDevice), Device
             case DescriptorType.storageBuffer:
             case DescriptorType.uniformBufferDynamic:
             case DescriptorType.storageBufferDynamic:
-                auto w = unsafeCast!(TDescWritesBase!(BufferRange))(wds.writes);
-                auto vkArr = w.descs.map!((BufferRange br) {
+                auto bds = wds.write.buffers;
+                auto vkArr = bds.map!((BufferDescriptor bd) {
                     VkDescriptorBufferInfo dbi;
-                    dbi.buffer = enforce(cast(VulkanBuffer)br.buffer).vkObj;
-                    dbi.offset = br.offset;
-                    dbi.range = br.range;
+                    dbi.buffer = unsafeCast!(VulkanBuffer)(bd.buffer).vkObj;
+                    dbi.offset = bd.offset;
+                    dbi.range = bd.size;
+                    if (bd.size > 1000000) {
+                        asm { int 0x03; }
+                    }
                     return dbi;
                 }).array;
                 vkWds.pBufferInfo = vkArr.ptr;
                 break;
             case DescriptorType.uniformTexelBuffer:
             case DescriptorType.storageTexelBuffer:
-                auto w = unsafeCast!(TDescWritesBase!(BufferView))(wds.writes);
-                auto vkArr = w.descs.map!((BufferView bv) {
-                    return enforce(cast(VulkanBufferView)bv).vkObj;
+                auto tbds = wds.write.texelBuffers;
+                auto vkArr = tbds.map!((TexelBufferDescriptor tbd) {
+                    return unsafeCast!(VulkanTexelBufferView)(tbd.bufferView).vkObj;
                 }).array;
                 vkWds.pTexelBufferView = vkArr.ptr;
-                break;
-            default:
-                vkWds.descriptorCount = 0;
                 break;
             }
 

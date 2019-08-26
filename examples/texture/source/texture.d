@@ -264,15 +264,20 @@ class TextureExample : Example
         set = descPool.allocate([ setLayout.obj ])[0];
 
         auto writes = [
-            WriteDescriptorSet(set, 0, 0, new UniformBufferDescWrites([
-                BufferRange(matBuf, 0, Matrices.sizeof)
-            ])),
-            WriteDescriptorSet(set, 1, 0, new UniformBufferDescWrites([
-                BufferRange(ligBuf, 0, Lights.sizeof)
-            ])),
-            WriteDescriptorSet(set, 2, 0, new CombinedImageSamplerDescWrites([
-                CombinedImageSampler(texSampler, texView, ImageLayout.shaderReadOnlyOptimal)
-            ]))
+            WriteDescriptorSet(set, 0, 0, DescriptorWrite.make(
+                DescriptorType.uniformBuffer,
+                matBuf.descriptor(),
+            )),
+
+            WriteDescriptorSet(set, 1, 0, DescriptorWrite.make(
+                DescriptorType.uniformBuffer,
+                ligBuf.descriptor(),
+            )),
+
+            WriteDescriptorSet(set, 2, 0, DescriptorWrite.make(
+                DescriptorType.combinedImageSampler,
+                texView.descriptorWithSampler(ImageLayout.shaderReadOnlyOptimal, texSampler),
+            )),
         ];
         device.updateDescriptorSets(writes, []);
     }

@@ -279,12 +279,15 @@ class DepthExample : Example
         set = descPool.allocate([ setLayout.obj ])[0];
 
         auto writes = [
-            WriteDescriptorSet(set, 0, 0, new UniformBufferDynamicDescWrites([
-                BufferRange(matBuf, 0, Matrices.sizeof),
-            ])),
-            WriteDescriptorSet(set, 1, 0, new UniformBufferDescWrites([
-                BufferRange(ligBuf, 0, Lights.sizeof)
-            ])),
+            WriteDescriptorSet(set, 0, 0, DescriptorWrite.make(
+                DescriptorType.uniformBufferDynamic,
+                matBuf.descriptor(0, Matrices.sizeof),
+            )),
+
+            WriteDescriptorSet(set, 1, 0, DescriptorWrite.make(
+                DescriptorType.uniformBuffer,
+                ligBuf.descriptor(0, Lights.sizeof),
+            )),
         ];
         device.updateDescriptorSets(writes, []);
     }

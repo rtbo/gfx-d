@@ -5,7 +5,8 @@ import gfx.core.rc;
 import gfx.core.typecons;
 import gfx.graal.format;
 import gfx.graal.memory;
-import gfx.graal.pipeline : CompareOp;
+import gfx.graal.pipeline : CompareOp, ImageDescriptor,
+        SamplerDescriptor, ImageSamplerDescriptor;
 
 import std.typecons : Flag;
 
@@ -313,6 +314,18 @@ interface ImageView : IAtomicRefCounted
     @property ImageBase image();
     @property ImageSubresourceRange subresourceRange();
     @property Swizzle swizzle();
+
+    /// Build a descriptor to this image resource
+    final ImageDescriptor descriptor(ImageLayout layout)
+    {
+        return ImageDescriptor(this, layout);
+    }
+
+    /// Build a descriptor to this image resource combined with a sampler
+    final ImageSamplerDescriptor descriptorWithSampler(ImageLayout layout, Sampler sampler)
+    {
+        return ImageSamplerDescriptor(this, layout, sampler);
+    }
 }
 
 /// Type of filter for texture sampling
@@ -427,4 +440,10 @@ interface Sampler : IAtomicRefCounted
 
     /// Get the parent device
     @property Device device();
+
+    /// Get a descriptor to this resource
+    final SamplerDescriptor descriptor()
+    {
+        return SamplerDescriptor(this);
+    }
 }

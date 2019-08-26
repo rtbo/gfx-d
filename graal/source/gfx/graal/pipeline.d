@@ -405,7 +405,7 @@ struct WriteDescriptorSet {
     DescriptorSet dstSet;
     uint dstBinding;
     uint dstArrayElem;
-    DescriptorWrites writes;
+    DescriptorWrite write;
 }
 
 struct CopyDescritporSet {
@@ -414,66 +414,286 @@ struct CopyDescritporSet {
     Trans!uint          arrayElem;
 }
 
-abstract class DescriptorWrites
+/// Descriptor for a buffer
+/// to be used to update the following descriptor types:
+///   - DescriptorType.uniformBuffer
+///   - DescriptorType.uniformBufferDynamic
+///   - DescriptorType.storageBuffer
+///   - DescriptorType.storageBufferDynamic
+struct BufferDescriptor
 {
-    this(DescriptorType type, size_t count) {
+    /// descriptor resource
+    Buffer buffer;
+    /// bytes offset from the beginning of the resource
+    size_t offset;
+    /// amount of bytes to use from the resource
+    size_t size;
+}
+
+/// Descriptor for a texel buffer
+/// to be used to update the following descriptor types:
+///   - DescriptorType.uniformTexelBuffer
+///   - DescriptorType.storageTexelBuffer
+struct TexelBufferDescriptor
+{
+    /// descriptor resource
+    TexelBufferView bufferView;
+}
+
+/// Descriptor for images
+/// to be used to update the following descriptor types:
+///   - DescriptorType.sampledImage
+///   - DescriptorType.storageImage
+///   - DescriptorType.inputAttachment
+struct ImageDescriptor {
+    /// view to descriptor resource
+    ImageView view;
+    /// layout of the image resource
+    ImageLayout layout;
+}
+
+/// Descriptor that combines sampler and image view
+/// to be used to update the following descriptor types:
+///   - DescriptorType.combinedImageSampler
+struct ImageSamplerDescriptor
+{
+    /// view to image resource
+    ImageView view;
+    /// layout of the image resource
+    ImageLayout layout;
+    /// sampler resource combined with this image
+    Sampler sampler;
+}
+
+/// Descriptor for a sampler
+/// to be used to update the following descriptor types:
+///   - DescriptorType.sampler
+struct SamplerDescriptor
+{
+    /// descriptor resource
+    Sampler sampler;
+}
+
+/// Gathering of descriptor or descriptors array to be written to a device
+struct DescriptorWrite
+{
+    private this(DescriptorType type, size_t count, Write write) {
         _type = type;
         _count = count;
+        _write = write;
     }
-    final @property DescriptorType type() const {
+    private this(DescriptorType type, size_t count, Writes writes) {
+        _type = type;
+        _count = count;
+        _writes = writes;
+    }
+
+    /// the type of the descriptor to be written
+    @property DescriptorType type() const {
         return _type;
     }
-    final @property size_t count() const {
+
+    /// how many descriptors are to be written
+    @property size_t count() const {
         return _count;
     }
+
+    /// make a Descriptor write for a single BufferDescriptor
+    static DescriptorWrite make(in DescriptorType type, BufferDescriptor buffer)
+    in(type == DescriptorType.uniformBuffer
+        || type == DescriptorType.storageBuffer
+        || type == DescriptorType.uniformBufferDynamic
+        || type == DescriptorType.storageBufferDynamic)
+    {
+        Write write;
+        write.buffer = buffer;
+        return DescriptorWrite(type, 1, write);
+    }
+
+    /// make a Descriptor write for a BufferDescriptor array
+    static DescriptorWrite make(in DescriptorType type, BufferDescriptor[] buffers)
+    in(type == DescriptorType.uniformBuffer
+        || type == DescriptorType.storageBuffer
+        || type == DescriptorType.uniformBufferDynamic
+        || type == DescriptorType.storageBufferDynamic)
+    in(buffers.length > 1)
+    {
+        Writes writes;
+        writes.buffers = buffers;
+        return DescriptorWrite(type, buffers.length, writes);
+    }
+
+    /// make a Descriptor write for a single TexelBufferDescriptor
+    static DescriptorWrite make(in DescriptorType type, TexelBufferDescriptor texelBuffer)
+    in(type == DescriptorType.uniformTexelBuffer
+        || type == DescriptorType.storageTexelBuffer)
+    {
+        Write write;
+        write.texelBuffer = texelBuffer;
+        return DescriptorWrite(type, 1, write);
+    }
+
+    /// make a Descriptor write for a TexelBufferDescriptor array
+    static DescriptorWrite make(in DescriptorType type, TexelBufferDescriptor[] texelBuffers)
+    in(type == DescriptorType.uniformTexelBuffer
+        || type == DescriptorType.storageTexelBuffer)
+    in(texelBuffers.length > 1)
+    {
+        Writes writes;
+        writes.texelBuffers = texelBuffers;
+        return DescriptorWrite(type, texelBuffers.length, writes);
+    }
+
+    /// make a Descriptor write for a single ImageDescriptor
+    static DescriptorWrite make(in DescriptorType type, ImageDescriptor image)
+    in(type == DescriptorType.sampledImage
+        || type == DescriptorType.storageImage
+        || type == DescriptorType.inputAttachment)
+    {
+        Write write;
+        write.image = image;
+        return DescriptorWrite(type, 1, write);
+    }
+
+    /// make a Descriptor write for a ImageDescriptor array
+    static DescriptorWrite make(in DescriptorType type, ImageDescriptor[] images)
+    in(type == DescriptorType.sampledImage
+        || type == DescriptorType.storageImage
+        || type == DescriptorType.inputAttachment)
+    in(images.length > 1)
+    {
+        Writes writes;
+        writes.images = images;
+        return DescriptorWrite(type, images.length, writes);
+    }
+
+    /// make a Descriptor write for a single ImageSamplerDescriptor
+    static DescriptorWrite make(in DescriptorType type, ImageSamplerDescriptor imageSampler)
+    in(type == DescriptorType.combinedImageSampler)
+    {
+        Write write;
+        write.imageSampler = imageSampler;
+        return DescriptorWrite(type, 1, write);
+    }
+
+    /// make a Descriptor write for a ImageSamplerDescriptor array
+    static DescriptorWrite make(in DescriptorType type, ImageSamplerDescriptor[] imageSamplers)
+    in(type == DescriptorType.combinedImageSampler)
+    in(imageSamplers.length > 1)
+    {
+        Writes writes;
+        writes.imageSamplers = imageSamplers;
+        return DescriptorWrite(type, imageSamplers.length, writes);
+    }
+
+    /// make a Descriptor write for a single SamplerDescriptor
+    static DescriptorWrite make(in DescriptorType type, SamplerDescriptor sampler)
+    in(type == DescriptorType.sampler)
+    {
+        Write write;
+        write.sampler = sampler;
+        return DescriptorWrite(type, 1, write);
+    }
+
+    /// make a Descriptor write for a SamplerDescriptor array
+    static DescriptorWrite make(in DescriptorType type, SamplerDescriptor[] samplers)
+    in(type == DescriptorType.sampler)
+    in(samplers.length > 1)
+    {
+        Writes writes;
+        writes.samplers = samplers;
+        return DescriptorWrite(type, samplers.length, writes);
+    }
+
+    /// access BufferDescriptor array
+    @property BufferDescriptor[] buffers()
+    in(type == DescriptorType.uniformBuffer
+        || type == DescriptorType.storageBuffer
+        || type == DescriptorType.uniformBufferDynamic
+        || type == DescriptorType.storageBufferDynamic)
+    {
+        if (_count == 1) {
+            return (&_write.buffer)[0 .. 1];
+        }
+        else {
+            return _writes.buffers;
+        }
+    }
+
+    /// access TexelBufferDescriptor array
+    @property TexelBufferDescriptor[] texelBuffers()
+    in(type == DescriptorType.uniformTexelBuffer
+        || type == DescriptorType.storageTexelBuffer)
+    {
+        if (_count == 1) {
+            return (&_write.texelBuffer)[0 .. 1];
+        }
+        else {
+            return _writes.texelBuffers;
+        }
+    }
+
+    /// access ImageDescriptor array
+    @property ImageDescriptor[] images()
+    in(type == DescriptorType.sampledImage
+        || type == DescriptorType.storageImage
+        || type == DescriptorType.inputAttachment)
+    {
+        if (_count == 1) {
+            return (&_write.image)[0 .. 1];
+        }
+        else {
+            return _writes.images;
+        }
+    }
+
+    /// access ImageSamplerDescriptor array
+    @property ImageSamplerDescriptor[] imageSamplers()
+    in(type == DescriptorType.combinedImageSampler)
+    {
+        if (_count == 1) {
+            return (&_write.imageSampler)[0 .. 1];
+        }
+        else {
+            return _writes.imageSamplers;
+        }
+    }
+
+    /// access SamplerDescriptor array
+    @property SamplerDescriptor[] samplers()
+    in(type == DescriptorType.sampler)
+    {
+        if (_count == 1) {
+            return (&_write.sampler)[0 .. 1];
+        }
+        else {
+            return _writes.samplers;
+        }
+    }
+
+    // union used if count > 1 (heap allocation)
+    private union Writes
+    {
+        BufferDescriptor[] buffers;
+        TexelBufferDescriptor[] texelBuffers;
+        ImageDescriptor[] images;
+        ImageSamplerDescriptor[] imageSamplers;
+        SamplerDescriptor[] samplers;
+    }
+
+    // avoid heap allocation when a single descriptor is specified
+    // (probably over 90% of use cases)
+    private union Write
+    {
+        BufferDescriptor buffer;
+        TexelBufferDescriptor texelBuffer;
+        ImageDescriptor image;
+        ImageSamplerDescriptor imageSampler;
+        SamplerDescriptor sampler;
+    }
+
     private DescriptorType _type;
     private size_t _count;
+    private Writes _writes;
+    private Write _write;
 }
-
-class TDescWritesBase(Desc) : DescriptorWrites
-{
-    this(Desc[] descs, DescriptorType type) {
-        super(type, descs.length);
-        _descs = descs;
-    }
-    final @property Desc[] descs() {
-        return _descs;
-    }
-    private Desc[] _descs;
-}
-
-final class TDescWrites(Desc, DescriptorType ctType) : TDescWritesBase!Desc
-{
-    this(Desc[] descs) {
-        super(descs, ctType);
-    }
-}
-
-struct CombinedImageSampler {
-    Sampler sampler;
-    ImageView view;
-    ImageLayout layout;
-}
-
-struct ImageViewLayout {
-    ImageView view;
-    ImageLayout layout;
-}
-
-struct BufferRange {
-    Buffer buffer;
-    size_t offset;
-    size_t range;
-}
-
-alias SamplerDescWrites = TDescWrites!(Sampler, DescriptorType.sampler);
-alias CombinedImageSamplerDescWrites = TDescWrites!(CombinedImageSampler, DescriptorType.combinedImageSampler);
-alias SampledImageDescWrites = TDescWrites!(ImageViewLayout, DescriptorType.sampledImage);
-alias StorageImageDescWrites = TDescWrites!(ImageViewLayout, DescriptorType.storageImage);
-alias InputAttachmentDescWrites = TDescWrites!(ImageViewLayout, DescriptorType.inputAttachment);
-alias UniformBufferDescWrites = TDescWrites!(BufferRange, DescriptorType.uniformBuffer);
-alias StorageBufferDescWrites = TDescWrites!(BufferRange, DescriptorType.storageBuffer);
-alias UniformBufferDynamicDescWrites = TDescWrites!(BufferRange, DescriptorType.uniformBufferDynamic);
-alias StorageBufferDynamicDescWrites = TDescWrites!(BufferRange, DescriptorType.storageBufferDynamic);
-alias UniformTexelBufferDescWrites = TDescWrites!(BufferView, DescriptorType.uniformTexelBuffer);
-alias StorageTexelBufferDescWrites = TDescWrites!(BufferView, DescriptorType.storageTexelBuffer);

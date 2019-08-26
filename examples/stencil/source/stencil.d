@@ -308,9 +308,10 @@ class StencilExample : Example
         descriptorSet = descPool.allocate([ stencilWriteDSL.obj ])[0];
 
         auto writes = [
-            WriteDescriptorSet(descriptorSet, 0, 0, new CombinedImageSamplerDescWrites([
-                CombinedImageSampler(sampler, chessboardView, ImageLayout.shaderReadOnlyOptimal)
-            ]))
+            WriteDescriptorSet(descriptorSet, 0, 0, DescriptorWrite.make(
+                DescriptorType.combinedImageSampler,
+                chessboardView.descriptorWithSampler(ImageLayout.shaderReadOnlyOptimal, sampler),
+            )),
         ];
         device.updateDescriptorSets(writes, []);
     }

@@ -61,7 +61,7 @@ final class VulkanBuffer : VulkanDevObj!(VkBuffer, "DestroyBuffer"), Buffer
         return _vdm;
     }
 
-    override VulkanBufferView createView(Format format, size_t offset, size_t size)
+    override VulkanTexelBufferView createTexelView(Format format, size_t offset, size_t size)
     {
         VkBufferViewCreateInfo bvci;
         bvci.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
@@ -75,7 +75,7 @@ final class VulkanBuffer : VulkanDevObj!(VkBuffer, "DestroyBuffer"), Buffer
             "Could not create Vulkan buffer view"
         );
 
-        return new VulkanBufferView(vkBv, this, format, offset, size);
+        return new VulkanTexelBufferView(vkBv, this, format, offset, size);
     }
 
     private VulkanDeviceMemory _vdm;
@@ -84,7 +84,7 @@ final class VulkanBuffer : VulkanDevObj!(VkBuffer, "DestroyBuffer"), Buffer
 }
 
 
-class VulkanBufferView : VulkanDevObj!(VkBufferView, "DestroyBufferView"), BufferView
+class VulkanTexelBufferView : VulkanDevObj!(VkBufferView, "DestroyBufferView"), TexelBufferView
 {
     mixin(atomicRcCode);
 

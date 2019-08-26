@@ -66,7 +66,7 @@ final class GlBuffer : Buffer
     import gfx.bindings.opengl.gl;
     import gfx.core.rc : atomicRcCode, Rc;
     import gfx.gl3 : GlInfo, GlShare;
-    import gfx.graal.buffer : BufferUsage, BufferView;
+    import gfx.graal.buffer : BufferUsage, TexelBufferView;
     import gfx.graal.format : Format;
     import gfx.graal.memory : DeviceMemory, MemoryRequirements;
 
@@ -154,8 +154,8 @@ final class GlBuffer : Buffer
         return _mem.obj;
     }
 
-    override BufferView createView(Format format, size_t offset, size_t size) {
-        return null;
+    override TexelBufferView createTexelView(Format format, size_t offset, size_t size) {
+        assert(false, "not implemented");
     }
 
     private void* map(in size_t offset, in size_t size) {

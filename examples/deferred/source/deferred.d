@@ -343,14 +343,14 @@ class DeferredExample : Example
                 }
             }
 
-            ImageViewLayout attachmentDescriptor()
+            ImageDescriptor attachmentDescriptor()
             {
-                return ImageViewLayout(view, ImageLayout.shaderReadOnlyOptimal);
+                return view.descriptor(ImageLayout.shaderReadOnlyOptimal);
             }
 
-            CombinedImageSampler samplerDescriptor(Sampler sampler)
+            ImageSamplerDescriptor samplerDescriptor(Sampler sampler)
             {
-                return CombinedImageSampler(sampler, view, ImageLayout.shaderReadOnlyOptimal);
+                return view.descriptorWithSampler(ImageLayout.shaderReadOnlyOptimal, sampler);
             }
         }
         // G-buffer
@@ -480,24 +480,37 @@ class DeferredExample : Example
             blendDescriptorSet = sets[4];
 
             auto writes = [
-                WriteDescriptorSet(lightAttachDescriptorSet, 0, 0, new InputAttachmentDescWrites([
-                    worldPos.attachmentDescriptor,
-                    normal.attachmentDescriptor,
-                    color.attachmentDescriptor,
-                ])),
-                WriteDescriptorSet(bloomDescriptorSets[0], 0, 0, new CombinedImageSamplerDescWrites([
+                WriteDescriptorSet(lightAttachDescriptorSet, 0, 0, DescriptorWrite.make(
+                    DescriptorType.inputAttachment,
+                    [
+                        worldPos.attachmentDescriptor,
+                        normal.attachmentDescriptor,
+                        color.attachmentDescriptor,
+                    ]
+                )),
+
+                WriteDescriptorSet(bloomDescriptorSets[0], 0, 0, DescriptorWrite.make(
+                    DescriptorType.combinedImageSampler,
                     blurH.samplerDescriptor(bloomSampler),
-                ])),
-                WriteDescriptorSet(bloomDescriptorSets[1], 0, 0, new CombinedImageSamplerDescWrites([
+                )),
+
+                WriteDescriptorSet(bloomDescriptorSets[1], 0, 0, DescriptorWrite.make(
+                    DescriptorType.combinedImageSampler,
                     blurV.samplerDescriptor(bloomSampler),
-                ])),
-                WriteDescriptorSet(bloomDescriptorSets[2], 0, 0, new CombinedImageSamplerDescWrites([
+                )),
+
+                WriteDescriptorSet(bloomDescriptorSets[2], 0, 0, DescriptorWrite.make(
+                    DescriptorType.combinedImageSampler,
                     bloomBase.samplerDescriptor(bloomSampler),
-                ])),
-                WriteDescriptorSet(blendDescriptorSet, 0, 0, new InputAttachmentDescWrites([
-                    hdrScene.attachmentDescriptor,
-                    blurV.attachmentDescriptor,
-                ])),
+                )),
+
+                WriteDescriptorSet(blendDescriptorSet, 0, 0, DescriptorWrite.make(
+                    DescriptorType.inputAttachment,
+                    [
+                        hdrScene.attachmentDescriptor,
+                        blurV.attachmentDescriptor,
+                    ]
+                )),
             ];
             device.updateDescriptorSets(writes, []);
         }
@@ -544,19 +557,22 @@ class DeferredExample : Example
         lightBufDescriptorSet = sets[1];
 
         auto writes = [
-            WriteDescriptorSet(geomDescriptorSet, 0, 0, new UniformBufferDescWrites([
-                buffers.geomFrameUbo.descriptor()
-            ])),
-            WriteDescriptorSet(geomDescriptorSet, 1, 0, new UniformBufferDynamicDescWrites([
-                buffers.geomModelUbo.descriptor(0, 1)
-            ])),
-
-            WriteDescriptorSet(lightBufDescriptorSet, 0, 0, new UniformBufferDescWrites([
-                buffers.lightFrameUbo.descriptor()
-            ])),
-            WriteDescriptorSet(lightBufDescriptorSet, 1, 0, new UniformBufferDynamicDescWrites([
-                buffers.lightModelUbo.descriptor(0, 1)
-            ])),
+            WriteDescriptorSet(geomDescriptorSet, 0, 0, DescriptorWrite.make(
+                DescriptorType.uniformBuffer,
+                buffers.geomFrameUbo.descriptor(),
+            )),
+            WriteDescriptorSet(geomDescriptorSet, 1, 0, DescriptorWrite.make(
+                DescriptorType.uniformBufferDynamic,
+                buffers.geomModelUbo.descriptor(0, 1),
+            )),
+            WriteDescriptorSet(lightBufDescriptorSet, 0, 0, DescriptorWrite.make(
+                DescriptorType.uniformBuffer,
+                buffers.lightFrameUbo.descriptor(),
+            )),
+            WriteDescriptorSet(lightBufDescriptorSet, 1, 0, DescriptorWrite.make(
+                DescriptorType.uniformBufferDynamic,
+                buffers.lightModelUbo.descriptor(0, 1),
+            )),
         ];
         device.updateDescriptorSets(writes, []);
     }

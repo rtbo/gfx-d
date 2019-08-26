@@ -5471,7 +5471,7 @@ extern(C) nothrow @nogc {
     alias PFN_vkUpdateDescriptorSets = void function (
         VkDevice                     device,
         uint32_t                     descriptorWriteCount,
-        const(VkWriteDescriptorSet)* pDescriptorWrites,
+        const(VkWriteDescriptorSet)* pDescriptorWrite,
         uint32_t                     descriptorCopyCount,
         const(VkCopyDescriptorSet)*  pDescriptorCopies,
     );
@@ -7082,9 +7082,9 @@ final class VkDeviceCmds {
         return _FreeDescriptorSets(device, descriptorPool, descriptorSetCount, pDescriptorSets);
     }
     /// ditto
-    void UpdateDescriptorSets (VkDevice device, uint32_t descriptorWriteCount, const(VkWriteDescriptorSet)* pDescriptorWrites, uint32_t descriptorCopyCount, const(VkCopyDescriptorSet)* pDescriptorCopies) {
+    void UpdateDescriptorSets (VkDevice device, uint32_t descriptorWriteCount, const(VkWriteDescriptorSet)* pDescriptorWrite, uint32_t descriptorCopyCount, const(VkCopyDescriptorSet)* pDescriptorCopies) {
         assert(_UpdateDescriptorSets !is null, "vkUpdateDescriptorSets was not loaded. Requested by VK_VERSION_1_0");
-        return _UpdateDescriptorSets(device, descriptorWriteCount, pDescriptorWrites, descriptorCopyCount, pDescriptorCopies);
+        return _UpdateDescriptorSets(device, descriptorWriteCount, pDescriptorWrite, descriptorCopyCount, pDescriptorCopies);
     }
     /// ditto
     VkResult CreateFramebuffer (VkDevice device, const(VkFramebufferCreateInfo)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkFramebuffer* pFramebuffer) {

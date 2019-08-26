@@ -102,7 +102,7 @@ int main(string[] args)
         return 0;
     }
     catch(Exception ex) {
-        log.errorf("error occured: %s", ex.msg);
+        gfxExLog.errorf("error occured: %s", ex.msg);
         return 1;
     }
 }

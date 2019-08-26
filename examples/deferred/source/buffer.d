@@ -115,10 +115,9 @@ struct DynBuffer(T)
         mmap.addToSet(mms);
     }
 
-    BufferRange descriptor(in size_t start=0, in size_t end=0)
+    BufferDescriptor descriptor(in size_t start=0, in size_t size=0)
     {
-        const range = end == 0 ? len-start : end-start;
-        return BufferRange(buffer.obj, start*T.sizeof, range*T.sizeof);
+        return buffer.descriptor(start*T.sizeof, size*T.sizeof);
     }
 }
 

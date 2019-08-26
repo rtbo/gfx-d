@@ -162,7 +162,7 @@ class GlDevice : Device
         import gfx.gl3.pipeline : GlDescriptorSet;
         foreach (wo; writeOps) {
             auto glSet = cast(GlDescriptorSet)wo.dstSet;
-            glSet.write(wo.dstBinding, wo.dstArrayElem, wo.writes);
+            glSet.write(wo.dstBinding, wo.dstArrayElem, wo.write);
         }
     }
 

@@ -370,14 +370,11 @@ final class GlDescriptorPool : DescriptorPool
 }
 
 union GlDescriptor {
-    import gfx.graal.image : Sampler;
-    import gfx.graal.buffer : BufferView;
-
-    Sampler                 sampler;
-    CombinedImageSampler    combinedImageSampler;
-    ImageViewLayout         imageViewLayout;
-    BufferRange             bufferRange;
-    BufferView              bufferView;
+    SamplerDescriptor sampler;
+    ImageSamplerDescriptor imageSampler;
+    ImageDescriptor image;
+    BufferDescriptor buffer;
+    TexelBufferDescriptor texelBuffer;
 }
 
 struct GlDescriptorSetBinding
@@ -407,57 +404,54 @@ final class GlDescriptorSet : DescriptorSet
         return _pool;
     }
 
-    void write(uint dstBinding, uint dstArrayElem, DescriptorWrites writes)
+    void write(uint dstBinding, uint dstArrayElem, DescriptorWrite write)
     {
-        assert(writes.type == bindings[dstBinding].layout.descriptorType);
+        assert(write.type == bindings[dstBinding].layout.descriptorType);
         assign(
             bindings[dstBinding].descriptors[
-                dstArrayElem .. dstArrayElem+writes.count
+                dstArrayElem .. dstArrayElem+write.count
             ],
-            writes
+            write
         );
     }
 
-    private void assign(GlDescriptor[] descs, DescriptorWrites writes) {
-        import gfx.core.util : unsafeCast;
-        import gfx.graal.image : Sampler;
-        import gfx.graal.buffer : BufferView;
-
-        final switch (writes.type) {
+    private void assign(GlDescriptor[] descs, DescriptorWrite write)
+    {
+        final switch (write.type) {
         case DescriptorType.sampler:
-            auto w = unsafeCast!(SamplerDescWrites)(writes);
+            auto samplers = write.samplers;
             foreach (i, ref d; descs) {
-                d.sampler = w.descs[i];
+                d.sampler = samplers[i];
             }
             break;
         case DescriptorType.combinedImageSampler:
-            auto w = unsafeCast!(CombinedImageSamplerDescWrites)(writes);
+            auto si = write.imageSamplers;
             foreach (i, ref d; descs) {
-                d.combinedImageSampler = w.descs[i];
+                d.imageSampler = si[i];
             }
             break;
         case DescriptorType.sampledImage:
         case DescriptorType.storageImage:
         case DescriptorType.inputAttachment:
-            auto w = unsafeCast!(TDescWritesBase!ImageViewLayout)(writes);
+            auto imgs = write.images;
             foreach (i, ref d; descs) {
-                d.imageViewLayout = w.descs[i];
+                d.image = imgs[i];
             }
             break;
         case DescriptorType.uniformBuffer:
         case DescriptorType.storageBuffer:
         case DescriptorType.uniformBufferDynamic:
         case DescriptorType.storageBufferDynamic:
-            auto w = unsafeCast!(TDescWritesBase!(BufferRange))(writes);
+            auto buffers = write.buffers;
             foreach (i, ref d; descs) {
-                d.bufferRange = w.descs[i];
+                d.buffer = buffers[i];
             }
             break;
         case DescriptorType.uniformTexelBuffer:
         case DescriptorType.storageTexelBuffer:
-            auto w = unsafeCast!(TDescWritesBase!(BufferView))(writes);
+            auto tb = write.texelBuffers;
             foreach (i, ref d; descs) {
-                d.bufferView = w.descs[i];
+                d.texelBuffer = tb[i];
             }
             break;
         }

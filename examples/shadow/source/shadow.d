@@ -430,29 +430,38 @@ final class ShadowExample : Example
         shadowDS = dss[0];
         meshDS = dss[1];
 
-        const shadowVsLen = cast(uint)(ShadowVsLocals.sizeof * lights.length * meshes.length);
-        const meshVsLen = cast(uint)(MeshVsLocals.sizeof * meshes.length);
-        const ligFsLen = cast(uint)MeshFsLights.sizeof;
+        const shadowVsLen = ShadowVsLocals.sizeof * lights.length * meshes.length;
+        const meshVsLen = MeshVsLocals.sizeof * meshes.length;
+        const ligFsLen = MeshFsLights.sizeof;
 
         import std.algorithm : map;
         import std.array : array;
 
         auto writes = [
-            WriteDescriptorSet(shadowDS, 0, 0, new UniformBufferDynamicDescWrites(
-                [ BufferRange(meshUniformBuf, 0, ShadowVsLocals.sizeof) ]
+            WriteDescriptorSet(shadowDS, 0, 0, DescriptorWrite.make(
+                DescriptorType.uniformBufferDynamic,
+                meshUniformBuf.descriptor(0, ShadowVsLocals.sizeof),
             )),
-            WriteDescriptorSet(meshDS, 0, 0, new UniformBufferDynamicDescWrites(
-                [ BufferRange(meshUniformBuf, shadowVsLen, MeshVsLocals.sizeof) ]
+
+            WriteDescriptorSet(meshDS, 0, 0, DescriptorWrite.make(
+                DescriptorType.uniformBufferDynamic,
+                meshUniformBuf.descriptor(shadowVsLen, MeshVsLocals.sizeof),
             )),
-            WriteDescriptorSet(meshDS, 1, 0, new UniformBufferDynamicDescWrites(
-                [ BufferRange(meshUniformBuf, shadowVsLen+meshVsLen, MeshFsMaterial.sizeof) ]
+
+            WriteDescriptorSet(meshDS, 1, 0, DescriptorWrite.make(
+                DescriptorType.uniformBufferDynamic,
+                meshUniformBuf.descriptor(shadowVsLen+meshVsLen, MeshFsMaterial.sizeof),
             )),
-            WriteDescriptorSet(meshDS, 2, 0, new UniformBufferDescWrites(
-                [ BufferRange(ligUniformBuf, 0, ligFsLen) ]
+
+            WriteDescriptorSet(meshDS, 2, 0, DescriptorWrite.make(
+                DescriptorType.uniformBuffer,
+                ligUniformBuf.descriptor(0, ligFsLen),
             )),
-            WriteDescriptorSet(meshDS, 3, 0, new CombinedImageSamplerDescWrites(
-                [ CombinedImageSampler(shadowSampler, meshShadowView, ImageLayout.depthStencilReadOnlyOptimal) ]
-            ))
+
+            WriteDescriptorSet(meshDS, 3, 0, DescriptorWrite.make(
+                DescriptorType.combinedImageSampler,
+                meshShadowView.descriptorWithSampler(ImageLayout.depthStencilReadOnlyOptimal, shadowSampler),
+            )),
         ];
         device.updateDescriptorSets(writes, []);
     }
