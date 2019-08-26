@@ -32,6 +32,7 @@ script:
   - dub test gfx:memalloc --compiler=${DC}
   - dub test gfx:vulkan --compiler=${DC}
   - dub build gfx:declapi --compiler=${DC}
+  - dub build gfx:deferred --compiler=${DC}
   - dub build gfx:depth --compiler=${DC}
   - dub build gfx:shadow --compiler=${DC}
   - dub build gfx:stencil --compiler=${DC}

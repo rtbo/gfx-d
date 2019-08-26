@@ -112,6 +112,7 @@ test_script:
  - dub test gfx:memalloc --arch=%Darch% --compiler=%DC%
  - dub test gfx:vulkan --arch=%Darch% --compiler=%DC%
  - dub build gfx:declapi --arch=%Darch% --compiler=%DC%
+ - dub build gfx:deferred --arch=%Darch% --compiler=%DC%
  - dub build gfx:depth --arch=%Darch% --compiler=%DC%
  - dub build gfx:shadow --arch=%Darch% --compiler=%DC%
  - dub build gfx:stencil --arch=%Darch% --compiler=%DC%
