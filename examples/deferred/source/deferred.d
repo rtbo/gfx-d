@@ -545,17 +545,17 @@ class DeferredExample : Example
 
         auto writes = [
             WriteDescriptorSet(geomDescriptorSet, 0, 0, new UniformBufferDescWrites([
-                BufferRange(buffers.geomFrameUbo.buffer.obj, 0, GeomFrameUbo.sizeof),
+                buffers.geomFrameUbo.descriptor()
             ])),
             WriteDescriptorSet(geomDescriptorSet, 1, 0, new UniformBufferDynamicDescWrites([
-                BufferRange(buffers.geomModelUbo.buffer.obj, 0, GeomModelUbo.sizeof),
+                buffers.geomModelUbo.descriptor(0, 1)
             ])),
 
             WriteDescriptorSet(lightBufDescriptorSet, 0, 0, new UniformBufferDescWrites([
-                BufferRange(buffers.lightFrameUbo.buffer.obj, 0, LightFrameUbo.sizeof),
+                buffers.lightFrameUbo.descriptor()
             ])),
             WriteDescriptorSet(lightBufDescriptorSet, 1, 0, new UniformBufferDynamicDescWrites([
-                BufferRange(buffers.lightModelUbo.buffer.obj, 0, LightModelUbo.sizeof),
+                buffers.lightModelUbo.descriptor(0, 1)
             ])),
         ];
         device.updateDescriptorSets(writes, []);
@@ -607,7 +607,7 @@ class DeferredExample : Example
         buffers.geomFrameUbo.data[0].viewProj = viewProj.transpose();
         buffers.lightFrameUbo.data[0].viewerPos = fvec(viewerPos, 1.0);
 
-        buffers.updateAll(device.obj);
+        buffers.flush(device.obj);
     }
 
     override Submission[] recordCmds(FrameData frameData)

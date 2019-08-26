@@ -86,31 +86,39 @@ struct MeshBuffer
 }
 
 
-struct UboBuffer(T)
+struct DynBuffer(T)
 {
-    T[] data; // copy on host
     Rc!Buffer buffer;
     MemoryMap mmap;
+    size_t len;
 
-    void initBuffer(DeferredExample ex)
+    this(DeferredExample ex, size_t len, BufferUsage usage)
     {
-        buffer = ex.createDynamicBuffer(data.length * T.sizeof, BufferUsage.uniform);
+        buffer = ex.createDynamicBuffer(len * T.sizeof, usage);
         mmap = buffer.boundMemory.map();
+        this.len = len;
     }
 
-    void updateBuffer(ref MappedMemorySet mms)
+    ~this()
     {
-        auto v = mmap.view!(T[])(0, data.length);
-        v[] = data;
+        mmap = MemoryMap.init;
+        buffer.unload();
+    }
+
+    @property T[] data()
+    {
+        return mmap.view!(T[])()[];
+    }
+
+    void addToMemorySet(ref MappedMemorySet mms)
+    {
         mmap.addToSet(mms);
     }
 
-    void release()
+    BufferRange descriptor(in size_t start=0, in size_t end=0)
     {
-        import std.algorithm : move;
-
-        move(mmap);
-        buffer.unload();
+        const range = end == 0 ? len-start : end-start;
+        return BufferRange(buffer.obj, start*T.sizeof, range*T.sizeof);
     }
 }
 
@@ -122,10 +130,10 @@ class DeferredBuffers : AtomicRefCounted
     MeshBuffer loResSphere;
     MeshBuffer square;
 
-    UboBuffer!GeomFrameUbo geomFrameUbo;
-    UboBuffer!GeomModelUbo geomModelUbo;
-    UboBuffer!LightFrameUbo lightFrameUbo;
-    UboBuffer!LightModelUbo lightModelUbo;
+    DynBuffer!GeomFrameUbo geomFrameUbo;
+    DynBuffer!GeomModelUbo geomModelUbo;
+    DynBuffer!LightFrameUbo lightFrameUbo;
+    DynBuffer!LightModelUbo lightModelUbo;
 
     this(DeferredExample ex, size_t saucerCount)
     {
@@ -135,14 +143,16 @@ class DeferredBuffers : AtomicRefCounted
 
     override void dispose()
     {
+        import std.algorithm : move;
+
         hiResSphere.release();
         invertedSphere.release();
         loResSphere.release();
         square.release();
-        geomFrameUbo.release();
-        geomModelUbo.release();
-        lightFrameUbo.release();
-        lightModelUbo.release();
+        move(geomFrameUbo);
+        move(geomModelUbo);
+        move(lightFrameUbo);
+        move(lightModelUbo);
     }
 
     final void prepareMeshBuffers(DeferredExample ex)
@@ -209,24 +219,19 @@ class DeferredBuffers : AtomicRefCounted
 
     final void prepareUboBuffers(DeferredExample ex, size_t saucerCount)
     {
-        geomFrameUbo.data = new GeomFrameUbo[1];
-        geomModelUbo.data = new GeomModelUbo[saucerCount];
-        lightFrameUbo.data = new LightFrameUbo[1];
-        lightModelUbo.data = new LightModelUbo[saucerCount];
-
-        geomFrameUbo.initBuffer(ex);
-        geomModelUbo.initBuffer(ex);
-        lightFrameUbo.initBuffer(ex);
-        lightModelUbo.initBuffer(ex);
+        geomFrameUbo = DynBuffer!GeomFrameUbo(ex, 1, BufferUsage.uniform);
+        geomModelUbo = DynBuffer!GeomModelUbo(ex, saucerCount, BufferUsage.uniform);
+        lightFrameUbo = DynBuffer!LightFrameUbo(ex, 1, BufferUsage.uniform);
+        lightModelUbo = DynBuffer!LightModelUbo(ex, saucerCount, BufferUsage.uniform);
     }
 
-    final void updateAll(Device device)
+    final void flush(Device device)
     {
         MappedMemorySet mms;
-        geomModelUbo.updateBuffer(mms);
-        geomFrameUbo.updateBuffer(mms);
-        lightModelUbo.updateBuffer(mms);
-        lightFrameUbo.updateBuffer(mms);
+        geomModelUbo.addToMemorySet(mms);
+        geomFrameUbo.addToMemorySet(mms);
+        lightModelUbo.addToMemorySet(mms);
+        lightFrameUbo.addToMemorySet(mms);
         device.flushMappedMemory(mms);
     }
 }
