@@ -202,11 +202,14 @@ class StencilExample : Example
 
     void preparePipeline()
     {
+        const stencilSpv = [
+            import("stencil.vert.spv"), import("stencil.frag.spv")
+        ];
         auto swVs = device.createShaderModule(
-            cast(immutable(uint)[])import("stencil.vert.spv"), "main"
+            cast(immutable(uint)[])stencilSpv[0], "main"
         ).rc;
         auto swFs = device.createShaderModule(
-            cast(immutable(uint)[])import("stencil.frag.spv"), "main"
+            cast(immutable(uint)[])stencilSpv[1], "main"
         ).rc;
         stencilWriteDSL = device.createDescriptorSetLayout([
             PipelineLayoutBinding(0, DescriptorType.combinedImageSampler, 1, ShaderStage.fragment),
@@ -246,11 +249,14 @@ class StencilExample : Example
         swInfo.subpassIndex = 0;
 
 
+        const solidSpv = [
+            import("solid.vert.spv"), import("solid.frag.spv")
+        ];
         auto solVs = device.createShaderModule(
-            cast(immutable(uint)[])import("solid.vert.spv"), "main"
+            cast(immutable(uint)[])solidSpv[0], "main"
         ).rc;
         auto solFs = device.createShaderModule(
-            cast(immutable(uint)[])import("solid.frag.spv"), "main"
+            cast(immutable(uint)[])solidSpv[1], "main"
         ).rc;
         auto solPL = device.createPipelineLayout([], []).rc;
 

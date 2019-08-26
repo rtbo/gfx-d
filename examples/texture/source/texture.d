@@ -195,11 +195,14 @@ class TextureExample : Example
 
     void preparePipeline()
     {
+        const spv = [
+            import("shader.vert.spv"), import("shader.frag.spv")
+        ];
         auto vtxShader = device.createShaderModule(
-            cast(immutable(uint)[])import("shader.vert.spv"), "main"
+            cast(immutable(uint)[])spv[0], "main"
         ).rc;
         auto fragShader = device.createShaderModule(
-            cast(immutable(uint)[])import("shader.frag.spv"), "main"
+            cast(immutable(uint)[])spv[1], "main"
         ).rc;
 
         const layoutBindings = [

@@ -459,12 +459,15 @@ final class ShadowExample : Example
 
     PipelineInfo prepareShadowPipeline()
     {
+        const spv = [
+            import("shadow.vert.spv"), import("shadow.frag.spv")
+        ];
         PipelineInfo info;
         info.shaders.vertex = device.createShaderModule(
-            cast(immutable(uint)[])import("shadow.vert.spv"), "main"
+            cast(immutable(uint)[])spv[0], "main"
         );
         info.shaders.fragment = device.createShaderModule(
-            cast(immutable(uint)[])import("shadow.frag.spv"), "main"
+            cast(immutable(uint)[])spv[1], "main"
         );
         info.shaders.vertex.retain();
         info.shaders.fragment.retain();
@@ -502,12 +505,15 @@ final class ShadowExample : Example
 
     PipelineInfo prepareMeshPipeline()
     {
+        const spv = [
+            import("mesh.vert.spv"), import("mesh.frag.spv")
+        ];
         PipelineInfo info;
         info.shaders.vertex = device.createShaderModule(
-            cast(immutable(uint)[])import("mesh.vert.spv"), "main"
+            cast(immutable(uint)[])spv[0], "main"
         );
         info.shaders.fragment = device.createShaderModule(
-            cast(immutable(uint)[])import("mesh.frag.spv"), "main"
+            cast(immutable(uint)[])spv[1], "main"
         );
         info.shaders.vertex.retain();
         info.shaders.fragment.retain();
