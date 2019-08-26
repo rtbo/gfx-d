@@ -28,13 +28,13 @@ layout(location = 1) out vec3 v_Normal;
 layout(location = 2) out vec4 v_Color;
 
 void main() {
-    mat4 modelMat = model.data[gl_InstanceIndex].mat;
+    ModelData model = model.data[gl_InstanceIndex];
 
-    gl_Position = frame.viewProjMat * modelMat * vec4(i_Position, 1.0);
-    v_WorldPos = (modelMat * vec4(i_Position, 1.0)).xyz;
-    mat3 normalMat = transpose(inverse(mat3(modelMat)));
+    gl_Position = frame.viewProjMat * model.mat * vec4(i_Position, 1.0);
+    v_WorldPos = (model.mat * vec4(i_Position, 1.0)).xyz;
+    mat3 normalMat = transpose(inverse(mat3(model.mat)));
     v_Normal = normalMat * i_Normal;
-    v_Color = model.data[gl_InstanceIndex].color;
+    v_Color = model.color;
     // shininess is stored in alpha channel, divided by 64
     // to avoid clamping to 1.0. 64 is arbitrary higher than max shininess
     v_Color.a /= 64.0;

@@ -25,14 +25,9 @@ class DeferredExample : Example
     Rc!DeferredPipelines pipelines;
 
     DescriptorSet geomDescriptorSet;
-
     DescriptorSet lightBufDescriptorSet;
-    DescriptorSet lightAttachDescriptorSet;
 
     Rc!Sampler bloomSampler;
-    DescriptorSet[3] bloomDescriptorSets;
-
-    DescriptorSet blendDescriptorSet;
 
     Duration lastTimeElapsed;
 
@@ -344,6 +339,16 @@ class DeferredExample : Example
                     releaseObj(img);
                 }
             }
+
+            ImageViewLayout attachmentDescriptor()
+            {
+                return ImageViewLayout(view, ImageLayout.shaderReadOnlyOptimal);
+            }
+
+            CombinedImageSampler samplerDescriptor(Sampler sampler)
+            {
+                return CombinedImageSampler(sampler, view, ImageLayout.shaderReadOnlyOptimal);
+            }
         }
         // G-buffer
         FbImage worldPos;
@@ -371,6 +376,12 @@ class DeferredExample : Example
 
         /// Command buffer
         PrimaryCommandBuffer cmdBuf;
+
+        /// Descriptors
+        Rc!DescriptorPool descriptorPool;
+        DescriptorSet lightAttachDescriptorSet;
+        DescriptorSet[] bloomDescriptorSets;
+        DescriptorSet blendDescriptorSet;
 
         this(ImageBase swcColor, CommandBuffer tempBuf)
         {
@@ -442,8 +453,56 @@ class DeferredExample : Example
             );
         }
 
+        final void prepareDescriptors()
+        {
+            if (descriptorPool) return; // already initialized
+
+            auto pipelines = this.outer.pipelines.obj;
+            auto bloomSampler = this.outer.bloomSampler.obj;
+
+            const poolSizes = [
+                DescriptorPoolSize(DescriptorType.inputAttachment, 5),
+                DescriptorPoolSize(DescriptorType.combinedImageSampler, 3),
+            ];
+            descriptorPool = device.createDescriptorPool(5, poolSizes);
+            auto sets = descriptorPool.allocate([
+                pipelines.light.descriptorLayouts[1],
+                pipelines.bloom.descriptorLayouts[0],
+                pipelines.bloom.descriptorLayouts[0],
+                pipelines.bloom.descriptorLayouts[0],
+                pipelines.blend.descriptorLayouts[0],
+            ]);
+            lightAttachDescriptorSet = sets[0];
+            bloomDescriptorSets = sets[1 .. 4];
+            blendDescriptorSet = sets[4];
+
+            auto writes = [
+                WriteDescriptorSet(lightAttachDescriptorSet, 0, 0, new InputAttachmentDescWrites([
+                    worldPos.attachmentDescriptor,
+                    normal.attachmentDescriptor,
+                    color.attachmentDescriptor,
+                ])),
+                WriteDescriptorSet(bloomDescriptorSets[0], 0, 0, new CombinedImageSamplerDescWrites([
+                    blurH.samplerDescriptor(bloomSampler),
+                ])),
+                WriteDescriptorSet(bloomDescriptorSets[1], 0, 0, new CombinedImageSamplerDescWrites([
+                    blurV.samplerDescriptor(bloomSampler),
+                ])),
+                WriteDescriptorSet(bloomDescriptorSets[2], 0, 0, new CombinedImageSamplerDescWrites([
+                    bloomBase.samplerDescriptor(bloomSampler),
+                ])),
+                WriteDescriptorSet(blendDescriptorSet, 0, 0, new InputAttachmentDescWrites([
+                    hdrScene.attachmentDescriptor,
+                    blurV.attachmentDescriptor,
+                ])),
+            ];
+            device.updateDescriptorSets(writes, []);
+        }
+
         override void dispose()
         {
+            if (descriptorPool) descriptorPool.reset();
+            descriptorPool.unload();
             blendFramebuffer.unload();
             blurVFramebuffer.unload();
             blurHFramebuffer.unload();
@@ -471,25 +530,15 @@ class DeferredExample : Example
         const poolSizes = [
             DescriptorPoolSize(DescriptorType.uniformBuffer, 2),
             DescriptorPoolSize(DescriptorType.uniformBufferDynamic, 2),
-            DescriptorPoolSize(DescriptorType.inputAttachment, 5),
-            DescriptorPoolSize(DescriptorType.combinedImageSampler, 3),
         ];
 
         descriptorPool = device.createDescriptorPool(7, poolSizes);
         auto sets = descriptorPool.allocate([
             pipelines.geom.descriptorLayouts[0],
             pipelines.light.descriptorLayouts[0],
-            pipelines.light.descriptorLayouts[1],
-            pipelines.bloom.descriptorLayouts[0],
-            pipelines.bloom.descriptorLayouts[0],
-            pipelines.bloom.descriptorLayouts[0],
-            pipelines.blend.descriptorLayouts[0],
         ]);
         geomDescriptorSet = sets[0];
         lightBufDescriptorSet = sets[1];
-        lightAttachDescriptorSet = sets[2];
-        bloomDescriptorSets = sets[3 .. 6];
-        blendDescriptorSet = sets[6];
 
         auto writes = [
             WriteDescriptorSet(geomDescriptorSet, 0, 0, new UniformBufferDescWrites([
@@ -504,31 +553,6 @@ class DeferredExample : Example
             ])),
             WriteDescriptorSet(lightBufDescriptorSet, 1, 0, new UniformBufferDynamicDescWrites([
                 BufferRange(buffers.lightModelUbo.buffer.obj, 0, LightModelUbo.sizeof),
-            ])),
-        ];
-        device.updateDescriptorSets(writes, []);
-    }
-
-    void updateAttachments(DeferredFrameData dfd)
-    {
-        auto writes = [
-            WriteDescriptorSet(lightAttachDescriptorSet, 0, 0, new InputAttachmentDescWrites([
-                ImageViewLayout(dfd.worldPos.view, ImageLayout.shaderReadOnlyOptimal),
-                ImageViewLayout(dfd.normal.view, ImageLayout.shaderReadOnlyOptimal),
-                ImageViewLayout(dfd.color.view, ImageLayout.shaderReadOnlyOptimal),
-            ])),
-            WriteDescriptorSet(bloomDescriptorSets[0], 0, 0, new CombinedImageSamplerDescWrites([
-                CombinedImageSampler(bloomSampler.obj, dfd.blurH.view, ImageLayout.shaderReadOnlyOptimal),
-            ])),
-            WriteDescriptorSet(bloomDescriptorSets[1], 0, 0, new CombinedImageSamplerDescWrites([
-                CombinedImageSampler(bloomSampler.obj, dfd.blurV.view, ImageLayout.shaderReadOnlyOptimal),
-            ])),
-            WriteDescriptorSet(bloomDescriptorSets[2], 0, 0, new CombinedImageSamplerDescWrites([
-                CombinedImageSampler(bloomSampler.obj, dfd.bloomBase.view, ImageLayout.shaderReadOnlyOptimal),
-            ])),
-            WriteDescriptorSet(blendDescriptorSet, 0, 0, new InputAttachmentDescWrites([
-                ImageViewLayout(dfd.hdrScene.view, ImageLayout.shaderReadOnlyOptimal),
-                ImageViewLayout(dfd.blurV.view, ImageLayout.shaderReadOnlyOptimal),
             ])),
         ];
         device.updateDescriptorSets(writes, []);
@@ -585,13 +609,8 @@ class DeferredExample : Example
     {
         import std.datetime : dur;
 
-        // temporary hack to avoid update of in-flight descriptors
-        graphicsQueue.waitIdle();
-
         auto dfd = cast(DeferredFrameData)frameData;
-
-        // bind frame attachments
-        updateAttachments(dfd);
+        dfd.prepareDescriptors();
 
         // update scene
         const time = timeElapsed();
@@ -687,7 +706,7 @@ class DeferredExample : Example
             buf.bindVertexBuffers(0, [ buffers.loResSphere.vertexBinding() ]);
             buf.bindDescriptorSets(
                 PipelineBindPoint.graphics,
-                pipelines.light.layout, 1, [ lightAttachDescriptorSet ], []
+                pipelines.light.layout, 1, [ dfd.lightAttachDescriptorSet ], []
             );
 
             foreach (ref ss; scene.subStructs) {
@@ -731,7 +750,7 @@ class DeferredExample : Example
 
                 buf.bindDescriptorSets(
                     PipelineBindPoint.graphics,
-                    pipelines.bloom.layout, 0, bloomDescriptorSets[dsInd .. dsInd+1],
+                    pipelines.bloom.layout, 0, dfd.bloomDescriptorSets[dsInd .. dsInd+1],
                     []
                 );
 
@@ -757,7 +776,7 @@ class DeferredExample : Example
         // square mesh already bound in bloom pass
         buf.bindDescriptorSets(
             PipelineBindPoint.graphics,
-            pipelines.blend.layout, 0, [ blendDescriptorSet ],
+            pipelines.blend.layout, 0, [ dfd.blendDescriptorSet ],
             []
         );
 
