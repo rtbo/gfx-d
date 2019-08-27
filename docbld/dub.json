@@ -6,12 +6,12 @@
 	"license": "MIT",
 	"targetType": "library",
 	"sourcePaths": [
-		"../source",
 		"../bindings/source",
 		"../core/source",
 		"../decl/source",
 		"../genmesh/source",
 		"../gl3/source",
+		"../graal/source",
 		"../math/source",
 		"../memalloc/source",
 		"../vulkan/source",
