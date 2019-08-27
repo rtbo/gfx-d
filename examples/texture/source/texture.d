@@ -276,7 +276,7 @@ class TextureExample : Example
 
             WriteDescriptorSet(set, 2, 0, DescriptorWrite.make(
                 DescriptorType.combinedImageSampler,
-                texView.descriptorWithSampler(ImageLayout.shaderReadOnlyOptimal, texSampler),
+                texView.descriptorWithSampler(ImageLayout.undefined, texSampler),
             )),
         ];
         device.updateDescriptorSets(writes, []);

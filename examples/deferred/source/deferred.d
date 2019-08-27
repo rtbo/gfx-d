@@ -185,18 +185,18 @@ class DeferredExample : Example
         const dependencies = [
             SubpassDependency(
                 trans(subpassExternal, Subpass.geom),
-                trans(PipelineStage.bottomOfPipe, PipelineStage.colorAttachmentOutput),
-                trans(Access.memoryRead, Access.colorAttachmentWrite)
+                trans(PipelineStage.bottomOfPipe, PipelineStage.vertexShader),
+                trans(Access.memoryWrite, Access.uniformRead)
             ),
             SubpassDependency(
                 trans!uint(Subpass.geom, Subpass.light), // from geometry to lighting pass
                 trans(PipelineStage.colorAttachmentOutput, PipelineStage.fragmentShader),
-                trans(Access.colorAttachmentWrite, Access.colorAttachmentRead)
+                trans(Access.colorAttachmentWrite, Access.inputAttachmentRead)
             ),
             SubpassDependency(
                 trans(Subpass.light, subpassExternal),
-                trans(PipelineStage.bottomOfPipe, PipelineStage.topOfPipe),
-                trans(Access.colorAttachmentWrite, Access.memoryRead)
+                trans(PipelineStage.colorAttachmentOutput, PipelineStage.fragmentShader),
+                trans(Access.colorAttachmentWrite, Access.shaderRead)
             ),
         ];
 
@@ -237,12 +237,12 @@ class DeferredExample : Example
         const dependencies = [
             SubpassDependency(
                 trans(subpassExternal, Subpass.blur),
-                trans(PipelineStage.bottomOfPipe, PipelineStage.colorAttachmentOutput),
-                trans(Access.memoryRead, Access.colorAttachmentWrite)
+                trans(PipelineStage.bottomOfPipe, PipelineStage.fragmentShader),
+                trans(Access.memoryRead, Access.shaderRead)
             ),
             SubpassDependency(
                 trans(Subpass.blur, subpassExternal),
-                trans(PipelineStage.bottomOfPipe, PipelineStage.topOfPipe),
+                trans(PipelineStage.colorAttachmentOutput, PipelineStage.topOfPipe),
                 trans(Access.colorAttachmentWrite, Access.memoryRead)
             ),
         ];
@@ -303,7 +303,7 @@ class DeferredExample : Example
             ),
             SubpassDependency(
                 trans(Subpass.blend, subpassExternal),
-                trans(PipelineStage.bottomOfPipe, PipelineStage.topOfPipe),
+                trans(PipelineStage.colorAttachmentOutput, PipelineStage.topOfPipe),
                 trans(Access.colorAttachmentWrite, Access.memoryRead)
             ),
         ];

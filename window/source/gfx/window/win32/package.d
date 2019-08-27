@@ -25,27 +25,27 @@ class Win32Display : Display
     private Window[] _iwindows;
     private Instance _instance;
 
-    this(in Backend[] loadOrder) {
+    this(DisplayCreateInfo createInfo) {
         assert(!g_dpy);
         g_dpy = this;
 
         registerWindowClass();
         assert(!_instance);
 
-        foreach (b; loadOrder) {
+        foreach (b; createInfo.backendCreateOrder) {
             final switch (b) {
             case Backend.vulkan:
                 try {
-                    import gfx.vulkan : createVulkanInstance, debugReportExtensions,
+                    import gfx.vulkan : createVulkanInstance, debugReportInstanceExtensions,
                             lunarGValidationLayers, VulkanCreateInfo, vulkanInit;
-                    import gfx.vulkan.wsi : win32SurfaceExtensions;
+                    import gfx.vulkan.wsi : win32SurfaceInstanceExtensions;
 
                     gfxW32Log.trace("Attempting to instantiate Vulkan");
                     vulkanInit();
                     VulkanCreateInfo vci;
-                    vci.mandatoryExtensions = win32SurfaceExtensions;
+                    vci.mandatoryExtensions = win32SurfaceInstanceExtensions;
                     vci.optionalExtensions = createInfo.debugCallbackEnabled ?
-                            debugReportExtensions : [];
+                            debugReportInstanceExtensions : [];
                     vci.optionalLayers = createInfo.validationEnabled ?
                             lunarGValidationLayers : [];
                     _instance = createVulkanInstance(vci);
