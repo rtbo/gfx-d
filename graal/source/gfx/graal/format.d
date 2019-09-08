@@ -101,7 +101,8 @@ enum SurfaceType {
 }
 
 /// The format of an Image.
-enum Format {
+enum Format
+{
     undefined = 0,
     rg4_uNorm = 1,
     rgba4_uNorm = 2,
@@ -235,8 +236,9 @@ enum Format {
     d32s8_sFloat = 130,
 }
 
-/// Get the totalBits of an image surface.
-@property uint totalBits (in SurfaceType st) pure {
+/// Get the totalBits of an image surface
+@property uint totalBits (in SurfaceType st) pure
+{
     switch(st) {
     case SurfaceType.R4_G4: return 8;
     case SurfaceType.R4_G4_B4_A4: return 16;
@@ -280,8 +282,15 @@ enum Format {
     }
 }
 
-/// Get the numComponents of an image surface.
-@property uint numComponents (in SurfaceType st) pure {
+/// Get the totalBits of a format
+@property uint totalBits (in Format format) pure
+{
+    return formatDesc(format).surfaceType.totalBits;
+}
+
+/// Get the numComponents of an image surface
+@property uint numComponents (in SurfaceType st) pure
+{
     switch(st) {
     case SurfaceType.R4_G4: return 2;
     case SurfaceType.R4_G4_B4_A4: return 4;
@@ -325,8 +334,15 @@ enum Format {
     }
 }
 
-/// Get the colorBits of an image surface.
-@property uint colorBits (in SurfaceType st) pure {
+/// Get the numComponents of a format
+@property uint numComponents (in Format format) pure
+{
+    return formatDesc(format).surfaceType.numComponents;
+}
+
+/// Get the colorBits of an image surface
+@property uint colorBits (in SurfaceType st) pure
+{
     switch(st) {
     case SurfaceType.R4_G4: return 8;
     case SurfaceType.R4_G4_B4_A4: return 16;
@@ -363,8 +379,15 @@ enum Format {
     }
 }
 
-/// Get the redBits of an image surface.
-@property uint redBits (in SurfaceType st) pure {
+/// Get the colorBits of a format
+@property uint colorBits (in Format format) pure
+{
+    return formatDesc(format).surfaceType.colorBits;
+}
+
+/// Get the redBits of an image surface
+@property uint redBits (in SurfaceType st) pure
+{
     switch(st) {
     case SurfaceType.R4_G4: return 4;
     case SurfaceType.R4_G4_B4_A4: return 4;
@@ -401,8 +424,15 @@ enum Format {
     }
 }
 
-/// Get the greenBits of an image surface.
-@property uint greenBits (in SurfaceType st) pure {
+/// Get the redBits of a format
+@property uint redBits (in Format format) pure
+{
+    return formatDesc(format).surfaceType.redBits;
+}
+
+/// Get the greenBits of an image surface
+@property uint greenBits (in SurfaceType st) pure
+{
     switch(st) {
     case SurfaceType.R4_G4: return 4;
     case SurfaceType.R4_G4_B4_A4: return 4;
@@ -435,8 +465,15 @@ enum Format {
     }
 }
 
-/// Get the blueBits of an image surface.
-@property uint blueBits (in SurfaceType st) pure {
+/// Get the greenBits of a format
+@property uint greenBits (in Format format) pure
+{
+    return formatDesc(format).surfaceType.greenBits;
+}
+
+/// Get the blueBits of an image surface
+@property uint blueBits (in SurfaceType st) pure
+{
     switch(st) {
     case SurfaceType.R4_G4_B4_A4: return 4;
     case SurfaceType.B4_G4_R4_A4: return 4;
@@ -464,8 +501,15 @@ enum Format {
     }
 }
 
-/// Get the alphaBits of an image surface.
-@property uint alphaBits (in SurfaceType st) pure {
+/// Get the blueBits of a format
+@property uint blueBits (in Format format) pure
+{
+    return formatDesc(format).surfaceType.blueBits;
+}
+
+/// Get the alphaBits of an image surface
+@property uint alphaBits (in SurfaceType st) pure
+{
     switch(st) {
     case SurfaceType.R4_G4_B4_A4: return 4;
     case SurfaceType.B4_G4_R4_A4: return 4;
@@ -484,8 +528,15 @@ enum Format {
     }
 }
 
-/// Get the redShift of an image surface.
-@property uint redShift (in SurfaceType st) pure {
+/// Get the alphaBits of a format
+@property uint alphaBits (in Format format) pure
+{
+    return formatDesc(format).surfaceType.alphaBits;
+}
+
+/// Get the redShift of an image surface
+@property uint redShift (in SurfaceType st) pure
+{
     switch(st) {
     case SurfaceType.R4_G4: return 4;
     case SurfaceType.R4_G4_B4_A4: return 12;
@@ -512,8 +563,15 @@ enum Format {
     }
 }
 
-/// Get the greenShift of an image surface.
-@property uint greenShift (in SurfaceType st) pure {
+/// Get the redShift of a format
+@property uint redShift (in Format format) pure
+{
+    return formatDesc(format).surfaceType.redShift;
+}
+
+/// Get the greenShift of an image surface
+@property uint greenShift (in SurfaceType st) pure
+{
     switch(st) {
     case SurfaceType.R4_G4_B4_A4: return 8;
     case SurfaceType.B4_G4_R4_A4: return 8;
@@ -541,8 +599,15 @@ enum Format {
     }
 }
 
-/// Get the blueShift of an image surface.
-@property uint blueShift (in SurfaceType st) pure {
+/// Get the greenShift of a format
+@property uint greenShift (in Format format) pure
+{
+    return formatDesc(format).surfaceType.greenShift;
+}
+
+/// Get the blueShift of an image surface
+@property uint blueShift (in SurfaceType st) pure
+{
     switch(st) {
     case SurfaceType.R4_G4_B4_A4: return 4;
     case SurfaceType.B4_G4_R4_A4: return 12;
@@ -563,8 +628,15 @@ enum Format {
     }
 }
 
-/// Get the alphaShift of an image surface.
-@property uint alphaShift (in SurfaceType st) pure {
+/// Get the blueShift of a format
+@property uint blueShift (in Format format) pure
+{
+    return formatDesc(format).surfaceType.blueShift;
+}
+
+/// Get the alphaShift of an image surface
+@property uint alphaShift (in SurfaceType st) pure
+{
     switch(st) {
     case SurfaceType.A1_R5_G5_B5: return 15;
     case SurfaceType.A8_B8_G8_R8: return 24;
@@ -574,16 +646,30 @@ enum Format {
     }
 }
 
-/// Get the sharedExpBits of an image surface.
-@property uint sharedExpBits (in SurfaceType st) pure {
+/// Get the alphaShift of a format
+@property uint alphaShift (in Format format) pure
+{
+    return formatDesc(format).surfaceType.alphaShift;
+}
+
+/// Get the sharedExpBits of an image surface
+@property uint sharedExpBits (in SurfaceType st) pure
+{
     switch(st) {
     case SurfaceType.E5_B9_G9_R9: return 5;
     default: return 0;
     }
 }
 
-/// Get the depthBits of an image surface.
-@property uint depthBits (in SurfaceType st) pure {
+/// Get the sharedExpBits of a format
+@property uint sharedExpBits (in Format format) pure
+{
+    return formatDesc(format).surfaceType.sharedExpBits;
+}
+
+/// Get the depthBits of an image surface
+@property uint depthBits (in SurfaceType st) pure
+{
     switch(st) {
     case SurfaceType.D16: return 16;
     case SurfaceType.X8_D24: return 24;
@@ -595,8 +681,15 @@ enum Format {
     }
 }
 
-/// Get the stencilBits of an image surface.
-@property uint stencilBits (in SurfaceType st) pure {
+/// Get the depthBits of a format
+@property uint depthBits (in Format format) pure
+{
+    return formatDesc(format).surfaceType.depthBits;
+}
+
+/// Get the stencilBits of an image surface
+@property uint stencilBits (in SurfaceType st) pure
+{
     switch(st) {
     case SurfaceType.S8: return 8;
     case SurfaceType.D16_S8: return 8;
@@ -606,8 +699,15 @@ enum Format {
     }
 }
 
+/// Get the stencilBits of a format
+@property uint stencilBits (in Format format) pure
+{
+    return formatDesc(format).surfaceType.stencilBits;
+}
+
 /// Static descriptor of SurfaceType.R4_G4.
-struct R4_G4 {
+struct R4_G4
+{
     enum totalBits = 8;
     enum numComponents = 2;
     enum redBits = 4;
@@ -625,7 +725,8 @@ struct R4_G4 {
 }
 
 /// Static descriptor of SurfaceType.R4_G4_B4_A4.
-struct R4_G4_B4_A4 {
+struct R4_G4_B4_A4
+{
     enum totalBits = 16;
     enum numComponents = 4;
     enum redBits = 4;
@@ -643,7 +744,8 @@ struct R4_G4_B4_A4 {
 }
 
 /// Static descriptor of SurfaceType.B4_G4_R4_A4.
-struct B4_G4_R4_A4 {
+struct B4_G4_R4_A4
+{
     enum totalBits = 16;
     enum numComponents = 4;
     enum redBits = 4;
@@ -661,7 +763,8 @@ struct B4_G4_R4_A4 {
 }
 
 /// Static descriptor of SurfaceType.R5_G6_B5.
-struct R5_G6_B5 {
+struct R5_G6_B5
+{
     enum totalBits = 16;
     enum numComponents = 3;
     enum redBits = 5;
@@ -679,7 +782,8 @@ struct R5_G6_B5 {
 }
 
 /// Static descriptor of SurfaceType.B5_G6_R5.
-struct B5_G6_R5 {
+struct B5_G6_R5
+{
     enum totalBits = 16;
     enum numComponents = 3;
     enum redBits = 5;
@@ -697,7 +801,8 @@ struct B5_G6_R5 {
 }
 
 /// Static descriptor of SurfaceType.R5_G5_B5_A1.
-struct R5_G5_B5_A1 {
+struct R5_G5_B5_A1
+{
     enum totalBits = 16;
     enum numComponents = 4;
     enum redBits = 5;
@@ -715,7 +820,8 @@ struct R5_G5_B5_A1 {
 }
 
 /// Static descriptor of SurfaceType.B5_G5_R5_A1.
-struct B5_G5_R5_A1 {
+struct B5_G5_R5_A1
+{
     enum totalBits = 16;
     enum numComponents = 4;
     enum redBits = 5;
@@ -733,7 +839,8 @@ struct B5_G5_R5_A1 {
 }
 
 /// Static descriptor of SurfaceType.A1_R5_G5_B5.
-struct A1_R5_G5_B5 {
+struct A1_R5_G5_B5
+{
     enum totalBits = 16;
     enum numComponents = 4;
     enum redBits = 5;
@@ -751,7 +858,8 @@ struct A1_R5_G5_B5 {
 }
 
 /// Static descriptor of SurfaceType.R8.
-struct R8 {
+struct R8
+{
     enum totalBits = 8;
     enum numComponents = 1;
     enum redBits = 8;
@@ -769,7 +877,8 @@ struct R8 {
 }
 
 /// Static descriptor of SurfaceType.R8_G8.
-struct R8_G8 {
+struct R8_G8
+{
     enum totalBits = 16;
     enum numComponents = 2;
     enum redBits = 8;
@@ -787,7 +896,8 @@ struct R8_G8 {
 }
 
 /// Static descriptor of SurfaceType.R8_G8_B8.
-struct R8_G8_B8 {
+struct R8_G8_B8
+{
     enum totalBits = 24;
     enum numComponents = 3;
     enum redBits = 8;
@@ -805,7 +915,8 @@ struct R8_G8_B8 {
 }
 
 /// Static descriptor of SurfaceType.B8_G8_R8.
-struct B8_G8_R8 {
+struct B8_G8_R8
+{
     enum totalBits = 24;
     enum numComponents = 3;
     enum redBits = 8;
@@ -823,7 +934,8 @@ struct B8_G8_R8 {
 }
 
 /// Static descriptor of SurfaceType.R8_G8_B8_A8.
-struct R8_G8_B8_A8 {
+struct R8_G8_B8_A8
+{
     enum totalBits = 32;
     enum numComponents = 4;
     enum redBits = 8;
@@ -841,7 +953,8 @@ struct R8_G8_B8_A8 {
 }
 
 /// Static descriptor of SurfaceType.B8_G8_R8_A8.
-struct B8_G8_R8_A8 {
+struct B8_G8_R8_A8
+{
     enum totalBits = 32;
     enum numComponents = 4;
     enum redBits = 8;
@@ -859,7 +972,8 @@ struct B8_G8_R8_A8 {
 }
 
 /// Static descriptor of SurfaceType.A8_B8_G8_R8.
-struct A8_B8_G8_R8 {
+struct A8_B8_G8_R8
+{
     enum totalBits = 32;
     enum numComponents = 4;
     enum redBits = 8;
@@ -877,7 +991,8 @@ struct A8_B8_G8_R8 {
 }
 
 /// Static descriptor of SurfaceType.A2_R10_G10_B10.
-struct A2_R10_G10_B10 {
+struct A2_R10_G10_B10
+{
     enum totalBits = 32;
     enum numComponents = 4;
     enum redBits = 10;
@@ -895,7 +1010,8 @@ struct A2_R10_G10_B10 {
 }
 
 /// Static descriptor of SurfaceType.A2_B10_G10_R10.
-struct A2_B10_G10_R10 {
+struct A2_B10_G10_R10
+{
     enum totalBits = 32;
     enum numComponents = 4;
     enum redBits = 10;
@@ -913,7 +1029,8 @@ struct A2_B10_G10_R10 {
 }
 
 /// Static descriptor of SurfaceType.R16.
-struct R16 {
+struct R16
+{
     enum totalBits = 16;
     enum numComponents = 1;
     enum redBits = 16;
@@ -931,7 +1048,8 @@ struct R16 {
 }
 
 /// Static descriptor of SurfaceType.R16_G16.
-struct R16_G16 {
+struct R16_G16
+{
     enum totalBits = 32;
     enum numComponents = 2;
     enum redBits = 16;
@@ -949,7 +1067,8 @@ struct R16_G16 {
 }
 
 /// Static descriptor of SurfaceType.R16_G16_B16.
-struct R16_G16_B16 {
+struct R16_G16_B16
+{
     enum totalBits = 48;
     enum numComponents = 3;
     enum redBits = 16;
@@ -967,7 +1086,8 @@ struct R16_G16_B16 {
 }
 
 /// Static descriptor of SurfaceType.R16_G16_B16_A16.
-struct R16_G16_B16_A16 {
+struct R16_G16_B16_A16
+{
     enum totalBits = 64;
     enum numComponents = 4;
     enum redBits = 16;
@@ -985,7 +1105,8 @@ struct R16_G16_B16_A16 {
 }
 
 /// Static descriptor of SurfaceType.R32.
-struct R32 {
+struct R32
+{
     enum totalBits = 32;
     enum numComponents = 1;
     enum redBits = 32;
@@ -1003,7 +1124,8 @@ struct R32 {
 }
 
 /// Static descriptor of SurfaceType.R32_G32.
-struct R32_G32 {
+struct R32_G32
+{
     enum totalBits = 64;
     enum numComponents = 2;
     enum redBits = 32;
@@ -1021,7 +1143,8 @@ struct R32_G32 {
 }
 
 /// Static descriptor of SurfaceType.R32_G32_B32.
-struct R32_G32_B32 {
+struct R32_G32_B32
+{
     enum totalBits = 96;
     enum numComponents = 3;
     enum redBits = 32;
@@ -1039,7 +1162,8 @@ struct R32_G32_B32 {
 }
 
 /// Static descriptor of SurfaceType.R32_G32_B32_A32.
-struct R32_G32_B32_A32 {
+struct R32_G32_B32_A32
+{
     enum totalBits = 128;
     enum numComponents = 4;
     enum redBits = 32;
@@ -1057,7 +1181,8 @@ struct R32_G32_B32_A32 {
 }
 
 /// Static descriptor of SurfaceType.R64.
-struct R64 {
+struct R64
+{
     enum totalBits = 64;
     enum numComponents = 1;
     enum redBits = 64;
@@ -1075,7 +1200,8 @@ struct R64 {
 }
 
 /// Static descriptor of SurfaceType.R64_G64.
-struct R64_G64 {
+struct R64_G64
+{
     enum totalBits = 128;
     enum numComponents = 2;
     enum redBits = 64;
@@ -1093,7 +1219,8 @@ struct R64_G64 {
 }
 
 /// Static descriptor of SurfaceType.R64_G64_B64.
-struct R64_G64_B64 {
+struct R64_G64_B64
+{
     enum totalBits = 192;
     enum numComponents = 3;
     enum redBits = 64;
@@ -1111,7 +1238,8 @@ struct R64_G64_B64 {
 }
 
 /// Static descriptor of SurfaceType.R64_G64_B64_A64.
-struct R64_G64_B64_A64 {
+struct R64_G64_B64_A64
+{
     enum totalBits = 256;
     enum numComponents = 4;
     enum redBits = 64;
@@ -1129,7 +1257,8 @@ struct R64_G64_B64_A64 {
 }
 
 /// Static descriptor of SurfaceType.B10_G11_R11.
-struct B10_G11_R11 {
+struct B10_G11_R11
+{
     enum totalBits = 32;
     enum numComponents = 3;
     enum redBits = 11;
@@ -1147,7 +1276,8 @@ struct B10_G11_R11 {
 }
 
 /// Static descriptor of SurfaceType.E5_B9_G9_R9.
-struct E5_B9_G9_R9 {
+struct E5_B9_G9_R9
+{
     enum totalBits = 32;
     enum numComponents = 4;
     enum redBits = 9;
@@ -1165,7 +1295,8 @@ struct E5_B9_G9_R9 {
 }
 
 /// Static descriptor of SurfaceType.D16.
-struct D16 {
+struct D16
+{
     enum totalBits = 16;
     enum numComponents = 1;
     enum redBits = 0;
@@ -1183,7 +1314,8 @@ struct D16 {
 }
 
 /// Static descriptor of SurfaceType.X8_D24.
-struct X8_D24 {
+struct X8_D24
+{
     enum totalBits = 32;
     enum numComponents = 2;
     enum redBits = 0;
@@ -1201,7 +1333,8 @@ struct X8_D24 {
 }
 
 /// Static descriptor of SurfaceType.D32.
-struct D32 {
+struct D32
+{
     enum totalBits = 32;
     enum numComponents = 1;
     enum redBits = 0;
@@ -1219,7 +1352,8 @@ struct D32 {
 }
 
 /// Static descriptor of SurfaceType.S8.
-struct S8 {
+struct S8
+{
     enum totalBits = 8;
     enum numComponents = 1;
     enum redBits = 0;
@@ -1237,7 +1371,8 @@ struct S8 {
 }
 
 /// Static descriptor of SurfaceType.D16_S8.
-struct D16_S8 {
+struct D16_S8
+{
     enum totalBits = 24;
     enum numComponents = 2;
     enum redBits = 0;
@@ -1255,7 +1390,8 @@ struct D16_S8 {
 }
 
 /// Static descriptor of SurfaceType.D24_S8.
-struct D24_S8 {
+struct D24_S8
+{
     enum totalBits = 32;
     enum numComponents = 2;
     enum redBits = 0;
@@ -1273,7 +1409,8 @@ struct D24_S8 {
 }
 
 /// Static descriptor of SurfaceType.D32_S8.
-struct D32_S8 {
+struct D32_S8
+{
     enum totalBits = 40;
     enum numComponents = 2;
     enum redBits = 0;
@@ -1291,7 +1428,8 @@ struct D32_S8 {
 }
 
 /// Static descriptor of Format.rg4_uNorm
-struct Rg4_uNorm {
+struct Rg4_uNorm
+{
     alias SurfType = R4_G4;
     enum surfType = SurfaceType.R4_G4;
     enum numFormat = NumFormat.uNorm;
@@ -1299,7 +1437,8 @@ struct Rg4_uNorm {
 }
 
 /// Static descriptor of Format.rgba4_uNorm
-struct Rgba4_uNorm {
+struct Rgba4_uNorm
+{
     alias SurfType = R4_G4_B4_A4;
     enum surfType = SurfaceType.R4_G4_B4_A4;
     enum numFormat = NumFormat.uNorm;
@@ -1307,7 +1446,8 @@ struct Rgba4_uNorm {
 }
 
 /// Static descriptor of Format.bgra4_uNorm
-struct Bgra4_uNorm {
+struct Bgra4_uNorm
+{
     alias SurfType = B4_G4_R4_A4;
     enum surfType = SurfaceType.B4_G4_R4_A4;
     enum numFormat = NumFormat.uNorm;
@@ -1315,7 +1455,8 @@ struct Bgra4_uNorm {
 }
 
 /// Static descriptor of Format.r5g6b5_uNorm
-struct R5g6b5_uNorm {
+struct R5g6b5_uNorm
+{
     alias SurfType = R5_G6_B5;
     enum surfType = SurfaceType.R5_G6_B5;
     enum numFormat = NumFormat.uNorm;
@@ -1323,7 +1464,8 @@ struct R5g6b5_uNorm {
 }
 
 /// Static descriptor of Format.b5g6r5_uNorm
-struct B5g6r5_uNorm {
+struct B5g6r5_uNorm
+{
     alias SurfType = B5_G6_R5;
     enum surfType = SurfaceType.B5_G6_R5;
     enum numFormat = NumFormat.uNorm;
@@ -1331,7 +1473,8 @@ struct B5g6r5_uNorm {
 }
 
 /// Static descriptor of Format.r5g5b5a1_uNorm
-struct R5g5b5a1_uNorm {
+struct R5g5b5a1_uNorm
+{
     alias SurfType = R5_G5_B5_A1;
     enum surfType = SurfaceType.R5_G5_B5_A1;
     enum numFormat = NumFormat.uNorm;
@@ -1339,7 +1482,8 @@ struct R5g5b5a1_uNorm {
 }
 
 /// Static descriptor of Format.b5g5r5a1_uNorm
-struct B5g5r5a1_uNorm {
+struct B5g5r5a1_uNorm
+{
     alias SurfType = B5_G5_R5_A1;
     enum surfType = SurfaceType.B5_G5_R5_A1;
     enum numFormat = NumFormat.uNorm;
@@ -1347,7 +1491,8 @@ struct B5g5r5a1_uNorm {
 }
 
 /// Static descriptor of Format.a1r5g5b5_uNorm
-struct A1r5g5b5_uNorm {
+struct A1r5g5b5_uNorm
+{
     alias SurfType = A1_R5_G5_B5;
     enum surfType = SurfaceType.A1_R5_G5_B5;
     enum numFormat = NumFormat.uNorm;
@@ -1355,7 +1500,8 @@ struct A1r5g5b5_uNorm {
 }
 
 /// Static descriptor of Format.r8_uNorm
-struct R8_uNorm {
+struct R8_uNorm
+{
     alias SurfType = R8;
     enum surfType = SurfaceType.R8;
     enum numFormat = NumFormat.uNorm;
@@ -1363,7 +1509,8 @@ struct R8_uNorm {
 }
 
 /// Static descriptor of Format.r8_sNorm
-struct R8_sNorm {
+struct R8_sNorm
+{
     alias SurfType = R8;
     enum surfType = SurfaceType.R8;
     enum numFormat = NumFormat.sNorm;
@@ -1371,7 +1518,8 @@ struct R8_sNorm {
 }
 
 /// Static descriptor of Format.r8_uScaled
-struct R8_uScaled {
+struct R8_uScaled
+{
     alias SurfType = R8;
     enum surfType = SurfaceType.R8;
     enum numFormat = NumFormat.uScaled;
@@ -1379,7 +1527,8 @@ struct R8_uScaled {
 }
 
 /// Static descriptor of Format.r8_sScaled
-struct R8_sScaled {
+struct R8_sScaled
+{
     alias SurfType = R8;
     enum surfType = SurfaceType.R8;
     enum numFormat = NumFormat.sScaled;
@@ -1387,7 +1536,8 @@ struct R8_sScaled {
 }
 
 /// Static descriptor of Format.r8_uInt
-struct R8_uInt {
+struct R8_uInt
+{
     alias SurfType = R8;
     enum surfType = SurfaceType.R8;
     enum numFormat = NumFormat.uInt;
@@ -1395,7 +1545,8 @@ struct R8_uInt {
 }
 
 /// Static descriptor of Format.r8_sInt
-struct R8_sInt {
+struct R8_sInt
+{
     alias SurfType = R8;
     enum surfType = SurfaceType.R8;
     enum numFormat = NumFormat.sInt;
@@ -1403,7 +1554,8 @@ struct R8_sInt {
 }
 
 /// Static descriptor of Format.r8_sRgb
-struct R8_sRgb {
+struct R8_sRgb
+{
     alias SurfType = R8;
     enum surfType = SurfaceType.R8;
     enum numFormat = NumFormat.sRgb;
@@ -1411,7 +1563,8 @@ struct R8_sRgb {
 }
 
 /// Static descriptor of Format.rg8_uNorm
-struct Rg8_uNorm {
+struct Rg8_uNorm
+{
     alias SurfType = R8_G8;
     enum surfType = SurfaceType.R8_G8;
     enum numFormat = NumFormat.uNorm;
@@ -1419,7 +1572,8 @@ struct Rg8_uNorm {
 }
 
 /// Static descriptor of Format.rg8_sNorm
-struct Rg8_sNorm {
+struct Rg8_sNorm
+{
     alias SurfType = R8_G8;
     enum surfType = SurfaceType.R8_G8;
     enum numFormat = NumFormat.sNorm;
@@ -1427,7 +1581,8 @@ struct Rg8_sNorm {
 }
 
 /// Static descriptor of Format.rg8_uScaled
-struct Rg8_uScaled {
+struct Rg8_uScaled
+{
     alias SurfType = R8_G8;
     enum surfType = SurfaceType.R8_G8;
     enum numFormat = NumFormat.uScaled;
@@ -1435,7 +1590,8 @@ struct Rg8_uScaled {
 }
 
 /// Static descriptor of Format.rg8_sScaled
-struct Rg8_sScaled {
+struct Rg8_sScaled
+{
     alias SurfType = R8_G8;
     enum surfType = SurfaceType.R8_G8;
     enum numFormat = NumFormat.sScaled;
@@ -1443,7 +1599,8 @@ struct Rg8_sScaled {
 }
 
 /// Static descriptor of Format.rg8_uInt
-struct Rg8_uInt {
+struct Rg8_uInt
+{
     alias SurfType = R8_G8;
     enum surfType = SurfaceType.R8_G8;
     enum numFormat = NumFormat.uInt;
@@ -1451,7 +1608,8 @@ struct Rg8_uInt {
 }
 
 /// Static descriptor of Format.rg8_sInt
-struct Rg8_sInt {
+struct Rg8_sInt
+{
     alias SurfType = R8_G8;
     enum surfType = SurfaceType.R8_G8;
     enum numFormat = NumFormat.sInt;
@@ -1459,7 +1617,8 @@ struct Rg8_sInt {
 }
 
 /// Static descriptor of Format.rg8_sRgb
-struct Rg8_sRgb {
+struct Rg8_sRgb
+{
     alias SurfType = R8_G8;
     enum surfType = SurfaceType.R8_G8;
     enum numFormat = NumFormat.sRgb;
@@ -1467,7 +1626,8 @@ struct Rg8_sRgb {
 }
 
 /// Static descriptor of Format.rgb8_uNorm
-struct Rgb8_uNorm {
+struct Rgb8_uNorm
+{
     alias SurfType = R8_G8_B8;
     enum surfType = SurfaceType.R8_G8_B8;
     enum numFormat = NumFormat.uNorm;
@@ -1475,7 +1635,8 @@ struct Rgb8_uNorm {
 }
 
 /// Static descriptor of Format.rgb8_sNorm
-struct Rgb8_sNorm {
+struct Rgb8_sNorm
+{
     alias SurfType = R8_G8_B8;
     enum surfType = SurfaceType.R8_G8_B8;
     enum numFormat = NumFormat.sNorm;
@@ -1483,7 +1644,8 @@ struct Rgb8_sNorm {
 }
 
 /// Static descriptor of Format.rgb8_uScaled
-struct Rgb8_uScaled {
+struct Rgb8_uScaled
+{
     alias SurfType = R8_G8_B8;
     enum surfType = SurfaceType.R8_G8_B8;
     enum numFormat = NumFormat.uScaled;
@@ -1491,7 +1653,8 @@ struct Rgb8_uScaled {
 }
 
 /// Static descriptor of Format.rgb8_sScaled
-struct Rgb8_sScaled {
+struct Rgb8_sScaled
+{
     alias SurfType = R8_G8_B8;
     enum surfType = SurfaceType.R8_G8_B8;
     enum numFormat = NumFormat.sScaled;
@@ -1499,7 +1662,8 @@ struct Rgb8_sScaled {
 }
 
 /// Static descriptor of Format.rgb8_uInt
-struct Rgb8_uInt {
+struct Rgb8_uInt
+{
     alias SurfType = R8_G8_B8;
     enum surfType = SurfaceType.R8_G8_B8;
     enum numFormat = NumFormat.uInt;
@@ -1507,7 +1671,8 @@ struct Rgb8_uInt {
 }
 
 /// Static descriptor of Format.rgb8_sInt
-struct Rgb8_sInt {
+struct Rgb8_sInt
+{
     alias SurfType = R8_G8_B8;
     enum surfType = SurfaceType.R8_G8_B8;
     enum numFormat = NumFormat.sInt;
@@ -1515,7 +1680,8 @@ struct Rgb8_sInt {
 }
 
 /// Static descriptor of Format.rgb8_sRgb
-struct Rgb8_sRgb {
+struct Rgb8_sRgb
+{
     alias SurfType = R8_G8_B8;
     enum surfType = SurfaceType.R8_G8_B8;
     enum numFormat = NumFormat.sRgb;
@@ -1523,7 +1689,8 @@ struct Rgb8_sRgb {
 }
 
 /// Static descriptor of Format.bgr8_uNorm
-struct Bgr8_uNorm {
+struct Bgr8_uNorm
+{
     alias SurfType = B8_G8_R8;
     enum surfType = SurfaceType.B8_G8_R8;
     enum numFormat = NumFormat.uNorm;
@@ -1531,7 +1698,8 @@ struct Bgr8_uNorm {
 }
 
 /// Static descriptor of Format.bgr8_sNorm
-struct Bgr8_sNorm {
+struct Bgr8_sNorm
+{
     alias SurfType = B8_G8_R8;
     enum surfType = SurfaceType.B8_G8_R8;
     enum numFormat = NumFormat.sNorm;
@@ -1539,7 +1707,8 @@ struct Bgr8_sNorm {
 }
 
 /// Static descriptor of Format.bgr8_uScaled
-struct Bgr8_uScaled {
+struct Bgr8_uScaled
+{
     alias SurfType = B8_G8_R8;
     enum surfType = SurfaceType.B8_G8_R8;
     enum numFormat = NumFormat.uScaled;
@@ -1547,7 +1716,8 @@ struct Bgr8_uScaled {
 }
 
 /// Static descriptor of Format.bgr8_sScaled
-struct Bgr8_sScaled {
+struct Bgr8_sScaled
+{
     alias SurfType = B8_G8_R8;
     enum surfType = SurfaceType.B8_G8_R8;
     enum numFormat = NumFormat.sScaled;
@@ -1555,7 +1725,8 @@ struct Bgr8_sScaled {
 }
 
 /// Static descriptor of Format.bgr8_uInt
-struct Bgr8_uInt {
+struct Bgr8_uInt
+{
     alias SurfType = B8_G8_R8;
     enum surfType = SurfaceType.B8_G8_R8;
     enum numFormat = NumFormat.uInt;
@@ -1563,7 +1734,8 @@ struct Bgr8_uInt {
 }
 
 /// Static descriptor of Format.bgr8_sInt
-struct Bgr8_sInt {
+struct Bgr8_sInt
+{
     alias SurfType = B8_G8_R8;
     enum surfType = SurfaceType.B8_G8_R8;
     enum numFormat = NumFormat.sInt;
@@ -1571,7 +1743,8 @@ struct Bgr8_sInt {
 }
 
 /// Static descriptor of Format.bgr8_sRgb
-struct Bgr8_sRgb {
+struct Bgr8_sRgb
+{
     alias SurfType = B8_G8_R8;
     enum surfType = SurfaceType.B8_G8_R8;
     enum numFormat = NumFormat.sRgb;
@@ -1579,7 +1752,8 @@ struct Bgr8_sRgb {
 }
 
 /// Static descriptor of Format.rgba8_uNorm
-struct Rgba8_uNorm {
+struct Rgba8_uNorm
+{
     alias SurfType = R8_G8_B8_A8;
     enum surfType = SurfaceType.R8_G8_B8_A8;
     enum numFormat = NumFormat.uNorm;
@@ -1587,7 +1761,8 @@ struct Rgba8_uNorm {
 }
 
 /// Static descriptor of Format.rgba8_sNorm
-struct Rgba8_sNorm {
+struct Rgba8_sNorm
+{
     alias SurfType = R8_G8_B8_A8;
     enum surfType = SurfaceType.R8_G8_B8_A8;
     enum numFormat = NumFormat.sNorm;
@@ -1595,7 +1770,8 @@ struct Rgba8_sNorm {
 }
 
 /// Static descriptor of Format.rgba8_uScaled
-struct Rgba8_uScaled {
+struct Rgba8_uScaled
+{
     alias SurfType = R8_G8_B8_A8;
     enum surfType = SurfaceType.R8_G8_B8_A8;
     enum numFormat = NumFormat.uScaled;
@@ -1603,7 +1779,8 @@ struct Rgba8_uScaled {
 }
 
 /// Static descriptor of Format.rgba8_sScaled
-struct Rgba8_sScaled {
+struct Rgba8_sScaled
+{
     alias SurfType = R8_G8_B8_A8;
     enum surfType = SurfaceType.R8_G8_B8_A8;
     enum numFormat = NumFormat.sScaled;
@@ -1611,7 +1788,8 @@ struct Rgba8_sScaled {
 }
 
 /// Static descriptor of Format.rgba8_uInt
-struct Rgba8_uInt {
+struct Rgba8_uInt
+{
     alias SurfType = R8_G8_B8_A8;
     enum surfType = SurfaceType.R8_G8_B8_A8;
     enum numFormat = NumFormat.uInt;
@@ -1619,7 +1797,8 @@ struct Rgba8_uInt {
 }
 
 /// Static descriptor of Format.rgba8_sInt
-struct Rgba8_sInt {
+struct Rgba8_sInt
+{
     alias SurfType = R8_G8_B8_A8;
     enum surfType = SurfaceType.R8_G8_B8_A8;
     enum numFormat = NumFormat.sInt;
@@ -1627,7 +1806,8 @@ struct Rgba8_sInt {
 }
 
 /// Static descriptor of Format.rgba8_sRgb
-struct Rgba8_sRgb {
+struct Rgba8_sRgb
+{
     alias SurfType = R8_G8_B8_A8;
     enum surfType = SurfaceType.R8_G8_B8_A8;
     enum numFormat = NumFormat.sRgb;
@@ -1635,7 +1815,8 @@ struct Rgba8_sRgb {
 }
 
 /// Static descriptor of Format.bgra8_uNorm
-struct Bgra8_uNorm {
+struct Bgra8_uNorm
+{
     alias SurfType = B8_G8_R8_A8;
     enum surfType = SurfaceType.B8_G8_R8_A8;
     enum numFormat = NumFormat.uNorm;
@@ -1643,7 +1824,8 @@ struct Bgra8_uNorm {
 }
 
 /// Static descriptor of Format.bgra8_sNorm
-struct Bgra8_sNorm {
+struct Bgra8_sNorm
+{
     alias SurfType = B8_G8_R8_A8;
     enum surfType = SurfaceType.B8_G8_R8_A8;
     enum numFormat = NumFormat.sNorm;
@@ -1651,7 +1833,8 @@ struct Bgra8_sNorm {
 }
 
 /// Static descriptor of Format.bgra8_uScaled
-struct Bgra8_uScaled {
+struct Bgra8_uScaled
+{
     alias SurfType = B8_G8_R8_A8;
     enum surfType = SurfaceType.B8_G8_R8_A8;
     enum numFormat = NumFormat.uScaled;
@@ -1659,7 +1842,8 @@ struct Bgra8_uScaled {
 }
 
 /// Static descriptor of Format.bgra8_sScaled
-struct Bgra8_sScaled {
+struct Bgra8_sScaled
+{
     alias SurfType = B8_G8_R8_A8;
     enum surfType = SurfaceType.B8_G8_R8_A8;
     enum numFormat = NumFormat.sScaled;
@@ -1667,7 +1851,8 @@ struct Bgra8_sScaled {
 }
 
 /// Static descriptor of Format.bgra8_uInt
-struct Bgra8_uInt {
+struct Bgra8_uInt
+{
     alias SurfType = B8_G8_R8_A8;
     enum surfType = SurfaceType.B8_G8_R8_A8;
     enum numFormat = NumFormat.uInt;
@@ -1675,7 +1860,8 @@ struct Bgra8_uInt {
 }
 
 /// Static descriptor of Format.bgra8_sInt
-struct Bgra8_sInt {
+struct Bgra8_sInt
+{
     alias SurfType = B8_G8_R8_A8;
     enum surfType = SurfaceType.B8_G8_R8_A8;
     enum numFormat = NumFormat.sInt;
@@ -1683,7 +1869,8 @@ struct Bgra8_sInt {
 }
 
 /// Static descriptor of Format.bgra8_sRgb
-struct Bgra8_sRgb {
+struct Bgra8_sRgb
+{
     alias SurfType = B8_G8_R8_A8;
     enum surfType = SurfaceType.B8_G8_R8_A8;
     enum numFormat = NumFormat.sRgb;
@@ -1691,7 +1878,8 @@ struct Bgra8_sRgb {
 }
 
 /// Static descriptor of Format.abgr8_uNorm
-struct Abgr8_uNorm {
+struct Abgr8_uNorm
+{
     alias SurfType = A8_B8_G8_R8;
     enum surfType = SurfaceType.A8_B8_G8_R8;
     enum numFormat = NumFormat.uNorm;
@@ -1699,7 +1887,8 @@ struct Abgr8_uNorm {
 }
 
 /// Static descriptor of Format.abgr8_sNorm
-struct Abgr8_sNorm {
+struct Abgr8_sNorm
+{
     alias SurfType = A8_B8_G8_R8;
     enum surfType = SurfaceType.A8_B8_G8_R8;
     enum numFormat = NumFormat.sNorm;
@@ -1707,7 +1896,8 @@ struct Abgr8_sNorm {
 }
 
 /// Static descriptor of Format.abgr8_uScaled
-struct Abgr8_uScaled {
+struct Abgr8_uScaled
+{
     alias SurfType = A8_B8_G8_R8;
     enum surfType = SurfaceType.A8_B8_G8_R8;
     enum numFormat = NumFormat.uScaled;
@@ -1715,7 +1905,8 @@ struct Abgr8_uScaled {
 }
 
 /// Static descriptor of Format.abgr8_sScaled
-struct Abgr8_sScaled {
+struct Abgr8_sScaled
+{
     alias SurfType = A8_B8_G8_R8;
     enum surfType = SurfaceType.A8_B8_G8_R8;
     enum numFormat = NumFormat.sScaled;
@@ -1723,7 +1914,8 @@ struct Abgr8_sScaled {
 }
 
 /// Static descriptor of Format.abgr8_uInt
-struct Abgr8_uInt {
+struct Abgr8_uInt
+{
     alias SurfType = A8_B8_G8_R8;
     enum surfType = SurfaceType.A8_B8_G8_R8;
     enum numFormat = NumFormat.uInt;
@@ -1731,7 +1923,8 @@ struct Abgr8_uInt {
 }
 
 /// Static descriptor of Format.abgr8_sInt
-struct Abgr8_sInt {
+struct Abgr8_sInt
+{
     alias SurfType = A8_B8_G8_R8;
     enum surfType = SurfaceType.A8_B8_G8_R8;
     enum numFormat = NumFormat.sInt;
@@ -1739,7 +1932,8 @@ struct Abgr8_sInt {
 }
 
 /// Static descriptor of Format.abgr8_sRgb
-struct Abgr8_sRgb {
+struct Abgr8_sRgb
+{
     alias SurfType = A8_B8_G8_R8;
     enum surfType = SurfaceType.A8_B8_G8_R8;
     enum numFormat = NumFormat.sRgb;
@@ -1747,7 +1941,8 @@ struct Abgr8_sRgb {
 }
 
 /// Static descriptor of Format.a2r10g10b10_uNorm
-struct A2r10g10b10_uNorm {
+struct A2r10g10b10_uNorm
+{
     alias SurfType = A2_R10_G10_B10;
     enum surfType = SurfaceType.A2_R10_G10_B10;
     enum numFormat = NumFormat.uNorm;
@@ -1755,7 +1950,8 @@ struct A2r10g10b10_uNorm {
 }
 
 /// Static descriptor of Format.a2r10g10b10_sNorm
-struct A2r10g10b10_sNorm {
+struct A2r10g10b10_sNorm
+{
     alias SurfType = A2_R10_G10_B10;
     enum surfType = SurfaceType.A2_R10_G10_B10;
     enum numFormat = NumFormat.sNorm;
@@ -1763,7 +1959,8 @@ struct A2r10g10b10_sNorm {
 }
 
 /// Static descriptor of Format.a2r10g10b10_uScaled
-struct A2r10g10b10_uScaled {
+struct A2r10g10b10_uScaled
+{
     alias SurfType = A2_R10_G10_B10;
     enum surfType = SurfaceType.A2_R10_G10_B10;
     enum numFormat = NumFormat.uScaled;
@@ -1771,7 +1968,8 @@ struct A2r10g10b10_uScaled {
 }
 
 /// Static descriptor of Format.a2r10g10b10_sScaled
-struct A2r10g10b10_sScaled {
+struct A2r10g10b10_sScaled
+{
     alias SurfType = A2_R10_G10_B10;
     enum surfType = SurfaceType.A2_R10_G10_B10;
     enum numFormat = NumFormat.sScaled;
@@ -1779,7 +1977,8 @@ struct A2r10g10b10_sScaled {
 }
 
 /// Static descriptor of Format.a2r10g10b10_uInt
-struct A2r10g10b10_uInt {
+struct A2r10g10b10_uInt
+{
     alias SurfType = A2_R10_G10_B10;
     enum surfType = SurfaceType.A2_R10_G10_B10;
     enum numFormat = NumFormat.uInt;
@@ -1787,7 +1986,8 @@ struct A2r10g10b10_uInt {
 }
 
 /// Static descriptor of Format.a2r10g10b10_sInt
-struct A2r10g10b10_sInt {
+struct A2r10g10b10_sInt
+{
     alias SurfType = A2_R10_G10_B10;
     enum surfType = SurfaceType.A2_R10_G10_B10;
     enum numFormat = NumFormat.sInt;
@@ -1795,7 +1995,8 @@ struct A2r10g10b10_sInt {
 }
 
 /// Static descriptor of Format.a2b10g10r10_uNorm
-struct A2b10g10r10_uNorm {
+struct A2b10g10r10_uNorm
+{
     alias SurfType = A2_B10_G10_R10;
     enum surfType = SurfaceType.A2_B10_G10_R10;
     enum numFormat = NumFormat.uNorm;
@@ -1803,7 +2004,8 @@ struct A2b10g10r10_uNorm {
 }
 
 /// Static descriptor of Format.a2b10g10r10_sNorm
-struct A2b10g10r10_sNorm {
+struct A2b10g10r10_sNorm
+{
     alias SurfType = A2_B10_G10_R10;
     enum surfType = SurfaceType.A2_B10_G10_R10;
     enum numFormat = NumFormat.sNorm;
@@ -1811,7 +2013,8 @@ struct A2b10g10r10_sNorm {
 }
 
 /// Static descriptor of Format.a2b10g10r10_uScaled
-struct A2b10g10r10_uScaled {
+struct A2b10g10r10_uScaled
+{
     alias SurfType = A2_B10_G10_R10;
     enum surfType = SurfaceType.A2_B10_G10_R10;
     enum numFormat = NumFormat.uScaled;
@@ -1819,7 +2022,8 @@ struct A2b10g10r10_uScaled {
 }
 
 /// Static descriptor of Format.a2b10g10r10_sScaled
-struct A2b10g10r10_sScaled {
+struct A2b10g10r10_sScaled
+{
     alias SurfType = A2_B10_G10_R10;
     enum surfType = SurfaceType.A2_B10_G10_R10;
     enum numFormat = NumFormat.sScaled;
@@ -1827,7 +2031,8 @@ struct A2b10g10r10_sScaled {
 }
 
 /// Static descriptor of Format.a2b10g10r10_uInt
-struct A2b10g10r10_uInt {
+struct A2b10g10r10_uInt
+{
     alias SurfType = A2_B10_G10_R10;
     enum surfType = SurfaceType.A2_B10_G10_R10;
     enum numFormat = NumFormat.uInt;
@@ -1835,7 +2040,8 @@ struct A2b10g10r10_uInt {
 }
 
 /// Static descriptor of Format.a2b10g10r10_sInt
-struct A2b10g10r10_sInt {
+struct A2b10g10r10_sInt
+{
     alias SurfType = A2_B10_G10_R10;
     enum surfType = SurfaceType.A2_B10_G10_R10;
     enum numFormat = NumFormat.sInt;
@@ -1843,7 +2049,8 @@ struct A2b10g10r10_sInt {
 }
 
 /// Static descriptor of Format.r16_uNorm
-struct R16_uNorm {
+struct R16_uNorm
+{
     alias SurfType = R16;
     enum surfType = SurfaceType.R16;
     enum numFormat = NumFormat.uNorm;
@@ -1851,7 +2058,8 @@ struct R16_uNorm {
 }
 
 /// Static descriptor of Format.r16_sNorm
-struct R16_sNorm {
+struct R16_sNorm
+{
     alias SurfType = R16;
     enum surfType = SurfaceType.R16;
     enum numFormat = NumFormat.sNorm;
@@ -1859,7 +2067,8 @@ struct R16_sNorm {
 }
 
 /// Static descriptor of Format.r16_uScaled
-struct R16_uScaled {
+struct R16_uScaled
+{
     alias SurfType = R16;
     enum surfType = SurfaceType.R16;
     enum numFormat = NumFormat.uScaled;
@@ -1867,7 +2076,8 @@ struct R16_uScaled {
 }
 
 /// Static descriptor of Format.r16_sScaled
-struct R16_sScaled {
+struct R16_sScaled
+{
     alias SurfType = R16;
     enum surfType = SurfaceType.R16;
     enum numFormat = NumFormat.sScaled;
@@ -1875,7 +2085,8 @@ struct R16_sScaled {
 }
 
 /// Static descriptor of Format.r16_uInt
-struct R16_uInt {
+struct R16_uInt
+{
     alias SurfType = R16;
     enum surfType = SurfaceType.R16;
     enum numFormat = NumFormat.uInt;
@@ -1883,7 +2094,8 @@ struct R16_uInt {
 }
 
 /// Static descriptor of Format.r16_sInt
-struct R16_sInt {
+struct R16_sInt
+{
     alias SurfType = R16;
     enum surfType = SurfaceType.R16;
     enum numFormat = NumFormat.sInt;
@@ -1891,7 +2103,8 @@ struct R16_sInt {
 }
 
 /// Static descriptor of Format.r16_sFloat
-struct R16_sFloat {
+struct R16_sFloat
+{
     alias SurfType = R16;
     enum surfType = SurfaceType.R16;
     enum numFormat = NumFormat.sFloat;
@@ -1899,7 +2112,8 @@ struct R16_sFloat {
 }
 
 /// Static descriptor of Format.rg16_uNorm
-struct Rg16_uNorm {
+struct Rg16_uNorm
+{
     alias SurfType = R16_G16;
     enum surfType = SurfaceType.R16_G16;
     enum numFormat = NumFormat.uNorm;
@@ -1907,7 +2121,8 @@ struct Rg16_uNorm {
 }
 
 /// Static descriptor of Format.rg16_sNorm
-struct Rg16_sNorm {
+struct Rg16_sNorm
+{
     alias SurfType = R16_G16;
     enum surfType = SurfaceType.R16_G16;
     enum numFormat = NumFormat.sNorm;
@@ -1915,7 +2130,8 @@ struct Rg16_sNorm {
 }
 
 /// Static descriptor of Format.rg16_uScaled
-struct Rg16_uScaled {
+struct Rg16_uScaled
+{
     alias SurfType = R16_G16;
     enum surfType = SurfaceType.R16_G16;
     enum numFormat = NumFormat.uScaled;
@@ -1923,7 +2139,8 @@ struct Rg16_uScaled {
 }
 
 /// Static descriptor of Format.rg16_sScaled
-struct Rg16_sScaled {
+struct Rg16_sScaled
+{
     alias SurfType = R16_G16;
     enum surfType = SurfaceType.R16_G16;
     enum numFormat = NumFormat.sScaled;
@@ -1931,7 +2148,8 @@ struct Rg16_sScaled {
 }
 
 /// Static descriptor of Format.rg16_uInt
-struct Rg16_uInt {
+struct Rg16_uInt
+{
     alias SurfType = R16_G16;
     enum surfType = SurfaceType.R16_G16;
     enum numFormat = NumFormat.uInt;
@@ -1939,7 +2157,8 @@ struct Rg16_uInt {
 }
 
 /// Static descriptor of Format.rg16_sInt
-struct Rg16_sInt {
+struct Rg16_sInt
+{
     alias SurfType = R16_G16;
     enum surfType = SurfaceType.R16_G16;
     enum numFormat = NumFormat.sInt;
@@ -1947,7 +2166,8 @@ struct Rg16_sInt {
 }
 
 /// Static descriptor of Format.rg16_sFloat
-struct Rg16_sFloat {
+struct Rg16_sFloat
+{
     alias SurfType = R16_G16;
     enum surfType = SurfaceType.R16_G16;
     enum numFormat = NumFormat.sFloat;
@@ -1955,7 +2175,8 @@ struct Rg16_sFloat {
 }
 
 /// Static descriptor of Format.rgb16_uNorm
-struct Rgb16_uNorm {
+struct Rgb16_uNorm
+{
     alias SurfType = R16_G16_B16;
     enum surfType = SurfaceType.R16_G16_B16;
     enum numFormat = NumFormat.uNorm;
@@ -1963,7 +2184,8 @@ struct Rgb16_uNorm {
 }
 
 /// Static descriptor of Format.rgb16_sNorm
-struct Rgb16_sNorm {
+struct Rgb16_sNorm
+{
     alias SurfType = R16_G16_B16;
     enum surfType = SurfaceType.R16_G16_B16;
     enum numFormat = NumFormat.sNorm;
@@ -1971,7 +2193,8 @@ struct Rgb16_sNorm {
 }
 
 /// Static descriptor of Format.rgb16_uScaled
-struct Rgb16_uScaled {
+struct Rgb16_uScaled
+{
     alias SurfType = R16_G16_B16;
     enum surfType = SurfaceType.R16_G16_B16;
     enum numFormat = NumFormat.uScaled;
@@ -1979,7 +2202,8 @@ struct Rgb16_uScaled {
 }
 
 /// Static descriptor of Format.rgb16_sScaled
-struct Rgb16_sScaled {
+struct Rgb16_sScaled
+{
     alias SurfType = R16_G16_B16;
     enum surfType = SurfaceType.R16_G16_B16;
     enum numFormat = NumFormat.sScaled;
@@ -1987,7 +2211,8 @@ struct Rgb16_sScaled {
 }
 
 /// Static descriptor of Format.rgb16_uInt
-struct Rgb16_uInt {
+struct Rgb16_uInt
+{
     alias SurfType = R16_G16_B16;
     enum surfType = SurfaceType.R16_G16_B16;
     enum numFormat = NumFormat.uInt;
@@ -1995,7 +2220,8 @@ struct Rgb16_uInt {
 }
 
 /// Static descriptor of Format.rgb16_sInt
-struct Rgb16_sInt {
+struct Rgb16_sInt
+{
     alias SurfType = R16_G16_B16;
     enum surfType = SurfaceType.R16_G16_B16;
     enum numFormat = NumFormat.sInt;
@@ -2003,7 +2229,8 @@ struct Rgb16_sInt {
 }
 
 /// Static descriptor of Format.rgb16_sFloat
-struct Rgb16_sFloat {
+struct Rgb16_sFloat
+{
     alias SurfType = R16_G16_B16;
     enum surfType = SurfaceType.R16_G16_B16;
     enum numFormat = NumFormat.sFloat;
@@ -2011,7 +2238,8 @@ struct Rgb16_sFloat {
 }
 
 /// Static descriptor of Format.rgba16_uNorm
-struct Rgba16_uNorm {
+struct Rgba16_uNorm
+{
     alias SurfType = R16_G16_B16_A16;
     enum surfType = SurfaceType.R16_G16_B16_A16;
     enum numFormat = NumFormat.uNorm;
@@ -2019,7 +2247,8 @@ struct Rgba16_uNorm {
 }
 
 /// Static descriptor of Format.rgba16_sNorm
-struct Rgba16_sNorm {
+struct Rgba16_sNorm
+{
     alias SurfType = R16_G16_B16_A16;
     enum surfType = SurfaceType.R16_G16_B16_A16;
     enum numFormat = NumFormat.sNorm;
@@ -2027,7 +2256,8 @@ struct Rgba16_sNorm {
 }
 
 /// Static descriptor of Format.rgba16_uScaled
-struct Rgba16_uScaled {
+struct Rgba16_uScaled
+{
     alias SurfType = R16_G16_B16_A16;
     enum surfType = SurfaceType.R16_G16_B16_A16;
     enum numFormat = NumFormat.uScaled;
@@ -2035,7 +2265,8 @@ struct Rgba16_uScaled {
 }
 
 /// Static descriptor of Format.rgba16_sScaled
-struct Rgba16_sScaled {
+struct Rgba16_sScaled
+{
     alias SurfType = R16_G16_B16_A16;
     enum surfType = SurfaceType.R16_G16_B16_A16;
     enum numFormat = NumFormat.sScaled;
@@ -2043,7 +2274,8 @@ struct Rgba16_sScaled {
 }
 
 /// Static descriptor of Format.rgba16_uInt
-struct Rgba16_uInt {
+struct Rgba16_uInt
+{
     alias SurfType = R16_G16_B16_A16;
     enum surfType = SurfaceType.R16_G16_B16_A16;
     enum numFormat = NumFormat.uInt;
@@ -2051,7 +2283,8 @@ struct Rgba16_uInt {
 }
 
 /// Static descriptor of Format.rgba16_sInt
-struct Rgba16_sInt {
+struct Rgba16_sInt
+{
     alias SurfType = R16_G16_B16_A16;
     enum surfType = SurfaceType.R16_G16_B16_A16;
     enum numFormat = NumFormat.sInt;
@@ -2059,7 +2292,8 @@ struct Rgba16_sInt {
 }
 
 /// Static descriptor of Format.rgba16_sFloat
-struct Rgba16_sFloat {
+struct Rgba16_sFloat
+{
     alias SurfType = R16_G16_B16_A16;
     enum surfType = SurfaceType.R16_G16_B16_A16;
     enum numFormat = NumFormat.sFloat;
@@ -2067,7 +2301,8 @@ struct Rgba16_sFloat {
 }
 
 /// Static descriptor of Format.r32_uInt
-struct R32_uInt {
+struct R32_uInt
+{
     alias SurfType = R32;
     enum surfType = SurfaceType.R32;
     enum numFormat = NumFormat.uInt;
@@ -2075,7 +2310,8 @@ struct R32_uInt {
 }
 
 /// Static descriptor of Format.r32_sInt
-struct R32_sInt {
+struct R32_sInt
+{
     alias SurfType = R32;
     enum surfType = SurfaceType.R32;
     enum numFormat = NumFormat.sInt;
@@ -2083,7 +2319,8 @@ struct R32_sInt {
 }
 
 /// Static descriptor of Format.r32_sFloat
-struct R32_sFloat {
+struct R32_sFloat
+{
     alias SurfType = R32;
     enum surfType = SurfaceType.R32;
     enum numFormat = NumFormat.sFloat;
@@ -2091,7 +2328,8 @@ struct R32_sFloat {
 }
 
 /// Static descriptor of Format.rg32_uInt
-struct Rg32_uInt {
+struct Rg32_uInt
+{
     alias SurfType = R32_G32;
     enum surfType = SurfaceType.R32_G32;
     enum numFormat = NumFormat.uInt;
@@ -2099,7 +2337,8 @@ struct Rg32_uInt {
 }
 
 /// Static descriptor of Format.rg32_sInt
-struct Rg32_sInt {
+struct Rg32_sInt
+{
     alias SurfType = R32_G32;
     enum surfType = SurfaceType.R32_G32;
     enum numFormat = NumFormat.sInt;
@@ -2107,7 +2346,8 @@ struct Rg32_sInt {
 }
 
 /// Static descriptor of Format.rg32_sFloat
-struct Rg32_sFloat {
+struct Rg32_sFloat
+{
     alias SurfType = R32_G32;
     enum surfType = SurfaceType.R32_G32;
     enum numFormat = NumFormat.sFloat;
@@ -2115,7 +2355,8 @@ struct Rg32_sFloat {
 }
 
 /// Static descriptor of Format.rgb32_uInt
-struct Rgb32_uInt {
+struct Rgb32_uInt
+{
     alias SurfType = R32_G32_B32;
     enum surfType = SurfaceType.R32_G32_B32;
     enum numFormat = NumFormat.uInt;
@@ -2123,7 +2364,8 @@ struct Rgb32_uInt {
 }
 
 /// Static descriptor of Format.rgb32_sInt
-struct Rgb32_sInt {
+struct Rgb32_sInt
+{
     alias SurfType = R32_G32_B32;
     enum surfType = SurfaceType.R32_G32_B32;
     enum numFormat = NumFormat.sInt;
@@ -2131,7 +2373,8 @@ struct Rgb32_sInt {
 }
 
 /// Static descriptor of Format.rgb32_sFloat
-struct Rgb32_sFloat {
+struct Rgb32_sFloat
+{
     alias SurfType = R32_G32_B32;
     enum surfType = SurfaceType.R32_G32_B32;
     enum numFormat = NumFormat.sFloat;
@@ -2139,7 +2382,8 @@ struct Rgb32_sFloat {
 }
 
 /// Static descriptor of Format.rgba32_uInt
-struct Rgba32_uInt {
+struct Rgba32_uInt
+{
     alias SurfType = R32_G32_B32_A32;
     enum surfType = SurfaceType.R32_G32_B32_A32;
     enum numFormat = NumFormat.uInt;
@@ -2147,7 +2391,8 @@ struct Rgba32_uInt {
 }
 
 /// Static descriptor of Format.rgba32_sInt
-struct Rgba32_sInt {
+struct Rgba32_sInt
+{
     alias SurfType = R32_G32_B32_A32;
     enum surfType = SurfaceType.R32_G32_B32_A32;
     enum numFormat = NumFormat.sInt;
@@ -2155,7 +2400,8 @@ struct Rgba32_sInt {
 }
 
 /// Static descriptor of Format.rgba32_sFloat
-struct Rgba32_sFloat {
+struct Rgba32_sFloat
+{
     alias SurfType = R32_G32_B32_A32;
     enum surfType = SurfaceType.R32_G32_B32_A32;
     enum numFormat = NumFormat.sFloat;
@@ -2163,7 +2409,8 @@ struct Rgba32_sFloat {
 }
 
 /// Static descriptor of Format.r64_uInt
-struct R64_uInt {
+struct R64_uInt
+{
     alias SurfType = R64;
     enum surfType = SurfaceType.R64;
     enum numFormat = NumFormat.uInt;
@@ -2171,7 +2418,8 @@ struct R64_uInt {
 }
 
 /// Static descriptor of Format.r64_sInt
-struct R64_sInt {
+struct R64_sInt
+{
     alias SurfType = R64;
     enum surfType = SurfaceType.R64;
     enum numFormat = NumFormat.sInt;
@@ -2179,7 +2427,8 @@ struct R64_sInt {
 }
 
 /// Static descriptor of Format.r64_sFloat
-struct R64_sFloat {
+struct R64_sFloat
+{
     alias SurfType = R64;
     enum surfType = SurfaceType.R64;
     enum numFormat = NumFormat.sFloat;
@@ -2187,7 +2436,8 @@ struct R64_sFloat {
 }
 
 /// Static descriptor of Format.rg64_uInt
-struct Rg64_uInt {
+struct Rg64_uInt
+{
     alias SurfType = R64_G64;
     enum surfType = SurfaceType.R64_G64;
     enum numFormat = NumFormat.uInt;
@@ -2195,7 +2445,8 @@ struct Rg64_uInt {
 }
 
 /// Static descriptor of Format.rg64_sInt
-struct Rg64_sInt {
+struct Rg64_sInt
+{
     alias SurfType = R64_G64;
     enum surfType = SurfaceType.R64_G64;
     enum numFormat = NumFormat.sInt;
@@ -2203,7 +2454,8 @@ struct Rg64_sInt {
 }
 
 /// Static descriptor of Format.rg64_sFloat
-struct Rg64_sFloat {
+struct Rg64_sFloat
+{
     alias SurfType = R64_G64;
     enum surfType = SurfaceType.R64_G64;
     enum numFormat = NumFormat.sFloat;
@@ -2211,7 +2463,8 @@ struct Rg64_sFloat {
 }
 
 /// Static descriptor of Format.rgb64_uInt
-struct Rgb64_uInt {
+struct Rgb64_uInt
+{
     alias SurfType = R64_G64_B64;
     enum surfType = SurfaceType.R64_G64_B64;
     enum numFormat = NumFormat.uInt;
@@ -2219,7 +2472,8 @@ struct Rgb64_uInt {
 }
 
 /// Static descriptor of Format.rgb64_sInt
-struct Rgb64_sInt {
+struct Rgb64_sInt
+{
     alias SurfType = R64_G64_B64;
     enum surfType = SurfaceType.R64_G64_B64;
     enum numFormat = NumFormat.sInt;
@@ -2227,7 +2481,8 @@ struct Rgb64_sInt {
 }
 
 /// Static descriptor of Format.rgb64_sFloat
-struct Rgb64_sFloat {
+struct Rgb64_sFloat
+{
     alias SurfType = R64_G64_B64;
     enum surfType = SurfaceType.R64_G64_B64;
     enum numFormat = NumFormat.sFloat;
@@ -2235,7 +2490,8 @@ struct Rgb64_sFloat {
 }
 
 /// Static descriptor of Format.rgba64_uInt
-struct Rgba64_uInt {
+struct Rgba64_uInt
+{
     alias SurfType = R64_G64_B64_A64;
     enum surfType = SurfaceType.R64_G64_B64_A64;
     enum numFormat = NumFormat.uInt;
@@ -2243,7 +2499,8 @@ struct Rgba64_uInt {
 }
 
 /// Static descriptor of Format.rgba64_sInt
-struct Rgba64_sInt {
+struct Rgba64_sInt
+{
     alias SurfType = R64_G64_B64_A64;
     enum surfType = SurfaceType.R64_G64_B64_A64;
     enum numFormat = NumFormat.sInt;
@@ -2251,7 +2508,8 @@ struct Rgba64_sInt {
 }
 
 /// Static descriptor of Format.rgba64_sFloat
-struct Rgba64_sFloat {
+struct Rgba64_sFloat
+{
     alias SurfType = R64_G64_B64_A64;
     enum surfType = SurfaceType.R64_G64_B64_A64;
     enum numFormat = NumFormat.sFloat;
@@ -2259,7 +2517,8 @@ struct Rgba64_sFloat {
 }
 
 /// Static descriptor of Format.b10g11r11_uFloat
-struct B10g11r11_uFloat {
+struct B10g11r11_uFloat
+{
     alias SurfType = B10_G11_R11;
     enum surfType = SurfaceType.B10_G11_R11;
     enum numFormat = NumFormat.uFloat;
@@ -2267,7 +2526,8 @@ struct B10g11r11_uFloat {
 }
 
 /// Static descriptor of Format.ebgr9_uFloat
-struct Ebgr9_uFloat {
+struct Ebgr9_uFloat
+{
     alias SurfType = E5_B9_G9_R9;
     enum surfType = SurfaceType.E5_B9_G9_R9;
     enum numFormat = NumFormat.uFloat;
@@ -2275,7 +2535,8 @@ struct Ebgr9_uFloat {
 }
 
 /// Static descriptor of Format.d16_uNorm
-struct D16_uNorm {
+struct D16_uNorm
+{
     alias SurfType = D16;
     enum surfType = SurfaceType.D16;
     enum numFormat = NumFormat.uNorm;
@@ -2283,7 +2544,8 @@ struct D16_uNorm {
 }
 
 /// Static descriptor of Format.x8d24_uNorm
-struct X8d24_uNorm {
+struct X8d24_uNorm
+{
     alias SurfType = X8_D24;
     enum surfType = SurfaceType.X8_D24;
     enum numFormat = NumFormat.uNorm;
@@ -2291,7 +2553,8 @@ struct X8d24_uNorm {
 }
 
 /// Static descriptor of Format.d32_sFloat
-struct D32_sFloat {
+struct D32_sFloat
+{
     alias SurfType = D32;
     enum surfType = SurfaceType.D32;
     enum numFormat = NumFormat.sFloat;
@@ -2299,7 +2562,8 @@ struct D32_sFloat {
 }
 
 /// Static descriptor of Format.s8_uInt
-struct S8_uInt {
+struct S8_uInt
+{
     alias SurfType = S8;
     enum surfType = SurfaceType.S8;
     enum numFormat = NumFormat.uInt;
@@ -2307,7 +2571,8 @@ struct S8_uInt {
 }
 
 /// Static descriptor of Format.d16s8_uNorm
-struct D16s8_uNorm {
+struct D16s8_uNorm
+{
     alias SurfType = D16_S8;
     enum surfType = SurfaceType.D16_S8;
     enum numFormat = NumFormat.uNorm;
@@ -2315,7 +2580,8 @@ struct D16s8_uNorm {
 }
 
 /// Static descriptor of Format.d24s8_uNorm
-struct D24s8_uNorm {
+struct D24s8_uNorm
+{
     alias SurfType = D24_S8;
     enum surfType = SurfaceType.D24_S8;
     enum numFormat = NumFormat.uNorm;
@@ -2323,7 +2589,8 @@ struct D24s8_uNorm {
 }
 
 /// Static descriptor of Format.d32s8_sFloat
-struct D32s8_sFloat {
+struct D32s8_sFloat
+{
     alias SurfType = D32_S8;
     enum surfType = SurfaceType.D32_S8;
     enum numFormat = NumFormat.sFloat;
@@ -2332,7 +2599,8 @@ struct D32s8_sFloat {
 
 private immutable(FormatDesc[]) fmtDescs;
 
-shared static this() {
+shared static this()
+{
     import std.exception : assumeUnique;
     fmtDescs = assumeUnique( [
         FormatDesc.init,
