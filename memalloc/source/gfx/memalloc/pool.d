@@ -15,9 +15,9 @@ final class PoolAllocator : Allocator
     {
         super(device, options);
 
-        foreach (uint i, mh; _memProps.heaps) {
+        foreach (i, mh; _memProps.heaps) {
             const heapOpts = _options.heapOptions.length>i ? _options.heapOptions[i] : HeapOptions.init;
-            _pools ~= new MemoryPool(this, i, heapOpts, mh, _memProps.types);
+            _pools ~= new MemoryPool(this, cast(uint)i, heapOpts, mh, _memProps.types);
         }
     }
 

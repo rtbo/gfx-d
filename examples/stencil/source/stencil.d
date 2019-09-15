@@ -133,7 +133,7 @@ class StencilExample : Example
                 No.mayAlias
             ),
             AttachmentDescription(
-                Format.s8_uInt, 1,
+                findStencilFormat(), 1,
                 AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
                 AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
                 trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
@@ -310,7 +310,7 @@ class StencilExample : Example
         auto writes = [
             WriteDescriptorSet(descriptorSet, 0, 0, DescriptorWrite.make(
                 DescriptorType.combinedImageSampler,
-                chessboardView.descriptorWithSampler(ImageLayout.shaderReadOnlyOptimal, sampler),
+                chessboardView.descriptorWithSampler(ImageLayout.undefined, sampler),
             )),
         ];
         device.updateDescriptorSets(writes, []);

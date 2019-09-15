@@ -300,13 +300,10 @@ final class ShadowExample : Example
     void prepareShadowRenderPass()
     {
         const attachments = [
-            AttachmentDescription(
-                Format.d32_sFloat, 1,
-                AttachmentOps(LoadOp.clear, StoreOp.store),
-                AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
-                trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
-                No.mayAlias
-            ),
+            AttachmentDescription.depth(
+                Format.d32_sFloat, AttachmentOps(LoadOp.clear, StoreOp.dontCare),
+                trans(ImageLayout.undefined, ImageLayout.depthStencilReadOnlyOptimal)
+            )
         ];
         const subpasses = [
             SubpassDescription(
@@ -320,19 +317,15 @@ final class ShadowExample : Example
     void prepareMeshRenderPass()
     {
         const attachments = [
-            AttachmentDescription(swapchain.format, 1,
-                AttachmentOps(LoadOp.clear, StoreOp.store),
-                AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
+            AttachmentDescription.color(
+                swapchain.format, AttachmentOps(LoadOp.clear, StoreOp.store),
                 trans(ImageLayout.undefined, ImageLayout.presentSrc),
-                No.mayAlias
             ),
-            AttachmentDescription(findDepthFormat(), 1,
-                AttachmentOps(LoadOp.clear, StoreOp.dontCare),
-                AttachmentOps(LoadOp.dontCare, StoreOp.dontCare),
-                trans(ImageLayout.undefined, ImageLayout.depthStencilAttachmentOptimal),
-                No.mayAlias
-            )
-        ];
+            AttachmentDescription.depth(
+                findDepthFormat(), AttachmentOps(LoadOp.clear, StoreOp.dontCare),
+                trans(ImageLayout.undefined, ImageLayout.depthStencilReadOnlyOptimal)
+            ),
+       ];
         const subpasses = [
             SubpassDescription(
                 [], [ AttachmentRef(0, ImageLayout.colorAttachmentOptimal) ],

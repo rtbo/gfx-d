@@ -104,7 +104,7 @@ else {
 
         /// Extensions to open Vulkan surfaces on the platform window system
         immutable string[] surfaceInstanceExtensions = [
-            surfaceInstanceExtension, waylandSurfaceInstanceExtension, xcbSurfaceInstanceExtension
+            surfaceInstanceExtension, win32SurfaceInstanceExtension
         ];
         /// Extensions necessary to open an Win32 Vulkan surface
         immutable string[] win32SurfaceInstanceExtensions = [
