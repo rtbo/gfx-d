@@ -1,6 +1,8 @@
 /// Matrix linear algebra module
 module gfx.math.mat;
 
+pure @safe nothrow:
+
 alias FMat(size_t R, size_t C) = Mat!(float, R, C);
 alias DMat(size_t R, size_t C) = Mat!(double, R, C);
 alias IMat(size_t R, size_t C) = Mat!(int, R, C);

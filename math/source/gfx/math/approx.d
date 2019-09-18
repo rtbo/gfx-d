@@ -5,6 +5,8 @@ module gfx.math.approx;
 
 import std.traits : isFloatingPoint;
 
+pure @safe @nogc nothrow:
+
 /// Different methods to check if two floating point values are close to each other.
 enum ApproxMethod
 {

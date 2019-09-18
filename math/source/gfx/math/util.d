@@ -4,6 +4,8 @@ module gfx.math.util;
 import gfx.math.mat;
 import gfx.math.vec;
 
+pure @safe @nogc nothrow:
+
 /// Build a look-at view matrix
 auto lookAt(V)(in V eye, in V target, in V up) if (isVec!V)
 {

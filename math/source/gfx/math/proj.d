@@ -13,6 +13,8 @@ import gfx.math.mat;
 import gfx.math.vec;
 import std.traits : isFloatingPoint;
 
+pure @safe @nogc nothrow:
+
 /// Determines whether the default projection matrices will project to a clip space
 /// where Y points upwards (left hand NDC) or downwards (right hand NDC).
 /// Default is right hand NDC, but can be changed by setting version(GfxMathLeftHandNDC)

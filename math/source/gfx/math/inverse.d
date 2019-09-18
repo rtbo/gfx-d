@@ -3,6 +3,8 @@ module gfx.math.inverse;
 
 import gfx.math.mat;
 
+pure @safe @nogc nothrow:
+
 // algos in this module are from GLM
 
 /// Compute the determinant of a matrix.

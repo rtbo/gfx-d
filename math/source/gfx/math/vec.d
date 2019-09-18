@@ -3,6 +3,8 @@ module gfx.math.vec;
 
 import std.traits : isFloatingPoint, isNumeric, isStaticArray;
 
+pure @safe nothrow:
+
 alias Vec2(T) = Vec!(T, 2);
 alias Vec3(T) = Vec!(T, 3);
 alias Vec4(T) = Vec!(T, 4);
@@ -397,7 +399,7 @@ struct Vec(T, size_t N) if(N > 0 && isNumeric!T)
     }
 
     /// Foreach support.
-    int opApply(int delegate(size_t i, ref T) dg)
+    @system int opApply(int delegate(size_t i, ref T) dg)
     {
         int res;
         foreach (i, ref v; _rep)
@@ -410,7 +412,33 @@ struct Vec(T, size_t N) if(N > 0 && isNumeric!T)
     }
 
     /// Foreach support.
-    int opApply(int delegate(ref T) dg)
+    @system int opApply(int delegate(ref T) dg)
+    {
+        int res;
+        foreach (ref v; _rep)
+        {
+            res = dg(v);
+            if (res)
+                break;
+        }
+        return res;
+    }
+
+    /// Foreach support.
+    @safe int opApply(int delegate(size_t i, ref T) @safe dg)
+    {
+        int res;
+        foreach (i, ref v; _rep)
+        {
+            res = dg(i, v);
+            if (res)
+                break;
+        }
+        return res;
+    }
+
+    /// Foreach support.
+    @safe int opApply(int delegate(ref T) @safe dg)
     {
         int res;
         foreach (ref v; _rep)

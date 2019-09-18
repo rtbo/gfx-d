@@ -6,7 +6,7 @@ import gfx.math.vec;
 import std.meta : allSatisfy;
 import std.traits : CommonType, isFloatingPoint, isNumeric;
 
-@safe pure:
+pure @safe @nogc nothrow:
 
 /// Build a translation matrix.
 auto translation(X, Y)(in X x, in Y y)
