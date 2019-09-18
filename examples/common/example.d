@@ -198,15 +198,12 @@ class Example : Disposable
         foreach (a; args) {
             if (a == "--no-vulkan" || a == "nv") {
                 noVulkan = true;
-                break;
             }
             else if (a == "--no-gl3" || a == "ng") {
                 noGl3 = true;
-                break;
             }
             else if (a == "--no-wayland" || a == "nw") {
                 noWayland = true;
-                break;
             }
         }
 
