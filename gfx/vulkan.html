@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Module gfx.vulkan</title>
 		<link rel="stylesheet" href="../css/style.min.css"/>
 		<script type="text/javascript" src="../js/script.min.js"></script>
@@ -397,25 +397,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<tr>
 							<td>
 								<code>
-									<a id="createVulkanInstance" class="public" href="../gfx/vulkan/createVulkanInstance.html">createVulkanInstance</a><span class="decoration">(appName, appVersion)</span>
+									<a id="createVulkanInstance" class="public" href="../gfx/vulkan/createVulkanInstance.html">createVulkanInstance</a><span class="tableEntryAnnotation">(createInfo)</span>
 								</code>
 							</td>
-							<td>Creates a vulkan instance with default layers and extensions
+							<td>Creates an Instance object with Vulkan backend with options
 </td>
 						</tr>
 						<tr>
 							<td>
 								<code>
-									<a id="createVulkanInstance" class="public" href="../gfx/vulkan/createVulkanInstance.html">createVulkanInstance</a><span class="decoration">(layers, extensions, appName, appVersion)</span>
-								</code>
-							</td>
-							<td>Creates an Instance object with Vulkan backend with user specified layers and extensions
-</td>
-						</tr>
-						<tr>
-							<td>
-								<code>
-									<a id="overrideDeviceOpenVulkanExtensions" class="public" href="../gfx/vulkan/overrideDeviceOpenVulkanExtensions.html">overrideDeviceOpenVulkanExtensions</a><span class="decoration">(device, extensions)</span>
+									<a id="overrideDeviceOpenVulkanExtensions" class="public" href="../gfx/vulkan/overrideDeviceOpenVulkanExtensions.html">overrideDeviceOpenVulkanExtensions</a><span class="tableEntryAnnotation">(device, extensions)</span>
 								</code>
 							</td>
 							<td></td>
@@ -423,7 +414,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<tr>
 							<td>
 								<code>
-									<a id="overrideDeviceOpenVulkanLayers" class="public" href="../gfx/vulkan/overrideDeviceOpenVulkanLayers.html">overrideDeviceOpenVulkanLayers</a><span class="decoration">(device, layers)</span>
+									<a id="overrideDeviceOpenVulkanLayers" class="public" href="../gfx/vulkan/overrideDeviceOpenVulkanLayers.html">overrideDeviceOpenVulkanLayers</a><span class="tableEntryAnnotation">(device, layers)</span>
 								</code>
 							</td>
 							<td></td>
@@ -431,7 +422,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<tr>
 							<td>
 								<code>
-									<a id="vulkanApiProps" class="public property" href="../gfx/vulkan/vulkanApiProps.html">vulkanApiProps</a><span class="decoration">()</span>
+									<a id="vulkanApiProps" class="public property" href="../gfx/vulkan/vulkanApiProps.html">vulkanApiProps</a><span class="tableEntryAnnotation">()</span>
 								</code>
 							</td>
 							<td></td>
@@ -439,7 +430,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<tr>
 							<td>
 								<code>
-									<a id="vulkanDeviceExtensions" class="public" href="../gfx/vulkan/vulkanDeviceExtensions.html">vulkanDeviceExtensions</a><span class="decoration">(device, layerName)</span>
+									<a id="vulkanDeviceExtensions" class="public" href="../gfx/vulkan/vulkanDeviceExtensions.html">vulkanDeviceExtensions</a><span class="tableEntryAnnotation">(device, layerName)</span>
 								</code>
 							</td>
 							<td>Retrieve available instance level extensions properties
@@ -448,7 +439,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<tr>
 							<td>
 								<code>
-									<a id="vulkanDeviceLayers" class="public property" href="../gfx/vulkan/vulkanDeviceLayers.html">vulkanDeviceLayers</a><span class="decoration">(device)</span>
+									<a id="vulkanDeviceLayers" class="public property" href="../gfx/vulkan/vulkanDeviceLayers.html">vulkanDeviceLayers</a><span class="tableEntryAnnotation">(device)</span>
 								</code>
 							</td>
 							<td>Retrieve available device level layers
@@ -457,7 +448,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<tr>
 							<td>
 								<code>
-									<a id="vulkanInit" class="public" href="../gfx/vulkan/vulkanInit.html">vulkanInit</a><span class="decoration">()</span>
+									<a id="vulkanInit" class="public" href="../gfx/vulkan/vulkanInit.html">vulkanInit</a><span class="tableEntryAnnotation">()</span>
 								</code>
 							</td>
 							<td>Load global level vulkan functions, and instance level layers and extensions
@@ -467,7 +458,7 @@ This function must be called before any other in this module
 						<tr>
 							<td>
 								<code>
-									<a id="vulkanInstanceExtensions" class="public property" href="../gfx/vulkan/vulkanInstanceExtensions.html">vulkanInstanceExtensions</a><span class="decoration">()</span>
+									<a id="vulkanInstanceExtensions" class="public property" href="../gfx/vulkan/vulkanInstanceExtensions.html">vulkanInstanceExtensions</a><span class="tableEntryAnnotation">()</span>
 								</code>
 							</td>
 							<td>Retrieve available instance level extensions properties
@@ -476,7 +467,7 @@ This function must be called before any other in this module
 						<tr>
 							<td>
 								<code>
-									<a id="vulkanInstanceLayers" class="public property" href="../gfx/vulkan/vulkanInstanceLayers.html">vulkanInstanceLayers</a><span class="decoration">()</span>
+									<a id="vulkanInstanceLayers" class="public property" href="../gfx/vulkan/vulkanInstanceLayers.html">vulkanInstanceLayers</a><span class="tableEntryAnnotation">()</span>
 								</code>
 							</td>
 							<td>Retrieve available instance level layer properties
@@ -490,6 +481,15 @@ This function must be called before any other in this module
 						<col class="caption"/>
 						<tr>
 							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="VulkanCreateInfo" class="public" href="../gfx/vulkan/VulkanCreateInfo.html">VulkanCreateInfo</a>
+								</code>
+							</td>
+							<td>Options to create a Vulkan instance.
+</td>
 						</tr>
 						<tr>
 							<td>
@@ -534,6 +534,26 @@ This function must be called before any other in this module
 							</td>
 							<td></td>
 						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Global variables</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a id="debugReportInstanceExtensions" class="public" href="../gfx/vulkan/debugReportInstanceExtensions.html">
+									<code>debugReportInstanceExtensions</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><span class="kwd">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">[]</span><span class="pun">)</span></code>
+							</td>
+							<td></td>
+						</tr>
 						<tr>
 							<td>
 								<a id="lunarGValidationLayers" class="public" href="../gfx/vulkan/lunarGValidationLayers.html">
@@ -541,6 +561,7 @@ This function must be called before any other in this module
 								</a>
 							</td>
 							<td>
+								<code class="prettyprint lang-d"><span class="kwd">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">[]</span><span class="pun">)</span></code>
 							</td>
 							<td></td>
 						</tr>

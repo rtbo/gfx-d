@@ -2,8 +2,8 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
-		<title>XcbWindow - multiple declarations</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
+		<title>Class XcbWindow</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
 	</head>
@@ -384,21 +384,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>XcbWindow - multiple declarations</h1>
-				<nav class="page-nav">
-					<ul>
-						<li>
-							<a href="#0">
-								Class <code>XcbWindow</code>
-							</a>
-						</li>
-						<li>
-							<a href="#1">
-								Class <code>XcbWindow</code>
-							</a>
-						</li>
-					</ul>
-				</nav><h2 id="0">Class XcbWindow</h2><p></p>
+				<h1>Class XcbWindow</h1><p></p>
 				<div class="prototype">
 					<code class="lang-d">
 						<div class="single-prototype">
@@ -409,7 +395,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</code>
 				</div>
 				
-				<section><h3>Constructors</h3>
+				<section><h2>Constructors</h2>
 					<table>
 						<col class="caption"/>
 						<tr>
@@ -420,12 +406,13 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/window/xcb/XcbWindow.this.html" class="public">
 									<code>this</code>
 								</a>
+								<span class="tableEntryAnnotation">(dpy, instance, title, dummy)</span>
 							</td>
 							<td></td>
 						</tr>
 					</table>
 				</section>
-				<section><h3>Properties</h3>
+				<section><h2>Properties</h2>
 					<table>
 						<col class="caption"/>
 						<tr>
@@ -499,7 +486,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 					</table>
 				</section>
-				<section><h3>Methods</h3>
+				<section><h2>Methods</h2>
 					<table>
 						<col class="caption"/>
 						<tr>
@@ -510,6 +497,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/window/xcb/XcbWindow.close.html" class="public">
 									<code>close</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td></td>
 						</tr>
@@ -518,6 +506,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/window/xcb/XcbWindow.setTitle.html" class="public">
 									<code>setTitle</code>
 								</a>
+								<span class="tableEntryAnnotation">(title)</span>
 							</td>
 							<td></td>
 						</tr>
@@ -526,6 +515,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/window/xcb/XcbWindow.show.html" class="public">
 									<code>show</code>
 								</a>
+								<span class="tableEntryAnnotation">(width, height)</span>
 							</td>
 							<td></td>
 						</tr>
@@ -534,147 +524,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/window/Window.setTitle.html" class="public inherited">
 									<code>setTitle</code>
 								</a>
-							</td>
-							<td></td>
-						</tr>
-					</table>
-				</section>
-				<h2 id="1">Class XcbWindow</h2><p></p>
-				<div class="prototype">
-					<code class="lang-d">
-						<div class="single-prototype">
-				<span class="kwd">class</span> <span class="typ">XcbWindow</span>
-				<br>&nbsp;&nbsp;: <a href="../../../gfx/window/Window.html"><span class="typ">Window</span></a>
-				<span class="pun">;</span>
-						</div>
-					</code>
-				</div>
-				
-				<section><h3>Constructors</h3>
-					<table>
-						<col class="caption"/>
-						<tr>
-							<th>Name</th><th>Description</th>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xcb/XcbWindow.this.html" class="public">
-									<code>this</code>
-								</a>
-							</td>
-							<td></td>
-						</tr>
-					</table>
-				</section>
-				<section><h3>Properties</h3>
-					<table>
-						<col class="caption"/>
-						<tr>
-							<th>Name</th><th>Type</th><th>Description</th>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xcb/XcbWindow.closeFlag.html" class="public property"><code>closeFlag</code></a><span class="tableEntryAnnotation">[get]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xcb/XcbWindow.closeFlag.html" class="public property"><code>closeFlag</code></a><span class="tableEntryAnnotation">[set]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="kwd">const</span><span class="pun">(</span><span class="typ">bool</span><span class="pun">)</span></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xcb/XcbWindow.onClose.html" class="public property"><code>onClose</code></a><span class="tableEntryAnnotation">[set]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span> <span class="kwd">delegate</span><span class="pun">(</span><span class="pun">)</span></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xcb/XcbWindow.onKeyOff.html" class="public property"><code>onKeyOff</code></a><span class="tableEntryAnnotation">[set]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><a href="../../../gfx/window/KeyEvent.html"><span class="typ">KeyEvent</span></a><span class="pun">)</span></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xcb/XcbWindow.onKeyOn.html" class="public property"><code>onKeyOn</code></a><span class="tableEntryAnnotation">[set]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><a href="../../../gfx/window/KeyEvent.html"><span class="typ">KeyEvent</span></a><span class="pun">)</span></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xcb/XcbWindow.onMouseMove.html" class="public property"><code>onMouseMove</code></a><span class="tableEntryAnnotation">[set]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><a href="../../../gfx/window/MouseEvent.html"><span class="typ">MouseEvent</span></a><span class="pun">)</span></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xcb/XcbWindow.onMouseOff.html" class="public property"><code>onMouseOff</code></a><span class="tableEntryAnnotation">[set]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><a href="../../../gfx/window/MouseEvent.html"><span class="typ">MouseEvent</span></a><span class="pun">)</span></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xcb/XcbWindow.onMouseOn.html" class="public property"><code>onMouseOn</code></a><span class="tableEntryAnnotation">[set]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><a href="../../../gfx/window/MouseEvent.html"><span class="typ">MouseEvent</span></a><span class="pun">)</span></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xcb/XcbWindow.onResize.html" class="public property"><code>onResize</code></a><span class="tableEntryAnnotation">[set]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><span class="typ">uint</span><span class="pun">, </span><span class="typ">uint</span><span class="pun">)</span></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xcb/XcbWindow.surface.html" class="public property"><code>surface</code></a><span class="tableEntryAnnotation">[get]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/presentation/Surface.html"><span class="typ">Surface</span></a></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xcb/XcbWindow.title.html" class="public property"><code>title</code></a><span class="tableEntryAnnotation">[get]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td></td>
-						</tr>
-					</table>
-				</section>
-				<section><h3>Methods</h3>
-					<table>
-						<col class="caption"/>
-						<tr>
-							<th>Name</th><th>Description</th>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xcb/XcbWindow.close.html" class="public">
-									<code>close</code>
-								</a>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xcb/XcbWindow.setTitle.html" class="public">
-									<code>setTitle</code>
-								</a>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xcb/XcbWindow.show.html" class="public">
-									<code>show</code>
-								</a>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/Window.setTitle.html" class="public inherited">
-									<code>setTitle</code>
-								</a>
+								<span class="tableEntryAnnotation">(title)</span>
 							</td>
 							<td></td>
 						</tr>

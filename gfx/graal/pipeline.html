@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Module gfx.graal.pipeline</title>
 		<link rel="stylesheet" href="../../css/style.min.css"/>
 		<script type="text/javascript" src="../../js/script.min.js"></script>
@@ -444,39 +444,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</table>
 				</section>
 				<section>
-					<h2>Classes</h2>
-					<table>
-						<col class="caption"/>
-						<tr>
-							<th>Name</th><th>Description</th>
-						</tr>
-						<tr>
-							<td>
-								<code>
-									<a id="DescriptorWrites" class="public" href="../../gfx/graal/pipeline/DescriptorWrites.html">DescriptorWrites</a>
-								</code>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<code>
-									<a id="TDescWrites" class="public" href="../../gfx/graal/pipeline/TDescWrites.html">TDescWrites</a>
-								</code>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<code>
-									<a id="TDescWritesBase" class="public" href="../../gfx/graal/pipeline/TDescWritesBase.html">TDescWritesBase</a>
-								</code>
-							</td>
-							<td></td>
-						</tr>
-					</table>
-				</section>
-				<section>
 					<h2>Structs</h2>
 					<table>
 						<col class="caption"/>
@@ -494,10 +461,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<tr>
 							<td>
 								<code>
-									<a id="BufferRange" class="public" href="../../gfx/graal/pipeline/BufferRange.html">BufferRange</a>
+									<a id="BufferDescriptor" class="public" href="../../gfx/graal/pipeline/BufferDescriptor.html">BufferDescriptor</a>
 								</code>
 							</td>
-							<td></td>
+							<td>Descriptor for a buffer
+to be used to update the following descriptor types:
+- DescriptorType.uniformBuffer
+- DescriptorType.uniformBufferDynamic
+- DescriptorType.storageBuffer
+- DescriptorType.storageBufferDynamic
+</td>
 						</tr>
 						<tr>
 							<td>
@@ -511,14 +484,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<code>
 									<a id="ColorBlendInfo" class="public" href="../../gfx/graal/pipeline/ColorBlendInfo.html">ColorBlendInfo</a>
-								</code>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<code>
-									<a id="CombinedImageSampler" class="public" href="../../gfx/graal/pipeline/CombinedImageSampler.html">CombinedImageSampler</a>
 								</code>
 							</td>
 							<td></td>
@@ -565,6 +530,15 @@ If clamp &lt; 0f, the effective offset is max(o, clamp)
 						<tr>
 							<td>
 								<code>
+									<a id="DescriptorWrite" class="public" href="../../gfx/graal/pipeline/DescriptorWrite.html">DescriptorWrite</a>
+								</code>
+							</td>
+							<td>Gathering of descriptor or descriptors array to be written to a device
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
 									<a id="GraphicsShaderSet" class="public" href="../../gfx/graal/pipeline/GraphicsShaderSet.html">GraphicsShaderSet</a>
 								</code>
 							</td>
@@ -573,10 +547,26 @@ If clamp &lt; 0f, the effective offset is max(o, clamp)
 						<tr>
 							<td>
 								<code>
-									<a id="ImageViewLayout" class="public" href="../../gfx/graal/pipeline/ImageViewLayout.html">ImageViewLayout</a>
+									<a id="ImageDescriptor" class="public" href="../../gfx/graal/pipeline/ImageDescriptor.html">ImageDescriptor</a>
 								</code>
 							</td>
-							<td></td>
+							<td>Descriptor for images
+to be used to update the following descriptor types:
+- DescriptorType.sampledImage
+- DescriptorType.storageImage
+- DescriptorType.inputAttachment
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="ImageSamplerDescriptor" class="public" href="../../gfx/graal/pipeline/ImageSamplerDescriptor.html">ImageSamplerDescriptor</a>
+								</code>
+							</td>
+							<td>Descriptor that combines sampler and image view
+to be used to update the following descriptor types:
+- DescriptorType.combinedImageSampler
+</td>
 						</tr>
 						<tr>
 							<td>
@@ -621,6 +611,17 @@ If clamp &lt; 0f, the effective offset is max(o, clamp)
 						<tr>
 							<td>
 								<code>
+									<a id="SamplerDescriptor" class="public" href="../../gfx/graal/pipeline/SamplerDescriptor.html">SamplerDescriptor</a>
+								</code>
+							</td>
+							<td>Descriptor for a sampler
+to be used to update the following descriptor types:
+- DescriptorType.sampler
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
 									<a id="StencilInfo" class="public" href="../../gfx/graal/pipeline/StencilInfo.html">StencilInfo</a>
 								</code>
 							</td>
@@ -633,6 +634,18 @@ If clamp &lt; 0f, the effective offset is max(o, clamp)
 								</code>
 							</td>
 							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="TexelBufferDescriptor" class="public" href="../../gfx/graal/pipeline/TexelBufferDescriptor.html">TexelBufferDescriptor</a>
+								</code>
+							</td>
+							<td>Descriptor for a texel buffer
+to be used to update the following descriptor types:
+- DescriptorType.uniformTexelBuffer
+- DescriptorType.storageTexelBuffer
+</td>
 						</tr>
 						<tr>
 							<td>
@@ -778,136 +791,6 @@ If clamp &lt; 0f, the effective offset is max(o, clamp)
 								<code>
 									<a id="StencilOp" class="public" href="../../gfx/graal/pipeline/StencilOp.html">StencilOp</a>
 								</code>
-							</td>
-							<td></td>
-						</tr>
-					</table>
-				</section>
-				<section>
-					<h2>Aliases</h2>
-					<table>
-						<col class="caption"/>
-						<tr>
-							<th>Name</th><th>Type</th><th>Description</th>
-						</tr>
-						<tr>
-							<td>
-								<a id="CombinedImageSamplerDescWrites" class="public" href="../../gfx/graal/pipeline/CombinedImageSamplerDescWrites.html">
-									<code>CombinedImageSamplerDescWrites</code>
-								</a>
-							</td>
-							<td>
-								<code class="prettyprint lang-d"><a href="../../gfx/graal/pipeline/TDescWrites.html"><span class="typ">TDescWrites</span></a>!(gfx.graal.pipeline.CombinedImageSampler,1)</code>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a id="InputAttachmentDescWrites" class="public" href="../../gfx/graal/pipeline/InputAttachmentDescWrites.html">
-									<code>InputAttachmentDescWrites</code>
-								</a>
-							</td>
-							<td>
-								<code class="prettyprint lang-d"><a href="../../gfx/graal/pipeline/TDescWrites.html"><span class="typ">TDescWrites</span></a>!(gfx.graal.pipeline.ImageViewLayout,10)</code>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a id="SampledImageDescWrites" class="public" href="../../gfx/graal/pipeline/SampledImageDescWrites.html">
-									<code>SampledImageDescWrites</code>
-								</a>
-							</td>
-							<td>
-								<code class="prettyprint lang-d"><a href="../../gfx/graal/pipeline/TDescWrites.html"><span class="typ">TDescWrites</span></a>!(gfx.graal.pipeline.ImageViewLayout,2)</code>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a id="SamplerDescWrites" class="public" href="../../gfx/graal/pipeline/SamplerDescWrites.html">
-									<code>SamplerDescWrites</code>
-								</a>
-							</td>
-							<td>
-								<code class="prettyprint lang-d"><a href="../../gfx/graal/pipeline/TDescWrites.html"><span class="typ">TDescWrites</span></a>!(gfx.graal.image.Sampler,0)</code>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a id="StorageBufferDescWrites" class="public" href="../../gfx/graal/pipeline/StorageBufferDescWrites.html">
-									<code>StorageBufferDescWrites</code>
-								</a>
-							</td>
-							<td>
-								<code class="prettyprint lang-d"><a href="../../gfx/graal/pipeline/TDescWrites.html"><span class="typ">TDescWrites</span></a>!(gfx.graal.pipeline.BufferRange,7)</code>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a id="StorageBufferDynamicDescWrites" class="public" href="../../gfx/graal/pipeline/StorageBufferDynamicDescWrites.html">
-									<code>StorageBufferDynamicDescWrites</code>
-								</a>
-							</td>
-							<td>
-								<code class="prettyprint lang-d"><a href="../../gfx/graal/pipeline/TDescWrites.html"><span class="typ">TDescWrites</span></a>!(gfx.graal.pipeline.BufferRange,9)</code>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a id="StorageImageDescWrites" class="public" href="../../gfx/graal/pipeline/StorageImageDescWrites.html">
-									<code>StorageImageDescWrites</code>
-								</a>
-							</td>
-							<td>
-								<code class="prettyprint lang-d"><a href="../../gfx/graal/pipeline/TDescWrites.html"><span class="typ">TDescWrites</span></a>!(gfx.graal.pipeline.ImageViewLayout,3)</code>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a id="StorageTexelBufferDescWrites" class="public" href="../../gfx/graal/pipeline/StorageTexelBufferDescWrites.html">
-									<code>StorageTexelBufferDescWrites</code>
-								</a>
-							</td>
-							<td>
-								<code class="prettyprint lang-d"><a href="../../gfx/graal/pipeline/TDescWrites.html"><span class="typ">TDescWrites</span></a>!(gfx.graal.buffer.BufferView,5)</code>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a id="UniformBufferDescWrites" class="public" href="../../gfx/graal/pipeline/UniformBufferDescWrites.html">
-									<code>UniformBufferDescWrites</code>
-								</a>
-							</td>
-							<td>
-								<code class="prettyprint lang-d"><a href="../../gfx/graal/pipeline/TDescWrites.html"><span class="typ">TDescWrites</span></a>!(gfx.graal.pipeline.BufferRange,6)</code>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a id="UniformBufferDynamicDescWrites" class="public" href="../../gfx/graal/pipeline/UniformBufferDynamicDescWrites.html">
-									<code>UniformBufferDynamicDescWrites</code>
-								</a>
-							</td>
-							<td>
-								<code class="prettyprint lang-d"><a href="../../gfx/graal/pipeline/TDescWrites.html"><span class="typ">TDescWrites</span></a>!(gfx.graal.pipeline.BufferRange,8)</code>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a id="UniformTexelBufferDescWrites" class="public" href="../../gfx/graal/pipeline/UniformTexelBufferDescWrites.html">
-									<code>UniformTexelBufferDescWrites</code>
-								</a>
-							</td>
-							<td>
-								<code class="prettyprint lang-d"><a href="../../gfx/graal/pipeline/TDescWrites.html"><span class="typ">TDescWrites</span></a>!(gfx.graal.buffer.BufferView,4)</code>
 							</td>
 							<td></td>
 						</tr>

@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Struct AttachmentDescription</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
@@ -384,7 +384,8 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>Struct AttachmentDescription</h1><p></p>
+				<h1>Struct AttachmentDescription</h1><p>Describes an image attachment in a render pass or framebuffer
+</p>
 				<div class="prototype">
 					<code class="lang-d">
 						<div class="single-prototype">
@@ -402,39 +403,112 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
-								<a href="../../../gfx/graal/renderpass/AttachmentDescription.colorDepthOps.html" class="public"><code>colorDepthOps</code></a>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/renderpass/AttachmentOps.html"><span class="typ">AttachmentOps</span></a></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
 								<a href="../../../gfx/graal/renderpass/AttachmentDescription.format.html" class="public"><code>format</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/format/Format.html"><span class="typ">Format</span></a></code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/format/Format.html"><span class="typ">Format</span></a></code></td><td>the format of the attachment
+</td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../gfx/graal/renderpass/AttachmentDescription.layoutTrans.html" class="public"><code>layoutTrans</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/types/Trans.html"><span class="typ">Trans</span></a>!(gfx.graal.image.ImageLayout)</code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/types/Trans.html"><span class="typ">Trans</span></a>!(gfx.graal.image.ImageLayout)</code></td><td>The ImageLayout transition of the attachment.
+layoutTrans.from is the initial layout of the attachment when it enters the render pass.
+it is up to the programmer to ensure that the attachment will be in this state.
+layoutTrans.to is the layout of the attachment when it exits the render pass.
+</td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../gfx/graal/renderpass/AttachmentDescription.mayAlias.html" class="public"><code>mayAlias</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">typecons<wbr/></span><span class="pun">.</span><span class="typ">Flag</span>!("mayAlias")</code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">typecons<wbr/></span><span class="pun">.</span><span class="typ">Flag</span>!("mayAlias")</code></td><td>Set mayAlias to Yes if a part of the attachment memory is shared with parts of other attachments
+in the same render pass.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/renderpass/AttachmentDescription.ops.html" class="public"><code>ops</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/renderpass/AttachmentOps.html"><span class="typ">AttachmentOps</span></a></code></td><td>the operations to be performed on the attachment
+color and depth attachments may only need to define the ops member
+depth-stencil attachments must define both ops (for depth) and stencilOps members.
+</td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../gfx/graal/renderpass/AttachmentDescription.samples.html" class="public"><code>samples</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Sample count of the attachment
+Must be a power of two between 1 and 64
+</td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../gfx/graal/renderpass/AttachmentDescription.stencilOps.html" class="public"><code>stencilOps</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/renderpass/AttachmentOps.html"><span class="typ">AttachmentOps</span></a></code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/renderpass/AttachmentOps.html"><span class="typ">AttachmentOps</span></a></code></td><td>the operations to be performed on the attachment
+color and depth attachments may only need to define the ops member
+depth-stencil attachments must define both ops (for depth) and stencilOps members.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Methods</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/renderpass/AttachmentDescription.color.html" class="public">
+									<code>color</code>
+								</a>
+								<span class="tableEntryAnnotation">(format, ops, layoutTrans)</span>
+							</td>
+							<td>Build a color attachment description
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/renderpass/AttachmentDescription.depth.html" class="public">
+									<code>depth</code>
+								</a>
+								<span class="tableEntryAnnotation">(format, ops, layoutTrans)</span>
+							</td>
+							<td>Build a depth attachment description
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/renderpass/AttachmentDescription.depthStencil.html" class="public">
+									<code>depthStencil</code>
+								</a>
+								<span class="tableEntryAnnotation">(format, depthOps, stencilOps, layoutTrans)</span>
+							</td>
+							<td>Build a depth-stencil attachment description
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/renderpass/AttachmentDescription.withMayAlias.html" class="public">
+									<code>withMayAlias</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Set mayAlias to Yes
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/renderpass/AttachmentDescription.withSamples.html" class="public">
+									<code>withSamples</code>
+								</a>
+								<span class="tableEntryAnnotation">(samples)</span>
+							</td>
+							<td>Set samples to the description
+</td>
 						</tr>
 					</table>
 				</section>

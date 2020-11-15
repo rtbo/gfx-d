@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Module gfx.math.approx</title>
 		<link rel="stylesheet" href="../../css/style.min.css"/>
 		<script type="text/javascript" src="../../js/script.min.js"></script>
@@ -402,7 +402,7 @@ Supported by this very informative article:
 						<tr>
 							<td>
 								<code>
-									<a id="approx" class="public" href="../../gfx/math/approx/approx.html">approx</a><span class="decoration">(method, a, b)</span>
+									<a id="approx" class="public" href="../../gfx/math/approx/approx.html">approx</a><span class="tableEntryAnnotation">(method, a, b)</span>
 								</code>
 							</td>
 							<td>Check with method given at runtime with default parameters
@@ -412,7 +412,7 @@ a and b can be any data sets supported by the approx template
 						<tr>
 							<td>
 								<code>
-									<a id="scalarApproxRel" class="public" href="../../gfx/math/approx/scalarApproxRel.html">scalarApproxRel</a><span class="decoration">(a, b, maxEps)</span>
+									<a id="scalarApproxRel" class="public" href="../../gfx/math/approx/scalarApproxRel.html">scalarApproxRel</a><span class="tableEntryAnnotation">(a, b, maxEps)</span>
 								</code>
 							</td>
 							<td>Check whether the relative error between a and b is smaller than maxEps
@@ -421,7 +421,7 @@ a and b can be any data sets supported by the approx template
 						<tr>
 							<td>
 								<code>
-									<a id="scalarApproxRelAndAbs" class="public" href="../../gfx/math/approx/scalarApproxRelAndAbs.html">scalarApproxRelAndAbs</a><span class="decoration">(a, b, maxAbs, maxEps)</span>
+									<a id="scalarApproxRelAndAbs" class="public" href="../../gfx/math/approx/scalarApproxRelAndAbs.html">scalarApproxRelAndAbs</a><span class="tableEntryAnnotation">(a, b, maxAbs, maxEps)</span>
 								</code>
 							</td>
 							<td>Check whether the relative error between a and b is smaller than maxEps.
@@ -432,7 +432,7 @@ This is useful when comparing against zero the result of a subtraction.
 						<tr>
 							<td>
 								<code>
-									<a id="scalarApproxUlp" class="public" href="../../gfx/math/approx/scalarApproxUlp.html">scalarApproxUlp</a><span class="decoration">(a, b, maxUlps)</span>
+									<a id="scalarApproxUlp" class="public" href="../../gfx/math/approx/scalarApproxUlp.html">scalarApproxUlp</a><span class="tableEntryAnnotation">(a, b, maxUlps)</span>
 								</code>
 							</td>
 							<td>Determines if two floating point scalars are maxUlps close to each other.
@@ -441,7 +441,7 @@ This is useful when comparing against zero the result of a subtraction.
 						<tr>
 							<td>
 								<code>
-									<a id="scalarApproxUlpAndAbs" class="public" href="../../gfx/math/approx/scalarApproxUlpAndAbs.html">scalarApproxUlpAndAbs</a><span class="decoration">(a, b, maxAbs, maxUlps)</span>
+									<a id="scalarApproxUlpAndAbs" class="public" href="../../gfx/math/approx/scalarApproxUlpAndAbs.html">scalarApproxUlpAndAbs</a><span class="tableEntryAnnotation">(a, b, maxAbs, maxUlps)</span>
 								</code>
 							</td>
 							<td>Determines if two floating point scalars are maxUlps close to each other.
@@ -452,7 +452,7 @@ This is useful when comparing against zero the result of a subtraction.
 						<tr>
 							<td>
 								<code>
-									<a id="ulpDiff" class="public" href="../../gfx/math/approx/ulpDiff.html">ulpDiff</a><span class="decoration">(a, b)</span>
+									<a id="ulpDiff" class="public" href="../../gfx/math/approx/ulpDiff.html">ulpDiff</a><span class="tableEntryAnnotation">(a, b)</span>
 								</code>
 							</td>
 							<td>Compute the ULP difference between two floating point numbers
@@ -511,7 +511,7 @@ Negative result indicates that b has higher ULP value than a.
 								</a>
 							</td>
 							<td>
-								<code class="prettyprint lang-d"></code>
+								<code class="prettyprint lang-d"><span class="pln">approx</span>!(ApproxMethod.rel)</code>
 							</td>
 							<td>Compare two data sets with ApproxMethod.rel.
 That is call scalarApproxRel on each couple of the data sets.
@@ -524,7 +524,7 @@ That is call scalarApproxRel on each couple of the data sets.
 								</a>
 							</td>
 							<td>
-								<code class="prettyprint lang-d"></code>
+								<code class="prettyprint lang-d"><span class="pln">approx</span>!(ApproxMethod.relAndAbs)</code>
 							</td>
 							<td>Compare two data sets with ApproxMethod.relAndAbs.
 That is call scalarApproxRelAndAbs on each couple of the data sets.
@@ -537,7 +537,7 @@ That is call scalarApproxRelAndAbs on each couple of the data sets.
 								</a>
 							</td>
 							<td>
-								<code class="prettyprint lang-d"></code>
+								<code class="prettyprint lang-d"><span class="pln">approx</span>!(ApproxMethod.ulp)</code>
 							</td>
 							<td>Compare two data sets with ApproxMethod.ulp.
 That is call scalarApproxUlp on each couple of the data sets.
@@ -550,7 +550,7 @@ That is call scalarApproxUlp on each couple of the data sets.
 								</a>
 							</td>
 							<td>
-								<code class="prettyprint lang-d"></code>
+								<code class="prettyprint lang-d"><span class="pln">approx</span>!(ApproxMethod.ulpAndAbs)</code>
 							</td>
 							<td>Compare two data sets with ApproxMethod.ulpAndAbs.
 That is call scalarApproxUlpAndAbs on each couple of the data sets.

@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Function CommandBuffer.begin</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
@@ -384,14 +384,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>Function CommandBuffer.begin</h1><p></p>
+				<h1>Function CommandBuffer.begin</h1><p>Begin recording and switches the buffer state from "invalid" to "recording"
+SecondaryCommandBuffer can alternatively call beginWithinRenderPass
+</p>
 				<div class="prototype">
 					<code class="lang-d">
 						<div class="single-prototype">
 				<span class="kwd">abstract </span><span class="typ">void</span> <span class="pln">begin</span>
 				<span class="pun">(</span>
 				<br/>
-				&nbsp;&nbsp;<span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">typecons<wbr/></span><span class="pun">.</span><span class="typ">Flag</span>!("persistent") <span class="pln">persistent</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">Flag</span><span class="pun">)</span><span class="kwd">false</span>
+				&nbsp;&nbsp;<span class="kwd">in </span><span class="kwd">const</span><span class="pun">(</span><a href="../../../gfx/graal/cmd/CommandBufferUsage.html"><span class="typ">CommandBufferUsage</span></a><span class="pun">)</span> <span class="pln">usage</span>
 				<br/>
 				<span class="pun">)</span><span class="pun">;</span>
 						</div>

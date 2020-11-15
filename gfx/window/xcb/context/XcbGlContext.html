@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Class XcbGlContext</title>
 		<link rel="stylesheet" href="../../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../../js/script.min.js"></script>
@@ -393,11 +393,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				<br>&nbsp;&nbsp;: <a href="../../../../gfx/gl3/context/GlContext.html"><span class="typ">GlContext</span></a>
 				<span class="pun">;</span>
 						</div>
-						<div class="single-prototype">
-				<span class="kwd">class</span> <span class="typ">XcbGlContext</span>
-				<br>&nbsp;&nbsp;: <a href="../../../../gfx/gl3/context/GlContext.html"><span class="typ">GlContext</span></a>
-				<span class="pun">;</span>
-						</div>
 					</code>
 				</div>
 				
@@ -412,6 +407,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../../gfx/window/xcb/context/XcbGlContext.this.html" class="public">
 									<code>this</code>
 								</a>
+								<span class="tableEntryAnnotation">(dpy, mainScreenNum, attribs, window)</span>
 							</td>
 							<td>Contruct an OpenGL context for the given display and screen.
 The window is necessary to make the context current on and loading GL symbols.
@@ -489,6 +485,7 @@ It can be a dummy window destroyed right initialization.
 								<a href="../../../../gfx/window/xcb/context/XcbGlContext.dispose.html" class="public">
 									<code>dispose</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Dispose the underlying resource
 </td>
@@ -498,6 +495,7 @@ It can be a dummy window destroyed right initialization.
 								<a href="../../../../gfx/window/xcb/context/XcbGlContext.doneCurrent.html" class="public">
 									<code>doneCurrent</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td></td>
 						</tr>
@@ -506,14 +504,7 @@ It can be a dummy window destroyed right initialization.
 								<a href="../../../../gfx/window/xcb/context/XcbGlContext.makeCurrent.html" class="public">
 									<code>makeCurrent</code>
 								</a>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/window/xcb/context/XcbGlContext.rcDebug.html" class="public">
-									<code>rcDebug</code>
-								</a>
+								<span class="tableEntryAnnotation">(nativeHandle)</span>
 							</td>
 							<td></td>
 						</tr>
@@ -522,6 +513,7 @@ It can be a dummy window destroyed right initialization.
 								<a href="../../../../gfx/window/xcb/context/XcbGlContext.rcLockShared.html" class="public">
 									<code>rcLockShared</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Returns whether the refCount &gt;= 1.
 This increases the refCount by 1. rcLock should be used to keep
@@ -534,6 +526,7 @@ The operation is atomic.
 								<a href="../../../../gfx/window/xcb/context/XcbGlContext.releaseShared.html" class="public">
 									<code>releaseShared</code>
 								</a>
+								<span class="tableEntryAnnotation">(disposeOnZero)</span>
 							</td>
 							<td>Atomically decrement the reference count.
 If refCount reaches zero, and disposeOnZero is set,
@@ -548,6 +541,7 @@ is intended to release the object to give it away.
 								<a href="../../../../gfx/window/xcb/context/XcbGlContext.retainShared.html" class="public">
 									<code>retainShared</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Atomically increment the reference count.
 </td>
@@ -557,6 +551,7 @@ is intended to release the object to give it away.
 								<a href="../../../../gfx/window/xcb/context/XcbGlContext.swapBuffers.html" class="public">
 									<code>swapBuffers</code>
 								</a>
+								<span class="tableEntryAnnotation">(nativeHandle)</span>
 							</td>
 							<td></td>
 						</tr>
@@ -565,6 +560,7 @@ is intended to release the object to give it away.
 								<a href="../../../../gfx/core/rc/IAtomicRefCounted.rcLock.html" class="public inherited">
 									<code>rcLock</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Returns whether the refCount &gt;= 1.
 This increases the refCount by 1. rcLock should be used to keep
@@ -577,6 +573,7 @@ The operation is atomic.
 								<a href="../../../../gfx/core/rc/IAtomicRefCounted.release.html" class="public inherited">
 									<code>release</code>
 								</a>
+								<span class="tableEntryAnnotation">(disposeOnZero)</span>
 							</td>
 							<td>Atomically decrement the reference count.
 If refCount reaches zero, and disposeOnZero is set,
@@ -591,202 +588,7 @@ is intended to release the object to give it away.
 								<a href="../../../../gfx/core/rc/IAtomicRefCounted.retain.html" class="public inherited">
 									<code>retain</code>
 								</a>
-							</td>
-							<td>Atomically increment the reference count.
-</td>
-						</tr>
-					</table>
-				</section>
-				<section><h2>Constructors</h2>
-					<table>
-						<col class="caption"/>
-						<tr>
-							<th>Name</th><th>Description</th>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/window/xcb/context/XcbGlContext.this.html" class="public">
-									<code>this</code>
-								</a>
-							</td>
-							<td>Contruct an OpenGL context for the given display and screen.
-The window is necessary to make the context current on and loading GL symbols.
-It can be a dummy window destroyed right initialization.
-</td>
-						</tr>
-					</table>
-				</section>
-				<section><h2>Properties</h2>
-					<table>
-						<col class="caption"/>
-						<tr>
-							<th>Name</th><th>Type</th><th>Description</th>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/window/xcb/context/XcbGlContext.attribs.html" class="public property"><code>attribs</code></a><span class="tableEntryAnnotation">[get]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/gl3/context/GlAttribs.html"><span class="typ">GlAttribs</span></a></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/window/xcb/context/XcbGlContext.current.html" class="public property"><code>current</code></a><span class="tableEntryAnnotation">[get]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/window/xcb/context/XcbGlContext.gl.html" class="public property"><code>gl</code></a><span class="tableEntryAnnotation">[get]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../gfx/bindings/opengl/gl/Gl.html"><span class="typ">Gl</span></a></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/window/xcb/context/XcbGlContext.refCountShared.html" class="public property"><code>refCountShared</code></a><span class="tableEntryAnnotation">[get]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ulong</span></code></td><td>Atomically loads the number of active references.
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/window/xcb/context/XcbGlContext.swapInterval.html" class="public property"><code>swapInterval</code></a><span class="tableEntryAnnotation">[get]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/window/xcb/context/XcbGlContext.swapInterval.html" class="public property"><code>swapInterval</code></a><span class="tableEntryAnnotation">[set]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/gl3/context/GlContext.current.html" class="public inherited property"><code>current</code></a><span class="tableEntryAnnotation">[get]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/core/rc/IAtomicRefCounted.refCount.html" class="public inherited property"><code>refCount</code></a><span class="tableEntryAnnotation">[get]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ulong</span></code></td><td>Atomically loads the number of active references.
-</td>
-						</tr>
-					</table>
-				</section>
-				<section><h2>Methods</h2>
-					<table>
-						<col class="caption"/>
-						<tr>
-							<th>Name</th><th>Description</th>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/window/xcb/context/XcbGlContext.dispose.html" class="public">
-									<code>dispose</code>
-								</a>
-							</td>
-							<td>Dispose the underlying resource
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/window/xcb/context/XcbGlContext.doneCurrent.html" class="public">
-									<code>doneCurrent</code>
-								</a>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/window/xcb/context/XcbGlContext.makeCurrent.html" class="public">
-									<code>makeCurrent</code>
-								</a>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/window/xcb/context/XcbGlContext.rcDebug.html" class="public">
-									<code>rcDebug</code>
-								</a>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/window/xcb/context/XcbGlContext.rcLockShared.html" class="public">
-									<code>rcLockShared</code>
-								</a>
-							</td>
-							<td>Returns whether the refCount &gt;= 1.
-This increases the refCount by 1. rcLock should be used to keep
-weak reference and ensures that the resource is not disposed.
-The operation is atomic.
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/window/xcb/context/XcbGlContext.releaseShared.html" class="public">
-									<code>releaseShared</code>
-								</a>
-							</td>
-							<td>Atomically decrement the reference count.
-If refCount reaches zero, and disposeOnZero is set,
-the object is locked with its own mutex, and dispose is called.
-In most cases, the calling code should set disposeOnZero, unless it
-is intended to release the object to give it away.
-(such as at the end of a builder function)
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/window/xcb/context/XcbGlContext.retainShared.html" class="public">
-									<code>retainShared</code>
-								</a>
-							</td>
-							<td>Atomically increment the reference count.
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/window/xcb/context/XcbGlContext.swapBuffers.html" class="public">
-									<code>swapBuffers</code>
-								</a>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/core/rc/IAtomicRefCounted.rcLock.html" class="public inherited">
-									<code>rcLock</code>
-								</a>
-							</td>
-							<td>Returns whether the refCount &gt;= 1.
-This increases the refCount by 1. rcLock should be used to keep
-weak reference and ensures that the resource is not disposed.
-The operation is atomic.
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/core/rc/IAtomicRefCounted.release.html" class="public inherited">
-									<code>release</code>
-								</a>
-							</td>
-							<td>Atomically decrement the reference count.
-If refCount reaches zero, and disposeOnZero is set,
-the object is locked with its own mutex, and dispose is called.
-In most cases, the calling code should set disposeOnZero, unless it
-is intended to release the object to give it away.
-(such as at the end of a builder function)
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../gfx/core/rc/IAtomicRefCounted.retain.html" class="public inherited">
-									<code>retain</code>
-								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Atomically increment the reference count.
 </td>

@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Alias vec2</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
@@ -390,7 +390,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<code class="lang-d">
 						<div class="single-prototype">
 				<span class="kwd">alias</span> <span class="pln">vec2</span>
-				<span class="pun">;</span>
+				 <span class="pun">=</span> <span class="pln">vec</span>!2<span class="pun">;</span>
 						</div>
 					</code>
 				</div>
@@ -398,17 +398,18 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				<section><h2>Example</h2>
 
 <pre class="code"><code class="lang-d"><span class="kwd">import </span><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">algorithm </span><span class="pun">: </span><span class="pln">equal</span><span class="pun">;
+</span><span class="kwd">import </span><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">array </span><span class="pun">: </span><span class="pln">staticArray</span><span class="pun">;
 </span><span class="kwd">import </span><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">traits </span><span class="pun">: </span><span class="typ">Unqual</span><span class="pun">;
 
-</span><span class="kwd">const </span><span class="typ">double</span><span class="pun">[] </span><span class="pln">arr </span><span class="pun">= [</span><span class="lit">1</span><span class="pun">, </span><span class="lit">2</span><span class="pun">, </span><span class="lit">4</span><span class="pun">, </span><span class="lit">0</span><span class="pun">];  </span><span class="com">// arr.length known at runtime
-</span><span class="kwd">const </span><span class="pln">v1 </span><span class="pun">= <a href="../../../gfx/math/vec/vec4.html"></span><span class="pln">vec4</span></a><span class="pln"> </span><span class="pun">(</span><span class="pln">arr</span><span class="pun">);             </span><span class="com">// asserts that arr.length == 4
+</span><span class="kwd">const </span><span class="typ">double</span><span class="pun">[</span><span class="lit">4</span><span class="pun">] </span><span class="pln">arr1 </span><span class="pun">= [</span><span class="lit">1</span><span class="pun">, </span><span class="lit">2</span><span class="pun">, </span><span class="lit">4</span><span class="pun">, </span><span class="lit">0</span><span class="pun">];
+</span><span class="kwd">const </span><span class="pln">v1 </span><span class="pun">= <a href="../../../gfx/math/vec/vec4.html"></span><span class="pln">vec4</span></a><span class="pln"> </span><span class="pun">(</span><span class="pln">arr1</span><span class="pun">[]);            </span><span class="com">// passing slice to erase compile-time length
 </span><span class="kwd">static assert</span><span class="pun">( </span><span class="kwd">is</span><span class="pun">(</span><span class="typ">Unqual</span><span class="pun">!(</span><span class="kwd">typeof</span><span class="pun">(</span><span class="pln">v1</span><span class="pun">)) == <a href="../../../gfx/math/vec/DVec4.html"></span><span class="typ">DVec4</span></a><span class="pun">) );
-</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">equal</span><span class="pun">(</span><span class="pln">v1<wbr/></span><span class="pun">.</span><span class="pln">data</span><span class="pun">, [</span><span class="lit">1</span><span class="pun">, </span><span class="lit">2</span><span class="pun">, </span><span class="lit">4</span><span class="pun">, </span><span class="lit">0</span><span class="pun">]));
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">equal</span><span class="pun">(</span><span class="pln">v1<wbr/></span><span class="pun">.</span><span class="pln">data</span><span class="pun">, </span><span class="pln">arr1</span><span class="pun">[]));
 
 </span><span class="kwd">const </span><span class="typ">int </span><span class="pln">comp </span><span class="pun">= </span><span class="lit">2</span><span class="pun">;
 </span><span class="kwd">const </span><span class="pln">v2 </span><span class="pun">= <a href="../../../gfx/math/vec/vec4.html"></span><span class="pln">vec4</span></a><span class="pln"> </span><span class="pun">(</span><span class="pln">comp</span><span class="pun">);
 </span><span class="kwd">static assert</span><span class="pun">( </span><span class="kwd">is</span><span class="pun">(</span><span class="typ">Unqual</span><span class="pun">!(</span><span class="kwd">typeof</span><span class="pun">(</span><span class="pln">v2</span><span class="pun">)) == <a href="../../../gfx/math/vec/IVec4.html"></span><span class="typ">IVec4</span></a><span class="pun">) );
-</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">equal</span><span class="pun">(</span><span class="pln">v2<wbr/></span><span class="pun">.</span><span class="pln">data</span><span class="pun">, [</span><span class="lit">2</span><span class="pun">, </span><span class="lit">2</span><span class="pun">, </span><span class="lit">2</span><span class="pun">, </span><span class="lit">2</span><span class="pun">]));
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">equal</span><span class="pun">(</span><span class="pln">v2<wbr/></span><span class="pun">.</span><span class="pln">data</span><span class="pun">, </span><span class="pln">staticArray</span><span class="pun">([</span><span class="lit">2</span><span class="pun">, </span><span class="lit">2</span><span class="pun">, </span><span class="lit">2</span><span class="pun">, </span><span class="lit">2</span><span class="pun">])[]));
 </span></code></pre>
 </section>
 

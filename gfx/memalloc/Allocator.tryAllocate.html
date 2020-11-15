@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Function Allocator.tryAllocate</title>
 		<link rel="stylesheet" href="../../css/style.min.css"/>
 		<script type="text/javascript" src="../../js/script.min.js"></script>
@@ -393,13 +393,13 @@ If successful, result is filled with necessary data.
 				<span class="kwd">abstract </span><span class="typ">bool</span> <span class="pln">tryAllocate</span>
 				<span class="pun">(</span>
 				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><a href="../../gfx/graal/memory/MemoryRequirements.html"><span class="typ">MemoryRequirements</span></a><span class="pun">)</span> <span class="pln">requirements</span><span class="pun">,</span>
+				&nbsp;&nbsp;<span class="kwd">in </span><span class="kwd">const</span><span class="pun">(</span><a href="../../gfx/graal/memory/MemoryRequirements.html"><span class="typ">MemoryRequirements</span></a><span class="pun">)</span> <span class="pln">requirements</span><span class="pun">,</span>
 				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><span class="typ">uint</span><span class="pun">)</span> <span class="pln">memoryTypeIndex</span><span class="pun">,</span>
+				&nbsp;&nbsp;<span class="kwd">in </span><span class="kwd">const</span><span class="pun">(</span><span class="typ">uint</span><span class="pun">)</span> <span class="pln">memoryTypeIndex</span><span class="pun">,</span>
 				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><a href="../../gfx/memalloc/AllocOptions.html"><span class="typ">AllocOptions</span></a><span class="pun">)</span> <span class="pln">options</span><span class="pun">,</span>
+				&nbsp;&nbsp;<span class="kwd">in </span><span class="kwd">const</span><span class="pun">(</span><a href="../../gfx/memalloc/AllocOptions.html"><span class="typ">AllocOptions</span></a><span class="pun">)</span> <span class="pln">options</span><span class="pun">,</span>
 				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><a href="../../gfx/memalloc/ResourceLayout.html"><span class="typ">ResourceLayout</span></a><span class="pun">)</span> <span class="pln">layout</span><span class="pun">,</span>
+				&nbsp;&nbsp;<span class="kwd">in </span><span class="kwd">const</span><span class="pun">(</span><a href="../../gfx/memalloc/ResourceLayout.html"><span class="typ">ResourceLayout</span></a><span class="pun">)</span> <span class="pln">layout</span><span class="pun">,</span>
 				<br/>
 				&nbsp;&nbsp;<span class="kwd">ref </span><span class="pln">gfx<wbr/></span><span class="pun">.</span><span class="pln">memalloc<wbr/></span><span class="pun">.</span><span class="typ">AllocResult</span> <span class="pln">result</span>
 				<br/>

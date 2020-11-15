@@ -2,8 +2,8 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
-		<title>XKeyboard - multiple declarations</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
+		<title>Class XKeyboard</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
 	</head>
@@ -384,21 +384,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>XKeyboard - multiple declarations</h1>
-				<nav class="page-nav">
-					<ul>
-						<li>
-							<a href="#0">
-								Class <code>XKeyboard</code>
-							</a>
-						</li>
-						<li>
-							<a href="#1">
-								Class <code>XKeyboard</code>
-							</a>
-						</li>
-					</ul>
-				</nav><h2 id="0">Class XKeyboard</h2><p>Keyboard class whose state is driven by xkbcommon
+				<h1>Class XKeyboard</h1><p>Keyboard class whose state is driven by xkbcommon
 </p>
 				<div class="prototype">
 					<code class="lang-d">
@@ -410,7 +396,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</code>
 				</div>
 				
-				<section><h3>Constructors</h3>
+				<section><h2>Constructors</h2>
 					<table>
 						<col class="caption"/>
 						<tr>
@@ -421,12 +407,13 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/window/xkeyboard/XKeyboard.this.html" class="public">
 									<code>this</code>
 								</a>
+								<span class="tableEntryAnnotation">(ctx, keymap, state)</span>
 							</td>
 							<td></td>
 						</tr>
 					</table>
 				</section>
-				<section><h3>Properties</h3>
+				<section><h2>Properties</h2>
 					<table>
 						<col class="caption"/>
 						<tr>
@@ -440,7 +427,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 					</table>
 				</section>
-				<section><h3>Methods</h3>
+				<section><h2>Methods</h2>
 					<table>
 						<col class="caption"/>
 						<tr>
@@ -451,6 +438,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/window/xkeyboard/XKeyboard.dispose.html" class="public">
 									<code>dispose</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Dispose the underlying resource
 </td>
@@ -460,6 +448,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/window/xkeyboard/XKeyboard.processKeyDown.html" class="public">
 									<code>processKeyDown</code>
 								</a>
+								<span class="tableEntryAnnotation">(keycode, handler)</span>
 							</td>
 							<td></td>
 						</tr>
@@ -468,6 +457,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/window/xkeyboard/XKeyboard.processKeyUp.html" class="public">
 									<code>processKeyUp</code>
 								</a>
+								<span class="tableEntryAnnotation">(keycode, handler)</span>
 							</td>
 							<td></td>
 						</tr>
@@ -476,89 +466,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/window/xkeyboard/XKeyboard.updateState.html" class="public">
 									<code>updateState</code>
 								</a>
-							</td>
-							<td></td>
-						</tr>
-					</table>
-				</section>
-				<h2 id="1">Class XKeyboard</h2><p>Keyboard class whose state is driven by xkbcommon
-</p>
-				<div class="prototype">
-					<code class="lang-d">
-						<div class="single-prototype">
-				<span class="kwd">class</span> <span class="typ">XKeyboard</span>
-				<br>&nbsp;&nbsp;: <a href="../../../gfx/core/rc/Disposable.html"><span class="typ">Disposable</span></a>
-				<span class="pun">;</span>
-						</div>
-					</code>
-				</div>
-				
-				<section><h3>Constructors</h3>
-					<table>
-						<col class="caption"/>
-						<tr>
-							<th>Name</th><th>Description</th>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xkeyboard/XKeyboard.this.html" class="public">
-									<code>this</code>
-								</a>
-							</td>
-							<td></td>
-						</tr>
-					</table>
-				</section>
-				<section><h3>Properties</h3>
-					<table>
-						<col class="caption"/>
-						<tr>
-							<th>Name</th><th>Type</th><th>Description</th>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xkeyboard/XKeyboard.mods.html" class="public property"><code>mods</code></a><span class="tableEntryAnnotation">[get]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/window/keys/KeyMods.html"><span class="typ">KeyMods</span></a></code></td><td></td>
-						</tr>
-					</table>
-				</section>
-				<section><h3>Methods</h3>
-					<table>
-						<col class="caption"/>
-						<tr>
-							<th>Name</th><th>Description</th>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xkeyboard/XKeyboard.dispose.html" class="public">
-									<code>dispose</code>
-								</a>
-							</td>
-							<td>Dispose the underlying resource
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xkeyboard/XKeyboard.processKeyDown.html" class="public">
-									<code>processKeyDown</code>
-								</a>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xkeyboard/XKeyboard.processKeyUp.html" class="public">
-									<code>processKeyUp</code>
-								</a>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/xkeyboard/XKeyboard.updateState.html" class="public">
-									<code>updateState</code>
-								</a>
+								<span class="tableEntryAnnotation">(depressedMods, latchedMods, lockedMods, depressedLayout, latchedLayout, lockedLayout)</span>
 							</td>
 							<td></td>
 						</tr>

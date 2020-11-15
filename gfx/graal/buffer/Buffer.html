@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Interface Buffer</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
@@ -405,7 +405,8 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<a href="../../../gfx/graal/buffer/Buffer.boundMemory.html" class="public property"><code>boundMemory</code></a><span class="tableEntryAnnotation">[get]</span>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/memory/DeviceMemory.html"><span class="typ">DeviceMemory</span></a></code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/memory/DeviceMemory.html"><span class="typ">DeviceMemory</span></a></code></td><td>The memory this buffer is bound to
+</td>
 						</tr>
 						<tr>
 							<td>
@@ -418,19 +419,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<a href="../../../gfx/graal/buffer/Buffer.memoryRequirements.html" class="public property"><code>memoryRequirements</code></a><span class="tableEntryAnnotation">[get]</span>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/memory/MemoryRequirements.html"><span class="typ">MemoryRequirements</span></a></code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/memory/MemoryRequirements.html"><span class="typ">MemoryRequirements</span></a></code></td><td>The memory allocation requirements for this buffer
+</td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../gfx/graal/buffer/Buffer.size.html" class="public property"><code>size</code></a><span class="tableEntryAnnotation">[get]</span>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ulong</span></code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ulong</span></code></td><td>The size in bytes of the buffer
+</td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../gfx/graal/buffer/Buffer.usage.html" class="public property"><code>usage</code></a><span class="tableEntryAnnotation">[get]</span>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/buffer/BufferUsage.html"><span class="typ">BufferUsage</span></a></code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/buffer/BufferUsage.html"><span class="typ">BufferUsage</span></a></code></td><td>The usage this buffer was created for
+</td>
 						</tr>
 						<tr>
 							<td>
@@ -459,23 +463,38 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/graal/buffer/Buffer.bindMemory.html" class="public">
 									<code>bindMemory</code>
 								</a>
+								<span class="tableEntryAnnotation">(mem, offset)</span>
 							</td>
-							<td>The buffer keeps a reference to the device memory
+							<td>Bind a the buffer to a device memory
 </td>
 						</tr>
 						<tr>
 							<td>
-								<a href="../../../gfx/graal/buffer/Buffer.createView.html" class="public">
-									<code>createView</code>
+								<a href="../../../gfx/graal/buffer/Buffer.createTexelView.html" class="public">
+									<code>createTexelView</code>
 								</a>
+								<span class="tableEntryAnnotation">(format, offset, size)</span>
 							</td>
-							<td></td>
+							<td>Build a view to a part of this buffer to be used as texel buffer
+The returned resource keeps a reference to this buffer.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/buffer/Buffer.descriptor.html" class="public">
+									<code>descriptor</code>
+								</a>
+								<span class="tableEntryAnnotation">(offset, size)</span>
+							</td>
+							<td>build a descriptor for this resource
+</td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.dispose.html" class="public inherited">
 									<code>dispose</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Dispose the underlying resource
 </td>
@@ -485,6 +504,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.rcLock.html" class="public inherited">
 									<code>rcLock</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Returns whether the refCount &gt;= 1.
 This increases the refCount by 1. rcLock should be used to keep
@@ -497,6 +517,7 @@ The operation is atomic.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.rcLockShared.html" class="public inherited">
 									<code>rcLockShared</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Returns whether the refCount &gt;= 1.
 This increases the refCount by 1. rcLock should be used to keep
@@ -509,6 +530,7 @@ The operation is atomic.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.release.html" class="public inherited">
 									<code>release</code>
 								</a>
+								<span class="tableEntryAnnotation">(disposeOnZero)</span>
 							</td>
 							<td>Atomically decrement the reference count.
 If refCount reaches zero, and disposeOnZero is set,
@@ -523,6 +545,7 @@ is intended to release the object to give it away.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.releaseShared.html" class="public inherited">
 									<code>releaseShared</code>
 								</a>
+								<span class="tableEntryAnnotation">(disposeOnZero)</span>
 							</td>
 							<td>Atomically decrement the reference count.
 If refCount reaches zero, and disposeOnZero is set,
@@ -537,6 +560,7 @@ is intended to release the object to give it away.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.retain.html" class="public inherited">
 									<code>retain</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Atomically increment the reference count.
 </td>
@@ -546,6 +570,7 @@ is intended to release the object to give it away.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.retainShared.html" class="public inherited">
 									<code>retainShared</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Atomically increment the reference count.
 </td>

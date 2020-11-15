@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Enum LoadOp</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
@@ -384,7 +384,8 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>Enum LoadOp</h1><p></p>
+				<h1>Enum LoadOp</h1><p>Attachment load operation at the beginning of a render pass
+</p>
 				<div class="prototype">
 					<code class="lang-d">
 						<div class="single-prototype">
@@ -404,19 +405,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td id="clear">
 								<code>clear</code>
 							</td>
-							<td></td>
+							<td>the content of the image is cleared
+</td>
 						</tr>
 						<tr>
 							<td id="dontCare">
 								<code>dontCare</code>
 							</td>
-							<td></td>
+							<td>the content of the image is undefined
+</td>
 						</tr>
 						<tr>
 							<td id="load">
 								<code>load</code>
 							</td>
-							<td></td>
+							<td>the previous content of the image is preserved
+</td>
 						</tr>
 					</table>
 				</section>

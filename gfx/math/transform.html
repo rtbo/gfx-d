@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Module gfx.math.transform</title>
 		<link rel="stylesheet" href="../../css/style.min.css"/>
 		<script type="text/javascript" src="../../js/script.min.js"></script>
@@ -397,7 +397,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<tr>
 							<td>
 								<code>
-									<a id="affineMult" class="public" href="../../gfx/math/transform/affineMult.html">affineMult</a><span class="decoration">(ml, mr)</span>
+									<a id="affineMult" class="public" href="../../gfx/math/transform/affineMult.html">affineMult</a><span class="tableEntryAnnotation">(ml, mr)</span>
 								</code>
 							</td>
 							<td>Affine matrix multiplication.
@@ -406,7 +406,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<tr>
 							<td>
 								<code>
-									<a id="affineRotation" class="public" href="../../gfx/math/transform/affineRotation.html">affineRotation</a><span class="decoration">(angle)</span>
+									<a id="affineRotation" class="public" href="../../gfx/math/transform/affineRotation.html">affineRotation</a><span class="tableEntryAnnotation">(angle)</span>
 								</code>
 							</td>
 							<td></td>
@@ -414,7 +414,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<tr>
 							<td>
 								<code>
-									<a id="affineScale" class="public" href="../../gfx/math/transform/affineScale.html">affineScale</a><span class="decoration">(x, y)</span>
+									<a id="affineScale" class="public" href="../../gfx/math/transform/affineScale.html">affineScale</a><span class="tableEntryAnnotation">(x, y)</span>
 								</code>
 							</td>
 							<td>Build a scale matrix.
@@ -423,7 +423,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<tr>
 							<td>
 								<code>
-									<a id="affineTranslation" class="public" href="../../gfx/math/transform/affineTranslation.html">affineTranslation</a><span class="decoration">(x, y)</span>
+									<a id="affineTranslation" class="public" href="../../gfx/math/transform/affineTranslation.html">affineTranslation</a><span class="tableEntryAnnotation">(x, y)</span>
 								</code>
 							</td>
 							<td>Build a translation matrix.
@@ -432,7 +432,25 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<tr>
 							<td>
 								<code>
-									<a id="rotate" class="public" href="../../gfx/math/transform/rotate.html">rotate</a><span class="decoration">(m, angle)</span>
+									<a id="eulerAngles" class="public" href="../../gfx/math/transform/eulerAngles.html">eulerAngles</a><span class="tableEntryAnnotation">(a, b, c)</span>
+								</code>
+							</td>
+							<td>Build a rotation matrix from Euler angles
+The convention taken is Xa, Zb, Xc
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="eulerAngles" class="public" href="../../gfx/math/transform/eulerAngles.html">eulerAngles</a><span class="tableEntryAnnotation">(angles)</span>
+								</code>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="rotate" class="public" href="../../gfx/math/transform/rotate.html">rotate</a><span class="tableEntryAnnotation">(m, angle)</span>
 								</code>
 							</td>
 							<td>Append a rotation transform inferred from arguments to the matrix m.
@@ -444,7 +462,7 @@ where the ones and zeros are in a pure rotation matrix.
 						<tr>
 							<td>
 								<code>
-									<a id="rotation" class="public" href="../../gfx/math/transform/rotation.html">rotation</a><span class="decoration">(angle)</span>
+									<a id="rotation" class="public" href="../../gfx/math/transform/rotation.html">rotation</a><span class="tableEntryAnnotation">(angle)</span>
 								</code>
 							</td>
 							<td>Build a rotation matrix.
@@ -454,7 +472,7 @@ angle in radians.
 						<tr>
 							<td>
 								<code>
-									<a id="rotation" class="public" href="../../gfx/math/transform/rotation.html">rotation</a><span class="decoration">(angle, axis)</span>
+									<a id="rotation" class="public" href="../../gfx/math/transform/rotation.html">rotation</a><span class="tableEntryAnnotation">(angle, axis)</span>
 								</code>
 							</td>
 							<td></td>
@@ -462,7 +480,7 @@ angle in radians.
 						<tr>
 							<td>
 								<code>
-									<a id="rotation" class="public" href="../../gfx/math/transform/rotation.html">rotation</a><span class="decoration">(angle, x, y, z)</span>
+									<a id="rotation" class="public" href="../../gfx/math/transform/rotation.html">rotation</a><span class="tableEntryAnnotation">(angle, x, y, z)</span>
 								</code>
 							</td>
 							<td></td>
@@ -470,7 +488,7 @@ angle in radians.
 						<tr>
 							<td>
 								<code>
-									<a id="rotationPure" class="public" href="../../gfx/math/transform/rotationPure.html">rotationPure</a><span class="decoration">(angle, axis)</span>
+									<a id="rotationPure" class="public" href="../../gfx/math/transform/rotationPure.html">rotationPure</a><span class="tableEntryAnnotation">(angle, axis)</span>
 								</code>
 							</td>
 							<td>Build a pure 3d rotation matrix with angle in radians
@@ -479,7 +497,7 @@ angle in radians.
 						<tr>
 							<td>
 								<code>
-									<a id="scale" class="public" href="../../gfx/math/transform/scale.html">scale</a><span class="decoration">(x, y)</span>
+									<a id="scale" class="public" href="../../gfx/math/transform/scale.html">scale</a><span class="tableEntryAnnotation">(x, y)</span>
 								</code>
 							</td>
 							<td>Build a scale matrix.
@@ -488,7 +506,7 @@ angle in radians.
 						<tr>
 							<td>
 								<code>
-									<a id="scale" class="public" href="../../gfx/math/transform/scale.html">scale</a><span class="decoration">(m, x, y)</span>
+									<a id="scale" class="public" href="../../gfx/math/transform/scale.html">scale</a><span class="tableEntryAnnotation">(m, x, y)</span>
 								</code>
 							</td>
 							<td>Append a scale transform inferred from arguments to the matrix m.
@@ -500,7 +518,7 @@ where the ones and zeros are in a pure scale matrix.
 						<tr>
 							<td>
 								<code>
-									<a id="transform" class="public" href="../../gfx/math/transform/transform.html">transform</a><span class="decoration">(v, m)</span>
+									<a id="transform" class="public" href="../../gfx/math/transform/transform.html">transform</a><span class="tableEntryAnnotation">(v, m)</span>
 								</code>
 							</td>
 							<td>Transform a vector by a matrix in homogenous coordinates.
@@ -509,7 +527,7 @@ where the ones and zeros are in a pure scale matrix.
 						<tr>
 							<td>
 								<code>
-									<a id="translate" class="public" href="../../gfx/math/transform/translate.html">translate</a><span class="decoration">(m, x, y)</span>
+									<a id="translate" class="public" href="../../gfx/math/transform/translate.html">translate</a><span class="tableEntryAnnotation">(m, x, y)</span>
 								</code>
 							</td>
 							<td>Append a translation transform inferred from arguments to the matrix m.
@@ -521,7 +539,7 @@ where the ones and zeros are in a pure translation matrix.
 						<tr>
 							<td>
 								<code>
-									<a id="translation" class="public" href="../../gfx/math/transform/translation.html">translation</a><span class="decoration">(x, y)</span>
+									<a id="translation" class="public" href="../../gfx/math/transform/translation.html">translation</a><span class="tableEntryAnnotation">(x, y)</span>
 								</code>
 							</td>
 							<td>Build a translation matrix.

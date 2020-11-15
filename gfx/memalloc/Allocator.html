@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Class Allocator</title>
 		<link rel="stylesheet" href="../../css/style.min.css"/>
 		<script type="text/javascript" src="../../js/script.min.js"></script>
@@ -436,6 +436,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../gfx/memalloc/Allocator.allocate.html" class="public">
 									<code>allocate</code>
 								</a>
+								<span class="tableEntryAnnotation">(requirements, options)</span>
 							</td>
 							<td>Allocate memory for the given requirements
 </td>
@@ -445,6 +446,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../gfx/memalloc/Allocator.allocateBuffer.html" class="public">
 									<code>allocateBuffer</code>
 								</a>
+								<span class="tableEntryAnnotation">(usage, size, options)</span>
 							</td>
 							<td>Create a buffer, then allocate and bind memory for its requirements
 </td>
@@ -454,6 +456,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../gfx/memalloc/Allocator.allocateImage.html" class="public">
 									<code>allocateImage</code>
 								</a>
+								<span class="tableEntryAnnotation">(info, options)</span>
 							</td>
 							<td>Create an image, then allocate and bind memory for its requirements
 </td>
@@ -463,6 +466,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../gfx/memalloc/Allocator.collectStats.html" class="public">
 									<code>collectStats</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td></td>
 						</tr>
@@ -471,23 +475,17 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../gfx/memalloc/Allocator.dispose.html" class="public">
 									<code>dispose</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Dispose the underlying resource
 </td>
 						</tr>
 						<tr>
 							<td>
-								<a href="../../gfx/core/rc/AtomicRefCounted.rcDebug.html" class="public inherited">
-									<code>rcDebug</code>
-								</a>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
 								<a href="../../gfx/core/rc/IAtomicRefCounted.rcLock.html" class="public inherited">
 									<code>rcLock</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Returns whether the refCount &gt;= 1.
 This increases the refCount by 1. rcLock should be used to keep
@@ -500,6 +498,7 @@ The operation is atomic.
 								<a href="../../gfx/core/rc/AtomicRefCounted.rcLockShared.html" class="public inherited">
 									<code>rcLockShared</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Returns whether the refCount &gt;= 1.
 This increases the refCount by 1. rcLock should be used to keep
@@ -512,6 +511,7 @@ The operation is atomic.
 								<a href="../../gfx/core/rc/IAtomicRefCounted.release.html" class="public inherited">
 									<code>release</code>
 								</a>
+								<span class="tableEntryAnnotation">(disposeOnZero)</span>
 							</td>
 							<td>Atomically decrement the reference count.
 If refCount reaches zero, and disposeOnZero is set,
@@ -526,6 +526,7 @@ is intended to release the object to give it away.
 								<a href="../../gfx/core/rc/AtomicRefCounted.releaseShared.html" class="public inherited">
 									<code>releaseShared</code>
 								</a>
+								<span class="tableEntryAnnotation">(disposeOnZero)</span>
 							</td>
 							<td>Atomically decrement the reference count.
 If refCount reaches zero, and disposeOnZero is set,
@@ -540,6 +541,7 @@ is intended to release the object to give it away.
 								<a href="../../gfx/core/rc/IAtomicRefCounted.retain.html" class="public inherited">
 									<code>retain</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Atomically increment the reference count.
 </td>
@@ -549,6 +551,7 @@ is intended to release the object to give it away.
 								<a href="../../gfx/core/rc/AtomicRefCounted.retainShared.html" class="public inherited">
 									<code>retainShared</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Atomically increment the reference count.
 </td>
@@ -558,6 +561,7 @@ is intended to release the object to give it away.
 								<a href="../../gfx/memalloc/Allocator.tryAllocate.html" class="protected">
 									<code>tryAllocate</code>
 								</a>
+								<span class="tableEntryAnnotation">(requirements, memoryTypeIndex, options, layout, result)</span>
 							</td>
 							<td>Attempt to allocate memory for the given index and for given requirements.
 If successful, result is filled with necessary data.

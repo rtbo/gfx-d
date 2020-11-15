@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Function AtomicRefCounted.releaseShared</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
@@ -397,7 +397,7 @@ is intended to release the object to give it away.
 				<span class="kwd">final override </span><span class="typ">bool</span> <span class="pln">releaseShared</span>
 				<span class="pun">(</span>
 				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">typecons<wbr/></span><span class="pun">.</span><span class="typ">Flag</span>!("disposeOnZero")<span class="pun">)</span> <span class="pln">disposeOnZero</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">Flag</span><span class="pun">)</span><span class="kwd">true</span>
+				&nbsp;&nbsp;<span class="kwd">in </span><span class="kwd">const</span><span class="pun">(</span><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">typecons<wbr/></span><span class="pun">.</span><span class="typ">Flag</span>!("disposeOnZero")<span class="pun">)</span> <span class="pln">disposeOnZero</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">Flag</span><span class="pun">)</span><span class="kwd">true</span>
 				<br/>
 				<span class="pun">)</span><span class="pln"> </span><span class="kwd">shared</span><span class="pun">;</span>
 						</div>

@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Struct SubpassDescription</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
@@ -384,7 +384,8 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>Struct SubpassDescription</h1><p></p>
+				<h1>Struct SubpassDescription</h1><p>Decription of a subpass in a renderpass
+</p>
 				<div class="prototype">
 					<code class="lang-d">
 						<div class="single-prototype">
@@ -404,25 +405,30 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<a href="../../../gfx/graal/renderpass/SubpassDescription.colors.html" class="public"><code>colors</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/renderpass/AttachmentRef.html"><span class="typ">AttachmentRef</span></a><span class="pun">[]</span></code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/renderpass/AttachmentRef.html"><span class="typ">AttachmentRef</span></a><span class="pun">[]</span></code></td><td>Color-output attachments (written to in fragment shader)
+</td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../gfx/graal/renderpass/SubpassDescription.depthStencil.html" class="public"><code>depthStencil</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/core/typecons/Option.html"><span class="typ">Option</span></a>!(gfx.graal.renderpass.AttachmentRef)</code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/core/typecons/Option.html"><span class="typ">Option</span></a>!(gfx.graal.renderpass.AttachmentRef)</code></td><td>depth-stencil attachment (if any)
+</td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../gfx/graal/renderpass/SubpassDescription.inputs.html" class="public"><code>inputs</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/renderpass/AttachmentRef.html"><span class="typ">AttachmentRef</span></a><span class="pun">[]</span></code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/renderpass/AttachmentRef.html"><span class="typ">AttachmentRef</span></a><span class="pun">[]</span></code></td><td>Input attachments (read from in fragment shader)
+</td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../gfx/graal/renderpass/SubpassDescription.preserves.html" class="public"><code>preserves</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span><span class="pun">[]</span></code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span><span class="pun">[]</span></code></td><td>Indices of attachments that are not used but whose content must be preserved
+throughout the subpass
+</td>
 						</tr>
 					</table>
 				</section>

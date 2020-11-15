@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Struct SubpassDependency</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
@@ -384,7 +384,9 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>Struct SubpassDependency</h1><p></p>
+				<h1>Struct SubpassDependency</h1><p>The SubpassDependency structure describes synchronization dependencies
+between two subpasses in a render pass
+</p>
 				<div class="prototype">
 					<code class="lang-d">
 						<div class="single-prototype">
@@ -404,19 +406,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<a href="../../../gfx/graal/renderpass/SubpassDependency.accessMask.html" class="public"><code>accessMask</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/types/Trans.html"><span class="typ">Trans</span></a>!(gfx.graal.cmd.Access)</code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/types/Trans.html"><span class="typ">Trans</span></a>!(gfx.graal.cmd.Access)</code></td><td>Memory access masks of source and destination subpasses
+</td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../gfx/graal/renderpass/SubpassDependency.stageMask.html" class="public"><code>stageMask</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/types/Trans.html"><span class="typ">Trans</span></a>!(gfx.graal.cmd.PipelineStage)</code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/types/Trans.html"><span class="typ">Trans</span></a>!(gfx.graal.cmd.PipelineStage)</code></td><td>Pipeline stage masks of source and destination subpasses
+</td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../gfx/graal/renderpass/SubpassDependency.subpass.html" class="public"><code>subpass</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/types/Trans.html"><span class="typ">Trans</span></a>!(uint)</code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/types/Trans.html"><span class="typ">Trans</span></a>!(uint)</code></td><td>subpass indices of the source and destination subpasses
+</td>
 						</tr>
 					</table>
 				</section>

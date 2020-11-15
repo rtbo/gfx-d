@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Interface Semaphore</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
@@ -435,6 +435,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.dispose.html" class="public inherited">
 									<code>dispose</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Dispose the underlying resource
 </td>
@@ -444,6 +445,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.rcLock.html" class="public inherited">
 									<code>rcLock</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Returns whether the refCount &gt;= 1.
 This increases the refCount by 1. rcLock should be used to keep
@@ -456,6 +458,7 @@ The operation is atomic.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.rcLockShared.html" class="public inherited">
 									<code>rcLockShared</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Returns whether the refCount &gt;= 1.
 This increases the refCount by 1. rcLock should be used to keep
@@ -468,6 +471,7 @@ The operation is atomic.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.release.html" class="public inherited">
 									<code>release</code>
 								</a>
+								<span class="tableEntryAnnotation">(disposeOnZero)</span>
 							</td>
 							<td>Atomically decrement the reference count.
 If refCount reaches zero, and disposeOnZero is set,
@@ -482,6 +486,7 @@ is intended to release the object to give it away.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.releaseShared.html" class="public inherited">
 									<code>releaseShared</code>
 								</a>
+								<span class="tableEntryAnnotation">(disposeOnZero)</span>
 							</td>
 							<td>Atomically decrement the reference count.
 If refCount reaches zero, and disposeOnZero is set,
@@ -496,6 +501,7 @@ is intended to release the object to give it away.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.retain.html" class="public inherited">
 									<code>retain</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Atomically increment the reference count.
 </td>
@@ -505,6 +511,7 @@ is intended to release the object to give it away.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.retainShared.html" class="public inherited">
 									<code>retainShared</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Atomically increment the reference count.
 </td>

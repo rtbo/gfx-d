@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Struct AttachmentRef</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
@@ -384,7 +384,8 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>Struct AttachmentRef</h1><p></p>
+				<h1>Struct AttachmentRef</h1><p>A reference to an attachment
+</p>
 				<div class="prototype">
 					<code class="lang-d">
 						<div class="single-prototype">
@@ -404,13 +405,15 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<a href="../../../gfx/graal/renderpass/AttachmentRef.attachment.html" class="public"><code>attachment</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>The index of the attachment in the framebuffer
+</td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../gfx/graal/renderpass/AttachmentRef.layout.html" class="public"><code>layout</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/image/ImageLayout.html"><span class="typ">ImageLayout</span></a></code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/image/ImageLayout.html"><span class="typ">ImageLayout</span></a></code></td><td>The layout the attachment will be in the subpass this reference is used
+</td>
 						</tr>
 					</table>
 				</section>

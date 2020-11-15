@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Function createDisplay</title>
 		<link rel="stylesheet" href="../../css/style.min.css"/>
 		<script type="text/javascript" src="../../js/script.min.js"></script>
@@ -386,7 +386,9 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 			<div>
 				<h1>Function createDisplay</h1><p>Create a display for the running platform.
 The display will load a backend instance during startup.
-It will try the backends in the provided loadOrder
+It will try the backends in the provided loadOrder.
+On linux, more than one display implementation are provided. You may
+use linuxDisplayOrder to choose. The first succesfully created display is returned.
 </p>
 				<div class="prototype">
 					<code class="lang-d">
@@ -394,7 +396,7 @@ It will try the backends in the provided loadOrder
 				<a href="../../gfx/window/Display.html"><span class="typ">Display</span></a> <span class="pln">createDisplay</span>
 				<span class="pun">(</span>
 				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><a href="../../gfx/graal/Backend.html"><span class="typ">Backend</span></a><span class="pun">[]</span><span class="pun">)</span> <span class="pln">loadOrder</span> <span class="pun">=</span> <span class="pln">defaultBackendLoadOrder</span>
+				&nbsp;&nbsp;<a href="../../gfx/window/DisplayCreateInfo.html"><span class="typ">DisplayCreateInfo</span></a> <span class="pln">createInfo</span>
 				<br/>
 				<span class="pun">)</span><span class="pun">;</span>
 						</div>

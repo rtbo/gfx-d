@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Module gfx.graal.renderpass</title>
 		<link rel="stylesheet" href="../../css/style.min.css"/>
 		<script type="text/javascript" src="../../js/script.min.js"></script>
@@ -399,7 +399,12 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 									<a id="Framebuffer" class="public" href="../../gfx/graal/renderpass/Framebuffer.html">Framebuffer</a>
 								</code>
 							</td>
-							<td></td>
+							<td>Framebuffer is a collection of images attachments used
+in a render pass.
+When a render pass is started in a command buffer, a framebuffer
+is tied to it so that its input and output attachments are used
+during the rendering operations.
+</td>
 						</tr>
 						<tr>
 							<td>
@@ -407,7 +412,10 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 									<a id="RenderPass" class="public" href="../../gfx/graal/renderpass/RenderPass.html">RenderPass</a>
 								</code>
 							</td>
-							<td></td>
+							<td>A render pass is a succession of one or more subpasses,
+each of which describes what image attachments are used
+and how they are laid out in memory.
+</td>
 						</tr>
 					</table>
 				</section>
@@ -424,7 +432,8 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 									<a id="AttachmentDescription" class="public" href="../../gfx/graal/renderpass/AttachmentDescription.html">AttachmentDescription</a>
 								</code>
 							</td>
-							<td></td>
+							<td>Describes an image attachment in a render pass or framebuffer
+</td>
 						</tr>
 						<tr>
 							<td>
@@ -432,7 +441,8 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 									<a id="AttachmentOps" class="public" href="../../gfx/graal/renderpass/AttachmentOps.html">AttachmentOps</a>
 								</code>
 							</td>
-							<td></td>
+							<td>The operations performed on an attachment when it enters and leaves a render pass
+</td>
 						</tr>
 						<tr>
 							<td>
@@ -440,7 +450,8 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 									<a id="AttachmentRef" class="public" href="../../gfx/graal/renderpass/AttachmentRef.html">AttachmentRef</a>
 								</code>
 							</td>
-							<td></td>
+							<td>A reference to an attachment
+</td>
 						</tr>
 						<tr>
 							<td>
@@ -448,7 +459,9 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 									<a id="SubpassDependency" class="public" href="../../gfx/graal/renderpass/SubpassDependency.html">SubpassDependency</a>
 								</code>
 							</td>
-							<td></td>
+							<td>The SubpassDependency structure describes synchronization dependencies
+between two subpasses in a render pass
+</td>
 						</tr>
 						<tr>
 							<td>
@@ -456,7 +469,8 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 									<a id="SubpassDescription" class="public" href="../../gfx/graal/renderpass/SubpassDescription.html">SubpassDescription</a>
 								</code>
 							</td>
-							<td></td>
+							<td>Decription of a subpass in a renderpass
+</td>
 						</tr>
 					</table>
 				</section>
@@ -473,7 +487,8 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 									<a id="LoadOp" class="public" href="../../gfx/graal/renderpass/LoadOp.html">LoadOp</a>
 								</code>
 							</td>
-							<td></td>
+							<td>Attachment load operation at the beginning of a render pass
+</td>
 						</tr>
 						<tr>
 							<td>
@@ -481,7 +496,8 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 									<a id="StoreOp" class="public" href="../../gfx/graal/renderpass/StoreOp.html">StoreOp</a>
 								</code>
 							</td>
-							<td></td>
+							<td>Attachment store operation at the end of a render pass
+</td>
 						</tr>
 					</table>
 				</section>
@@ -500,7 +516,9 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							</td>
 							<td>
 							</td>
-							<td></td>
+							<td>virtual subpass index for subpass dependencies that relates to what is before or after
+the render pass
+</td>
 						</tr>
 					</table>
 				</section>

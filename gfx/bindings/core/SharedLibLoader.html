@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Class SharedLibLoader</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
@@ -436,6 +436,7 @@ Empty string if not loaded.
 								<a href="../../../gfx/bindings/core/SharedLibLoader.bind.html" class="public">
 									<code>bind</code>
 								</a>
+								<span class="tableEntryAnnotation">(optional)</span>
 							</td>
 							<td>Bind a symbol, using the function pointer symbol name.
 </td>
@@ -445,6 +446,7 @@ Empty string if not loaded.
 								<a href="../../../gfx/bindings/core/SharedLibLoader.bindSymbols.html" class="public">
 									<code>bindSymbols</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Subclasses can override this to bind all the necessary symbols.
 Default implementation does nothing.
@@ -455,6 +457,7 @@ Default implementation does nothing.
 								<a href="../../../gfx/bindings/core/SharedLibLoader.load.html" class="public">
 									<code>load</code>
 								</a>
+								<span class="tableEntryAnnotation">(libNames)</span>
 							</td>
 							<td>Load the shared libraries and call bindSymbols if succesful.
 </td>

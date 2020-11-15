@@ -2,8 +2,8 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
-		<title>createVulkanInstance - multiple declarations</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
+		<title>Function createVulkanInstance</title>
 		<link rel="stylesheet" href="../../css/style.min.css"/>
 		<script type="text/javascript" src="../../js/script.min.js"></script>
 	</head>
@@ -384,21 +384,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>createVulkanInstance - multiple declarations</h1>
-				<nav class="page-nav">
-					<ul>
-						<li>
-							<a href="#0">
-								Function <code>createVulkanInstance</code>
-							</a>
-						</li>
-						<li>
-							<a href="#1">
-								Function <code>createVulkanInstance</code>
-							</a>
-						</li>
-					</ul>
-				</nav><h2 id="0">Function createVulkanInstance</h2><p>Creates a vulkan instance with default layers and extensions
+				<h1>Function createVulkanInstance</h1><p>Creates an Instance object with Vulkan backend with options
 </p>
 				<div class="prototype">
 					<code class="lang-d">
@@ -406,30 +392,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				<span class="pln">gfx<wbr/></span><span class="pun">.</span><span class="pln">vulkan<wbr/></span><span class="pun">.</span><span class="typ">VulkanInstance</span> <span class="pln">createVulkanInstance</span>
 				<span class="pun">(</span>
 				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><span class="typ">string</span><span class="pun">)</span> <span class="pln">appName</span> <span class="pun">=</span> <span class="kwd">null</span><span class="pun">,</span>
-				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><a href="../../gfx/vulkan/VulkanVersion.html"><span class="typ">VulkanVersion</span></a><span class="pun">)</span> <span class="pln">appVersion</span> <span class="pun">=</span> <span class="typ">VulkanVersion</span><span class="pun">(</span><span class="lit">0u</span><span class="pun">)<wbr/>.</span><span class="kwd">this</span><span class="pun">(</span><span class="lit">0u</span><span class="pun">, </span><span class="lit">0u</span><span class="pun">, </span><span class="lit">0u</span><span class="pun">)</span>
-				<br/>
-				<span class="pun">)</span><span class="pun">;</span>
-						</div>
-					</code>
-				</div>
-				
-				<h2 id="1">Function createVulkanInstance</h2><p>Creates an Instance object with Vulkan backend with user specified layers and extensions
-</p>
-				<div class="prototype">
-					<code class="lang-d">
-						<div class="single-prototype">
-				<span class="pln">gfx<wbr/></span><span class="pun">.</span><span class="pln">vulkan<wbr/></span><span class="pun">.</span><span class="typ">VulkanInstance</span> <span class="pln">createVulkanInstance</span>
-				<span class="pun">(</span>
-				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><span class="typ">string</span><span class="pun">[]</span><span class="pun">)</span> <span class="pln">layers</span><span class="pun">,</span>
-				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><span class="typ">string</span><span class="pun">[]</span><span class="pun">)</span> <span class="pln">extensions</span><span class="pun">,</span>
-				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><span class="typ">string</span><span class="pun">)</span> <span class="pln">appName</span> <span class="pun">=</span> <span class="kwd">null</span><span class="pun">,</span>
-				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><a href="../../gfx/vulkan/VulkanVersion.html"><span class="typ">VulkanVersion</span></a><span class="pun">)</span> <span class="pln">appVersion</span> <span class="pun">=</span> <span class="typ">VulkanVersion</span><span class="pun">(</span><span class="lit">0u</span><span class="pun">)<wbr/>.</span><span class="kwd">this</span><span class="pun">(</span><span class="lit">0u</span><span class="pun">, </span><span class="lit">0u</span><span class="pun">, </span><span class="lit">0u</span><span class="pun">)</span>
+				&nbsp;&nbsp;<a href="../../gfx/vulkan/VulkanCreateInfo.html"><span class="typ">VulkanCreateInfo</span></a> <span class="pln">createInfo</span> <span class="pun">=</span> <span class="typ">VulkanCreateInfo</span><span class="pun">(</span><span class="kwd">null</span><span class="pun">, </span><span class="typ">VulkanVersion</span><span class="pun">(</span><span class="lit">0u</span><span class="pun">), </span><span class="kwd">null</span><span class="pun">, [], </span><span class="kwd">null</span><span class="pun">, [</span><span class="str">"VK_KHR_surface"</span><span class="pun">, </span><span class="str">"VK_KHR_wayland_surface"</span><span class="pun">, </span><span class="str">"VK_KHR_xcb_surface"</span><span class="pun">])</span>
 				<br/>
 				<span class="pun">)</span><span class="pun">;</span>
 						</div>

@@ -2,8 +2,8 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
-		<title>XcbGlContext.this - multiple declarations</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
+		<title>Function XcbGlContext.this</title>
 		<link rel="stylesheet" href="../../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../../js/script.min.js"></script>
 	</head>
@@ -384,21 +384,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>XcbGlContext.this - multiple declarations</h1>
-				<nav class="page-nav">
-					<ul>
-						<li>
-							<a href="#0">
-								Function <code>XcbGlContext.this</code>
-							</a>
-						</li>
-						<li>
-							<a href="#1">
-								Function <code>XcbGlContext.this</code>
-							</a>
-						</li>
-					</ul>
-				</nav><h2 id="0">Function XcbGlContext.this</h2><p>Contruct an OpenGL context for the given display and screen.
+				<h1>Function XcbGlContext.this</h1><p>Contruct an OpenGL context for the given display and screen.
 The window is necessary to make the context current on and loading GL symbols.
 It can be a dummy window destroyed right initialization.
 </p>
@@ -410,34 +396,11 @@ It can be a dummy window destroyed right initialization.
 				<br/>
 				&nbsp;&nbsp;<span class="typ">void</span><span class="pun">*</span> <span class="pln">dpy</span><span class="pun">,</span>
 				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><span class="typ">int</span><span class="pun">)</span> <span class="pln">mainScreenNum</span><span class="pun">,</span>
+				&nbsp;&nbsp;<span class="kwd">in </span><span class="kwd">const</span><span class="pun">(</span><span class="typ">int</span><span class="pun">)</span> <span class="pln">mainScreenNum</span><span class="pun">,</span>
 				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><a href="../../../../gfx/gl3/context/GlAttribs.html"><span class="typ">GlAttribs</span></a><span class="pun">)</span> <span class="pln">attribs</span><span class="pun">,</span>
+				&nbsp;&nbsp;<span class="kwd">in </span><span class="kwd">const</span><span class="pun">(</span><a href="../../../../gfx/gl3/context/GlAttribs.html"><span class="typ">GlAttribs</span></a><span class="pun">)</span> <span class="pln">attribs</span><span class="pun">,</span>
 				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><span class="typ">ulong</span><span class="pun">)</span> <span class="pln">window</span>
-				<br/>
-				<span class="pun">)</span><span class="pun">;</span>
-						</div>
-					</code>
-				</div>
-				
-				<h2 id="1">Function XcbGlContext.this</h2><p>Contruct an OpenGL context for the given display and screen.
-The window is necessary to make the context current on and loading GL symbols.
-It can be a dummy window destroyed right initialization.
-</p>
-				<div class="prototype">
-					<code class="lang-d">
-						<div class="single-prototype">
-				<span class="pln">this</span>
-				<span class="pun">(</span>
-				<br/>
-				&nbsp;&nbsp;<span class="typ">void</span><span class="pun">*</span> <span class="pln">dpy</span><span class="pun">,</span>
-				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><span class="typ">int</span><span class="pun">)</span> <span class="pln">mainScreenNum</span><span class="pun">,</span>
-				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><a href="../../../../gfx/gl3/context/GlAttribs.html"><span class="typ">GlAttribs</span></a><span class="pun">)</span> <span class="pln">attribs</span><span class="pun">,</span>
-				<br/>
-				&nbsp;&nbsp;<span class="kwd">const</span><span class="pun">(</span><span class="typ">ulong</span><span class="pun">)</span> <span class="pln">window</span>
+				&nbsp;&nbsp;<span class="kwd">in </span><span class="kwd">const</span><span class="pun">(</span><span class="typ">ulong</span><span class="pun">)</span> <span class="pln">window</span>
 				<br/>
 				<span class="pun">)</span><span class="pun">;</span>
 						</div>

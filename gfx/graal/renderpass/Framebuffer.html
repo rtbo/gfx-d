@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Interface Framebuffer</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
@@ -384,7 +384,12 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>Interface Framebuffer</h1><p></p>
+				<h1>Interface Framebuffer</h1><p>Framebuffer is a collection of images attachments used
+in a render pass.
+When a render pass is started in a command buffer, a framebuffer
+is tied to it so that its input and output attachments are used
+during the rendering operations.
+</p>
 				<div class="prototype">
 					<code class="lang-d">
 						<div class="single-prototype">
@@ -405,7 +410,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<a href="../../../gfx/graal/renderpass/Framebuffer.device.html" class="public property"><code>device</code></a><span class="tableEntryAnnotation">[get]</span>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/device/Device.html"><span class="typ">Device</span></a></code></td><td>Get the parent device
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/device/Device.html"><span class="typ">Device</span></a></code></td><td>Get the device that issued the framebuffer
 </td>
 						</tr>
 						<tr>
@@ -435,6 +440,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.dispose.html" class="public inherited">
 									<code>dispose</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Dispose the underlying resource
 </td>
@@ -444,6 +450,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.rcLock.html" class="public inherited">
 									<code>rcLock</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Returns whether the refCount &gt;= 1.
 This increases the refCount by 1. rcLock should be used to keep
@@ -456,6 +463,7 @@ The operation is atomic.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.rcLockShared.html" class="public inherited">
 									<code>rcLockShared</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Returns whether the refCount &gt;= 1.
 This increases the refCount by 1. rcLock should be used to keep
@@ -468,6 +476,7 @@ The operation is atomic.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.release.html" class="public inherited">
 									<code>release</code>
 								</a>
+								<span class="tableEntryAnnotation">(disposeOnZero)</span>
 							</td>
 							<td>Atomically decrement the reference count.
 If refCount reaches zero, and disposeOnZero is set,
@@ -482,6 +491,7 @@ is intended to release the object to give it away.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.releaseShared.html" class="public inherited">
 									<code>releaseShared</code>
 								</a>
+								<span class="tableEntryAnnotation">(disposeOnZero)</span>
 							</td>
 							<td>Atomically decrement the reference count.
 If refCount reaches zero, and disposeOnZero is set,
@@ -496,6 +506,7 @@ is intended to release the object to give it away.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.retain.html" class="public inherited">
 									<code>retain</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Atomically increment the reference count.
 </td>
@@ -505,6 +516,7 @@ is intended to release the object to give it away.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.retainShared.html" class="public inherited">
 									<code>retainShared</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Atomically increment the reference count.
 </td>

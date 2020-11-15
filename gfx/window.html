@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Module gfx.window</title>
 		<link rel="stylesheet" href="../css/style.min.css"/>
 		<script type="text/javascript" src="../js/script.min.js"></script>
@@ -397,12 +397,14 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<tr>
 							<td>
 								<code>
-									<a id="createDisplay" class="public" href="../gfx/window/createDisplay.html">createDisplay</a><span class="decoration">(loadOrder)</span>
+									<a id="createDisplay" class="public" href="../gfx/window/createDisplay.html">createDisplay</a><span class="tableEntryAnnotation">(createInfo)</span>
 								</code>
 							</td>
 							<td>Create a display for the running platform.
 The display will load a backend instance during startup.
-It will try the backends in the provided loadOrder
+It will try the backends in the provided loadOrder.
+On linux, more than one display implementation are provided. You may
+use linuxDisplayOrder to choose. The first succesfully created display is returned.
 </td>
 						</tr>
 					</table>
@@ -442,6 +444,16 @@ It will try the backends in the provided loadOrder
 						<tr>
 							<td>
 								<code>
+									<a id="DisplayCreateInfo" class="public" href="../gfx/window/DisplayCreateInfo.html">DisplayCreateInfo</a>
+								</code>
+							</td>
+							<td>Options that influence how the display is created, and how it will create
+a Gfx-D instance.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
 									<a id="KeyEvent" class="public" href="../gfx/window/KeyEvent.html">KeyEvent</a>
 								</code>
 							</td>
@@ -454,6 +466,24 @@ It will try the backends in the provided loadOrder
 								</code>
 							</td>
 							<td></td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Enums</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="LinuxDisplay" class="public" href="../gfx/window/LinuxDisplay.html">LinuxDisplay</a>
+								</code>
+							</td>
+							<td>Identifier of the display to use on linux
+</td>
 						</tr>
 					</table>
 				</section>
@@ -473,29 +503,6 @@ It will try the backends in the provided loadOrder
 							<td>
 							</td>
 							<td></td>
-						</tr>
-					</table>
-				</section>
-				<section>
-					<h2>Global variables</h2>
-					<table>
-						<col class="caption"/>
-						<tr>
-							<th>Name</th><th>Type</th><th>Description</th>
-						</tr>
-						<tr>
-							<td>
-								<a id="defaultBackendLoadOrder" class="public" href="../gfx/window/defaultBackendLoadOrder.html">
-									<code>defaultBackendLoadOrder</code>
-								</a>
-							</td>
-							<td>
-								<code class="prettyprint lang-d"><span class="kwd">immutable</span><span class="pun">(</span><a href="../gfx/graal/Backend.html"><span class="typ">Backend</span></a><span class="pun">[]</span><span class="pun">)</span></code>
-							</td>
-							<td>The backend load order is the order into which backend load attempts
-will be performed.
-This array provides a default value for createDisplay parameter
-</td>
 						</tr>
 					</table>
 				</section>

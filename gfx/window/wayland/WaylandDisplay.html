@@ -2,8 +2,8 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
-		<title>WaylandDisplay - multiple declarations</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
+		<title>Class WaylandDisplay</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
 	</head>
@@ -384,21 +384,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>WaylandDisplay - multiple declarations</h1>
-				<nav class="page-nav">
-					<ul>
-						<li>
-							<a href="#0">
-								Class <code>WaylandDisplay</code>
-							</a>
-						</li>
-						<li>
-							<a href="#1">
-								Class <code>WaylandDisplay</code>
-							</a>
-						</li>
-					</ul>
-				</nav><h2 id="0">Class WaylandDisplay</h2><p></p>
+				<h1>Class WaylandDisplay</h1><p></p>
 				<div class="prototype">
 					<code class="lang-d">
 						<div class="single-prototype">
@@ -409,7 +395,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</code>
 				</div>
 				
-				<section><h3>Constructors</h3>
+				<section><h2>Constructors</h2>
 					<table>
 						<col class="caption"/>
 						<tr>
@@ -420,12 +406,13 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/window/wayland/WaylandDisplay.this.html" class="public">
 									<code>this</code>
 								</a>
+								<span class="tableEntryAnnotation">(createInfo)</span>
 							</td>
 							<td></td>
 						</tr>
 					</table>
 				</section>
-				<section><h3>Properties</h3>
+				<section><h2>Properties</h2>
 					<table>
 						<col class="caption"/>
 						<tr>
@@ -459,7 +446,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 					</table>
 				</section>
-				<section><h3>Methods</h3>
+				<section><h2>Methods</h2>
 					<table>
 						<col class="caption"/>
 						<tr>
@@ -470,6 +457,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/window/wayland/WaylandDisplay.createWindow.html" class="public">
 									<code>createWindow</code>
 								</a>
+								<span class="tableEntryAnnotation">(title)</span>
 							</td>
 							<td></td>
 						</tr>
@@ -478,6 +466,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/window/wayland/WaylandDisplay.dispose.html" class="public">
 									<code>dispose</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Dispose the underlying resource
 </td>
@@ -487,14 +476,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/window/wayland/WaylandDisplay.pollAndDispatch.html" class="public">
 									<code>pollAndDispatch</code>
 								</a>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/wayland/WaylandDisplay.rcDebug.html" class="public">
-									<code>rcDebug</code>
-								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td></td>
 						</tr>
@@ -503,6 +485,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/window/wayland/WaylandDisplay.rcLockShared.html" class="public">
 									<code>rcLockShared</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Returns whether the refCount &gt;= 1.
 This increases the refCount by 1. rcLock should be used to keep
@@ -515,6 +498,7 @@ The operation is atomic.
 								<a href="../../../gfx/window/wayland/WaylandDisplay.releaseShared.html" class="public">
 									<code>releaseShared</code>
 								</a>
+								<span class="tableEntryAnnotation">(disposeOnZero)</span>
 							</td>
 							<td>Atomically decrement the reference count.
 If refCount reaches zero, and disposeOnZero is set,
@@ -529,6 +513,7 @@ is intended to release the object to give it away.
 								<a href="../../../gfx/window/wayland/WaylandDisplay.retainShared.html" class="public">
 									<code>retainShared</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Atomically increment the reference count.
 </td>
@@ -538,6 +523,7 @@ is intended to release the object to give it away.
 								<a href="../../../gfx/window/Display.createWindow.html" class="public inherited">
 									<code>createWindow</code>
 								</a>
+								<span class="tableEntryAnnotation">(title)</span>
 							</td>
 							<td></td>
 						</tr>
@@ -546,6 +532,7 @@ is intended to release the object to give it away.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.rcLock.html" class="public inherited">
 									<code>rcLock</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Returns whether the refCount &gt;= 1.
 This increases the refCount by 1. rcLock should be used to keep
@@ -558,6 +545,7 @@ The operation is atomic.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.release.html" class="public inherited">
 									<code>release</code>
 								</a>
+								<span class="tableEntryAnnotation">(disposeOnZero)</span>
 							</td>
 							<td>Atomically decrement the reference count.
 If refCount reaches zero, and disposeOnZero is set,
@@ -572,186 +560,7 @@ is intended to release the object to give it away.
 								<a href="../../../gfx/core/rc/IAtomicRefCounted.retain.html" class="public inherited">
 									<code>retain</code>
 								</a>
-							</td>
-							<td>Atomically increment the reference count.
-</td>
-						</tr>
-					</table>
-				</section>
-				<h2 id="1">Class WaylandDisplay</h2><p></p>
-				<div class="prototype">
-					<code class="lang-d">
-						<div class="single-prototype">
-				<span class="kwd">class</span> <span class="typ">WaylandDisplay</span>
-				<br>&nbsp;&nbsp;: <a href="../../../gfx/window/Display.html"><span class="typ">Display</span></a>
-				<span class="pun">;</span>
-						</div>
-					</code>
-				</div>
-				
-				<section><h3>Constructors</h3>
-					<table>
-						<col class="caption"/>
-						<tr>
-							<th>Name</th><th>Description</th>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/wayland/WaylandDisplay.this.html" class="public">
-									<code>this</code>
-								</a>
-							</td>
-							<td></td>
-						</tr>
-					</table>
-				</section>
-				<section><h3>Properties</h3>
-					<table>
-						<col class="caption"/>
-						<tr>
-							<th>Name</th><th>Type</th><th>Description</th>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/wayland/WaylandDisplay.instance.html" class="public property"><code>instance</code></a><span class="tableEntryAnnotation">[get]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/Instance.html"><span class="typ">Instance</span></a></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/wayland/WaylandDisplay.refCountShared.html" class="public property"><code>refCountShared</code></a><span class="tableEntryAnnotation">[get]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ulong</span></code></td><td>Atomically loads the number of active references.
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/wayland/WaylandDisplay.windows.html" class="public property"><code>windows</code></a><span class="tableEntryAnnotation">[get]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/window/Window.html"><span class="typ">Window</span></a><span class="pun">[]</span></code></td><td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/core/rc/IAtomicRefCounted.refCount.html" class="public inherited property"><code>refCount</code></a><span class="tableEntryAnnotation">[get]</span>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ulong</span></code></td><td>Atomically loads the number of active references.
-</td>
-						</tr>
-					</table>
-				</section>
-				<section><h3>Methods</h3>
-					<table>
-						<col class="caption"/>
-						<tr>
-							<th>Name</th><th>Description</th>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/wayland/WaylandDisplay.createWindow.html" class="public">
-									<code>createWindow</code>
-								</a>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/wayland/WaylandDisplay.dispose.html" class="public">
-									<code>dispose</code>
-								</a>
-							</td>
-							<td>Dispose the underlying resource
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/wayland/WaylandDisplay.pollAndDispatch.html" class="public">
-									<code>pollAndDispatch</code>
-								</a>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/wayland/WaylandDisplay.rcDebug.html" class="public">
-									<code>rcDebug</code>
-								</a>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/wayland/WaylandDisplay.rcLockShared.html" class="public">
-									<code>rcLockShared</code>
-								</a>
-							</td>
-							<td>Returns whether the refCount &gt;= 1.
-This increases the refCount by 1. rcLock should be used to keep
-weak reference and ensures that the resource is not disposed.
-The operation is atomic.
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/wayland/WaylandDisplay.releaseShared.html" class="public">
-									<code>releaseShared</code>
-								</a>
-							</td>
-							<td>Atomically decrement the reference count.
-If refCount reaches zero, and disposeOnZero is set,
-the object is locked with its own mutex, and dispose is called.
-In most cases, the calling code should set disposeOnZero, unless it
-is intended to release the object to give it away.
-(such as at the end of a builder function)
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/wayland/WaylandDisplay.retainShared.html" class="public">
-									<code>retainShared</code>
-								</a>
-							</td>
-							<td>Atomically increment the reference count.
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/window/Display.createWindow.html" class="public inherited">
-									<code>createWindow</code>
-								</a>
-							</td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/core/rc/IAtomicRefCounted.rcLock.html" class="public inherited">
-									<code>rcLock</code>
-								</a>
-							</td>
-							<td>Returns whether the refCount &gt;= 1.
-This increases the refCount by 1. rcLock should be used to keep
-weak reference and ensures that the resource is not disposed.
-The operation is atomic.
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/core/rc/IAtomicRefCounted.release.html" class="public inherited">
-									<code>release</code>
-								</a>
-							</td>
-							<td>Atomically decrement the reference count.
-If refCount reaches zero, and disposeOnZero is set,
-the object is locked with its own mutex, and dispose is called.
-In most cases, the calling code should set disposeOnZero, unless it
-is intended to release the object to give it away.
-(such as at the end of a builder function)
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../gfx/core/rc/IAtomicRefCounted.retain.html" class="public inherited">
-									<code>retain</code>
-								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Atomically increment the reference count.
 </td>

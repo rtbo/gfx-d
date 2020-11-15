@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Interface Instance</title>
 		<link rel="stylesheet" href="../../css/style.min.css"/>
 		<script type="text/javascript" src="../../js/script.min.js"></script>
@@ -443,6 +443,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../gfx/graal/Instance.devices.html" class="public">
 									<code>devices</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>The devices that are installed on the system.
 </td>
@@ -452,6 +453,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../gfx/graal/Instance.setDebugCallback.html" class="public">
 									<code>setDebugCallback</code>
 								</a>
+								<span class="tableEntryAnnotation">(callback)</span>
 							</td>
 							<td>Sets the debug callback for the instance and associated devices.
 Must be set before creating devices.
@@ -464,6 +466,7 @@ created with the right extensions.
 								<a href="../../gfx/core/rc/IAtomicRefCounted.dispose.html" class="public inherited">
 									<code>dispose</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Dispose the underlying resource
 </td>
@@ -473,6 +476,7 @@ created with the right extensions.
 								<a href="../../gfx/core/rc/IAtomicRefCounted.rcLock.html" class="public inherited">
 									<code>rcLock</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Returns whether the refCount &gt;= 1.
 This increases the refCount by 1. rcLock should be used to keep
@@ -485,6 +489,7 @@ The operation is atomic.
 								<a href="../../gfx/core/rc/IAtomicRefCounted.rcLockShared.html" class="public inherited">
 									<code>rcLockShared</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Returns whether the refCount &gt;= 1.
 This increases the refCount by 1. rcLock should be used to keep
@@ -497,6 +502,7 @@ The operation is atomic.
 								<a href="../../gfx/core/rc/IAtomicRefCounted.release.html" class="public inherited">
 									<code>release</code>
 								</a>
+								<span class="tableEntryAnnotation">(disposeOnZero)</span>
 							</td>
 							<td>Atomically decrement the reference count.
 If refCount reaches zero, and disposeOnZero is set,
@@ -511,6 +517,7 @@ is intended to release the object to give it away.
 								<a href="../../gfx/core/rc/IAtomicRefCounted.releaseShared.html" class="public inherited">
 									<code>releaseShared</code>
 								</a>
+								<span class="tableEntryAnnotation">(disposeOnZero)</span>
 							</td>
 							<td>Atomically decrement the reference count.
 If refCount reaches zero, and disposeOnZero is set,
@@ -525,6 +532,7 @@ is intended to release the object to give it away.
 								<a href="../../gfx/core/rc/IAtomicRefCounted.retain.html" class="public inherited">
 									<code>retain</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Atomically increment the reference count.
 </td>
@@ -534,6 +542,7 @@ is intended to release the object to give it away.
 								<a href="../../gfx/core/rc/IAtomicRefCounted.retainShared.html" class="public inherited">
 									<code>retainShared</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Atomically increment the reference count.
 </td>

@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Interface Queue</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
@@ -406,6 +406,12 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/device/Device.html"><span class="typ">Device</span></a></code></td><td></td>
 						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/queue/Queue.index.html" class="public property"><code>index</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+						</tr>
 					</table>
 				</section>
 				<section><h2>Methods</h2>
@@ -419,6 +425,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/graal/queue/Queue.present.html" class="public">
 									<code>present</code>
 								</a>
+								<span class="tableEntryAnnotation">(waitSems, prs)</span>
 							</td>
 							<td></td>
 						</tr>
@@ -427,6 +434,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/graal/queue/Queue.submit.html" class="public">
 									<code>submit</code>
 								</a>
+								<span class="tableEntryAnnotation">(submissions, fence)</span>
 							</td>
 							<td></td>
 						</tr>
@@ -435,6 +443,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../gfx/graal/queue/Queue.waitIdle.html" class="public">
 									<code>waitIdle</code>
 								</a>
+								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td></td>
 						</tr>

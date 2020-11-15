@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 		<title>Alias SymbolLoader</title>
 		<link rel="stylesheet" href="../../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../../js/script.min.js"></script>
@@ -391,7 +391,7 @@ Symbols loaded with such loader must be cast to the appropriate function type.
 					<code class="lang-d">
 						<div class="single-prototype">
 				<span class="kwd">alias</span> <span class="pln">SymbolLoader</span>
-				 <span class="pun">=</span> <span class="typ">void</span><span class="pun">*</span> <span class="kwd">delegate</span><span class="pun">(</span><span class="kwd">const</span><span class="pun">(</span><span class="typ">string</span><span class="pun">)</span><span class="pun">)</span><span class="pun">;</span>
+				 <span class="pun">=</span> <span class="typ">void</span><span class="pun">*</span> <span class="kwd">delegate</span><span class="pun">(</span><span class="kwd">in</span> <span class="typ">string</span><span class="pun">)</span><span class="pun">;</span>
 						</div>
 					</code>
 				</div>

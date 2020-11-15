@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
+		<title>Interface SecondaryCommandBuffer</title>
+		<link rel="stylesheet" href="../../../css/style.min.css"/>
+		<script type="text/javascript" src="../../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../gfx.html">gfx</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">bindings
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">opengl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/opengl/gl.html">gl</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/opengl/glx.html">glx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/opengl/khrplatform.html">khrplatform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/opengl/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/opengl/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/opengl/wgl.html">wgl</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/bindings/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/vulkan/loader.html">loader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/vulkan/vk.html">vk</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/bindings/core.html">core</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/core/log.html">log</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/core/rc.html">rc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/core/typecons.html">typecons</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/core/util.html">util</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">decl
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/decl/engine.html">engine</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/decl/store.html">store</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">genmesh
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/genmesh/algorithm.html">algorithm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/genmesh/cube.html">cube</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/genmesh/poly.html">poly</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/gl3.html">gl3</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/gl3/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/gl3/swapchain.html">swapchain</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../gfx/graal.html">graal</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/buffer.html">buffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module selected">
+							<a href="../../../gfx/graal/cmd.html">cmd</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/device.html">device</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/error.html">error</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/format.html">format</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/memory.html">memory</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/pipeline.html">pipeline</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/presentation.html">presentation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/queue.html">queue</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/renderpass.html">renderpass</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/sync.html">sync</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/graal/types.html">types</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/math.html">math</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/math/approx.html">approx</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/math/inverse.html">inverse</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/math/mat.html">mat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/math/proj.html">proj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/math/transform.html">transform</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/math/util.html">util</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/math/vec.html">vec</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/memalloc.html">memalloc</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/memalloc/dedicated.html">dedicated</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/memalloc/pool.html">pool</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/vulkan.html">vulkan</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/vulkan/wsi.html">wsi</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/window.html">window</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/window/wayland.html">wayland</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/window/wayland/xdg_shell.html">xdg_shell</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/window/win32.html">win32</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/window/win32/context.html">context</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/window/win32/keymap.html">keymap</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../gfx/window/xcb.html">xcb</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/window/xcb/context.html">context</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/window/keys.html">keys</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../gfx/window/xkeyboard.html">xkeyboard</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with
+				<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Interface SecondaryCommandBuffer</h1><p>Interface to a secondary command buffer
+</p>
+				<div class="prototype">
+					<code class="lang-d">
+						<div class="single-prototype">
+				<span class="kwd">interface</span> <span class="typ">SecondaryCommandBuffer</span>
+				<br>&nbsp;&nbsp;: <a href="../../../gfx/graal/cmd/CommandBuffer.html"><span class="typ">CommandBuffer</span></a>
+				<span class="pun">;</span>
+						</div>
+					</code>
+				</div>
+				<section><p>Main interest of secondary command buffer is that they are not tied to
+a render pass and as such can be filled in parallel on different threads.
+</p>
+</section>
+
+				<section><h2>Properties</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.level.html" class="public inherited property"><code>level</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/cmd/CommandBufferLevel.html"><span class="typ">CommandBufferLevel</span></a></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.pool.html" class="public inherited property"><code>pool</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../gfx/graal/cmd/CommandPool.html"><span class="typ">CommandPool</span></a></code></td><td></td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Methods</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/SecondaryCommandBuffer.beginWithinRenderPass.html" class="public">
+									<code>beginWithinRenderPass</code>
+								</a>
+								<span class="tableEntryAnnotation">(usage, rp, fb, subpass)</span>
+							</td>
+							<td>Switches the buffer to the "recording" state, acknowledging that the buffer
+will be executed within a render pass compatible with rp
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.begin.html" class="public inherited">
+									<code>begin</code>
+								</a>
+								<span class="tableEntryAnnotation">(usage)</span>
+							</td>
+							<td>Begin recording and switches the buffer state from "invalid" to "recording"
+SecondaryCommandBuffer can alternatively call beginWithinRenderPass
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.bindDescriptorSets.html" class="public inherited">
+									<code>bindDescriptorSets</code>
+								</a>
+								<span class="tableEntryAnnotation">(bindPoint, layout, firstSet, sets, dynamicOffsets)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.bindIndexBuffer.html" class="public inherited">
+									<code>bindIndexBuffer</code>
+								</a>
+								<span class="tableEntryAnnotation">(indexBuf, offset, type)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.bindPipeline.html" class="public inherited">
+									<code>bindPipeline</code>
+								</a>
+								<span class="tableEntryAnnotation">(pipeline)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.bindVertexBuffers.html" class="public inherited">
+									<code>bindVertexBuffers</code>
+								</a>
+								<span class="tableEntryAnnotation">(firstBinding, bindings)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.clearColorImage.html" class="public inherited">
+									<code>clearColorImage</code>
+								</a>
+								<span class="tableEntryAnnotation">(image, layout, clearValues, ranges)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.clearDepthStencilImage.html" class="public inherited">
+									<code>clearDepthStencilImage</code>
+								</a>
+								<span class="tableEntryAnnotation">(image, layout, clearValues, ranges)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.copyBuffer.html" class="public inherited">
+									<code>copyBuffer</code>
+								</a>
+								<span class="tableEntryAnnotation">(buffers, regions)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.copyBufferToImage.html" class="public inherited">
+									<code>copyBufferToImage</code>
+								</a>
+								<span class="tableEntryAnnotation">(srcBuffer, dstImage, dstLayout, regions)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.draw.html" class="public inherited">
+									<code>draw</code>
+								</a>
+								<span class="tableEntryAnnotation">(vertexCount, instanceCount, firstVertex, firstInstance)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.drawIndexed.html" class="public inherited">
+									<code>drawIndexed</code>
+								</a>
+								<span class="tableEntryAnnotation">(indexCount, instanceCount, firstVertex, vertexOffset, firstInstance)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.end.html" class="public inherited">
+									<code>end</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.fillBuffer.html" class="public inherited">
+									<code>fillBuffer</code>
+								</a>
+								<span class="tableEntryAnnotation">(dst, offset, size, value)</span>
+							</td>
+							<td>Fills buffer from offset to offset+size with value
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.pipelineBarrier.html" class="public inherited">
+									<code>pipelineBarrier</code>
+								</a>
+								<span class="tableEntryAnnotation">(stageTrans, bufMbs, imgMbs)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.pushConstants.html" class="public inherited">
+									<code>pushConstants</code>
+								</a>
+								<span class="tableEntryAnnotation">(layout, stages, offset, size, data)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.reset.html" class="public inherited">
+									<code>reset</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.setBlendConstants.html" class="public inherited">
+									<code>setBlendConstants</code>
+								</a>
+								<span class="tableEntryAnnotation">(blendConstants)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.setDepthBias.html" class="public inherited">
+									<code>setDepthBias</code>
+								</a>
+								<span class="tableEntryAnnotation">(constFactor, clamp, slopeFactor)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.setDepthBounds.html" class="public inherited">
+									<code>setDepthBounds</code>
+								</a>
+								<span class="tableEntryAnnotation">(minDepth, maxDepth)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.setLineWidth.html" class="public inherited">
+									<code>setLineWidth</code>
+								</a>
+								<span class="tableEntryAnnotation">(lineWidth)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.setScissor.html" class="public inherited">
+									<code>setScissor</code>
+								</a>
+								<span class="tableEntryAnnotation">(firstScissor, scissors)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.setStencilCompareMask.html" class="public inherited">
+									<code>setStencilCompareMask</code>
+								</a>
+								<span class="tableEntryAnnotation">(faceMask, compareMask)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.setStencilReference.html" class="public inherited">
+									<code>setStencilReference</code>
+								</a>
+								<span class="tableEntryAnnotation">(faceMask, reference)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.setStencilWriteMask.html" class="public inherited">
+									<code>setStencilWriteMask</code>
+								</a>
+								<span class="tableEntryAnnotation">(faceMask, writeMask)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.setViewport.html" class="public inherited">
+									<code>setViewport</code>
+								</a>
+								<span class="tableEntryAnnotation">(firstViewport, viewports)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../gfx/graal/cmd/CommandBuffer.updateBuffer.html" class="public inherited">
+									<code>updateBuffer</code>
+								</a>
+								<span class="tableEntryAnnotation">(dst, offset, data)</span>
+							</td>
+							<td>Update buffer with the data passed as argument
+</td>
+						</tr>
+					</table>
+				</section>
+				
+			</div>
+			<footer>
+				<div id="license-info">
+					
+					
+					
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>
