@@ -337,9 +337,8 @@ struct Vec(T, size_t N) if(N > 0 && isNumeric!T)
     Vec!(T, N) opUnary(string op : "-")() const
     {
         Vec!(T, N) res = this;
-        foreach (ref v; res)
-        {
-            v = -v;
+        static foreach (i; 0 .. length) {
+            res[i] = -res[i];
         }
         return res;
     }
