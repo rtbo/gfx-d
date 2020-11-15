@@ -156,7 +156,7 @@ enum ImageLayout {
 	transferSrcOptimal              = 6,
 	transferDstOptimal              = 7,
 	preinitialized                  = 8,
-    presentSrc                      = 1000001002, // TODO impl actual mapping to vulkan
+    presentSrc                      = 1_000_001_002, // TODO impl actual mapping to vulkan
 }
 
 enum ImageTiling {
