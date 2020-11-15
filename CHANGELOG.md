@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2020-11-15
+
+### Changed
+
+ - Fix a few unittest
+ - Fix subpackage references in DUB. This could impact code depending on gfx-d
+
+
 ## [0.2.0] - 2020-11-15
 
 ### Added
@@ -34,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
  - fix build on Windows
 
+
 ## [0.1.1] - 2018-12-24
 
 ### Added
@@ -46,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
  - AtomicRefCounted is renamed to IAtomicRefCounted
+
 
 ## [0.1.0] - 2018-12-16
 
