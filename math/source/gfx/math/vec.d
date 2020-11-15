@@ -54,14 +54,16 @@ unittest
     import std.traits : Unqual;
 
     immutable v1 = vec (1, 2, 4.0, 0); // CommonType!(int, double) is double
+    immutable int[4] arr1 = [1, 2, 4, 0];
 
     static assert( is(Unqual!(typeof(v1)) == DVec4) );
-    assert(equal(v1.data, [1, 2, 4, 0]));
 
-    immutable int[3] arr = [0, 1, 2];
-    immutable v2 = vec (arr);
+    assert(equal(v1.data, arr1[]));
+
+    immutable int[3] arr2 = [0, 1, 2];
+    immutable v2 = vec (arr2);
     static assert( is(Unqual!(typeof(v2)) == IVec3) );
-    assert(equal(v2.data, [0, 1, 2]));
+    assert(equal(v2.data, arr2[]));
 }
 
 /// Build a Vec with specified component type T and size deducted from arguments.
@@ -95,18 +97,20 @@ unittest
     import std.traits : Unqual;
 
     immutable v1 = dvec (1, 2, 4, 0); // none of the args is double
+    immutable int[4] arr1 = [1, 2, 4, 0];
     static assert( is(Unqual!(typeof(v1)) == DVec4) );
-    assert(equal(v1.data, [1, 2, 4, 0]));
+    assert(equal(v1.data, arr1[]));
 
-    immutable int[3] arr = [0, 1, 2];
-    immutable v2 = fvec(arr);
+    immutable int[3] arr2 = [0, 1, 2];
+    immutable v2 = fvec(arr2);
     static assert( is(Unqual!(typeof(v2)) == FVec3) );
-    assert(equal(v2.data, [0, 1, 2]));
+    assert(equal(v2.data, arr2[]));
 
+    immutable int[4] arr3 = [0, 1, 2, 3];
     immutable v3 = dvec (1, 2);
     immutable v4 = dvec (0, v3, 3);
     static assert( is(Unqual!(typeof(v4)) == DVec4) );
-    assert(equal(v4.data, [0, 1, 2, 3]));
+    assert(equal(v4.data, arr3[]));
 }
 
 /// Build a Vec with specified size and type deducted from arguments
@@ -140,17 +144,18 @@ alias vec4 = vec!4;
 unittest
 {
     import std.algorithm : equal;
+    import std.array : staticArray;
     import std.traits : Unqual;
 
-    const double[] arr = [1, 2, 4, 0];  // arr.length known at runtime
-    const v1 = vec4 (arr);             // asserts that arr.length == 4
+    const double[4] arr1 = [1, 2, 4, 0];
+    const v1 = vec4 (arr1[]);            // passing slice to erase compile-time length
     static assert( is(Unqual!(typeof(v1)) == DVec4) );
-    assert(equal(v1.data, [1, 2, 4, 0]));
+    assert(equal(v1.data, arr1[]));
 
     const int comp = 2;
     const v2 = vec4 (comp);
     static assert( is(Unqual!(typeof(v2)) == IVec4) );
-    assert(equal(v2.data, [2, 2, 2, 2]));
+    assert(equal(v2.data, staticArray([2, 2, 2, 2])[]));
 }
 
 
