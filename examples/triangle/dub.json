@@ -12,10 +12,10 @@
     ],
     "dependencies": {
         "gfx:graal": {
-            "path": "../../graal"
+            "path": "../.."
         },
         "gfx:window": {
-            "path": "../../window"
+            "path": "../.."
         }
     },
     "preGenerateCommands-linux": [

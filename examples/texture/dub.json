@@ -12,13 +12,13 @@
     ],
     "dependencies": {
         "gfx:graal": {
-            "path": "../../graal"
+            "path": "../.."
         },
         "gfx:window": {
-            "path": "../../window"
+            "path": "../.."
         },
         "gfx:genmesh": {
-            "path": "../../genmesh"
+            "path": "../.."
         },
         "img": {
             "path": "../../3rdparty/img-d"

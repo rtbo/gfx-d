@@ -8,7 +8,7 @@
     "license": "MIT",
     "dependencies": {
         "gfx:graal": {
-            "path": "../graal"
+            "path": ".."
         }
     },
     "-ddoxFilterArgs": ["--min-protection=Protected"],

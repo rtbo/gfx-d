@@ -8,13 +8,13 @@
     "license": "MIT",
     "dependencies": {
         "gfx:graal": {
-            "path": "../graal"
+            "path": ".."
         },
         "gfx:gl3": {
-            "path": "../gl3"
+            "path": ".."
         },
         "gfx:vulkan": {
-            "path": "../vulkan"
+            "path": ".."
         }
     },
     "configurations": [{

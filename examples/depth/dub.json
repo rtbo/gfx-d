@@ -12,16 +12,16 @@
     ],
     "dependencies": {
         "gfx:graal": {
-            "path": "../../graal"
+            "path": "../.."
         },
         "gfx:math": {
-            "path": "../../math"
+            "path": "../.."
         },
         "gfx:window": {
-            "path": "../../window"
+            "path": "../.."
         },
         "gfx:genmesh": {
-            "path": "../../genmesh"
+            "path": "../.."
         }
     },
     "preGenerateCommands-linux": [

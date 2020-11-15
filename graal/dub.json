@@ -9,10 +9,10 @@
     "targetType": "library",
     "dependencies": {
         "gfx:core": {
-            "path": "../core"
+            "path": ".."
         },
         "gfx:math": {
-            "path": "../math"
+            "path": ".."
         }
     }
 }
