@@ -3,7 +3,7 @@ module gfx.math.vec;
 
 import std.traits : isFloatingPoint, isNumeric, isStaticArray;
 
-pure @safe nothrow:
+pure @safe nothrow @nogc:
 
 alias Vec2(T) = Vec!(T, 2);
 alias Vec3(T) = Vec!(T, 3);
