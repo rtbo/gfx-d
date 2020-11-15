@@ -265,11 +265,11 @@ struct Swizzle
 
     size_t opDollar() const { return 4; }
     CompSwizzle opIndex(size_t ind) const { return rep[ind]; }
-    const(CompSwizzle)[] opIndex() const { return rep[]; }
+    const(CompSwizzle)[] opIndex() const return { return rep[]; }
     size_t[2] opSlice(size_t dim)(size_t start, size_t end) const {
         return [start, end];
     }
-    const(CompSwizzle)[] opIndex(size_t[2] slice) const {
+    const(CompSwizzle)[] opIndex(size_t[2] slice) const return {
         return rep[slice[0] .. slice[1]];
     }
 }

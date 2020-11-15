@@ -606,7 +606,7 @@ struct DescriptorWrite
     }
 
     /// access BufferDescriptor array
-    @property BufferDescriptor[] buffers()
+    @property BufferDescriptor[] buffers() return
     in(type == DescriptorType.uniformBuffer
         || type == DescriptorType.storageBuffer
         || type == DescriptorType.uniformBufferDynamic
@@ -621,7 +621,7 @@ struct DescriptorWrite
     }
 
     /// access TexelBufferDescriptor array
-    @property TexelBufferDescriptor[] texelBuffers()
+    @property TexelBufferDescriptor[] texelBuffers() return
     in(type == DescriptorType.uniformTexelBuffer
         || type == DescriptorType.storageTexelBuffer)
     {
@@ -634,7 +634,7 @@ struct DescriptorWrite
     }
 
     /// access ImageDescriptor array
-    @property ImageDescriptor[] images()
+    @property ImageDescriptor[] images() return
     in(type == DescriptorType.sampledImage
         || type == DescriptorType.storageImage
         || type == DescriptorType.inputAttachment)
@@ -648,7 +648,7 @@ struct DescriptorWrite
     }
 
     /// access ImageSamplerDescriptor array
-    @property ImageSamplerDescriptor[] imageSamplers()
+    @property ImageSamplerDescriptor[] imageSamplers() return
     in(type == DescriptorType.combinedImageSampler)
     {
         if (_count == 1) {
@@ -660,7 +660,7 @@ struct DescriptorWrite
     }
 
     /// access SamplerDescriptor array
-    @property SamplerDescriptor[] samplers()
+    @property SamplerDescriptor[] samplers() return
     in(type == DescriptorType.sampler)
     {
         if (_count == 1) {
