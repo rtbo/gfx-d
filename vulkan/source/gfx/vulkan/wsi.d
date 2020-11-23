@@ -134,11 +134,11 @@ else {
     version(glfw) {
         /// Extensions to open Vulkan surfaces on the platform window system
         @property immutable(string[]) surfaceInstanceExtensions() {
-            return surfaceInstanceExtension ~ glfwInstanceExtensions;
+            return glfwInstanceExtensions;
         }
         /// Extensions necessary to open a GLFW Vulkan surface
         @property immutable(string[]) glfwSurfaceInstanceExtensions() {
-            return surfaceInstanceExtension ~ glfwInstanceExtensions;
+            return glfwInstanceExtensions;
         }
 
         Surface createVulkanGlfwSurface(Instance graalInst, GLFWwindow* window) {
