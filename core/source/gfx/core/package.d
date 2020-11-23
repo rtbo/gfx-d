@@ -7,3 +7,7 @@ public import gfx.core.util;
 
 enum gfxCoreLogMask = 0x8000_0000;
 package(gfx) immutable gfxCoreLog = LogTag("GFX-CORE", gfxCoreLogMask);
+
+version(MissingTestMain) {
+    void main() {}
+}

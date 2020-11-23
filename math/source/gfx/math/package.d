@@ -8,6 +8,6 @@ public import gfx.math.transform;
 public import gfx.math.util;
 public import gfx.math.vec;
 
-version(unittest) {
+version(MissingTestMain) {
     void main() {}
 }

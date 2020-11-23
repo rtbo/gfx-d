@@ -10,6 +10,10 @@ import gfx.graal.memory :   DeviceMemory, MemoryProperties, MemoryRequirements,
 enum gfxMemallocLogMask = 0x1000_0000;
 package immutable gfxMemallocLog = LogTag("GFX-MEMALLOC", gfxMemallocLogMask);
 
+version(MissingTestMain) {
+    void main() {}
+}
+
 /// Option flags for creating an Allocator
 enum AllocatorFlags
 {

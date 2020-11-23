@@ -8,3 +8,7 @@ package immutable gfxLog = LogTag("GFX", gfxLogMask);
 enum uint gfxVersionMaj = 0;
 enum uint gfxVersionMin = 1;
 enum uint gfxVersionMic = 2;
+
+version(MissingTestMain) {
+    void main() {}
+}

@@ -8,6 +8,10 @@ import gfx.graal.device : PhysicalDevice;
 enum gfxGlLogMask = 0x2000_0000;
 package immutable gfxGlLog = LogTag("GFX-GL", gfxGlLogMask);
 
+version(MissingTestMain) {
+    void main() {}
+}
+
 final class GlInstance : Instance
 {
     import gfx.core.rc : atomicRcCode, Rc;
