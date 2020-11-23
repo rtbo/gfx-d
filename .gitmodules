@@ -1,3 +1,6 @@
 [submodule "3rdparty/img-d"]
 	path = 3rdparty/img-d
 	url = https://github.com/rtbo/img-d.git
+[submodule "3rdparty/spirv_cross-d"]
+	path = 3rdparty/spirv_cross-d
+	url = https://github.com/rtbo/spirv_cross-d
