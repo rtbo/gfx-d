@@ -30,16 +30,16 @@ math_test = executable('math_test', math_sources,
     include_directories: math_inc,
     d_unittest: true,
     install: false,
+    d_module_versions: ['MissingTestMain'],
 )
 
 test('math', math_test)
 
-pkgc.generate(
+pkgc.generate(math_lib,
     name: 'gfxd_math',
-    libraries: math_lib,
     subdirs: 'd/gfxd',
     version: meson.project_version(),
-    description: 'Gfx-d Math library',
+    description: 'Gfx-d math library',
 )
 
 install_subdir('source/gfx',
