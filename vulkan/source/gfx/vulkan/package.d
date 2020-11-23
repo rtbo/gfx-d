@@ -564,6 +564,10 @@ extern(C) nothrow {
     }
 }
 
+version(glfw) {
+    extern(C) @nogc nothrow int glfwGetPhysicalDevicePresentationSupport(VkInstance, VkPhysicalDevice, uint);
+}
+
 final class VulkanPhysicalDevice : PhysicalDevice
 {
     this(VkPhysicalDevice vkObj, VulkanInstance inst) {
@@ -698,7 +702,15 @@ final class VulkanPhysicalDevice : PhysicalDevice
             vk.GetPhysicalDeviceSurfaceSupportKHR(vkObj, queueFamilyIndex, surf.vkObj, &supported),
             "Could not query vulkan surface support"
         );
-        return supported != VK_FALSE;
+
+        version(glfw) {
+            import bindbc.glfw : GLFW_FALSE;
+
+            const supportsGlfw = glfwGetPhysicalDevicePresentationSupport(_inst.vkObj, _vkObj, queueFamilyIndex);
+            return supported != VK_FALSE && supportsGlfw != GLFW_FALSE;
+        } else {
+            return supported != VK_FALSE;
+        }
     }
 
     override SurfaceCaps surfaceCaps(Surface graalSurface) {
