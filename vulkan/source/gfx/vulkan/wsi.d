@@ -1,4 +1,16 @@
 /// Vulkan Window System Integration module
+///
+/// The Vulkan backend supports integration with the following windowing systems:
+///
+/// $(UL
+///   $(LI Linux)
+///   $(UL
+///     $(LI <a href="https://code.dlang.org/packages/wayland">Wayland</a>)
+///     $(LI <a href="https://code.dlang.org/packages/xcb-d">XCB</a>)
+///   )
+///   $(LI Windows)
+///   $(LI <a href="https://www.glfw.org/docs/3.3/vulkan_guide.html">GLFW</a> via <a href="https://code.dlang.org/packages/bindbc-glfw">bindbc-glfw</a>)
+/// )
 module gfx.vulkan.wsi;
 
 import core.time : Duration;
