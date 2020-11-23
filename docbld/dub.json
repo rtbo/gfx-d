@@ -27,7 +27,7 @@
             "dependencies": {
                 "wayland:client": "~>0.2.0",
                 "wayland:cursor": "~>0.2.0",
-                "xlib-d": "~>0.1.1",
+                "xlib-d": "~>0.2.0",
 				"xcb-d": "~>2.1.1",
 				"xkbcommon-d": "~>0.5.1"
             }

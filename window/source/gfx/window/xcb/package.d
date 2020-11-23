@@ -77,7 +77,7 @@ class XcbDisplay : Display
         scope(failure) {
             XCloseDisplay(_dpy);
         }
-        _conn = enforce(XGetXCBConnection(_dpy));
+        _conn = enforce(cast(xcb_connection_t*)XGetXCBConnection(_dpy));
         XSetEventQueueOwner(_dpy, XCBOwnsEventQueue);
         _mainScreenNum = XDefaultScreen(_dpy);
 
