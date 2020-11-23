@@ -23,6 +23,13 @@
             }
         },
         {
+            "name": "glfw",
+            "platforms": ["linux", "windows"],
+            "dependencies": {
+                "bindbc-glfw": "~>0.10.1"
+            }
+        },
+        {
             "name": "windows",
             "platforms": ["windows"]
         }

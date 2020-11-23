@@ -99,14 +99,13 @@ else {
     }
 
     version(Windows) {
-
         import core.sys.windows.windef : HINSTANCE, HWND;
 
         /// Extensions to open Vulkan surfaces on the platform window system
         immutable string[] surfaceInstanceExtensions = [
             surfaceInstanceExtension, win32SurfaceInstanceExtension
         ];
-        /// Extensions necessary to open an Win32 Vulkan surface
+        /// Extensions necessary to open a Win32 Vulkan surface
         immutable string[] win32SurfaceInstanceExtensions = [
             surfaceInstanceExtension, win32SurfaceInstanceExtension
         ];
@@ -131,10 +130,62 @@ else {
             return new VulkanSurface(vkSurf, inst);
         }
     }
+
+    version(glfw) {
+        /// Extensions to open Vulkan surfaces on the platform window system
+        @property immutable(string[]) surfaceInstanceExtensions() {
+            return surfaceInstanceExtension ~ glfwInstanceExtensions;
+        }
+        /// Extensions necessary to open a GLFW Vulkan surface
+        @property immutable(string[]) glfwSurfaceInstanceExtensions() {
+            return surfaceInstanceExtension ~ glfwInstanceExtensions;
+        }
+
+        Surface createVulkanGlfwSurface(Instance graalInst, GLFWwindow* window) {
+            auto inst = enforce(
+                cast(VulkanInstance)graalInst,
+                "createVulkanGlfwSurface called with non-vulkan instance"
+            );
+
+            VkSurfaceKHR vkSurf;
+            vulkanEnforce(
+                glfwCreateWindowSurface(inst.vkObj, window, null, &vkSurf),
+                "Could not create Vulkan GLFW Surface"
+            );
+
+            return new VulkanSurface(vkSurf, inst);
+        }
+
+        // TODO: Add createGlfwGlSurface
+    }
 }
 
 
 package:
+
+version(glfw) {
+    import bindbc.glfw : GLFWwindow;
+    import gfx.bindings.vulkan : VkInstance;
+
+    extern(C) @nogc nothrow {
+        const(char)** glfwGetRequiredInstanceExtensions(uint*);
+        VkResult glfwCreateWindowSurface(
+            VkInstance, GLFWwindow*, const(VkAllocationCallbacks)*, VkSurfaceKHR*
+        );
+    }
+
+    @property immutable(string[]) glfwInstanceExtensions() {
+        import std.algorithm.iteration : map;
+        import std.array : array;
+        import std.string : fromStringz;
+        
+        uint extensionCount;
+        const glfwRequiredInstanceExtensions =
+            glfwGetRequiredInstanceExtensions(&extensionCount)[0..extensionCount];
+        immutable extensions = glfwRequiredInstanceExtensions.map!(extension => extension.fromStringz).array;
+        return extensions;
+    }
+}
 
 class VulkanSurface : VulkanInstObj!(VkSurfaceKHR), Surface
 {
