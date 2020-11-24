@@ -1,24 +1,18 @@
 
 window_sources = [
-    'source/gfx/window/wayland/package.d',
-    'source/gfx/window/wayland/xdg_shell.d',
-    'source/gfx/window/win32/context.d',
-    'source/gfx/window/win32/keymap.d',
-    'source/gfx/window/win32/package.d',
-    'source/gfx/window/xcb/context.d',
-    'source/gfx/window/xcb/package.d',
     'source/gfx/window/keys.d',
     'source/gfx/window/package.d',
     'source/gfx/window/xkeyboard.d',
 ]
-
-window_soversion = 0
-
-window_inc = include_directories('source')
-
 window_deps = [ graal_dep, gl3_dep, vulkan_dep ]
 
 if host_machine.system() == 'linux'
+    window_sources += [
+        'source/gfx/window/wayland/package.d',
+        'source/gfx/window/wayland/xdg_shell.d',
+        'source/gfx/window/xcb/context.d',
+        'source/gfx/window/xcb/package.d',
+    ]
     window_deps += [
         wayland_client_dep,
         wayland_cursor_dep,
@@ -26,6 +20,18 @@ if host_machine.system() == 'linux'
         xkbcommon_dep,
     ]
 endif
+
+if host_machine.system() == 'windows'
+    window_sources += [
+        'source/gfx/window/win32/context.d',
+        'source/gfx/window/win32/keymap.d',
+        'source/gfx/window/win32/package.d',
+    ]
+endif
+
+window_soversion = 0
+
+window_inc = include_directories('source')
 
 window_lib = library('gfxd_window', window_sources,
     include_directories: window_inc,
