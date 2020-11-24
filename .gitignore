@@ -22,4 +22,5 @@ gfx-test-library
 
 # ignore my meson workflow
 build/
+builddir/
 install/
