@@ -2,6 +2,7 @@
 genmesh_sources = [
     'source/gfx/genmesh/algorithm.d',
     'source/gfx/genmesh/cube.d',
+    'source/gfx/genmesh/package.d',
     'source/gfx/genmesh/poly.d',
 ]
 

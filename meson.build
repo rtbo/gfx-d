@@ -16,7 +16,7 @@ if host_machine.system() == 'linux'
         method: 'dub',
     )
     xcb_dep = dependency('xcb-d',
-        version: '2.1.1+1.11.1', # bullshit semver!
+        version: '2.1.1+1.11.1',
         method: 'dub',
     )
     xlib_dep = dependency('xlib-d',
@@ -33,9 +33,12 @@ pkgc = import('pkgconfig')
 
 subdir('core')
 subdir('math')
+subdir('genmesh')
 subdir('graal')
 subdir('decl')
 subdir('memalloc')
 subdir('vulkan')
 subdir('gl3')
 subdir('window')
+
+subdir('examples')
