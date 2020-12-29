@@ -109,11 +109,11 @@ struct VulkanExtensionProperties
 
 debug {
     private immutable defaultLayers = lunarGValidationLayers;
-    private immutable defaultExts = debugReportInstanceExtensions ~ surfaceInstanceExtensions;
+    private immutable defaultExts = debugReportInstanceExtensions;
 }
 else {
     private immutable string[] defaultLayers = [];
-    private immutable string[] defaultExts = surfaceInstanceExtensions;
+    private immutable string[] defaultExts = [];
 }
 
 /// Options to create a Vulkan instance.
@@ -146,6 +146,10 @@ VulkanInstance createVulkanInstance(VulkanCreateInfo createInfo=VulkanCreateInfo
     import std.exception : enforce;
     import std.range : chain;
     import std.string : toStringz;
+
+    // Surface instance extensions for the configured surface integration are mandatory so that
+    // the application may create surfaces
+    createInfo.mandatoryExtensions ~= surfaceInstanceExtensions;
 
     // throw if some requested layers or extensions are not available
     // TODO: specific exception
