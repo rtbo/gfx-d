@@ -6,21 +6,13 @@ version(Windows) {
     import core.sys.windows.windef : HINSTANCE, HWND;
 }
 
-version(glfw) {
-    enum isGlfw = true;
-} else {
-    enum isGlfw = false;
+version(linux) {
+    import xcb.xcb : xcb_connection_t, xcb_visualid_t, xcb_window_t;
 }
 
-static if (!isGlfw) {
-    version(linux) {
-        import xcb.xcb : xcb_connection_t, xcb_visualid_t, xcb_window_t;
-    }
-
-    version(linux) {
-        import wayland.native.client : wl_display, wl_proxy;
-        alias wl_surface = wl_proxy;
-    }
+version(linux) {
+    import wayland.native.client : wl_display, wl_proxy;
+    alias wl_surface = wl_proxy;
 }
 
 enum VK_HEADER_VERSION =  96;
@@ -5000,27 +4992,25 @@ struct VkDisplaySurfaceCreateInfoKHR {
     VkExtent2D                     imageExtent;
 }
 
-static if (!isGlfw) {
-    // VK_KHR_xcb_surface
-    version(linux) {
-        struct VkXcbSurfaceCreateInfoKHR {
-            VkStructureType            sType;
-            const(void)*               pNext;
-            VkXcbSurfaceCreateFlagsKHR flags;
-            xcb_connection_t*          connection;
-            xcb_window_t               window;
-        }
+// VK_KHR_xcb_surface
+version(linux) {
+    struct VkXcbSurfaceCreateInfoKHR {
+        VkStructureType            sType;
+        const(void)*               pNext;
+        VkXcbSurfaceCreateFlagsKHR flags;
+        xcb_connection_t*          connection;
+        xcb_window_t               window;
     }
+}
 
-    // VK_KHR_wayland_surface
-    version(linux) {
-        struct VkWaylandSurfaceCreateInfoKHR {
-            VkStructureType                sType;
-            const(void)*                   pNext;
-            VkWaylandSurfaceCreateFlagsKHR flags;
-            wl_display*                    display;
-            wl_surface*                    surface;
-        }
+// VK_KHR_wayland_surface
+version(linux) {
+    struct VkWaylandSurfaceCreateInfoKHR {
+        VkStructureType                sType;
+        const(void)*                   pNext;
+        VkWaylandSurfaceCreateFlagsKHR flags;
+        wl_display*                    display;
+        wl_surface*                    surface;
     }
 }
 
@@ -6117,37 +6107,35 @@ extern(C) nothrow @nogc {
         VkSurfaceKHR*                         pSurface,
     );
 
-    static if (!isGlfw) {
-        // VK_KHR_xcb_surface
-        version(linux) {
-            alias PFN_vkCreateXcbSurfaceKHR = VkResult function (
-                VkInstance                        instance,
-                const(VkXcbSurfaceCreateInfoKHR)* pCreateInfo,
-                const(VkAllocationCallbacks)*     pAllocator,
-                VkSurfaceKHR*                     pSurface,
-            );
-            alias PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR = VkBool32 function (
-                VkPhysicalDevice  physicalDevice,
-                uint32_t          queueFamilyIndex,
-                xcb_connection_t* connection,
-                xcb_visualid_t    visual_id,
-            );
-        }
+    // VK_KHR_xcb_surface
+    version(linux) {
+        alias PFN_vkCreateXcbSurfaceKHR = VkResult function (
+            VkInstance                        instance,
+            const(VkXcbSurfaceCreateInfoKHR)* pCreateInfo,
+            const(VkAllocationCallbacks)*     pAllocator,
+            VkSurfaceKHR*                     pSurface,
+        );
+        alias PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR = VkBool32 function (
+            VkPhysicalDevice  physicalDevice,
+            uint32_t          queueFamilyIndex,
+            xcb_connection_t* connection,
+            xcb_visualid_t    visual_id,
+        );
+    }
 
-        // VK_KHR_wayland_surface
-        version(linux) {
-            alias PFN_vkCreateWaylandSurfaceKHR = VkResult function (
-                VkInstance                            instance,
-                const(VkWaylandSurfaceCreateInfoKHR)* pCreateInfo,
-                const(VkAllocationCallbacks)*         pAllocator,
-                VkSurfaceKHR*                         pSurface,
-            );
-            alias PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR = VkBool32 function (
-                VkPhysicalDevice physicalDevice,
-                uint32_t         queueFamilyIndex,
-                wl_display*      display,
-            );
-        }
+    // VK_KHR_wayland_surface
+    version(linux) {
+        alias PFN_vkCreateWaylandSurfaceKHR = VkResult function (
+            VkInstance                            instance,
+            const(VkWaylandSurfaceCreateInfoKHR)* pCreateInfo,
+            const(VkAllocationCallbacks)*         pAllocator,
+            VkSurfaceKHR*                         pSurface,
+        );
+        alias PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR = VkBool32 function (
+            VkPhysicalDevice physicalDevice,
+            uint32_t         queueFamilyIndex,
+            wl_display*      display,
+        );
     }
 
     // VK_KHR_win32_surface
@@ -6280,18 +6268,16 @@ final class VkInstanceCmds {
         _GetDisplayPlaneCapabilitiesKHR                 = cast(PFN_vkGetDisplayPlaneCapabilitiesKHR)                loader(instance, "vkGetDisplayPlaneCapabilitiesKHR");
         _CreateDisplayPlaneSurfaceKHR                   = cast(PFN_vkCreateDisplayPlaneSurfaceKHR)                  loader(instance, "vkCreateDisplayPlaneSurfaceKHR");
 
-        static if (!isGlfw) {
-            // VK_KHR_xcb_surface
-            version(linux) {
-                _CreateXcbSurfaceKHR                            = cast(PFN_vkCreateXcbSurfaceKHR)                           loader(instance, "vkCreateXcbSurfaceKHR");
-                _GetPhysicalDeviceXcbPresentationSupportKHR     = cast(PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR)    loader(instance, "vkGetPhysicalDeviceXcbPresentationSupportKHR");
-            }
+        // VK_KHR_xcb_surface
+        version(linux) {
+            _CreateXcbSurfaceKHR                            = cast(PFN_vkCreateXcbSurfaceKHR)                           loader(instance, "vkCreateXcbSurfaceKHR");
+            _GetPhysicalDeviceXcbPresentationSupportKHR     = cast(PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR)    loader(instance, "vkGetPhysicalDeviceXcbPresentationSupportKHR");
+        }
 
-            // VK_KHR_wayland_surface
-            version(linux) {
-                _CreateWaylandSurfaceKHR                        = cast(PFN_vkCreateWaylandSurfaceKHR)                       loader(instance, "vkCreateWaylandSurfaceKHR");
-                _GetPhysicalDeviceWaylandPresentationSupportKHR = cast(PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR)loader(instance, "vkGetPhysicalDeviceWaylandPresentationSupportKHR");
-            }
+        // VK_KHR_wayland_surface
+        version(linux) {
+            _CreateWaylandSurfaceKHR                        = cast(PFN_vkCreateWaylandSurfaceKHR)                       loader(instance, "vkCreateWaylandSurfaceKHR");
+            _GetPhysicalDeviceWaylandPresentationSupportKHR = cast(PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR)loader(instance, "vkGetPhysicalDeviceWaylandPresentationSupportKHR");
         }
 
         // VK_KHR_win32_surface
@@ -6501,31 +6487,29 @@ final class VkInstanceCmds {
         return _CreateDisplayPlaneSurfaceKHR(instance, pCreateInfo, pAllocator, pSurface);
     }
 
-    static if (!isGlfw) {
-        version(linux) {
-            /// Commands for VK_KHR_xcb_surface
-            VkResult CreateXcbSurfaceKHR (VkInstance instance, const(VkXcbSurfaceCreateInfoKHR)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkSurfaceKHR* pSurface) {
-                assert(_CreateXcbSurfaceKHR !is null, "vkCreateXcbSurfaceKHR was not loaded. Required by VK_KHR_xcb_surface");
-                return _CreateXcbSurfaceKHR(instance, pCreateInfo, pAllocator, pSurface);
-            }
-            /// ditto
-            VkBool32 GetPhysicalDeviceXcbPresentationSupportKHR (VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, xcb_connection_t* connection, xcb_visualid_t visual_id) {
-                assert(_GetPhysicalDeviceXcbPresentationSupportKHR !is null, "vkGetPhysicalDeviceXcbPresentationSupportKHR was not loaded. Required by VK_KHR_xcb_surface");
-                return _GetPhysicalDeviceXcbPresentationSupportKHR(physicalDevice, queueFamilyIndex, connection, visual_id);
-            }
+    version(linux) {
+        /// Commands for VK_KHR_xcb_surface
+        VkResult CreateXcbSurfaceKHR (VkInstance instance, const(VkXcbSurfaceCreateInfoKHR)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkSurfaceKHR* pSurface) {
+            assert(_CreateXcbSurfaceKHR !is null, "vkCreateXcbSurfaceKHR was not loaded. Required by VK_KHR_xcb_surface");
+            return _CreateXcbSurfaceKHR(instance, pCreateInfo, pAllocator, pSurface);
         }
+        /// ditto
+        VkBool32 GetPhysicalDeviceXcbPresentationSupportKHR (VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, xcb_connection_t* connection, xcb_visualid_t visual_id) {
+            assert(_GetPhysicalDeviceXcbPresentationSupportKHR !is null, "vkGetPhysicalDeviceXcbPresentationSupportKHR was not loaded. Required by VK_KHR_xcb_surface");
+            return _GetPhysicalDeviceXcbPresentationSupportKHR(physicalDevice, queueFamilyIndex, connection, visual_id);
+        }
+    }
 
-        version(linux) {
-            /// Commands for VK_KHR_wayland_surface
-            VkResult CreateWaylandSurfaceKHR (VkInstance instance, const(VkWaylandSurfaceCreateInfoKHR)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkSurfaceKHR* pSurface) {
-                assert(_CreateWaylandSurfaceKHR !is null, "vkCreateWaylandSurfaceKHR was not loaded. Required by VK_KHR_wayland_surface");
-                return _CreateWaylandSurfaceKHR(instance, pCreateInfo, pAllocator, pSurface);
-            }
-            /// ditto
-            VkBool32 GetPhysicalDeviceWaylandPresentationSupportKHR (VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, wl_display* display) {
-                assert(_GetPhysicalDeviceWaylandPresentationSupportKHR !is null, "vkGetPhysicalDeviceWaylandPresentationSupportKHR was not loaded. Required by VK_KHR_wayland_surface");
-                return _GetPhysicalDeviceWaylandPresentationSupportKHR(physicalDevice, queueFamilyIndex, display);
-            }
+    version(linux) {
+        /// Commands for VK_KHR_wayland_surface
+        VkResult CreateWaylandSurfaceKHR (VkInstance instance, const(VkWaylandSurfaceCreateInfoKHR)* pCreateInfo, const(VkAllocationCallbacks)* pAllocator, VkSurfaceKHR* pSurface) {
+            assert(_CreateWaylandSurfaceKHR !is null, "vkCreateWaylandSurfaceKHR was not loaded. Required by VK_KHR_wayland_surface");
+            return _CreateWaylandSurfaceKHR(instance, pCreateInfo, pAllocator, pSurface);
+        }
+        /// ditto
+        VkBool32 GetPhysicalDeviceWaylandPresentationSupportKHR (VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, wl_display* display) {
+            assert(_GetPhysicalDeviceWaylandPresentationSupportKHR !is null, "vkGetPhysicalDeviceWaylandPresentationSupportKHR was not loaded. Required by VK_KHR_wayland_surface");
+            return _GetPhysicalDeviceWaylandPresentationSupportKHR(physicalDevice, queueFamilyIndex, display);
         }
     }
 
@@ -6606,18 +6590,16 @@ final class VkInstanceCmds {
     private PFN_vkGetDisplayPlaneCapabilitiesKHR                 _GetDisplayPlaneCapabilitiesKHR;
     private PFN_vkCreateDisplayPlaneSurfaceKHR                   _CreateDisplayPlaneSurfaceKHR;
 
-    static if (!isGlfw) {
-        // fields for VK_KHR_xcb_surface
-        version(linux) {
-            private PFN_vkCreateXcbSurfaceKHR                            _CreateXcbSurfaceKHR;
-            private PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR     _GetPhysicalDeviceXcbPresentationSupportKHR;
-        }
+    // fields for VK_KHR_xcb_surface
+    version(linux) {
+        private PFN_vkCreateXcbSurfaceKHR                            _CreateXcbSurfaceKHR;
+        private PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR     _GetPhysicalDeviceXcbPresentationSupportKHR;
+    }
 
-        // fields for VK_KHR_wayland_surface
-        version(linux) {
-            private PFN_vkCreateWaylandSurfaceKHR                        _CreateWaylandSurfaceKHR;
-            private PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR _GetPhysicalDeviceWaylandPresentationSupportKHR;
-        }
+    // fields for VK_KHR_wayland_surface
+    version(linux) {
+        private PFN_vkCreateWaylandSurfaceKHR                        _CreateWaylandSurfaceKHR;
+        private PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR _GetPhysicalDeviceWaylandPresentationSupportKHR;
     }
 
     // fields for VK_KHR_win32_surface
