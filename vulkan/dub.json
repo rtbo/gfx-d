@@ -1,7 +1,8 @@
 {
     "name": "vulkan",
     "authors": [
-        "Remi Thebault"
+        "Remi Thebault",
+        "Chance Snow <git@chancesnow.me>"
     ],
     "description": "Vulkan backend and bindings for Gfx-d",
     "copyright": "Copyright © 2018, Remi Thebault",
