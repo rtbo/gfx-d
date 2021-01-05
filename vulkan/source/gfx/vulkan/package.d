@@ -643,6 +643,8 @@ final class VulkanPhysicalDevice : PhysicalDevice
                 cast(size_t)_vkProps.limits.maxDescriptorSetStorageBuffersDynamic;
         limits.minStorageBufferOffsetAlignment =
                 cast(size_t)_vkProps.limits.minStorageBufferOffsetAlignment;
+        limits.maxPushConstantsSize =
+                cast(size_t)_vkProps.limits.maxPushConstantsSize;
         limits.maxUniformBufferSize =
                 cast(size_t)_vkProps.limits.maxUniformBufferRange;
         limits.maxDescriptorSetUniformBuffers =
