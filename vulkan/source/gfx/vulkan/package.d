@@ -107,15 +107,6 @@ struct VulkanExtensionProperties
     return _instanceExtensions;
 }
 
-debug {
-    private immutable defaultLayers = lunarGValidationLayers;
-    private immutable defaultExts = debugReportInstanceExtensions ~ surfaceInstanceExtensions;
-}
-else {
-    private immutable string[] defaultLayers = [];
-    private immutable string[] defaultExts = surfaceInstanceExtensions;
-}
-
 /// Options to create a Vulkan instance.
 struct VulkanCreateInfo
 {
@@ -128,17 +119,36 @@ struct VulkanCreateInfo
     /// Instance creation will fail if one is not present.
     const(string)[] mandatoryLayers;
     /// Optional layers that will be enabled if present.
-    const(string)[] optionalLayers = defaultLayers;
+    const(string)[] optionalLayers;
 
     /// Mandatory extensions that are needed by the application.
     /// Instance creation will fail if one is not present.
     const(string)[] mandatoryExtensions;
     /// Optional extensions that will be enabled if present.
-    const(string)[] optionalExtensions = defaultExts;
+    const(string)[] optionalExtensions;
+
+    /// Build VulkanCreateInfo with default extensions, suitable for
+    /// 3D graphics on a surface.
+    /// Debug builds have by default Lunar-G validation layers and debug
+    /// extensions.
+    static VulkanCreateInfo defaultExts(string appName = "",
+            VulkanVersion appVersion = VulkanVersion(0, 0, 0))
+    {
+        VulkanCreateInfo info;
+        info.appName = appName;
+        info.appVersion = appVersion;
+        debug
+        {
+            info.optionalLayers = lunarGValidationLayers;
+            info.optionalExtensions = debugReportInstanceExtensions;
+        }
+        info.mandatoryExtensions = surfaceInstanceExtensions;
+        return info;
+    }
 }
 
 /// Creates an Instance object with Vulkan backend with options
-VulkanInstance createVulkanInstance(VulkanCreateInfo createInfo=VulkanCreateInfo.init)
+VulkanInstance createVulkanInstance(VulkanCreateInfo createInfo = VulkanCreateInfo.defaultExts())
 {
     import gfx : gfxVersionMaj, gfxVersionMin, gfxVersionMic;
     import std.algorithm : all, canFind, map;
@@ -564,6 +574,10 @@ extern(C) nothrow {
     }
 }
 
+version(glfw) {
+    extern(C) @nogc nothrow int glfwGetPhysicalDevicePresentationSupport(VkInstance, VkPhysicalDevice, uint);
+}
+
 final class VulkanPhysicalDevice : PhysicalDevice
 {
     this(VkPhysicalDevice vkObj, VulkanInstance inst) {
@@ -698,7 +712,15 @@ final class VulkanPhysicalDevice : PhysicalDevice
             vk.GetPhysicalDeviceSurfaceSupportKHR(vkObj, queueFamilyIndex, surf.vkObj, &supported),
             "Could not query vulkan surface support"
         );
-        return supported != VK_FALSE;
+
+        version(glfw) {
+            import bindbc.glfw : GLFW_FALSE;
+
+            const supportsGlfw = glfwGetPhysicalDevicePresentationSupport(_inst.vkObj, _vkObj, queueFamilyIndex);
+            return supported != VK_FALSE && supportsGlfw != GLFW_FALSE;
+        } else {
+            return supported != VK_FALSE;
+        }
     }
 
     override SurfaceCaps surfaceCaps(Surface graalSurface) {
