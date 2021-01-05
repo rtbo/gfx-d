@@ -635,6 +635,14 @@ final class VulkanPhysicalDevice : PhysicalDevice
         DeviceLimits limits;
         limits.linearOptimalGranularity =
                 cast(size_t)_vkProps.limits.bufferImageGranularity;
+        limits.maxStorageBufferSize =
+                cast(size_t)_vkProps.limits.maxStorageBufferRange;
+        limits.maxDescriptorSetStorageBuffers =
+                cast(size_t)_vkProps.limits.maxDescriptorSetStorageBuffers;
+        limits.maxDescriptorSetStorageBuffersDynamic =
+                cast(size_t)_vkProps.limits.maxDescriptorSetStorageBuffersDynamic;
+        limits.minStorageBufferOffsetAlignment =
+                cast(size_t)_vkProps.limits.minStorageBufferOffsetAlignment;
         limits.maxUniformBufferSize =
                 cast(size_t)_vkProps.limits.maxUniformBufferRange;
         limits.maxDescriptorSetUniformBuffers =
