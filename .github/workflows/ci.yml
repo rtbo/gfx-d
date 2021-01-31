@@ -21,7 +21,7 @@ jobs:
         compiler: ${{ matrix.dc }}
     - name: Install *nix Dependencies
       if: runner.os == 'Linux'
-      run: sudo apt-get install --quiet -y gcc-8 libwayland-dev libx11-xcb-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev libpng16-dev libjpeg-turbo8-dev
+      run: sudo apt-get install --quiet -y gcc-8 libwayland-dev libx11-xcb-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev libpng-dev libjpeg-turbo8-dev
     # - name: Lint
     #   run: dub lint
     - name: Test
