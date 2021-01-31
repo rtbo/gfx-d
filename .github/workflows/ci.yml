@@ -8,10 +8,10 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
         dc: [dmd-latest, ldc-latest]
     
-    runs-on: ${{ matrix.os }}
+    # TODO: runs-on: ${{ matrix.os }} with 'windows-latest'
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v1
