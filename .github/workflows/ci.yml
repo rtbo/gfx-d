@@ -43,7 +43,7 @@ jobs:
         dub build gfx:shadow
         dub build gfx:stencil
         dub build gfx:swapchain
-        echo TODO: Fix `dub build gfx:texture` ld: cannot find -lturbojpeg
+        echo "TODO: Fix `dub build gfx:texture` ld: cannot find -lturbojpeg"
         #dub build gfx:texture
         dub build gfx:triangle
     # TODO: Upload test coverage
