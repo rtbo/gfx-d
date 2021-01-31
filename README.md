@@ -1,5 +1,6 @@
 # gfx-d
 
+[![DUB Package](https://img.shields.io/dub/v/gfx.svg)](https://code.dlang.org/packages/gfx)
 [![GFX CI](https://github.com/rtbo/gfx-d/workflows/GFX%20CI/badge.svg)](https://github.com/rtbo/gfx-d/actions)
 [![Build Status](https://travis-ci.com/rtbo/gfx-d.svg?branch=master)](https://travis-ci.com/rtbo/gfx-d)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/rtbo/gfx-d?branch=master&svg=true)](https://ci.appveyor.com/project/rtbo/gfx-d)

@@ -194,7 +194,7 @@ class Example : Disposable
     {
         bool noVulkan = false;
         bool noGl3 = false;
-        bool noWayland = false;
+        bool forceXcb = false;
         foreach (a; args) {
             if (a == "--no-vulkan" || a == "nv") {
                 noVulkan = true;
@@ -202,8 +202,8 @@ class Example : Disposable
             else if (a == "--no-gl3" || a == "ng") {
                 noGl3 = true;
             }
-            else if (a == "--no-wayland" || a == "nw") {
-                noWayland = true;
+            else if (a == "--force-xcb") {
+                forceXcb = true;
             }
         }
 
@@ -218,9 +218,11 @@ class Example : Disposable
             createInfo.backendCreateOrder =
                     createInfo.backendCreateOrder.remove(Backend.gl3);
         }
-        if (noWayland) {
-            createInfo.linuxDisplayCreateOrder =
-                    createInfo.linuxDisplayCreateOrder.remove(LinuxDisplay.wayland);
+        version (linux)
+        {
+            if (forceXcb) {
+                createInfo.linuxDisplayCreateOrder = [ LinuxDisplay.xcb ];
+            }
         }
 
         // Create a display for the running platform

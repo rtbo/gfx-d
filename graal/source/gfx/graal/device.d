@@ -34,7 +34,16 @@ struct DeviceFeatures {
 
 struct DeviceLimits
 {
-    size_t linearOptimalGranularity=1;
+    size_t linearOptimalGranularity = 1;
+    size_t maxStorageBufferSize = 0;
+    size_t maxDescriptorSetStorageBuffers = 24;
+    size_t maxDescriptorSetStorageBuffersDynamic = 4;
+    size_t minStorageBufferOffsetAlignment = 1;
+    size_t maxPushConstantsSize = 0;
+    size_t maxUniformBufferSize = 16_384; // Minimum guarenteed value of GL_MAX_UNIFORM_BLOCK_SIZE
+    size_t maxDescriptorSetUniformBuffers = 36; // Minimum guarenteed value of GL_MAX_UNIFORM_BUFFER_BINDINGS
+    size_t maxDescriptorSetUniformBuffersDynamic = 12; // Minimum guarenteed value of GL_MAX_VERTEX_UNIFORM_BLOCKS
+    size_t minUniformBufferOffsetAlignment = 1; // Default of GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT
 }
 
 enum DeviceType {
