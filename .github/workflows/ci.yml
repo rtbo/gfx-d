@@ -1,8 +1,6 @@
 name: GFX CI
 
 on: push
-#   schedule:
-#   - cron: '0 0 * * SUN'
 
 jobs:
   test:
@@ -24,6 +22,7 @@ jobs:
     - name: Install *nix Dependencies
       if: runner.os == 'Linux'
       run: sudo apt-get install --quiet -y gcc-8 libwayland-dev libx11-xcb-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev libpng-dev libjpeg-turbo8-dev
+    # TODO: Lint?
     # - name: Lint
     #   run: dub lint
     - name: Test
