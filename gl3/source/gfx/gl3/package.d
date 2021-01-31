@@ -196,6 +196,7 @@ final class GlPhysicalDevice : PhysicalDevice
     }
 
     override @property DeviceLimits limits() {
+        // TODO: Query values with `glGet`
         return DeviceLimits.init;
     }
 

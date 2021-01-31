@@ -643,11 +643,30 @@ final class VulkanPhysicalDevice : PhysicalDevice
                 .canFind(swapChainDeviceExtension);
         return features;
     }
+    /// See_Also: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkPhysicalDeviceLimits.html">VkPhysicalDeviceLimits</a>
     override @property DeviceLimits limits()
     {
         DeviceLimits limits;
         limits.linearOptimalGranularity =
                 cast(size_t)_vkProps.limits.bufferImageGranularity;
+        limits.maxStorageBufferSize =
+                cast(size_t)_vkProps.limits.maxStorageBufferRange;
+        limits.maxDescriptorSetStorageBuffers =
+                cast(size_t)_vkProps.limits.maxDescriptorSetStorageBuffers;
+        limits.maxDescriptorSetStorageBuffersDynamic =
+                cast(size_t)_vkProps.limits.maxDescriptorSetStorageBuffersDynamic;
+        limits.minStorageBufferOffsetAlignment =
+                cast(size_t)_vkProps.limits.minStorageBufferOffsetAlignment;
+        limits.maxPushConstantsSize =
+                cast(size_t)_vkProps.limits.maxPushConstantsSize;
+        limits.maxUniformBufferSize =
+                cast(size_t)_vkProps.limits.maxUniformBufferRange;
+        limits.maxDescriptorSetUniformBuffers =
+                cast(size_t)_vkProps.limits.maxDescriptorSetUniformBuffers;
+        limits.maxDescriptorSetUniformBuffersDynamic =
+                cast(size_t)_vkProps.limits.maxDescriptorSetUniformBuffersDynamic;
+        limits.minUniformBufferOffsetAlignment =
+                cast(size_t)_vkProps.limits.minUniformBufferOffsetAlignment;
         return limits;
     }
 
