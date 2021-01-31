@@ -45,7 +45,7 @@ jobs:
         echo TODO: Fix `dub build gfx:texture` ld: cannot find -lturbojpeg
         #dub build gfx:texture
         dub build gfx:triangle
-        dub build --build=ddox --root=docbld
+    # TODO: Upload test coverage
     # - name: Upload Coverage to Codecov
     #   if: success()
     #   run: bash <(curl -s https://codecov.io/bash)
