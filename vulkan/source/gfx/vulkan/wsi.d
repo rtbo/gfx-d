@@ -140,10 +140,6 @@ version(VkXcb) {
 version(Windows) {
     import core.sys.windows.windef : HINSTANCE, HWND;
 
-    /// Extensions to open Vulkan surfaces on the platform window system
-    immutable string[] surfaceInstanceExtensions = [
-        surfaceInstanceExtension, win32SurfaceInstanceExtension
-    ];
     /// Extensions necessary to open a Win32 Vulkan surface
     immutable string[] win32SurfaceInstanceExtensions = [
         surfaceInstanceExtension, win32SurfaceInstanceExtension

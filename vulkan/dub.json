@@ -25,6 +25,10 @@
             }
         },
         {
+            "name": "windows",
+            "platforms": ["windows"]
+        },
+        {
             "name": "glfw",
             "versions": ["glfw"],
             "platforms": ["linux", "windows"],
@@ -33,8 +37,7 @@
             }
         },
         {
-            "name": "windows",
-            "platforms": ["windows"]
+            "name": "unittest"
         }
     ]
 }
