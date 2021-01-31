@@ -23,18 +23,24 @@
     "configurations": [
         {
             "name": "linux",
-            "platforms": ["linux"],
+			"platforms": ["linux"],
+			"versions": ["VkWayland", "VkXcb", "glfw"],
             "dependencies": {
                 "wayland:client": "~>0.2.0",
                 "wayland:cursor": "~>0.2.0",
                 "xlib-d": "~>0.1.1",
 				"xcb-d": "~>2.1.1",
-				"xkbcommon-d": "~>0.5.1"
+				"xkbcommon-d": "~>0.5.1",
+                "bindbc-glfw": "~>0.10.1"
             }
         },
         {
             "name": "windows",
-            "platforms": ["windows"]
+			"platforms": ["windows"],
+			"versions": ["glfw"],
+            "dependencies": {
+                "bindbc-glfw": "~>0.10.1"
+            }
         }
 	],
     "-ddoxFilterArgs": [
