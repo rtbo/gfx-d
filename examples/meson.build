@@ -18,3 +18,7 @@ ex_common_dep = declare_dependency(
 subdir('declapi')
 subdir('deferred')
 subdir('depth')
+subdir('shadow')
+subdir('stencil')
+subdir('swapchain')
+subdir('triangle')
