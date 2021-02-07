@@ -46,9 +46,9 @@ subdir('decl')
 subdir('memalloc')
 subdir('vulkan')
 
-# if get_option('enable_gl3')
+if get_option('enable_gl3')
     subdir('gl3')
-# endif
+endif
 
 if not get_option('disable_window')
     subdir('window')

@@ -1,8 +1,8 @@
-# option('enable_gl3',
-#     type: 'boolean',
-#     value: false,
-#     description: 'Enable support of GL3 backup and compilation of gfx.gl3 package',
-# )
+option('enable_gl3',
+    type: 'boolean',
+    value: false,
+    description: 'Enable support of GL3 backup and compilation of gfx.gl3 package',
+)
 option('disable_window',
     type: 'boolean',
     value: false,

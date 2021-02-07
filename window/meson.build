@@ -4,20 +4,30 @@ window_sources = [
     'source/gfx/window/package.d',
     'source/gfx/window/xkeyboard.d',
 ]
-window_deps = [ graal_dep, gl3_dep, vulkan_dep ]
+window_deps = [ graal_dep, vulkan_dep ]
 
 window_vers = []
 
+if get_option('enable_gl3')
+    window_deps += [ gl3_dep ]
+    window_vers += [ 'GfxGl3' ]
+endif
+
 if host_machine.system() == 'linux'
-    window_vers = ['VkXcb']
+    window_vers += ['VkXcb']
     window_sources += [
-        'source/gfx/window/xcb/context.d',
         'source/gfx/window/xcb/package.d',
     ]
     window_deps += [
         xcb_dep,
+        xlib_dep,
         xkbcommon_dep,
     ]
+    if get_option('enable_gl3')
+        window_sources += [
+            'source/gfx/window/xcb/context.d',
+        ]
+    endif
     if not get_option('disable_wayland')
         window_vers += ['WlStatic', 'VkWayland']
         window_sources += [
@@ -35,14 +45,15 @@ elif host_machine.system() == 'windows'
             link_args: ['user32.lib', 'gdi32.lib']
         )
     ]
-endif
-
-if host_machine.system() == 'windows'
     window_sources += [
-        'source/gfx/window/win32/context.d',
         'source/gfx/window/win32/keymap.d',
         'source/gfx/window/win32/package.d',
     ]
+    if get_option('enable_gl3')
+        window_sources += [
+            'source/gfx/window/win32/context.d',
+        ]
+    endif
 endif
 
 window_soversion = 0

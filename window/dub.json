@@ -6,6 +6,7 @@
     "description": "Window utility for Gfx-d",
     "copyright": "Copyright © 2018, Remi Thebault",
     "license": "MIT",
+    "versions": [ "GfxGl3" ],
     "dependencies": {
         "gfx:graal": {
             "path": ".."

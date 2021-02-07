@@ -22,7 +22,7 @@ version (VkWayland)
 }
 else
 {
-    static assert(false, "gfx.window must be compiled with VkWayland version enabled");
+    static assert(false, "gfx.window.wayland must be compiled with VkWayland version enabled");
 }
 
 enum gfxWlLogMask = 0x0800_0000;
