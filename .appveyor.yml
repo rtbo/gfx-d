@@ -22,6 +22,7 @@ environment:
     compiler: msvc2017
 
 skip_tags: false
+
 skip_branch_with_pr: true
 
 install:
