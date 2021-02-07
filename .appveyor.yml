@@ -1,4 +1,5 @@
 platform: x64
+
 environment:
  matrix:
   - DC: dmd
@@ -16,11 +17,10 @@ environment:
 
 skip_tags: false
 
-clone_script:
-- cmd: git clone -q --recursive --branch=%APPVEYOR_REPO_BRANCH% https://github.com/%APPVEYOR_REPO_NAME%.git %APPVEYOR_BUILD_FOLDER%
-- cmd: git checkout -qf %APPVEYOR_REPO_COMMIT%
+skip_branch_with_pr: true
 
 install:
+  - cmd: git submodule -q update --init
   - ps: function ResolveLatestDMD
         {
             $version = $env:DVersion;

@@ -1,12 +1,16 @@
 language: d
+
 dist: xenial
+
 d:
   - dmd
   - ldc
   - gdc
+
 matrix:
   allow_failures:
     - d: gdc
+
 addons:
   apt:
     update: true
@@ -22,6 +26,7 @@ addons:
       - libxkbcommon-x11-dev
       - libpng16-dev
       - libjpeg-turbo8-dev
+
 script:
   - dub test --compiler=${DC}
   - dub test gfx:core --compiler=${DC}
