@@ -24,7 +24,7 @@
         {
             "name": "linux",
 			"platforms": ["linux"],
-			"versions": ["VkWayland", "VkXcb", "glfw"],
+			"versions": ["VkWayland", "VkXcb", "glfw", "GfxGl3"],
             "dependencies": {
                 "wayland:client": "~>0.2.0",
                 "wayland:cursor": "~>0.2.0",
@@ -37,7 +37,7 @@
         {
             "name": "windows",
 			"platforms": ["windows"],
-			"versions": ["glfw"],
+			"versions": ["glfw", "GfxGl3"],
             "dependencies": {
                 "bindbc-glfw": "~>0.10.1"
             }
