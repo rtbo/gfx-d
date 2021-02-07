@@ -1,7 +1,8 @@
 {
     "name": "vulkan",
     "authors": [
-        "Remi Thebault"
+        "Remi Thebault",
+        "Chance Snow <git@chancesnow.me>"
     ],
     "description": "Vulkan backend and bindings for Gfx-d",
     "copyright": "Copyright © 2018, Remi Thebault",
@@ -17,6 +18,7 @@
     "configurations": [{
             "name": "linux",
             "platforms": ["linux"],
+            "versions": ["VkWayland", "VkXcb"],
             "dependencies": {
                 "wayland:client": "~>0.2.0",
                 "xcb-d": "~>2.1.1"
@@ -25,6 +27,17 @@
         {
             "name": "windows",
             "platforms": ["windows"]
+        },
+        {
+            "name": "glfw",
+            "versions": ["glfw"],
+            "platforms": ["linux", "windows"],
+            "dependencies": {
+                "bindbc-glfw": "~>0.10.1"
+            }
+        },
+        {
+            "name": "unittest"
         }
     ]
 }

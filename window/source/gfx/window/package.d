@@ -25,7 +25,8 @@ struct KeyEvent
 
 struct MouseEvent
 {
-    uint x; uint y;
+    uint x;
+    uint y;
     KeyMods mods;
 }
 
@@ -38,7 +39,7 @@ interface Display : IAtomicRefCounted
 {
     @property Instance instance();
     @property Window[] windows();
-    Window createWindow(string title="Gfx-d Window");
+    Window createWindow(string title = "Gfx-d Window");
     void pollAndDispatch();
 }
 
@@ -65,20 +66,26 @@ interface Window
     @property void onClose(CloseHandler handler);
 }
 
-/// Identifier of the display to use on linux
-enum LinuxDisplay {
-    /// Instantiate a wayland display
-    /// (no Client Side Decorations at this point)
-    wayland,
-    /// Instantiate an XCB display (X windowing system)
-    xcb,
+version (linux)
+{
+    /// Identifier of the display to use on linux
+    enum LinuxDisplay
+    {
+        /// Instantiate a wayland display
+        /// (no Client Side Decorations at this point)
+        wayland,
+        /// Instantiate an XCB display (X windowing system)
+        xcb,
+    }
 }
 
-debug {
+debug
+{
     private enum defaultDebugCb = Yes.debugCallback;
     private enum defaultValidation = Yes.validation;
 }
-else {
+else
+{
     private enum defaultDebugCb = No.debugCallback;
     private enum defaultValidation = No.validation;
 }
@@ -89,10 +96,16 @@ struct DisplayCreateInfo
 {
     /// Order into which backend creation is tried.
     /// The first successfully created backend is used.
-    Backend[] backendCreateOrder = [ Backend.vulkan, Backend.gl3 ];
-    /// Order into which display creation is tried on linux.
-    /// The first successfully created display is used.
-    LinuxDisplay[] linuxDisplayCreateOrder = [ LinuxDisplay.wayland, LinuxDisplay.xcb ];
+    Backend[] backendCreateOrder = [Backend.vulkan, Backend.gl3];
+
+    version(linux)
+    {
+        /// Order into which display creation is tried on linux.
+        /// The first successfully created display is used.
+        /// If empty, Wayland will be tried if available, and XCB will be used as fallback.
+        LinuxDisplay[] linuxDisplayCreateOrder;
+    }
+
     /// Whether DebugCallback should be available. Only meaningful with Vulkan backend.
     Flag!"debugCallback" debugCallbackEnabled = defaultDebugCb;
     /// Whether validation should be enabled. Only meaningful with Vulkan backend.
@@ -106,12 +119,24 @@ struct DisplayCreateInfo
 /// use linuxDisplayOrder to choose. The first succesfully created display is returned.
 Display createDisplay(DisplayCreateInfo createInfo)
 {
-    version(linux) {
+    version (linux)
+    {
         import gfx.window.wayland : WaylandDisplay;
         import gfx.window.xcb : XcbDisplay;
+        import std.process : environment;
 
-        foreach (ld; createInfo.linuxDisplayCreateOrder) {
-            try {
+        auto order = createInfo.linuxDisplayCreateOrder;
+        if (order.length == 0)
+        {
+            order = [
+                environment["XDG_SESSION_TYPE"] == "wayland" ? LinuxDisplay.wayland : LinuxDisplay.xcb
+            ];
+        }
+
+        foreach (ld; order)
+        {
+            try
+            {
                 final switch (ld)
                 {
                 case LinuxDisplay.wayland:
@@ -120,19 +145,21 @@ Display createDisplay(DisplayCreateInfo createInfo)
                     return new XcbDisplay(createInfo);
                 }
             }
-            catch (Exception ex) {
-                gfxWindowLog.warningf(
-                    "Failed to create %s linux display:\n%s", ld, ex.msg
-                );
+            catch (Exception ex)
+            {
+                gfxWindowLog.warningf("Failed to create %s linux display:\n%s", ld, ex.msg);
             }
         }
         throw new Exception("Could not create a functional display");
     }
-    else version(Windows) {
+    else version (Windows)
+    {
         import gfx.window.win32 : Win32Display;
+
         return new Win32Display(createInfo);
     }
-    else {
+    else
+    {
         pragma(msg, "Unsupported platform");
         assert(false, "Unsupported platform");
     }

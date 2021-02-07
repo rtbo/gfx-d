@@ -51,6 +51,10 @@ class WaylandDisplay : Display
     {
         import std.exception : enforce;
 
+        gfxWlLog.info("Opening Wayland display");
+
+        display = enforce(WlDisplay.connect(), "Wayland not available");
+
         {
             // Only vulkan is supported.
             import gfx.vulkan : createVulkanInstance, debugReportInstanceExtensions,
@@ -74,9 +78,6 @@ class WaylandDisplay : Display
             }
         }
 
-        gfxWlLog.info("Opening Wayland display");
-
-        display = WlDisplay.connect();
         auto reg = display.getRegistry();
         reg.onGlobal = (WlRegistry reg, uint name, string iface, uint ver) {
             import std.algorithm : min;

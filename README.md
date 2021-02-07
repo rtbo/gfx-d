@@ -1,5 +1,6 @@
 # gfx-d
 
+[![DUB Package](https://img.shields.io/dub/v/gfx.svg)](https://code.dlang.org/packages/gfx)
 [![Build Status](https://travis-ci.com/rtbo/gfx-d.svg?branch=master)](https://travis-ci.com/rtbo/gfx-d)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/rtbo/gfx-d?branch=master&svg=true)](https://ci.appveyor.com/project/rtbo/gfx-d)
 
@@ -91,6 +92,16 @@ different NDCs).
 
 This is the Vulkan backend implementation that translates almost directly from
 Graal to Vulkan. This should be the preferred and natural backend when using gfx-d.
+
+### Window System Integration
+
+The Vulkan backend supports integration with the following windowing systems:
+
+- Linux
+  - [Wayland](https://code.dlang.org/packages/wayland)
+  - [XCB](https://code.dlang.org/packages/xcb-d)
+- Windows
+- [GLFW](https://www.glfw.org/docs/3.3/vulkan_guide.html) via [bindbc-glfw](https://code.dlang.org/packages/bindbc-glfw)
 
 ## gfx:gl3 - OpenGL backend
 
