@@ -3,12 +3,6 @@ project('gfx-d', ['d', 'cpp'],
     default_options: ['cpp_std=c++14']
 )
 
-spirv_cross_proj = subproject('spirv_cross-d',
-    default_options: ['cpp_std=c++14'],
-)
-
-spirv_cross_dep = spirv_cross_proj.get_variable('spirv_cross_dep')
-
 if host_machine.system() == 'linux'
 
     if not get_option('disable_wayland')
@@ -47,6 +41,10 @@ subdir('memalloc')
 subdir('vulkan')
 
 if get_option('enable_gl3')
+    spirv_cross_proj = subproject('spirv_cross-d',
+        default_options: ['cpp_std=c++14'],
+    )
+    spirv_cross_dep = spirv_cross_proj.get_variable('spirv_cross_dep')
     subdir('gl3')
 endif
 
