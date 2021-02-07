@@ -29,6 +29,12 @@ if host_machine.system() == 'linux'
             wayland_cursor_dep,
         ]
     endif
+elif host_machine.system() == 'windows'
+    window_deps += [
+        declare_dependency(
+            link_args: ['user32.lib', 'gdi32.lib']
+        )
+    ]
 endif
 
 if host_machine.system() == 'windows'

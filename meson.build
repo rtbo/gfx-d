@@ -1,8 +1,11 @@
-project('gfx-d', 'd',
+project('gfx-d', ['d', 'cpp'],
     version: '0.2.2',
+    default_options: ['cpp_std=c++14']
 )
 
-spirv_cross_proj = subproject('spirv_cross-d')
+spirv_cross_proj = subproject('spirv_cross-d',
+    default_options: ['cpp_std=c++14'],
+)
 
 spirv_cross_dep = spirv_cross_proj.get_variable('spirv_cross_dep')
 

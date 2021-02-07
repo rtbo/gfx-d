@@ -1,12 +1,16 @@
 language: d
+
 dist: xenial
+
 d:
   - dmd
   - ldc
   - gdc
+
 matrix:
   allow_failures:
     - d: gdc
+
 addons:
   apt:
     update: true
@@ -22,6 +26,15 @@ addons:
       - libxkbcommon-x11-dev
       - libpng16-dev
       - libjpeg-turbo8-dev
+      # dependencies for meson
+      - python3
+      - python3-pip
+      - python3-setuptools
+      - python3-wheel
+
+install:
+  - pip3 install meson ninja
+
 script:
   - dub test --compiler=${DC}
   - dub test gfx:core --compiler=${DC}
@@ -40,3 +53,6 @@ script:
   - dub build gfx:texture --compiler=${DC}
   - dub build gfx:triangle --compiler=${DC}
   - dub build --build=ddox --compiler=${DC} --root=docbld
+  - meson setup builddir -Denable_examples=true
+  - meson compile -C builddir
+  - meson test -C builddir
