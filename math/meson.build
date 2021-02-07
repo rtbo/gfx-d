@@ -26,14 +26,16 @@ math_dep = declare_dependency(
     link_with: math_lib,
 )
 
-math_test = executable('math_test', math_sources,
-    include_directories: math_inc,
-    d_unittest: true,
-    install: false,
-    d_module_versions: ['MissingTestMain'],
-)
+if not get_option('disable_tests')
+    math_test = executable('math_test', math_sources,
+        include_directories: math_inc,
+        d_unittest: true,
+        install: false,
+        link_args: ['-main'],
+    )
 
-test('math', math_test)
+    test('math', math_test)
+endif
 
 pkgc.generate(math_lib,
     name: 'gfxd_math',

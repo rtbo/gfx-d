@@ -66,15 +66,18 @@ window_dep = declare_dependency(
     dependencies: window_deps,
 )
 
-# window_test = executable('window_test', window_sources,
-#     include_directories: window_inc,
-#     dependencies: window_deps,
-#     d_unittest: true,
-#     install: false,
-#     d_module_versions: ['WlStatic', 'MissingTestMain'],
-# )
+# if not get_option('disable_tests')
+#     window_test = executable('window_test', window_sources,
+#         include_directories: window_inc,
+#         dependencies: window_deps,
+#         d_unittest: true,
+#         install: false,
+#         d_module_versions: ['WlStatic'],
+#         link_args: ['-main'],
+#     )
 #
-# test('window', window_test)
+#     test('window', window_test)
+# endif
 
 pkgc.generate(window_lib,
     name: 'gfxd_window',

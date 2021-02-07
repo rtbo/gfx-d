@@ -11,13 +11,6 @@ import std.typecons : Flag, No, Yes;
 enum gfxWindowLogMask = 0x0800_0000;
 package immutable gfxWindowLog = LogTag("GFX-WINDOW", gfxWindowLogMask);
 
-version (MissingTestMain)
-{
-    void main()
-    {
-    }
-}
-
 struct KeyEvent
 {
     KeySym sym;

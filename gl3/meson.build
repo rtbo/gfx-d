@@ -41,15 +41,17 @@ gl3_dep = declare_dependency(
     dependencies: gl3_deps,
 )
 
-gl3_test = executable('gl3_test', gl3_sources,
-    include_directories: gl3_inc,
-    dependencies: gl3_deps,
-    d_unittest: true,
-    install: false,
-    d_module_versions: ['MissingTestMain'],
-)
+if not get_option('disable_tests')
+    gl3_test = executable('gl3_test', gl3_sources,
+        include_directories: gl3_inc,
+        dependencies: gl3_deps,
+        d_unittest: true,
+        install: false,
+        link_args: ['-main'],
+    )
 
-test('gl3', gl3_test)
+    test('gl3', gl3_test)
+endif
 
 pkgc.generate(gl3_lib,
     name: 'gfxd_gl3',

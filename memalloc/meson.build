@@ -25,15 +25,17 @@ memalloc_dep = declare_dependency(
     dependencies: memalloc_deps,
 )
 
-memalloc_test = executable('memalloc_test', memalloc_sources,
-    include_directories: memalloc_inc,
-    dependencies: memalloc_deps,
-    d_unittest: true,
-    install: false,
-    d_module_versions: ['MissingTestMain'],
-)
+if not get_option('disable_tests')
+    memalloc_test = executable('memalloc_test', memalloc_sources,
+        include_directories: memalloc_inc,
+        dependencies: memalloc_deps,
+        d_unittest: true,
+        install: false,
+        link_args: ['-main'],
+    )
 
-test('memalloc', memalloc_test)
+    test('memalloc', memalloc_test)
+endif
 
 pkgc.generate(memalloc_lib,
     name: 'gfxd_memalloc',

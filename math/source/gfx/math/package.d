@@ -7,7 +7,3 @@ public import gfx.math.proj;
 public import gfx.math.transform;
 public import gfx.math.util;
 public import gfx.math.vec;
-
-version(MissingTestMain) {
-    void main() {}
-}

@@ -11,7 +11,6 @@ decl_sources = [
     'source/gfx/decl/sdlang/token.d',
     'source/gfx/decl/sdlang/util.d',
     'source/gfx/decl/engine.d',
-    'source/gfx/decl/package.d',
     'source/gfx/decl/store.d',
 ]
 
@@ -35,15 +34,17 @@ decl_dep = declare_dependency(
     dependencies: decl_deps,
 )
 
-decl_test = executable('decl_test', decl_sources,
-    include_directories: decl_inc,
-    dependencies: decl_deps,
-    d_unittest: true,
-    install: false,
-    d_module_versions: ['MissingTestMain'],
-)
+if not get_option('disable_tests')
+    decl_test = executable('decl_test', decl_sources,
+        include_directories: decl_inc,
+        dependencies: decl_deps,
+        d_unittest: true,
+        install: false,
+        link_args: ['-main'],
+    )
 
-test('decl', decl_test)
+    test('decl', decl_test)
+endif
 
 pkgc.generate(decl_lib,
     name: 'gfxd_decl',

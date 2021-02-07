@@ -2,7 +2,6 @@
 genmesh_sources = [
     'source/gfx/genmesh/algorithm.d',
     'source/gfx/genmesh/cube.d',
-    'source/gfx/genmesh/package.d',
     'source/gfx/genmesh/poly.d',
 ]
 
@@ -22,14 +21,16 @@ genmesh_dep = declare_dependency(
     link_with: genmesh_lib,
 )
 
-genmesh_test = executable('genmesh_test', genmesh_sources,
-    include_directories: genmesh_inc,
-    d_unittest: true,
-    install: false,
-    d_module_versions: ['MissingTestMain'],
-)
+if not get_option('disable_tests')
+    genmesh_test = executable('genmesh_test', genmesh_sources,
+        include_directories: genmesh_inc,
+        d_unittest: true,
+        install: false,
+        link_args: ['-main'],
+    )
 
-test('genmesh', genmesh_test)
+    test('genmesh', genmesh_test)
+endif
 
 pkgc.generate(genmesh_lib,
     name: 'gfxd_genmesh',

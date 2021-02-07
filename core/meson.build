@@ -24,14 +24,16 @@ core_dep = declare_dependency(
     link_with: core_lib,
 )
 
-core_test = executable('core_test', core_sources,
-    include_directories: core_inc,
-    d_unittest: true,
-    install: false,
-    d_module_versions: ['MissingTestMain'],
-)
+if not get_option('disable_tests')
+    core_test = executable('core_test', core_sources,
+        include_directories: core_inc,
+        d_unittest: true,
+        install: false,
+        link_args: ['-main'],
+    )
 
-test('core', core_test)
+    test('core', core_test)
+endif
 
 pkgc.generate(core_lib,
     name: 'gfxd_core',

@@ -49,15 +49,18 @@ vulkan_dep = declare_dependency(
     dependencies: vulkan_deps,
 )
 
-vulkan_test = executable('vulkan_test', vulkan_sources,
-    include_directories: vulkan_inc,
-    dependencies: vulkan_deps,
-    d_unittest: true,
-    install: false,
-    d_module_versions: vulkan_vers + ['MissingTestMain'],
-)
+if not get_option('disable_tests')
+    vulkan_test = executable('vulkan_test', vulkan_sources,
+        include_directories: vulkan_inc,
+        dependencies: vulkan_deps,
+        d_unittest: true,
+        install: false,
+        link_args: ['-main'],
+        d_module_versions: vulkan_vers,
+    )
 
-test('vulkan', vulkan_test)
+    test('vulkan', vulkan_test)
+endif
 
 pkgc.generate(vulkan_lib,
     name: 'gfxd_vulkan',

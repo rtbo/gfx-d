@@ -13,11 +13,11 @@ option('disable_wayland',
     value: false,
     description: 'Disable Wayland support',
 )
-# option('disable_tests',
-#     type: 'boolean',
-#     value: false,
-#     description: 'Disable compilation of tests',
-# )
+option('disable_tests',
+    type: 'boolean',
+    value: false,
+    description: 'Disable compilation of tests',
+)
 # option('disable_doc',
 #     type: 'boolean',
 #     value: false,

@@ -37,15 +37,17 @@ graal_dep = declare_dependency(
     dependencies: graal_deps,
 )
 
-graal_test = executable('graal_test', graal_sources,
-    include_directories: graal_inc,
-    dependencies: graal_deps,
-    d_unittest: true,
-    install: false,
-    d_module_versions: ['MissingTestMain'],
-)
+if not get_option('disable_tests')
+    graal_test = executable('graal_test', graal_sources,
+        include_directories: graal_inc,
+        dependencies: graal_deps,
+        d_unittest: true,
+        install: false,
+        link_args: ['-main'],
+    )
 
-test('graal', graal_test)
+    test('graal', graal_test)
+endif
 
 pkgc.generate(graal_lib,
     name: 'gfxd_graal',

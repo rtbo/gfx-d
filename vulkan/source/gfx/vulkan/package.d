@@ -8,10 +8,6 @@ import gfx.graal;
 enum gfxVkLogMask = 0x2000_0000;
 package(gfx) immutable gfxVkLog = LogTag("GFX-VK", gfxVkLogMask);
 
-version(MissingTestMain) {
-    void main() {}
-}
-
 // some standard layers
 
 immutable lunarGValidationLayers = [
