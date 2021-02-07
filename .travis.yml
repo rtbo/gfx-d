@@ -53,6 +53,6 @@ script:
   - dub build gfx:texture --compiler=${DC}
   - dub build gfx:triangle --compiler=${DC}
   - dub build --build=ddox --compiler=${DC} --root=docbld
-  - meson setup builddir -Denable_examples=true
+  - meson setup builddir -Denable_examples=true -Denable_gl3=true -Ddisable_tests=false
   - meson compile -C builddir
   - meson test -C builddir

@@ -111,7 +111,7 @@ build_script:
         }
   - ps: $env:compilersetup = "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall";
   - '"%compilersetup%" %compilersetupargs%'
-  - cmd: meson --backend=ninja builddir -Denable_examples=true -Ddefault_library=static
+  - cmd: meson --backend=ninja builddir -Denable_examples=true -Denable_gl3=true -Ddisable_tests=false -Ddefault_library=static
   - cmd: meson compile -C builddir
 
 test_script:
