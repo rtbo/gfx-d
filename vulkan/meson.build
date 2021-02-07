@@ -23,15 +23,22 @@ vulkan_soversion = 0
 vulkan_inc = include_directories('source')
 
 vulkan_deps = [ graal_dep ]
+vulkan_vers = []
 
 if host_machine.system() == 'linux'
-    vulkan_deps += [ wayland_client_dep, xcb_dep ]
+    vulkan_vers += [ 'VkXcb' ]
+    vulkan_deps += [ xcb_dep ]
+    if not get_option('disable_wayland')
+        vulkan_vers += [ 'VkWayland' ]
+        vulkan_deps += [ wayland_client_dep ]
+    endif
 endif
 
 vulkan_lib = library('gfxd_vulkan', vulkan_sources,
     include_directories: vulkan_inc,
     dependencies: vulkan_deps,
     install: true,
+    d_module_versions: vulkan_vers,
     version: meson.project_version(),
     soversion: vulkan_soversion,
 )
@@ -47,7 +54,7 @@ vulkan_test = executable('vulkan_test', vulkan_sources,
     dependencies: vulkan_deps,
     d_unittest: true,
     install: false,
-    d_module_versions: ['MissingTestMain'],
+    d_module_versions: vulkan_vers + ['MissingTestMain'],
 )
 
 test('vulkan', vulkan_test)

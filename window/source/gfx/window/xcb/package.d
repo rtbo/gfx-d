@@ -9,6 +9,14 @@ import gfx.window.xkeyboard;
 import xcb.xcb;
 import xcb.xkb;
 
+version (VkXcb)
+{
+}
+else
+{
+    static assert(false, "gfx.window must be compiled with VkXcb version enabled");
+}
+
 enum gfxXcbLogMask = 0x0800_0000;
 package immutable gfxXcbLog = LogTag("GFX-XCB");
 

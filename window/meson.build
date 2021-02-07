@@ -6,19 +6,29 @@ window_sources = [
 ]
 window_deps = [ graal_dep, gl3_dep, vulkan_dep ]
 
+window_vers = []
+
 if host_machine.system() == 'linux'
+    window_vers = ['VkXcb']
     window_sources += [
-        'source/gfx/window/wayland/package.d',
-        'source/gfx/window/wayland/xdg_shell.d',
         'source/gfx/window/xcb/context.d',
         'source/gfx/window/xcb/package.d',
     ]
     window_deps += [
-        wayland_client_dep,
-        wayland_cursor_dep,
         xcb_dep,
         xkbcommon_dep,
     ]
+    if not get_option('disable_wayland')
+        window_vers += ['WlStatic', 'VkWayland']
+        window_sources += [
+            'source/gfx/window/wayland/package.d',
+            'source/gfx/window/wayland/xdg_shell.d',
+        ]
+        window_deps += [
+            wayland_client_dep,
+            wayland_cursor_dep,
+        ]
+    endif
 endif
 
 if host_machine.system() == 'windows'
@@ -32,6 +42,8 @@ endif
 window_soversion = 0
 
 window_inc = include_directories('source')
+if host_machine.system() == 'linux'
+endif
 
 window_lib = library('gfxd_window', window_sources,
     include_directories: window_inc,
@@ -39,7 +51,7 @@ window_lib = library('gfxd_window', window_sources,
     install: true,
     version: meson.project_version(),
     soversion: window_soversion,
-    d_module_versions: ['WlStatic'],
+    d_module_versions: window_vers,
 )
 
 window_dep = declare_dependency(

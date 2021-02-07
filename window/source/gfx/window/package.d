@@ -11,8 +11,11 @@ import std.typecons : Flag, No, Yes;
 enum gfxWindowLogMask = 0x0800_0000;
 package immutable gfxWindowLog = LogTag("GFX-WINDOW", gfxWindowLogMask);
 
-version(MissingTestMain) {
-    void main() {}
+version (MissingTestMain)
+{
+    void main()
+    {
+    }
 }
 
 struct KeyEvent
@@ -68,14 +71,26 @@ interface Window
 
 version (linux)
 {
-    /// Identifier of the display to use on linux
-    enum LinuxDisplay
+    version (VkWayland)
     {
-        /// Instantiate a wayland display
-        /// (no Client Side Decorations at this point)
-        wayland,
-        /// Instantiate an XCB display (X windowing system)
-        xcb,
+        /// Identifier of the display to use on linux
+        enum LinuxDisplay
+        {
+            /// Instantiate a wayland display
+            /// (no Client Side Decorations at this point)
+            wayland,
+            /// Instantiate an XCB display (X windowing system)
+            xcb,
+        }
+    }
+    else
+    {
+        /// Identifier of the display to use on linux
+        enum LinuxDisplay
+        {
+            /// Instantiate an XCB display (X windowing system)
+            xcb,
+        }
     }
 }
 
@@ -98,11 +113,11 @@ struct DisplayCreateInfo
     /// The first successfully created backend is used.
     Backend[] backendCreateOrder = [Backend.vulkan, Backend.gl3];
 
-    version(linux)
+    version (linux)
     {
         /// Order into which display creation is tried on linux.
         /// The first successfully created display is used.
-        /// If empty, Wayland will be tried if available, and XCB will be used as fallback.
+        /// If empty, Wayland will be tried if available and VkWayland enabled, and XCB will be used as fallback.
         LinuxDisplay[] linuxDisplayCreateOrder;
     }
 
@@ -121,34 +136,43 @@ Display createDisplay(DisplayCreateInfo createInfo)
 {
     version (linux)
     {
-        import gfx.window.wayland : WaylandDisplay;
-        import gfx.window.xcb : XcbDisplay;
-        import std.process : environment;
-
-        auto order = createInfo.linuxDisplayCreateOrder;
-        if (order.length == 0)
+        version (VkWayland)
         {
-            order = [
-                environment["XDG_SESSION_TYPE"] == "wayland" ? LinuxDisplay.wayland : LinuxDisplay.xcb
-            ];
-        }
+            import gfx.window.wayland : WaylandDisplay;
+            import gfx.window.xcb : XcbDisplay;
+            import std.process : environment;
 
-        foreach (ld; order)
-        {
-            try
+            auto order = createInfo.linuxDisplayCreateOrder;
+            if (order.length == 0)
             {
-                final switch (ld)
+                order = environment["XDG_SESSION_TYPE"] == "wayland" ? [
+                    LinuxDisplay.wayland, LinuxDisplay.xcb
+                ] : [LinuxDisplay.xcb];
+            }
+
+            foreach (ld; order)
+            {
+                try
                 {
-                case LinuxDisplay.wayland:
-                    return new WaylandDisplay(createInfo);
-                case LinuxDisplay.xcb:
-                    return new XcbDisplay(createInfo);
+                    final switch (ld)
+                    {
+                    case LinuxDisplay.wayland:
+                        return new WaylandDisplay(createInfo);
+                    case LinuxDisplay.xcb:
+                        return new XcbDisplay(createInfo);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    gfxWindowLog.warningf("Failed to create %s linux display:\n%s", ld, ex.msg);
                 }
             }
-            catch (Exception ex)
-            {
-                gfxWindowLog.warningf("Failed to create %s linux display:\n%s", ld, ex.msg);
-            }
+        }
+        else
+        {
+            import gfx.window.xcb : XcbDisplay;
+
+            return new XcbDisplay(createInfo);
         }
         throw new Exception("Could not create a functional display");
     }
