@@ -47,7 +47,7 @@ if not get_option('disable_tests')
         dependencies: gl3_deps,
         d_unittest: true,
         install: false,
-        link_args: ['-main'],
+        d_module_versions: ['MissingTestMain'],
     )
 
     test('gl3', gl3_test)

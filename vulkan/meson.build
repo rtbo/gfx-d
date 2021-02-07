@@ -55,8 +55,8 @@ if not get_option('disable_tests')
         dependencies: vulkan_deps,
         d_unittest: true,
         install: false,
-        link_args: ['-main'],
         d_module_versions: vulkan_vers,
+        link_args: ['-main'],
     )
 
     test('vulkan', vulkan_test)
