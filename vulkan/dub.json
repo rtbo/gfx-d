@@ -31,7 +31,7 @@
         {
             "name": "glfw",
             "versions": ["glfw"],
-            "platforms": ["linux", "windows"],
+            "platforms": ["linux", "windows", "osx"],
             "dependencies": {
                 "bindbc-glfw": "~>0.10.1"
             }
