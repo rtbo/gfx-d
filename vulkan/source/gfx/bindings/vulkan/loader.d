@@ -99,6 +99,8 @@ VkGlobalCmds loadVulkanGlobalCmds()
 
     version( Windows )
         enum libName = "vulkan-1.dll";
+    else version ( OSX )
+        enum libName = "libMoltenVK.dylib";
     else version( Posix )
         enum libName = "libvulkan.so.1";
     else
