@@ -1,0 +1,35 @@
+option('enable_gl3',
+    type: 'boolean',
+    value: false,
+    description: 'Enable support of GL3 backup and compilation of gfx.gl3 package',
+)
+option('disable_window',
+    type: 'boolean',
+    value: false,
+    description: 'Disable compilation of gfx.window package',
+)
+option('disable_wayland',
+    type: 'boolean',
+    value: false,
+    description: 'Disable Wayland support',
+)
+option('disable_tests',
+    type: 'boolean',
+    value: false,
+    description: 'Disable compilation of tests',
+)
+# option('disable_doc',
+#     type: 'boolean',
+#     value: false,
+#     description: 'Disable generation of documentation',
+# )
+option('enable_examples',
+    type: 'boolean',
+    value: false,
+    description: 'Enable compilation of examples',
+)
+option('install_examples',
+    type: 'boolean',
+    value: false,
+    description: 'Install examples executables with Gfx libraries',
+)

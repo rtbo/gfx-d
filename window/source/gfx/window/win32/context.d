@@ -2,6 +2,12 @@ module gfx.window.win32.context;
 
 version(Windows):
 
+version (GfxGl3) {}
+else
+{
+    static assert(false, "gfx.window.win32.context must be compiled with GfxGl3 version enabled");
+}
+
 import core.sys.windows.wingdi;
 import gfx.bindings.opengl.gl : Gl, GL_TRUE;
 import gfx.bindings.opengl.loader;

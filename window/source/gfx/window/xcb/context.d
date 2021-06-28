@@ -2,6 +2,12 @@ module gfx.window.xcb.context;
 
 version(linux):
 
+version (GfxGl3) {}
+else
+{
+    static assert(false, "gfx.window.xcb.context must be compiled with GfxGl3 version enabled");
+}
+
 import gfx.bindings.opengl.loader : SharedLib;
 import gfx.gl3.context : GlAttribs, GlContext, glVersions;
 import X11.Xlib : XDisplay = Display, XErrorEvent;

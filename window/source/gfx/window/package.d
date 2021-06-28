@@ -86,19 +86,21 @@ else
     private enum defaultValidation = No.validation;
 }
 
+
 /// Options that influence how the display is created, and how it will create
 /// a Gfx-D instance.
 struct DisplayCreateInfo
 {
     /// Order into which backend creation is tried.
     /// The first successfully created backend is used.
-    Backend[] backendCreateOrder = [Backend.vulkan, Backend.gl3];
+    /// If empty, Vulkan is tried first, and OpenGL3 is tried as fallback if enabled and available
+    Backend[] backendCreateOrder;
 
-    version(linux)
+    version (linux)
     {
         /// Order into which display creation is tried on linux.
         /// The first successfully created display is used.
-        /// If empty, Wayland will be tried if available, and XCB will be used as fallback.
+        /// If empty, Wayland will be tried if available and VkWayland enabled, and XCB will be used as fallback.
         LinuxDisplay[] linuxDisplayCreateOrder;
     }
 
@@ -115,18 +117,30 @@ struct DisplayCreateInfo
 /// use linuxDisplayOrder to choose. The first succesfully created display is returned.
 Display createDisplay(DisplayCreateInfo createInfo)
 {
+    if (createInfo.backendCreateOrder.length == 0)
+    {
+        version(GfxGl3)
+            createInfo.backendCreateOrder = [Backend.vulkan, Backend.gl3];
+        else
+            createInfo.backendCreateOrder = [Backend.vulkan];
+    }
+
     version (linux)
     {
-        import gfx.window.wayland : WaylandDisplay;
         import gfx.window.xcb : XcbDisplay;
         import std.process : environment;
 
         auto order = createInfo.linuxDisplayCreateOrder;
         if (order.length == 0)
         {
-            order = [
-                environment["XDG_SESSION_TYPE"] == "wayland" ? LinuxDisplay.wayland : LinuxDisplay.xcb
-            ];
+            version (VkWayland) {
+                order = environment["XDG_SESSION_TYPE"] == "wayland" ? [
+                    LinuxDisplay.wayland, LinuxDisplay.xcb
+                ] : [LinuxDisplay.xcb];
+            }
+            else {
+                order = [LinuxDisplay.xcb];
+            }
         }
 
         foreach (ld; order)
@@ -136,7 +150,14 @@ Display createDisplay(DisplayCreateInfo createInfo)
                 final switch (ld)
                 {
                 case LinuxDisplay.wayland:
-                    return new WaylandDisplay(createInfo);
+                    version (VkWayland) {
+                        import gfx.window.wayland : WaylandDisplay;
+
+                        return new WaylandDisplay(createInfo);
+                    }
+                    else {
+                        assert(false, "Wayland support is disabled");
+                    }
                 case LinuxDisplay.xcb:
                     return new XcbDisplay(createInfo);
                 }

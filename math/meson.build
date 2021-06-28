@@ -1,0 +1,49 @@
+
+math_sources = [
+    'source/gfx/math/approx.d',
+    'source/gfx/math/inverse.d',
+    'source/gfx/math/mat.d',
+    'source/gfx/math/package.d',
+    'source/gfx/math/proj.d',
+    'source/gfx/math/transform.d',
+    'source/gfx/math/util.d',
+    'source/gfx/math/vec.d',
+]
+
+math_soversion = 0
+
+math_inc = include_directories('source')
+
+math_lib = library('gfxd_math', math_sources,
+    include_directories: math_inc,
+    install: true,
+    version: meson.project_version(),
+    soversion: math_soversion,
+)
+
+math_dep = declare_dependency(
+    include_directories: math_inc,
+    link_with: math_lib,
+)
+
+if not get_option('disable_tests')
+    math_test = executable('math_test', math_sources,
+        include_directories: math_inc,
+        d_unittest: true,
+        install: false,
+        link_args: ['-main'],
+    )
+
+    test('math', math_test)
+endif
+
+pkgc.generate(math_lib,
+    name: 'gfxd_math',
+    subdirs: 'd/gfxd',
+    version: meson.project_version(),
+    description: 'Gfx-d math library',
+)
+
+install_subdir('source/gfx',
+    install_dir: 'include/d/gfxd',
+)

@@ -1,3 +1,5 @@
+image: Visual Studio 2017
+
 platform: x64
 
 environment:
@@ -5,15 +7,19 @@ environment:
   - DC: dmd
     DVersion: beta
     arch: x64
+    compiler: msvc2017
   - DC: dmd
     DVersion: stable
     arch: x64
+    compiler: msvc2017
   - DC: ldc
     DVersion: beta
     arch: x64
+    compiler: msvc2017
   - DC: ldc
     DVersion: stable
     arch: x64
+    compiler: msvc2017
 
 skip_tags: false
 
@@ -80,6 +86,18 @@ install:
             }
         }
   - ps: SetUpDCompiler
+  # Set paths to dependencies (based on architecture)
+  - cmd: if %arch%==x86 (set PYTHON_ROOT=C:\python37) else (set PYTHON_ROOT=C:\python37-x64)
+  # Print out dependency paths
+  - cmd: echo Using Python at %PYTHON_ROOT%
+  # Add necessary paths to PATH variable
+  - cmd: set PATH=%cd%;%PYTHON_ROOT%;%PYTHON_ROOT%\Scripts;%PATH%
+  # Install meson and ninja
+  - cmd: pip install ninja meson
+  # Set up the build environment
+  - cmd: if %compiler%==msvc2015 ( call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %arch% )
+  - cmd: if %compiler%==msvc2017 ( call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %arch% )
+
 
 build_script:
   - ps: if($env:arch -eq "x86"){
@@ -93,6 +111,8 @@ build_script:
         }
   - ps: $env:compilersetup = "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall";
   - '"%compilersetup%" %compilersetupargs%'
+  - cmd: meson --backend=ninja builddir -Denable_examples=true -Denable_gl3=true -Ddisable_tests=false -Ddefault_library=static
+  - cmd: meson compile -C builddir
 
 test_script:
  - echo %PLATFORM%
@@ -100,6 +120,7 @@ test_script:
  - echo %DC%
  - echo %PATH%
  - '%DC% --version'
+ - echo Dub Tests
  - dub test --arch=%Darch% --compiler=%DC%
  - dub test gfx:core --arch=%Darch% --compiler=%DC%
  - dub test gfx:decl --arch=%Darch% --compiler=%DC%
@@ -108,6 +129,7 @@ test_script:
  - dub test gfx:math --arch=%Darch% --compiler=%DC%
  - dub test gfx:memalloc --arch=%Darch% --compiler=%DC%
  - dub test gfx:vulkan --arch=%Darch% --compiler=%DC%
+ - echo Dub Building Examples
  - dub build gfx:declapi --arch=%Darch% --compiler=%DC%
  - dub build gfx:deferred --arch=%Darch% --compiler=%DC%
  - dub build gfx:depth --arch=%Darch% --compiler=%DC%
@@ -116,3 +138,5 @@ test_script:
  - dub build gfx:swapchain --arch=%Darch% --compiler=%DC%
  - dub build gfx:texture --arch=%Darch% --compiler=%DC%
  - dub build gfx:triangle --arch=%Darch% --compiler=%DC%
+ - echo Meson Tests
+ - meson test -C builddir
