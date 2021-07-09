@@ -1,0 +1,52 @@
+name: GFX CI
+
+on: push
+
+jobs:
+  test:
+    name: Tests
+
+    strategy:
+      matrix:
+        dc: [dmd-latest, ldc-latest]
+    
+    # TODO: runs-on: ${{ matrix.os }} with 'windows-latest'
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: 'recursive'
+    - name: Install D compiler
+      uses: dlang-community/setup-dlang@v1
+      with:
+        compiler: ${{ matrix.dc }}
+    - name: Install *nix Dependencies
+      if: runner.os == 'Linux'
+      run: sudo apt-get install --quiet -y gcc-8 libwayland-dev libx11-xcb-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev libpng-dev libjpeg-turbo8-dev
+    # TODO: Lint?
+    # - name: Lint
+    #   run: dub lint
+    - name: Test
+      run: |
+        dub test
+        dub test gfx:core
+        dub test gfx:decl
+        dub test gfx:genmesh
+        dub test gfx:gl3
+        dub test gfx:math
+        dub test gfx:memalloc
+        dub test gfx:vulkan
+        dub build gfx:declapi
+        dub build gfx:deferred
+        dub build gfx:depth
+        dub build gfx:shadow
+        dub build gfx:stencil
+        dub build gfx:swapchain
+        echo "TODO: Fix `dub build gfx:texture` ld: cannot find -lturbojpeg"
+        #dub build gfx:texture
+        dub build gfx:triangle
+    # TODO: Upload test coverage
+    # - name: Upload Coverage to Codecov
+    #   if: success()
+    #   run: bash <(curl -s https://codecov.io/bash)
