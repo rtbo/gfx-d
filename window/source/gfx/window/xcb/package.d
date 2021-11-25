@@ -15,28 +15,8 @@ package immutable gfxXcbLog = LogTag("GFX-XCB");
 /// List of X atoms that are fetched automatically
 enum Atom
 {
-    UTF8_STRING,
-
     WM_PROTOCOLS,
     WM_DELETE_WINDOW,
-    WM_TRANSIENT_FOR,
-    WM_CHANGE_STATE,
-    WM_STATE,
-    _NET_WM_STATE,
-    _NET_WM_STATE_MODAL,
-    _NET_WM_STATE_STICKY,
-    _NET_WM_STATE_MAXIMIZED_VERT,
-    _NET_WM_STATE_MAXIMIZED_HORZ,
-    _NET_WM_STATE_SHADED,
-    _NET_WM_STATE_SKIP_TASKBAR,
-    _NET_WM_STATE_SKIP_PAGER,
-    _NET_WM_STATE_HIDDEN,
-    _NET_WM_STATE_FULLSCREEN,
-    _NET_WM_STATE_ABOVE,
-    _NET_WM_STATE_BELOW,
-    _NET_WM_STATE_DEMANDS_ATTENTION,
-    _NET_WM_STATE_FOCUSED,
-    _NET_WM_NAME,
 }
 
 /// get the response_type field masked for
