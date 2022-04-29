@@ -19,3 +19,8 @@ window/source/gfx/window/wayland/xdg_shell.d
 examples/**/gfx_*
 gfx-test-library
 **/gfx-*-test-*
+
+# ignore my meson workflow
+build/
+builddir/
+install/

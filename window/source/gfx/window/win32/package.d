@@ -56,23 +56,30 @@ class Win32Display : Display
                 }
                 break;
             case Backend.gl3:
-                try {
-                    import gfx.core.rc : makeRc;
-                    import gfx.gl3 : GlInstance;
-                    import gfx.gl3.context : GlAttribs;
-                    import gfx.window.win32.context : Win32GlContext;
+                version(GfxGl3)
+                {
+                    try {
+                        import gfx.core.rc : makeRc;
+                        import gfx.gl3 : GlInstance;
+                        import gfx.gl3.context : GlAttribs;
+                        import gfx.window.win32.context : Win32GlContext;
 
-                    gfxW32Log.trace("Attempting to instantiate OpenGL");
-                    auto w = new Win32Window(this, "", true);
-                    scope(exit) w.close();
-                    auto ctx = makeRc!Win32GlContext(GlAttribs.init, w.hWnd);
-                    gfxW32Log.trace("Creating an OpenGL instance");
-                    _instance = new GlInstance(ctx);
+                        gfxW32Log.trace("Attempting to instantiate OpenGL");
+                        auto w = new Win32Window(this, "", true);
+                        scope(exit) w.close();
+                        auto ctx = makeRc!Win32GlContext(GlAttribs.init, w.hWnd);
+                        gfxW32Log.trace("Creating an OpenGL instance");
+                        _instance = new GlInstance(ctx);
+                    }
+                    catch (Exception ex) {
+                        gfxW32Log.warningf("OpenGL is not available. %s", ex.msg);
+                    }
+                    break;
                 }
-                catch (Exception ex) {
-                    gfxW32Log.warningf("OpenGL is not available. %s", ex.msg);
+                else
+                {
+                    assert(false, "OpenGL3 support is not enabled");
                 }
-                break;
             }
             if (_instance) break;
         }
@@ -241,16 +248,23 @@ class Win32Window : Window
             break;
 
         case Backend.gl3:
-            import gfx.gl3 : GlInstance;
-            import gfx.gl3.swapchain : GlSurface;
-            import gfx.window.win32.context : Win32GlContext;
+            version (GfxGl3)
+            {
+                import gfx.gl3 : GlInstance;
+                import gfx.gl3.swapchain : GlSurface;
+                import gfx.window.win32.context : Win32GlContext;
 
-            gfxSurface = new GlSurface(cast(size_t)hWnd);
-            auto glInst = cast(GlInstance)dpy.instance;
-            auto ctx = cast(Win32GlContext)glInst.ctx;
-            ctx.setPixelFormat(hWnd);
-            ctx.makeCurrent(cast(size_t)hWnd);
-            break;
+                gfxSurface = new GlSurface(cast(size_t)hWnd);
+                auto glInst = cast(GlInstance)dpy.instance;
+                auto ctx = cast(Win32GlContext)glInst.ctx;
+                ctx.setPixelFormat(hWnd);
+                ctx.makeCurrent(cast(size_t)hWnd);
+                break;
+            }
+            else
+            {
+                assert(false, "OpenGL3 support is disabled");
+            }
         }
 
         dpy.registerWindow(hWnd, this);

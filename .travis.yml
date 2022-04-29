@@ -26,6 +26,14 @@ addons:
       - libxkbcommon-x11-dev
       - libpng16-dev
       - libjpeg-turbo8-dev
+      # dependencies for meson
+      - python3
+      - python3-pip
+      - python3-setuptools
+      - python3-wheel
+
+install:
+  - pip3 install meson ninja
 
 script:
   - dub test --compiler=${DC}
@@ -45,3 +53,6 @@ script:
   - dub build gfx:texture --compiler=${DC}
   - dub build gfx:triangle --compiler=${DC}
   - dub build --build=ddox --compiler=${DC} --root=docbld
+  - meson setup builddir -Denable_examples=true -Denable_gl3=true -Ddisable_tests=false
+  - meson compile -C builddir
+  - meson test -C builddir

@@ -19,7 +19,7 @@
             "name": "linux",
             "platforms": ["linux"],
             "dependencies": {
-                "xlib-d": "~>0.1.1"
+				"xlib-d": "~>0.2.0"
             }
         },
         {

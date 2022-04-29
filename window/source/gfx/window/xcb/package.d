@@ -9,6 +9,14 @@ import gfx.window.xkeyboard;
 import xcb.xcb;
 import xcb.xkb;
 
+version (VkXcb)
+{
+}
+else
+{
+    static assert(false, "gfx.window must be compiled with VkXcb version enabled");
+}
+
 enum gfxXcbLogMask = 0x0800_0000;
 package immutable gfxXcbLog = LogTag("GFX-XCB");
 
@@ -57,7 +65,7 @@ class XcbDisplay : Display
         scope(failure) {
             XCloseDisplay(_dpy);
         }
-        _conn = enforce(XGetXCBConnection(_dpy));
+        _conn = enforce(cast(xcb_connection_t*)XGetXCBConnection(_dpy));
         XSetEventQueueOwner(_dpy, XCBOwnsEventQueue);
         _mainScreenNum = XDefaultScreen(_dpy);
 
@@ -158,23 +166,30 @@ class XcbDisplay : Display
                 }
                 break;
             case Backend.gl3:
-                try {
-                    import gfx.core.rc : makeRc;
-                    import gfx.gl3 : GlInstance;
-                    import gfx.gl3.context : GlAttribs;
-                    import gfx.window.xcb.context : XcbGlContext;
-                    gfxXcbLog.trace("Attempting to instantiate OpenGL");
-                    auto w = new XcbWindow(this, null, "", true);
-                    w.show(10, 10);
-                    scope(exit) w.close();
-                    auto ctx = makeRc!XcbGlContext(_dpy, _mainScreenNum, GlAttribs.init, w._win);
-                    gfxXcbLog.trace("Creating an OpenGL instance");
-                    _instance = new GlInstance(ctx);
+                version (GfxGl3)
+                {
+                    try {
+                        import gfx.core.rc : makeRc;
+                        import gfx.gl3 : GlInstance;
+                        import gfx.gl3.context : GlAttribs;
+                        import gfx.window.xcb.context : XcbGlContext;
+                        gfxXcbLog.trace("Attempting to instantiate OpenGL");
+                        auto w = new XcbWindow(this, null, "", true);
+                        w.show(10, 10);
+                        scope(exit) w.close();
+                        auto ctx = makeRc!XcbGlContext(_dpy, _mainScreenNum, GlAttribs.init, w._win);
+                        gfxXcbLog.trace("Creating an OpenGL instance");
+                        _instance = new GlInstance(ctx);
+                    }
+                    catch (Exception ex) {
+                        gfxXcbLog.warningf("OpenGL is not available. %s", ex.msg);
+                    }
+                    break;
                 }
-                catch (Exception ex) {
-                    gfxXcbLog.warningf("OpenGL is not available. %s", ex.msg);
+                else
+                {
+                    assert(false, "OpenGL3 support is not enabled");
                 }
-                break;
             }
             if (_instance) break;
         }
@@ -575,13 +590,21 @@ class XcbWindow : Window
             _surface = createVulkanXcbSurface(_instance, _dpy._conn, _win);
             break;
         case Backend.gl3:
-            import gfx.gl3 : GlInstance;
-            import gfx.gl3.swapchain : GlSurface;
-            _surface = new GlSurface(_win);
-            auto glInst = cast(GlInstance)_instance;
-            auto ctx = glInst.ctx;
-            ctx.makeCurrent(_win);
-            break;
+            version (GfxGl3)
+            {
+                import gfx.gl3 : GlInstance;
+                import gfx.gl3.swapchain : GlSurface;
+
+                _surface = new GlSurface(_win);
+                auto glInst = cast(GlInstance)_instance;
+                auto ctx = glInst.ctx;
+                ctx.makeCurrent(_win);
+                break;
+            }
+            else
+            {
+                assert(false, "OpenGL3 support is disabled");
+            }
         }
     }
 
